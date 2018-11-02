@@ -28,6 +28,7 @@ class ContentLibrary extends React.Component {
 
     for(const contentObject of contentLibrary.contentObjects) {
       let icon = ContentIcon;
+      /*
       if(contentObject.metadata.image) {
         icon = Fabric.PartUrl({
           libraryId: this.state.libraryId,
@@ -35,6 +36,7 @@ class ContentLibrary extends React.Component {
           partHash: contentObject.metadata.image
         });
       }
+      */
 
       objectElements.push(
         <ThreeCard

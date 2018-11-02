@@ -5,6 +5,8 @@ class ContentObject {
   constructor({ libraryId, contentObjectData }) {
     this.rawData = contentObjectData;
 
+    //this.url = this.rawData.url;
+
     if(!contentObjectData) {
       this.metadata = {};
       return;
@@ -42,6 +44,7 @@ class ContentObject {
   }
 
   Image(key="image") {
+    /*
     if(this.metadata && this.metadata[key]) {
       return Fabric.PartUrl({
         libraryId: this.libraryId,
@@ -49,6 +52,7 @@ class ContentObject {
         partHash: this.metadata[key]
       });
     }
+    */
   }
 }
 
