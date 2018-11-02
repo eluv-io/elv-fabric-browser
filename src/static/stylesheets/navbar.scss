@@ -1,0 +1,58 @@
+@import "variables/colors";
+@import "variables/spacing";
+
+.navbar-container {
+  background: $color-bg-dark;
+  padding: $spacing-l $spacing-m 0;
+  z-index: 99;
+}
+
+.navbar-links-container {
+  .navbar-link-container {
+    display: block;
+    text-align: center;
+    width: 100%;
+  }
+
+  .navbar-link {
+    color: $color-darkgray;
+    font-size: 16px;
+    margin-bottom: $spacing-s;
+
+    &.active,
+    &:hover {
+      color: $color-black;
+      font-weight: bold;
+
+      .icon {
+        color: $color-mediumblue;
+      }
+    }
+  }
+
+  .navbar-link,
+  .navbar-link-span {
+    align-items: center;
+    display: flex;
+    height: 25px;
+    width: 100%;
+  }
+
+  .navbar-link-icon {
+    color: $color-darkergray;
+    display: inline-block;
+    height: 20px;
+    margin-right: $spacing-xs;
+    width: 20px;
+  }
+
+  .navbar-link-text {
+    justify-self: center;
+    text-align: left;
+    width: auto;
+  }
+}
+
+.navbar-account-container {
+  width: 100px;
+}

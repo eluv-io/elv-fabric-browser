@@ -1,0 +1,56 @@
+@import "variables/colors";
+
+.content-video-container {
+  background: $color-bg-black;
+  display: flex;
+  justify-content: center;
+
+  &.normal-size {
+    max-width: 1200px;
+    width: 75%;
+  }
+
+  &.full-size {
+    width: 100%;
+  }
+
+  video {
+    &.content-object-video {
+      max-width: 100%;
+      min-width: 100%;
+    }
+  }
+}
+
+.content-object-data {
+  margin: 20px 0;
+}
+
+iframe {
+  border: 1px solid $color-lightergray;
+  display: block;
+  padding: 10px;
+
+  &.content-app {
+    height: 100vw;
+    width: 70vw;
+  }
+
+  &.fullscreen-app {
+    height: 100%;
+    width: 100%;
+  }
+}
+
+.account-image {
+  max-height: 100px;
+  max-width: 100px;
+}
+
+.version-info {
+  margin-bottom: 10px;
+
+  &.version-visible {
+    margin-bottom: 30px;
+  }
+}

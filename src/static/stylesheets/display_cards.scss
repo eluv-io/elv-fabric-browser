@@ -1,0 +1,138 @@
+@import "variables/mixins";
+@import "variables/colors";
+@import "variables/spacing";
+
+.card-container {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-around;
+  width: 100%;
+
+  &.wide-card-container {
+    justify-content: flex-start;
+
+    .display-card {
+      flex-basis: 100%;
+    }
+  }
+}
+
+.display-card {
+  border: 2px solid $color-lightgray;
+  border-radius: 3px;
+  flex-grow: 1;
+  flex-shrink: 1;
+  font-size: 14px;
+  padding: 20px;
+  width: 350px;
+}
+
+.three-card {
+  display: grid;
+  grid-template:
+  "icon name" 30px
+  "desc desc" 50px
+  / 30px;
+
+  margin-bottom: 10px;
+
+  .card-icon {
+    color: $color-black;
+    grid-area: icon;
+    padding: 0;
+    width: 100%;
+  }
+
+  .card-name {
+    align-self: center;
+    font-size: 16px;
+    font-weight: bold;
+    grid-area: name;
+    margin-left: 10px;
+  }
+
+  .card-description {
+    grid-area: desc;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.library-card {
+  @include no-select;
+  display: flex;
+  margin: 0 0 $spacing-l;
+  max-width: 100%;
+  padding: $spacing-m 0 $spacing-m $spacing-s;
+  width: 100%;
+
+  .icon {
+    color: $color-black;
+  }
+
+  .image-container {
+    display: flex;
+    justify-content: center;
+    padding: 0;
+
+    .cropped-image {
+      $image-size: 10vw;
+      @include cropped-image($image-size, $image-size, 50%, $image-size, $image-size);
+    }
+  }
+
+  .info-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    padding: 0 $spacing-m 0 $spacing-l;
+  }
+
+  .header {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: $spacing-xs;
+
+    .name {
+      @include ellipsis;
+      color: $color-text-dark;
+      font-size: 19px;
+    }
+
+    .actions-container {
+      .action {
+        color: $color-text-light;
+        font-size: 14px;
+        height: 2em;
+        margin: 0 $spacing-xxs;
+        min-width: 50px;
+        width: 90px;
+      }
+    }
+  }
+
+  .info,
+  .description {
+    color: $color-text-light;
+    padding: 0 0 $spacing-xxs;
+  }
+
+  .description {
+    max-height: 3.5em;
+  }
+
+  .preview-container {
+    display: flex;
+  }
+
+  .preview {
+    @include cropped-image(8vw, 5vw, 0, 100%, 100%);
+    margin-top: $spacing-s;
+    max-width: 16%;
+
+    .content-preview {
+      margin-right: $spacing-xs;
+    }
+  }
+}

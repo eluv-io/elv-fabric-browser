@@ -1,0 +1,60 @@
+@import "variables/spacing";
+
+.app {
+  height: 100%;
+  max-width: 100%;
+  width: 100%;
+}
+
+.app-container {
+  height: 100%;
+}
+
+.header-container {
+  grid-area: header;
+}
+
+.navbar-container {
+  grid-area: navbar;
+}
+
+.notification-container {
+  grid-area: notifications;
+}
+
+.main-content-container {
+  grid-area: main-content;
+  max-height: 100%;
+  overflow-y: auto;
+  padding: $spacing-xs $spacing-xl $spacing-xl;
+}
+
+.page-container {
+  height: 100%;
+  width: 100%;
+}
+
+.view-container {
+  display: grid;
+  grid-template:
+          "navbar notifications" 40px
+          "navbar main-content" 1fr
+  / 225px;
+
+  // sass-lint:disable-block indentation trailing-semicolon
+  min-height: 100%;
+  overflow: hidden;
+
+  &.navbar-hidden {
+    grid-template:
+            "notifications" 40px
+            "main-content" 1fr
+  }
+}
+
+.loading-page-container {
+  align-items: center;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+}

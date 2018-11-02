@@ -1,0 +1,88 @@
+@import "variables/mixins";
+@import "variables/colors";
+
+.actions-container {
+  display: flex;
+
+  :first-child {
+    &.action,
+    &.action-loading {
+      margin-left: 0;
+    }
+  }
+
+  :last-child {
+    &.action,
+    &.action-loading {
+      margin-right: 0;
+    }
+  }
+
+  &.loading {
+    justify-content: center;
+    padding: 17px;
+  }
+
+  .action,
+  .action-loading {
+    @include no-select;
+    align-items: center;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    margin: 10px 10px 10px 0;
+    min-width: 100px;
+  }
+
+  .action {
+    background: $color-mediumblue;
+    border: 0;
+    color: $color-text-white;
+    cursor: pointer;
+    font-size: 14px;
+    height: 2.25em;
+    justify-content: center;
+    min-width: 100px;
+    padding: 7px 15px;
+
+    &:hover {
+      background: $color-lightblue;
+    }
+
+    &.secondary {
+      background: $color-action-secondary;
+      color: $color-text-dark;
+
+      &:hover {
+        background: $color-lightgray;
+      }
+    }
+
+    &.tertiary {
+      background: $color-bg-white;
+      border: 1px solid $color-action-secondary;
+      color: $color-text-dark;
+
+      &:hover {
+        border: 1px solid $color-darkgray;
+      }
+    }
+
+    &.action-compact {
+      font-size: 12px;
+      height: auto;
+      margin: 0;
+      min-width: 75px;
+      padding: 5px;
+    }
+
+    &.action-wide {
+      min-width: 120px;
+    }
+  }
+
+  .action-loading {
+    color: $color-midgray;
+    margin: 0;
+  }
+}
