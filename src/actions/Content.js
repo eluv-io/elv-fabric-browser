@@ -15,7 +15,24 @@ export const ListContentLibraries = () => {
       todo: (async () => {
         let libraryIds = await Fabric.ListContentLibraries();
 
-        let contentLibraries = await ParseContentLibraries({libraryIds: libraryIds});
+        let contentLibraries = {};
+        await Promise.all(
+          libraryIds.map(async libraryId => {
+            try {
+              let libraryMetadata = (await Fabric.GetContentLibrary({libraryId})).meta;
+              // Query for content objects
+              let contentObjects = (await Fabric.ListContentObjects({libraryId})).contents;
+
+              contentLibraries[libraryId] = new ContentLibrary({
+                libraryId,
+                libraryMetadata,
+                contentObjectsData: contentObjects
+              });
+            } catch(error) {
+              console.error("Error querying library: \n" + JSON.stringify(error, null, 2));
+            }
+          })
+        );
 
         dispatch({
           type: ActionTypes.request.content.completed.list.all,
@@ -33,16 +50,19 @@ export const ListContentObjects = ({ libraryId }) => {
       domain: "content",
       action: "listContentObjects",
       todo: (async () => {
-        let libraryMetadata = (await Fabric.GetContentLibrary({libraryId})).meta;
+        let libraryData = (await Fabric.GetContentLibrary({libraryId}));
         let contentObjectsData = await Fabric.ListContentObjects({libraryId});
+
+        console.log(libraryData);
 
         dispatch({
           type: ActionTypes.request.content.completed.list.library,
           libraryId: libraryId,
           contentLibrary: new ContentLibrary({
             libraryId,
-            libraryMetadata,
-            contentObjectsData: contentObjectsData.contents
+            libraryMetadata: libraryData.meta,
+            contentObjectsData: contentObjectsData.contents,
+            url: libraryData.url
           })
         });
       })
@@ -321,21 +341,4 @@ export const CreateContentLibrary = ({name, description}) => {
       })
     });
   };
-};
-
-const ParseContentLibraries = ({libraryIds}) => {
-  let contentLibraries = {};
-
-  let contentObjectQueries = libraryIds.map(async libraryId => {
-    let libraryMetadata = (await Fabric.GetContentLibrary({ libraryId })).meta;
-    // Query for content objects
-    let contentObjects = (await Fabric.ListContentObjects({ libraryId })).contents;
-
-    contentLibraries[libraryId] = new ContentLibrary({ libraryId, libraryMetadata, contentObjectsData: contentObjects });
-  });
-
-  // Await completion of all queries then update state
-  return Promise.all(contentObjectQueries).then(() => {
-    return contentLibraries;
-  });
 };

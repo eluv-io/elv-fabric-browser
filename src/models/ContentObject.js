@@ -1,11 +1,12 @@
-import Fabric from "../clients/Fabric";
+import Path from "path";
+import URI from "urijs";
 import PrettyBytes from "pretty-bytes";
 
 class ContentObject {
   constructor({ libraryId, contentObjectData }) {
     this.rawData = contentObjectData;
 
-    //this.url = this.rawData.url;
+    this.url = this.rawData.url;
 
     if(!contentObjectData) {
       this.metadata = {};
@@ -43,16 +44,17 @@ class ContentObject {
     return PrettyBytes(this.parts.reduce((a, part) => a + part.size, 0));
   }
 
-  Image(key="image") {
-    /*
-    if(this.metadata && this.metadata[key]) {
-      return Fabric.PartUrl({
-        libraryId: this.libraryId,
-        contentHash: this.hash,
-        partHash: this.metadata[key]
-      });
-    }
-    */
+  RepUrl(rep) {
+    if(!this.url) { return ""; }
+
+    const url = new URI(this.url);
+    url.path(Path.join(url.path(), "rep", rep));
+
+    return url.toString();
+  }
+
+  HasImage() {
+    return this.metadata && (this.metadata.image || this.metadata["eluv.image"]);
   }
 }
 

@@ -44,7 +44,7 @@ class Account extends React.Component {
   }
 
   AccountImage(accountInfo) {
-    const imageUrl = accountInfo.Image("profileImageHash");
+    const imageUrl = accountInfo.RepUrl("image");
 
     if(imageUrl) {
       return <img className="account-image" src={imageUrl} />;
