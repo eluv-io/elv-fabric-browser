@@ -17,51 +17,9 @@
   }
 }
 
-.display-card {
-  border: 2px solid $color-lightgray;
-  border-radius: 3px;
-  flex-grow: 1;
-  flex-shrink: 1;
-  font-size: 14px;
-  padding: 20px;
-  width: 350px;
-}
-
-.three-card {
-  display: grid;
-  grid-template:
-  "icon name" 30px
-  "desc desc" 50px
-  / 30px;
-
-  margin-bottom: 10px;
-
-  .card-icon {
-    color: $color-black;
-    grid-area: icon;
-    padding: 0;
-    width: 100%;
-  }
-
-  .card-name {
-    align-self: center;
-    font-size: 16px;
-    font-weight: bold;
-    grid-area: name;
-    margin-left: 10px;
-  }
-
-  .card-description {
-    grid-area: desc;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-}
-
 .library-card {
   @include no-select;
   display: flex;
-  margin: 0 0 $spacing-l;
   max-width: 100%;
   padding: $spacing-m 0 $spacing-m $spacing-s;
   width: 100%;

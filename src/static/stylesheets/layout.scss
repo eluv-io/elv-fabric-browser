@@ -32,6 +32,10 @@
 .page-container {
   height: 100%;
   width: 100%;
+
+  .page-header {
+    margin: $spacing-m 0;
+  }
 }
 
 .view-container {

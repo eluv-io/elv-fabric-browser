@@ -13,8 +13,11 @@ let Fabric = {
     return client.ContentLibraries();
   },
 
-  GetContentLibrary: ({libraryId}) => {
-    return client.ContentLibrary({libraryId});
+  GetContentLibrary: async ({libraryId}) => {
+    const contentLibraryData = await client.ContentLibrary({libraryId});
+    contentLibraryData.url = await Fabric.FabricUrl({libraryId});
+
+    return contentLibraryData;
   },
 
   CreateContentLibrary: async ({libraryName, libraryDescription}) => {
@@ -23,12 +26,23 @@ let Fabric = {
 
   /* Objects */
 
-  ListContentObjects: ({libraryId}) => {
-    return client.ContentObjects({ libraryId });
+  ListContentObjects: async ({libraryId}) => {
+    const libraryUrl = await client.FabricUrl({libraryId});
+    const contentObjectData = await client.ContentObjects({ libraryId });
+
+    return {
+      contents: contentObjectData.contents.map(data => {
+        data.url = libraryUrl + "/q/" + data.id;
+        return data;
+      })
+    };
   },
 
-  GetContentObject: ({libraryId, objectId}) => {
-    return client.ContentObject({ libraryId, contentHash: objectId });
+  GetContentObject: async ({libraryId, objectId}) => {
+    const contentObjectData = await client.ContentObject({ libraryId, contentHash: objectId });
+    contentObjectData.url = await Fabric.FabricUrl({libraryId, contentHash: objectId});
+
+    return contentObjectData;
   },
 
   GetContentObjectMetadata: ({libraryId, contentHash}) => {
@@ -41,6 +55,7 @@ let Fabric = {
 
   GetFullContentObject: async ({libraryId, objectId}) => {
     let contentObjectData = await Fabric.GetContentObject({ libraryId, objectId });
+
     const contentHash = contentObjectData.hash;
     contentObjectData.meta = await Fabric.GetContentObjectMetadata({ libraryId, contentHash });
     contentObjectData.parts = (await Fabric.ListParts({ libraryId, contentHash })).parts;
@@ -192,8 +207,8 @@ let Fabric = {
     return client.UploadPart({libraryId, writeToken, data});
   },
 
-  PartUrl: ({libraryId, contentHash, partHash}) => {
-    return client.PartUrl({libraryId, contentHash, partHash});
+  FabricUrl: ({libraryId, contentHash, partHash}) => {
+    return client.FabricUrl({libraryId, contentHash, partHash});
   },
 
   /* Contracts */
