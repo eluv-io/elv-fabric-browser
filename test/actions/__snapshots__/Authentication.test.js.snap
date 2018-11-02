@@ -1,0 +1,544 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Authentication Actions Add Account Adds accounts 1`] = `
+Array [
+  Object {
+    "action": "addAccount",
+    "domain": "authentication",
+    "requestId": 1,
+    "type": "REQUEST_SUBMITTED",
+  },
+  Object {
+    "type": "AUTHENTICATION_UPDATE_WALLET",
+    "wallet": ElvWallet {
+      "signers": Object {
+        "Another account": Wallet {
+          "provider": undefined,
+          "signingKey": SigningKey {
+            "address": "0x1Cb99a5e4CcEAd43e98f61d25932BCA5Bf572484",
+            "keyPair": KeyPair {
+              "compressedPublicKey": "0x03c033d3e8db481d478d4b11e15c08f9f5ef41d3a1e75ba6a62120dd8469568856",
+              "privateKey": "0x2d953561666c11a5bec2b9d5fd1203f21eb0aff02b074daa4897fee6b4726a98",
+              "publicKey": "0x04c033d3e8db481d478d4b11e15c08f9f5ef41d3a1e75ba6a62120dd8469568856d3e3db3304c49971f5a62d86f2a7351cdff5e095d4972208df9703b5ffdff4bf",
+              "publicKeyBytes": Array [
+                3,
+                192,
+                51,
+                211,
+                232,
+                219,
+                72,
+                29,
+                71,
+                141,
+                75,
+                17,
+                225,
+                92,
+                8,
+                249,
+                245,
+                239,
+                65,
+                211,
+                161,
+                231,
+                91,
+                166,
+                166,
+                33,
+                32,
+                221,
+                132,
+                105,
+                86,
+                136,
+                86,
+              ],
+            },
+            "privateKey": "0x2d953561666c11a5bec2b9d5fd1203f21eb0aff02b074daa4897fee6b4726a98",
+            "publicKey": "0x04c033d3e8db481d478d4b11e15c08f9f5ef41d3a1e75ba6a62120dd8469568856d3e3db3304c49971f5a62d86f2a7351cdff5e095d4972208df9703b5ffdff4bf",
+          },
+        },
+        "Test Account": Wallet {
+          "provider": undefined,
+          "signingKey": SigningKey {
+            "address": "0x71b011B67dc8f5C323A34Cd14b952721D5750C93",
+            "keyPair": KeyPair {
+              "compressedPublicKey": "0x038d8f1181e666787c6133ec6e760ef6e9ab496c7da322801490e165528ac6cd60",
+              "privateKey": "0xbf092a5c94988e2f7a1d00d0db309fc492fe38ddb57fc6d102d777373389c5e6",
+              "publicKey": "0x048d8f1181e666787c6133ec6e760ef6e9ab496c7da322801490e165528ac6cd60646c4c8122806d0c8ebcee6ac73ffaa8c359104e3ab0525621565f9e1870a1df",
+              "publicKeyBytes": Array [
+                3,
+                141,
+                143,
+                17,
+                129,
+                230,
+                102,
+                120,
+                124,
+                97,
+                51,
+                236,
+                110,
+                118,
+                14,
+                246,
+                233,
+                171,
+                73,
+                108,
+                125,
+                163,
+                34,
+                128,
+                20,
+                144,
+                225,
+                101,
+                82,
+                138,
+                198,
+                205,
+                96,
+              ],
+            },
+            "privateKey": "0xbf092a5c94988e2f7a1d00d0db309fc492fe38ddb57fc6d102d777373389c5e6",
+            "publicKey": "0x048d8f1181e666787c6133ec6e760ef6e9ab496c7da322801490e165528ac6cd60646c4c8122806d0c8ebcee6ac73ffaa8c359104e3ab0525621565f9e1870a1df",
+          },
+        },
+      },
+    },
+  },
+  Object {
+    "accountAddress": "0x71b011b67dc8f5c323a34cd14b952721d5750c93",
+    "accountInfo": Object {
+      "accountAddress": "0x71b011b67dc8f5c323a34cd14b952721d5750c93",
+      "accountName": "Test Account",
+      "encryptedPrivateKey": "{\\"address\\":\\"71b011b67dc8f5c323a34cd14b952721d5750c93\\",\\"crypto\\":{\\"cipher\\":\\"aes-128-ctr\\",\\"ciphertext\\":\\"768c0b26476793e52c7e292b6b221fa4d7f82a7d20a7ccc042ce43c072f97f38\\",\\"cipherparams\\":{\\"iv\\":\\"049e2bed69573f62da6576c21769b520\\"},\\"kdf\\":\\"scrypt\\",\\"kdfparams\\":{\\"dklen\\":32,\\"n\\":262144,\\"p\\":1,\\"r\\":8,\\"salt\\":\\"332b0f7730c580aa86b3ec8e79d228e9f76426bb328c468cb57e99e39132c29f\\"},\\"mac\\":\\"36079b7f32edf1c3d8d1697313f8088c78be07627ffb6421f655409373fded79\\"},\\"id\\":\\"8181d812-ab5e-4e5b-b023-e9049c2aec48\\",\\"version\\":3}",
+    },
+    "type": "AUTHENTICATION_ADD_ACCOUNT",
+  },
+  Object {
+    "accountAddress": "0x71b011b67dc8f5c323a34cd14b952721d5750c93",
+    "type": "AUTHENTICATION_SET_CURRENT_ACCOUNT",
+  },
+  Object {
+    "message": "Successfully added new account",
+    "redirect": false,
+    "type": "SET_NOTIFICATION_MESSAGE",
+  },
+  Object {
+    "action": "addAccount",
+    "domain": "authentication",
+    "requestId": 1,
+    "type": "REQUEST_COMPLETED",
+  },
+  Object {
+    "action": "addAccount",
+    "domain": "authentication",
+    "requestId": 2,
+    "type": "REQUEST_SUBMITTED",
+  },
+  Object {
+    "type": "AUTHENTICATION_UPDATE_WALLET",
+    "wallet": ElvWallet {
+      "signers": Object {
+        "Another account": Wallet {
+          "provider": undefined,
+          "signingKey": SigningKey {
+            "address": "0x1Cb99a5e4CcEAd43e98f61d25932BCA5Bf572484",
+            "keyPair": KeyPair {
+              "compressedPublicKey": "0x03c033d3e8db481d478d4b11e15c08f9f5ef41d3a1e75ba6a62120dd8469568856",
+              "privateKey": "0x2d953561666c11a5bec2b9d5fd1203f21eb0aff02b074daa4897fee6b4726a98",
+              "publicKey": "0x04c033d3e8db481d478d4b11e15c08f9f5ef41d3a1e75ba6a62120dd8469568856d3e3db3304c49971f5a62d86f2a7351cdff5e095d4972208df9703b5ffdff4bf",
+              "publicKeyBytes": Array [
+                3,
+                192,
+                51,
+                211,
+                232,
+                219,
+                72,
+                29,
+                71,
+                141,
+                75,
+                17,
+                225,
+                92,
+                8,
+                249,
+                245,
+                239,
+                65,
+                211,
+                161,
+                231,
+                91,
+                166,
+                166,
+                33,
+                32,
+                221,
+                132,
+                105,
+                86,
+                136,
+                86,
+              ],
+            },
+            "privateKey": "0x2d953561666c11a5bec2b9d5fd1203f21eb0aff02b074daa4897fee6b4726a98",
+            "publicKey": "0x04c033d3e8db481d478d4b11e15c08f9f5ef41d3a1e75ba6a62120dd8469568856d3e3db3304c49971f5a62d86f2a7351cdff5e095d4972208df9703b5ffdff4bf",
+          },
+        },
+        "Test Account": Wallet {
+          "provider": undefined,
+          "signingKey": SigningKey {
+            "address": "0x71b011B67dc8f5C323A34Cd14b952721D5750C93",
+            "keyPair": KeyPair {
+              "compressedPublicKey": "0x038d8f1181e666787c6133ec6e760ef6e9ab496c7da322801490e165528ac6cd60",
+              "privateKey": "0xbf092a5c94988e2f7a1d00d0db309fc492fe38ddb57fc6d102d777373389c5e6",
+              "publicKey": "0x048d8f1181e666787c6133ec6e760ef6e9ab496c7da322801490e165528ac6cd60646c4c8122806d0c8ebcee6ac73ffaa8c359104e3ab0525621565f9e1870a1df",
+              "publicKeyBytes": Array [
+                3,
+                141,
+                143,
+                17,
+                129,
+                230,
+                102,
+                120,
+                124,
+                97,
+                51,
+                236,
+                110,
+                118,
+                14,
+                246,
+                233,
+                171,
+                73,
+                108,
+                125,
+                163,
+                34,
+                128,
+                20,
+                144,
+                225,
+                101,
+                82,
+                138,
+                198,
+                205,
+                96,
+              ],
+            },
+            "privateKey": "0xbf092a5c94988e2f7a1d00d0db309fc492fe38ddb57fc6d102d777373389c5e6",
+            "publicKey": "0x048d8f1181e666787c6133ec6e760ef6e9ab496c7da322801490e165528ac6cd60646c4c8122806d0c8ebcee6ac73ffaa8c359104e3ab0525621565f9e1870a1df",
+          },
+        },
+      },
+    },
+  },
+  Object {
+    "accountAddress": "0x1cb99a5e4ccead43e98f61d25932bca5bf572484",
+    "accountInfo": Object {
+      "accountAddress": "0x1cb99a5e4ccead43e98f61d25932bca5bf572484",
+      "accountName": "Another account",
+      "encryptedPrivateKey": "{\\"address\\":\\"1cb99a5e4ccead43e98f61d25932bca5bf572484\\",\\"crypto\\":{\\"cipher\\":\\"aes-128-ctr\\",\\"ciphertext\\":\\"7bbd900da44ddc7c7d4210235cdfaa7e6eb32d4a0575c224497be7215fe0fec9\\",\\"cipherparams\\":{\\"iv\\":\\"af0aba2f91b9bf892d85caba88dd667f\\"},\\"kdf\\":\\"scrypt\\",\\"kdfparams\\":{\\"dklen\\":32,\\"n\\":262144,\\"p\\":1,\\"r\\":8,\\"salt\\":\\"64d3b423f547c7f7b635300f767836d7ddd3746e96103dbcf13d181b3ef75d7f\\"},\\"mac\\":\\"055dd28e5ca681c07fa5aba08fee6313a94f739fe11bf7c384593b5d11206acf\\"},\\"id\\":\\"1c8f3b1c-6938-43db-9b41-42d5395487e4\\",\\"version\\":3}",
+    },
+    "type": "AUTHENTICATION_ADD_ACCOUNT",
+  },
+  Object {
+    "message": "Successfully added new account",
+    "redirect": false,
+    "type": "SET_NOTIFICATION_MESSAGE",
+  },
+  Object {
+    "action": "addAccount",
+    "domain": "authentication",
+    "requestId": 2,
+    "type": "REQUEST_COMPLETED",
+  },
+]
+`;
+
+exports[`Authentication Actions ERROR: Invalid password 1`] = `
+Array [
+  Object {
+    "action": "addAccount",
+    "domain": "authentication",
+    "requestId": 4,
+    "type": "REQUEST_SUBMITTED",
+  },
+  Object {
+    "action": "addAccount",
+    "domain": "authentication",
+    "error_message": "invalid password",
+    "requestId": 4,
+    "type": "REQUEST_ERROR",
+  },
+  Object {
+    "message": "invalid password",
+    "redirect": false,
+    "type": "SET_ERROR_MESSAGE",
+  },
+]
+`;
+
+exports[`Authentication Actions ERROR: Invalid private key 1`] = `
+Array [
+  Object {
+    "action": "addAccount",
+    "domain": "authentication",
+    "requestId": 3,
+    "type": "REQUEST_SUBMITTED",
+  },
+  Object {
+    "action": "addAccount",
+    "domain": "authentication",
+    "error_message": "address mismatch",
+    "requestId": 3,
+    "type": "REQUEST_ERROR",
+  },
+  Object {
+    "message": "address mismatch",
+    "redirect": false,
+    "type": "SET_ERROR_MESSAGE",
+  },
+]
+`;
+
+exports[`Authentication Actions Log out ERROR: Not logged in 1`] = `
+Array [
+  Object {
+    "message": "Not logged in",
+    "redirect": false,
+    "type": "SET_ERROR_MESSAGE",
+  },
+]
+`;
+
+exports[`Authentication Actions Log out Log out - Automatically switch to next account 1`] = `
+Array [
+  Object {
+    "type": "AUTHENTICATION_UPDATE_WALLET",
+    "wallet": ElvWallet {
+      "signers": Object {
+        "Bob": Wallet {
+          "provider": undefined,
+          "signingKey": SigningKey {
+            "address": "0x1Cb99a5e4CcEAd43e98f61d25932BCA5Bf572484",
+            "keyPair": KeyPair {
+              "compressedPublicKey": "0x03c033d3e8db481d478d4b11e15c08f9f5ef41d3a1e75ba6a62120dd8469568856",
+              "privateKey": "0x2d953561666c11a5bec2b9d5fd1203f21eb0aff02b074daa4897fee6b4726a98",
+              "publicKey": "0x04c033d3e8db481d478d4b11e15c08f9f5ef41d3a1e75ba6a62120dd8469568856d3e3db3304c49971f5a62d86f2a7351cdff5e095d4972208df9703b5ffdff4bf",
+              "publicKeyBytes": Array [
+                3,
+                192,
+                51,
+                211,
+                232,
+                219,
+                72,
+                29,
+                71,
+                141,
+                75,
+                17,
+                225,
+                92,
+                8,
+                249,
+                245,
+                239,
+                65,
+                211,
+                161,
+                231,
+                91,
+                166,
+                166,
+                33,
+                32,
+                221,
+                132,
+                105,
+                86,
+                136,
+                86,
+              ],
+            },
+            "privateKey": "0x2d953561666c11a5bec2b9d5fd1203f21eb0aff02b074daa4897fee6b4726a98",
+            "publicKey": "0x04c033d3e8db481d478d4b11e15c08f9f5ef41d3a1e75ba6a62120dd8469568856d3e3db3304c49971f5a62d86f2a7351cdff5e095d4972208df9703b5ffdff4bf",
+          },
+        },
+      },
+    },
+  },
+  Object {
+    "message": "Successfully removed account",
+    "redirect": false,
+    "type": "SET_NOTIFICATION_MESSAGE",
+  },
+  Object {
+    "accountAddress": "0x71b011b67dc8f5c323a34cd14b952721d5750c93",
+    "type": "AUTHENTICATION_REMOVE_ACCOUNT",
+  },
+  Object {
+    "accountAddress": "0x1cb99a5e4ccead43e98f61d25932bca5bf572484",
+    "type": "AUTHENTICATION_SET_CURRENT_ACCOUNT",
+  },
+  Object {
+    "message": "Successfully logged out",
+    "redirect": false,
+    "type": "SET_NOTIFICATION_MESSAGE",
+  },
+  Object {
+    "type": "AUTHENTICATION_LOG_OUT",
+  },
+]
+`;
+
+exports[`Authentication Actions Log out Log out - No other accounts 1`] = `
+Array [
+  Object {
+    "type": "AUTHENTICATION_UPDATE_WALLET",
+    "wallet": ElvWallet {
+      "signers": Object {},
+    },
+  },
+  Object {
+    "message": "Successfully removed account",
+    "redirect": false,
+    "type": "SET_NOTIFICATION_MESSAGE",
+  },
+  Object {
+    "accountAddress": "0x71b011b67dc8f5c323a34cd14b952721d5750c93",
+    "type": "AUTHENTICATION_REMOVE_ACCOUNT",
+  },
+  Object {
+    "accountAddress": undefined,
+    "type": "AUTHENTICATION_SET_CURRENT_ACCOUNT",
+  },
+  Object {
+    "message": "Successfully logged out",
+    "redirect": false,
+    "type": "SET_NOTIFICATION_MESSAGE",
+  },
+  Object {
+    "type": "AUTHENTICATION_LOG_OUT",
+  },
+]
+`;
+
+exports[`Authentication Actions Remove Account ERROR: Invalid account address 1`] = `
+Array [
+  Object {
+    "message": "Invalid account: 0xe5e609074b7b8b947dcf9cf87805c9192f960a4e",
+    "redirect": false,
+    "type": "SET_ERROR_MESSAGE",
+  },
+]
+`;
+
+exports[`Authentication Actions Remove Account Remove account 1`] = `
+Array [
+  Object {
+    "type": "AUTHENTICATION_UPDATE_WALLET",
+    "wallet": ElvWallet {
+      "signers": Object {
+        "Alice": Wallet {
+          "provider": undefined,
+          "signingKey": SigningKey {
+            "address": "0x71b011B67dc8f5C323A34Cd14b952721D5750C93",
+            "keyPair": KeyPair {
+              "compressedPublicKey": "0x038d8f1181e666787c6133ec6e760ef6e9ab496c7da322801490e165528ac6cd60",
+              "privateKey": "0xbf092a5c94988e2f7a1d00d0db309fc492fe38ddb57fc6d102d777373389c5e6",
+              "publicKey": "0x048d8f1181e666787c6133ec6e760ef6e9ab496c7da322801490e165528ac6cd60646c4c8122806d0c8ebcee6ac73ffaa8c359104e3ab0525621565f9e1870a1df",
+              "publicKeyBytes": Array [
+                3,
+                141,
+                143,
+                17,
+                129,
+                230,
+                102,
+                120,
+                124,
+                97,
+                51,
+                236,
+                110,
+                118,
+                14,
+                246,
+                233,
+                171,
+                73,
+                108,
+                125,
+                163,
+                34,
+                128,
+                20,
+                144,
+                225,
+                101,
+                82,
+                138,
+                198,
+                205,
+                96,
+              ],
+            },
+            "privateKey": "0xbf092a5c94988e2f7a1d00d0db309fc492fe38ddb57fc6d102d777373389c5e6",
+            "publicKey": "0x048d8f1181e666787c6133ec6e760ef6e9ab496c7da322801490e165528ac6cd60646c4c8122806d0c8ebcee6ac73ffaa8c359104e3ab0525621565f9e1870a1df",
+          },
+        },
+      },
+    },
+  },
+  Object {
+    "message": "Successfully removed account",
+    "redirect": false,
+    "type": "SET_NOTIFICATION_MESSAGE",
+  },
+  Object {
+    "accountAddress": "0x1cb99a5e4ccead43e98f61d25932bca5bf572484",
+    "type": "AUTHENTICATION_REMOVE_ACCOUNT",
+  },
+]
+`;
+
+exports[`Authentication Actions Switch account ERROR: Unknown/invalid account address 1`] = `
+Array [
+  Object {
+    "message": "Invalid account: 0xe5e609074b7b8b947dcf9cf87805c9192f960a4e",
+    "redirect": false,
+    "type": "SET_ERROR_MESSAGE",
+  },
+]
+`;
+
+exports[`Authentication Actions Switch account Switch account - Case insensitive 1`] = `
+Array [
+  Object {
+    "accountAddress": "0x1cb99a5e4ccead43e98f61d25932bca5bf572484",
+    "type": "AUTHENTICATION_SET_CURRENT_ACCOUNT",
+  },
+]
+`;
+
+exports[`Authentication Actions Switch account Switch account 1`] = `
+Array [
+  Object {
+    "accountAddress": "0x1cb99a5e4ccead43e98f61d25932bca5bf572484",
+    "type": "AUTHENTICATION_SET_CURRENT_ACCOUNT",
+  },
+]
+`;
