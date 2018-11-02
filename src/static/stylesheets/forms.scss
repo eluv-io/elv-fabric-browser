@@ -1,0 +1,80 @@
+@import "variables/mixins";
+@import "variables/colors";
+
+form {
+  @include no-select;
+
+  display: inline-block;
+
+  fieldset {
+    border-color: $color-white;
+    padding: 30px 50px 20px;
+    width: 450px;
+  }
+
+  .image-preview {
+    max-height: 50px;
+    max-width: 50px;
+  }
+
+  .labelled-input {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+
+    &.labelled-checkbox-input {
+      align-items: center;
+      justify-content: flex-start;
+
+      input {
+        height: 1.5em;
+        margin: 0 0 0 -5px;
+        padding: 0;
+        width: 1.5em;
+      }
+    }
+
+    label {
+      align-items: center;
+      display: flex;
+      margin-right: 10px;
+      width: 150px;
+
+      &.textarea-label {
+        align-items: flex-start;
+      }
+    }
+
+    input {
+      border: 1px solid $color-midgray;
+      font-size: 16px;
+      height: 1.8em;
+      width: 100%;
+
+      &[type="text"] {
+        padding: 0 10px;
+      }
+    }
+
+    textarea {
+      border: 1px solid $color-midgray;
+      height: 10em;
+      width: 100%;
+    }
+
+    select {
+      background: $color-bg-white;
+      border: 1px solid $color-midgray;
+      border-radius: 0;
+      font-size: 16px;
+      height: 2em;
+      padding: 0;
+      width: 100%;
+    }
+  }
+
+  .actions-container {
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+}

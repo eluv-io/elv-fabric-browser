@@ -1,0 +1,40 @@
+$color-black: #000;
+$color-darkergray: #444;
+$color-darkgray: #555;
+$color-midgray: #aaa;
+$color-gray: #ccc;
+$color-lightgray: #ddd;
+$color-lightergray: #eee;
+$color-white: #fff;
+
+$color-palered: #955;
+$color-midred: #a33;
+$color-red: #f33;
+
+$color-nicegreen: #44a061;
+
+
+$color-action-secondary: #ccc;
+
+$color-text-white: #fff;
+$color-text-light: #6c6c6c;
+$color-text-dark: #222;
+$color-text-black: #000;
+
+$color-bg-white: #fff;
+$color-bg-light: #fafafa;
+$color-bg-dark: #f5f5f5;
+$color-bg-black: #000;
+
+$color-bg-modal: rgba(0, 0, 0, 0.3);
+
+$color-lighterblue: #60dfff;
+$color-lightblue: #0fafff;
+$color-mediumblue: #1b73e8;
+$color-darkblue: #003c7e;
+
+$color-shadow-gray: rgba(161, 161, 161, 0.5);
+
+$color-gradient-lightblue: linear-gradient(to right, $color-lightblue, $color-lighterblue);
+$color-gradient-mediumblue: linear-gradient(to right, $color-mediumblue, $color-lightblue);
+$color-gradient-darkblue: linear-gradient(to right, $color-darkblue, $color-mediumblue);

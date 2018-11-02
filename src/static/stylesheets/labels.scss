@@ -1,0 +1,30 @@
+@import "./variables/colors";
+
+.label-box {
+  width: 800px;
+
+  h2 {
+    font-size: 20px;
+    font-weight: 400;
+    margin: 20px 0 15px;
+  }
+
+  h3 {
+    font-size: 18px;
+    margin: 20px 0 15px;
+  }
+
+  .labelled-field {
+    display: flex;
+    margin: 5px 0;
+
+    label {
+      color: $color-text-light;
+      min-width: 150px;
+    }
+  }
+
+  .indented {
+    padding-left: 20px;
+  }
+}

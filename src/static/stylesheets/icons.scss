@@ -1,0 +1,26 @@
+@import "variables/colors";
+
+.icon {
+  color: $color-text-white;
+  display: block;
+  fill: $color-text-white;
+  height: 30px;
+  padding: 10px;
+  width: 30px;
+
+  &.dark {
+    color: $color-darkergray;
+  }
+}
+
+.icon-clickable {
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &:active {
+    opacity: 0.9;
+  }
+}

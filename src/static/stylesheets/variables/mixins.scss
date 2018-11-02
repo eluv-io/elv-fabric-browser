@@ -1,0 +1,28 @@
+@mixin no-select {
+  user-select: none;
+}
+
+@mixin ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin cropped-image($width, $height, $border-radius, $max-width: 200px, $max-height: 200px) {
+  align-items: center;
+  border-radius: $border-radius;
+  display: flex;
+  justify-content: left;
+  max-height: $max-height;
+  overflow: hidden;
+
+  .icon {
+    height: $height;
+    max-height: $max-height;
+    max-width: $max-width;
+    object-fit: cover;
+    object-position: top;
+    padding: 0;
+    width: $width;
+  }
+}
