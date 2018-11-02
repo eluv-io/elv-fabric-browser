@@ -1,11 +1,12 @@
 ## Running the Fabric Browser
 
-##### Note: The fabric browser should be run as a contained application of [ElvCore](https://github.com/qluvio/elv-core-js)
+##### Note: The fabric browser should be run as a contained application of [Eluvio Web Core](https://github.com/eluv-io/elv-web-core)
 
 TL;DR:
 - Run this on localhost:8080 using ```npm run serve```
-- Run ElvCore on localhost:8082 using ```npm run serve```
-- Open ElvCore in the browser at http//localhost:8082
+- Update configuration.json in Elv Web Core to point to fabric/blockchain
+- Run Elv Web Core on localhost:8082 using ```npm run serve```
+- Open Elv Web Core in the browser at http//localhost:8082
 
 
 #### Running with NPM
