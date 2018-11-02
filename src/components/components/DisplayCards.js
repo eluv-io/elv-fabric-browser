@@ -32,10 +32,10 @@ ThreeCard.propTypes = {
 
 export class LibraryCard extends React.Component {
   render() {
-    let previews = this.props.previews;
+    let previews = this.props.previews || [];
 
     return (
-      <div className="display-card2 library-card" title={this.props.title}>
+      <div className="display-card library-card" title={this.props.title}>
         <Link to={this.props.link} className="image-container">
           <div className="cropped-image">
             <ImageIcon className="library-image card-icon" icon={this.props.icon}/>
@@ -69,7 +69,7 @@ LibraryCard.propTypes = {
   libraryId: PropTypes.string.isRequired,
   link: PropTypes.string,
   icon: PropTypes.string,
-  previews: PropTypes.array.isRequired,
+  previews: PropTypes.array,
   name: PropTypes.string.isRequired,
   infoText: PropTypes.string,
   description: PropTypes.string,

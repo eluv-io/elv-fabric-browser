@@ -1,9 +1,9 @@
 import React from "react";
-import { ThreeCard } from "../../components/DisplayCards";
+import {LibraryCard, ThreeCard} from "../../components/DisplayCards";
 import { Link } from "react-router-dom";
 import Path from "path";
+import URI from "urijs";
 import ContentIcon from "../../../static/icons/content.svg";
-import Fabric from "../../../clients/Fabric";
 import RequestPage from "../RequestPage";
 
 class ContentLibrary extends React.Component {
@@ -26,31 +26,32 @@ class ContentLibrary extends React.Component {
 
     let objectElements = [];
 
-    for(const contentObject of contentLibrary.contentObjects) {
+    for(const contentObject of contentLibrary.contentObjects.sort()) {
       let icon = ContentIcon;
-      /*
-      if(contentObject.metadata.image) {
-        icon = Fabric.PartUrl({
-          libraryId: this.state.libraryId,
-          contentHash: contentObject.hash,
-          partHash: contentObject.metadata.image
-        });
+
+      if(contentObject.HasImage()) {
+        icon = contentObject.RepUrl("image");
       }
-      */
 
       objectElements.push(
-        <ThreeCard
+        <LibraryCard
           key={contentObject.objectId}
+          libraryId={contentObject.objectId}
           link={Path.join(this.props.match.url, contentObject.objectId)}
           icon={icon}
           name={contentObject.name}
-          description={"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."}
+          description={contentObject.metadata && contentObject.metadata.description}
           title={JSON.stringify(contentObject, null, 2)}
         />
       );
     }
 
-    return objectElements;
+    return (
+      <div>
+        <h3 className="page-header">{ contentLibrary.name }</h3>
+        { objectElements }
+      </div>
+    );
   }
 
   PageContent() {

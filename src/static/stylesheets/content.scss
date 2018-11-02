@@ -1,4 +1,32 @@
+@import "variables/spacing";
 @import "variables/colors";
+
+.object-media {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  margin: $spacing-m 0;
+
+  .object-image {
+    display: flex;
+    justify-content: center;
+    margin: 10px;
+    width: 100%;
+
+    img {
+      max-height: 300px;
+      max-width: 100%;
+    }
+  }
+
+  .object-video {
+    width: 100%;
+
+    video {
+      width: 100%;
+    }
+  }
+}
 
 .content-video-container {
   background: $color-bg-black;

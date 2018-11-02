@@ -4,6 +4,7 @@ import Path from "path";
 import RequestPage from "../RequestPage";
 import PrettyBytes from "pretty-bytes";
 import { LabelledField } from "../../components/LabelledField";
+import DashVideo from "../DashVideo";
 
 class ContentObject extends React.Component {
   constructor(props) {
@@ -79,7 +80,39 @@ class ContentObject extends React.Component {
     document.body.removeChild(element);
     window.URL.revokeObjectURL(url);
   }
-  
+
+  ObjectMedia(contentObject) {
+    let image;
+    let video;
+
+    if(contentObject.HasImage()) {
+      image = (
+        <div className="object-image">
+          <img src={contentObject.RepUrl("image")} />
+        </div>
+      );
+    }
+
+    if(contentObject.metadata["offering.en"]) {
+      video = (
+        <div className="object-video">
+          <DashVideo videoUrl={contentObject.RepUrl("dash/en.mpd")} />
+        </div>
+      );
+    }
+
+    if(!image && !video) {
+      return null;
+    } else {
+      return (
+        <div className="object-media">
+          {image}
+          {video}
+        </div>
+      );
+    }
+  }
+
   ObjectParts(version) {
     if(!version.parts || version.parts.length === 0) { return null; }
 
@@ -151,6 +184,21 @@ class ContentObject extends React.Component {
     );
   }
 
+  PreviousVersions(contentObject) {
+    if(contentObject.versions.length < 2) { return null; }
+
+    return (
+      <div>
+        <h3>Previous Versions</h3>
+
+        { contentObject.versions.slice(1).map((version, i) => {
+          const versionNumber = (i+1 - contentObject.versions.length) * -1;
+          return this.ObjectVersion(version, versionNumber);
+        })}
+      </div>
+    );
+  }
+
   ObjectInfo(contentObject) {
     return (
       <div className="object-info label-box">
@@ -168,12 +216,7 @@ class ContentObject extends React.Component {
 
         { this.ObjectVersion(contentObject.versions[0], contentObject.versions.length, true) }
 
-        <h3>Previous Versions</h3>
-
-        { contentObject.versions.slice(1).map((version, i) => {
-          const versionNumber = (i+1 - contentObject.versions.length) * -1;
-          return this.ObjectVersion(version, versionNumber);
-        })}
+        { this.PreviousVersions(contentObject) }
       </div>
     );
   }
@@ -201,6 +244,8 @@ class ContentObject extends React.Component {
           { appLink }
         </div>
         <div className="object-display">
+          <h3 className="page-header">{ contentObject.name }</h3>
+          { this.ObjectMedia(contentObject) }
           { this.ObjectInfo(contentObject) }
         </div>
       </div>

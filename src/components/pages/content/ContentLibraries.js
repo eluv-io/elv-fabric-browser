@@ -5,7 +5,7 @@ import Path from "path";
 import { LibraryCard } from "../../components/DisplayCards";
 import RequestPage from "../RequestPage";
 
-import LibraryIcon from "../../../static/images/logo-coin.png";
+import LibraryIcon from "../../../static/icons/content.svg";
 
 class ContentLibraries extends React.Component {
   constructor(props) {
@@ -23,12 +23,14 @@ class ContentLibraries extends React.Component {
     let previews = [];
 
     for(const contentObject of contentLibrary.contentObjects) {
-      const imageUrl = contentObject.Image();
-      if(imageUrl) {
-        previews.push({
-          name: contentObject.name,
-          image: imageUrl
-        });
+      if(contentObject.HasImage()) {
+        const imageUrl = contentObject.RepUrl("image");
+        if (imageUrl) {
+          previews.push({
+            name: contentObject.name,
+            image: imageUrl
+          });
+        }
       }
     }
 
@@ -38,7 +40,7 @@ class ContentLibraries extends React.Component {
   ContentLibraries(path) {
     let libraryElements = [];
 
-    for(const libraryId of Object.keys(this.props.contentLibraries)) {
+    for(const libraryId of Object.keys(this.props.contentLibraries).sort()) {
       let contentLibrary = this.props.contentLibraries[libraryId];
       libraryElements.push(
         <LibraryCard
@@ -65,6 +67,7 @@ class ContentLibraries extends React.Component {
         <div className="actions-container">
           <Link to={Path.join(path, "create")} className="action" >New Library</Link>
         </div>
+        <h3 className="page-header">Content Libraries</h3>
         { this.ContentLibraries(path) }
       </div>
     );
