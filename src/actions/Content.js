@@ -53,8 +53,6 @@ export const ListContentObjects = ({ libraryId }) => {
         let libraryData = (await Fabric.GetContentLibrary({libraryId}));
         let contentObjectsData = await Fabric.ListContentObjects({libraryId});
 
-        console.log(libraryData);
-
         dispatch({
           type: ActionTypes.request.content.completed.list.library,
           libraryId: libraryId,
@@ -118,20 +116,11 @@ export const CreateContentObject = ({libraryId, name, type, metadata}) => {
       domain: "content",
       action: "createContentObject",
       todo: (async () => {
-        let parsedMetadata = metadata;
-        if(typeof metadata === "string" && metadata !== "") {
-          try {
-            parsedMetadata = JSON.parse(metadata);
-          } catch(error) {
-            throw Error("Invalid JSON");
-          }
-        }
-
         await Fabric.CreateAndFinalizeContentObject({
           libraryId,
           name: name,
           type: type,
-          metadata: parsedMetadata
+          metadata: ParseMetadata(metadata)
         });
 
         dispatch(SetNotificationMessage({
@@ -152,19 +141,10 @@ export const UpdateContentObject = ({libraryId, objectId, metadata}) => {
       todo: (async () => {
         let contentDraft = await Fabric.EditContentObject({ libraryId, objectId });
 
-        let parsedMetadata = metadata;
-        if(typeof metadata === "string") {
-          try {
-            parsedMetadata = JSON.parse(metadata);
-          } catch(error) {
-            throw Error("Invalid JSON");
-          }
-        }
-
         await Fabric.ReplaceMetadata({
           libraryId,
           writeToken: contentDraft.write_token,
-          metadata: parsedMetadata
+          metadata: ParseMetadata(metadata)
         });
 
         await Fabric.FinalizeContentObject({
@@ -329,16 +309,30 @@ export const CreateContentLibrary = ({name, description}) => {
       domain: "content",
       action: "createContentLibrary",
       todo: (async () => {
-        let libraryId = await Fabric.CreateContentLibrary({
+        let libraryInfo = await Fabric.CreateContentLibrary({
           libraryName: name,
           libraryDescription: description
         });
 
         dispatch(SetNotificationMessage({
-          message: "Successfully created content library '" + libraryId + "'",
+          message: "Successfully created content library '" + name + "'",
           redirect: true
         }));
       })
     });
   };
+};
+
+const ParseMetadata = (metadata) => {
+  if(typeof metadata === "string") {
+    if(metadata.trim() === "") { return null; }
+
+    try {
+      return JSON.parse(metadata);
+    } catch(error) {
+      throw Error("Invalid JSON");
+    }
+  }
+
+  return metadata;
 };
