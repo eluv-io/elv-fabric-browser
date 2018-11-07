@@ -14,8 +14,7 @@ class ContentObjectForm extends React.Component {
       name: "",
       type: "",
       metadata: "",
-      createForm: this.props.location.pathname.endsWith("create"),
-      contentObject: new ContentObject({})
+      createForm: this.props.location.pathname.endsWith("create")
     };
 
     this.FormContent = this.FormContent.bind(this);
