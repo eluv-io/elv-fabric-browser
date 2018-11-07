@@ -6,12 +6,12 @@ class ContentObject {
   constructor({ libraryId, contentObjectData }) {
     this.rawData = contentObjectData;
 
-    this.url = this.rawData.url;
-
     if(!contentObjectData) {
       this.metadata = {};
       return;
     }
+
+    this.url = contentObjectData.url;
 
     this.libraryId = libraryId;
     this.objectId = contentObjectData.id;
