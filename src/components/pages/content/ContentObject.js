@@ -241,6 +241,7 @@ class ContentObject extends React.Component {
           <Link to={Path.dirname(this.props.match.url)} className="action secondary" >Back</Link>
           <Link to={Path.join(this.props.match.url, "edit")} className="action" >Edit Metadata</Link>
           <Link to={Path.join(this.props.match.url, "upload")} className="action" >Upload Parts</Link>
+          <Link to={Path.join(this.props.match.url, "deploy")} className="action" >Set Custom Contract</Link>
           { appLink }
         </div>
         <div className="object-display">

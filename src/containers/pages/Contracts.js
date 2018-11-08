@@ -1,9 +1,17 @@
 import { connect } from "react-redux";
 import Thunk from "../../utils/Thunk";
-import { CompileContracts, DeployContract } from "../../actions/Contracts";
+import {
+  ListContracts,
+  CompileContracts,
+  DeployContentContract,
+  SaveContract,
+  RemoveContract
+} from "../../actions/Contracts";
 import CompileContractForm from "../../components/pages/contracts/CompileContractForm";
 import DeployContractForm from "../../components/pages/contracts/DeployContractForm";
 import { SetErrorMessage } from "../../actions/Notifications";
+import ContractForm from "../../components/pages/contracts/ContractForm";
+import Contracts from "../../components/pages/contracts/Contracts";
 
 const mapStateToProps = (state) => ({
   requests: state.requests.contracts,
@@ -14,18 +22,31 @@ const mapDispatchToProps = dispatch =>
   Thunk(
     dispatch,
     [
+      ListContracts,
+      RemoveContract,
       CompileContracts,
-      DeployContract,
+      SaveContract,
+      DeployContentContract,
       SetErrorMessage
     ]
   );
+
+export const ContractsContainer = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Contracts);
 
 export const CompileContractFormContainer = connect(
   mapStateToProps,
   mapDispatchToProps
 )(CompileContractForm);
 
-export const DeployContractFormContainer = connect(
+export const ContractFormContainer = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(ContractForm);
+
+export const DeployContentContractFormContainer = connect(
   mapStateToProps,
   mapDispatchToProps
 )(DeployContractForm);

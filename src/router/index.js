@@ -20,7 +20,9 @@ import {
 
 import {
   CompileContractFormContainer,
-  DeployContractFormContainer
+  ContractFormContainer,
+  ContractsContainer,
+  DeployContentContractFormContainer
 } from "../containers/pages/Contracts";
 import Services from "../containers/pages/Services";
 
@@ -45,11 +47,13 @@ function Routes(){
         <Route exact path="/content/:libraryId/:objectId/edit" component={ContentObjectFormContainer} />
         <Route exact path="/content/:libraryId/:objectId/upload" component={ContentObjectUploadFormContainer} />
         <Route exact path="/content/:libraryId/:objectId/app" component={ContentObjectAppContainer} />
+        <Route exact path="/content/:libraryId/:objectId/deploy" component={DeployContentContractFormContainer} />
 
         <Route exact path="/content-types" component={ContentLibrariesContainer} />
 
-        <Route exact path="/contracts" component={CompileContractFormContainer} />
-        <Route exact path="/contracts/deploy" component={DeployContractFormContainer} />
+        <Route exact path="/contracts" component={ContractsContainer} />
+        <Route exact path="/contracts/compile" component={CompileContractFormContainer} />
+        <Route exact path="/contracts/save" component={ContractFormContainer} />
         <Route path="/services" component={Services} />
       </Switch>
     </div>
