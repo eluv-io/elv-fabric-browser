@@ -2,6 +2,12 @@ import ActionTypes from "../actions/ActionTypes";
 
 const ContractsReducer = (state = {}, action) => {
   switch (action.type) {
+    case ActionTypes.request.contracts.completed.list:
+      return {
+        ...state,
+        contracts: action.contracts
+      };
+
     case ActionTypes.request.contracts.completed.compile:
       return {
         ...state,
@@ -25,7 +31,8 @@ const ContractsReducer = (state = {}, action) => {
 
     default:
       return {
-        ...state
+        ...state,
+        contracts: state.contracts || {}
       };
   }
 };

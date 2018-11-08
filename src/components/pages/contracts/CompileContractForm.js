@@ -56,7 +56,7 @@ class CompileContractForm extends React.Component {
         requestId={this.state.compileRequestId}
         legend={"Compile contracts"}
         formContent={this.ContractFileForm()}
-        redirectPath="/contracts/deploy"
+        redirectPath="/contracts/save"
         cancelPath="/contracts"
         OnSubmit={this.HandleSubmit}
       />
