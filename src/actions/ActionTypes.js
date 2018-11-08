@@ -38,6 +38,7 @@ const ActionTypes = {
     },
     contracts: {
       completed: {
+        list: "COMPLETED_LIST_CONTRACTS",
         compile: "COMPLETED_CONTRACT_COMPILATION",
         deploy: "COMPLETED_CONTRACT_DEPLOYMENT"
       },

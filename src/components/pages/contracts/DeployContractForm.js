@@ -1,37 +1,55 @@
 import React from "react";
-import Redirect from "react-router/es/Redirect";
-import "browser-solc";
+import Path from "path";
 import RequestForm from "../../forms/RequestForm";
+import RequestPage from "../RequestPage";
 
 class DeployContractForm extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      deployRequestId: undefined,
-      files: []
+      libraryId: this.props.match.params.libraryId,
+      objectId: this.props.match.params.objectId,
+      selectedContract: "",
+      contractRequestId: undefined,
+      deployRequestId: undefined
     };
 
+    this.HandleContractsLoaded = this.HandleContractsLoaded.bind(this);
     this.HandleContractChange = this.HandleContractChange.bind(this);
     this.HandleConstructorInputChange = this.HandleConstructorInputChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
   }
 
   componentDidMount() {
-    if(this.props.contracts.contractData) {
-      const firstContract = Object.keys(this.props.contracts.contractData)[0];
-      this.HandleContractChange({target: {value: firstContract}});
-    }
+    // Load available contracts
+    this.setState({
+      contractRequestId: this.props.ListContracts()
+    });
   }
 
+  // Initialize selected contract to be the first contract in the list
+  HandleContractsLoaded() {
+    const firstContract = Object.keys(this.props.contracts.contracts)[0];
+
+    this.setState({
+      contracts: this.props.contracts.contracts,
+      selectedContract: firstContract
+    });
+
+    this.HandleContractChange({target: { value: firstContract}})
+  }
+
+  // When selected contract is changed, find the constructor description in the ABI
+  // and reset the constructor input state
   HandleContractChange(event) {
-    if(!this.props.contracts.contractData) { return; }
+    if(!this.state.contracts) { return null; }
 
     const contractName = event.target.value;
-    const contract = this.props.contracts.contractData[contractName];
+    const contractAbi = this.state.contracts[contractName].abi;
 
-    const constructor = contract.interface.find(func => {
-      return func.type === "constructor";
+    const constructor = contractAbi.find((method) => {
+      return method.type === "constructor";
     });
 
     // Ensure state is initialized so react doesn't complain about uncontrolled inputs
@@ -43,10 +61,9 @@ class DeployContractForm extends React.Component {
     }
 
     this.setState({
-      selectedContract: contractName,
-      contract,
-      constructor,
-      constructorInputs
+      selectedContract: event.target.value,
+      constructorInputs,
+      constructor
     });
   }
 
@@ -59,6 +76,7 @@ class DeployContractForm extends React.Component {
     });
   }
 
+  // User input for any constructor arguments
   ConstructorInput() {
     if(!this.state.constructor || !this.state.constructor.inputs) { return []; }
 
@@ -68,25 +86,23 @@ class DeployContractForm extends React.Component {
   }
 
   HandleSubmit() {
-    this.props.DeployContract({
-      abi: this.state.contract.interface,
-      bytecode: this.state.contract.bytecode,
+    const contract = this.state.contracts[this.state.selectedContract];
+    const deployRequestId = this.props.DeployContentContract({
+      libraryId: this.state.libraryId,
+      objectId: this.state.objectId,
+      contractName: this.state.selectedContract,
+      contractDescription: contract.description,
+      abi: contract.abi,
+      bytecode: contract.bytecode,
       inputs: this.ConstructorInput()
     });
-  }
 
-  AvailableContracts() {
-    const options = Object.keys(this.props.contracts.contractData).map(contract => {
-      return <option key={contract} value={contract}>{contract}</option>;
+    this.setState({
+      deployRequestId
     });
-
-    return (
-      <select name="selectedContract" onChange={this.HandleContractChange}>
-        { options }
-      </select>
-    );
   }
 
+  // Automatically generated fields for constructor inputs based on ABI description
   ConstructorForm() {
     if(!this.state.constructor || !this.state.constructor.inputs) { return null; }
 
@@ -103,6 +119,18 @@ class DeployContractForm extends React.Component {
     });
   }
 
+  AvailableContracts() {
+    const options = Object.keys(this.state.contracts).map(contractName => {
+      return <option key={contractName} value={contractName}>{contractName}</option>;
+    });
+
+    return (
+      <select name="selectedContract" onChange={this.HandleContractChange}>
+        { options }
+      </select>
+    );
+  }
+
   ContractFileForm() {
     return (
       <div className="contracts-form-data">
@@ -110,33 +138,41 @@ class DeployContractForm extends React.Component {
           <label className="label" htmlFor="selectedContract">Contract</label>
           { this.AvailableContracts() }
         </div>
-        {this.ConstructorForm()}
+        <div className="labelled-input">
+          <label className="label text-label" htmlFor="selectedContractDescription">Description</label>
+          <div className="form-text">{this.state.contracts[this.state.selectedContract].description}</div>
+        </div>
+        { this.ConstructorForm() }
       </div>
     );
   }
 
-  render() {
-    // Ensure contract data is set
-    if(!this.props.contracts.contractData) {
-      this.props.SetErrorMessage({
-        message: "No contract data",
-        redirect: true
-      });
-
-      return <Redirect to="/contracts" />;
-    }
+  PageContent() {
+    if(!this.state.contracts) { return null; }
 
     return (
       <RequestForm
         requests={this.props.requests}
-        requestId={this.state.compileRequestId}
-        legend={"Deploy new contracts"}
+        requestId={this.state.deployRequestId}
+        legend={"Set custom contract"}
         formContent={this.ContractFileForm()}
-        cancelPath="/contracts"
+        redirectPath={Path.dirname(this.props.match.url)}
+        cancelPath={Path.dirname(this.props.match.url)}
         OnSubmit={this.HandleSubmit}
-        OnComplete={() => { this.setState({compileRequestId: undefined}); }}
       />
     );
+  }
+
+  render() {
+    // Load available contracts
+    return (
+      <RequestPage
+        pageContent={this.PageContent()}
+        requestId={this.state.contractRequestId}
+        requests={this.props.requests}
+        OnRequestComplete={this.HandleContractsLoaded}
+      />
+    )
   }
 }
 

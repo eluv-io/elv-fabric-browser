@@ -48,6 +48,8 @@ const Request = async (
 
     dispatch(RequestCompleted(requestId, domain, action));
   } catch(error) {
+    console.error(error);
+
     let errorMessage = error;
     if(typeof error !== "string") {
       // Error object -- actual message may be present in one of several different keys

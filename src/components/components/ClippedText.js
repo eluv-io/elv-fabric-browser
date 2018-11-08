@@ -21,14 +21,14 @@ class ClippedText extends React.Component {
   }
 
   render() {
-    let displayClass = this.state.showMore ? "clipped-text show " : "clipped-text hide ";
-    let coverClass = this.state.showMore ? "cover show-less" : "cover show-more";
+    const displayClass = this.state.showMore ? "clipped-text show " : "clipped-text hide ";
+    const coverClass = this.state.showMore ? "cover show-less" : "cover show-more";
+    const showText = this.state.showMore ? "Show less" : "Show more";
 
     return (
-      <div className={displayClass + this.props.className}>
+      <div className={displayClass + this.props.className} title={showText}>
         {this.props.text}
-        <div className={coverClass} onClick={this.ToggleVisibility}>
-        </div>
+        <div className={coverClass} onClick={this.ToggleVisibility}></div>
       </div>
     );
   }

@@ -6,7 +6,7 @@ const client = new FrameClient({
   timeout: 10
 });
 
-let Fabric = {
+const Fabric = {
   /* Libraries */
 
   ListContentLibraries: () => {
@@ -18,6 +18,11 @@ let Fabric = {
     contentLibraryData.url = await Fabric.FabricUrl({libraryId});
 
     return contentLibraryData;
+  },
+
+  GetContentLibraryContractAddress: async ({libraryId}) => {
+    const libraryInfo = await Fabric.GetContentLibrary({libraryId});
+    return libraryInfo.meta["eluv.contract_address"];
   },
 
   CreateContentLibrary: async ({libraryName, libraryDescription}) => {
@@ -78,14 +83,14 @@ let Fabric = {
 
   /* Object creation / modification */
 
-  CreateContentObject: ({
+  CreateContentObject: async ({
     libraryId,
     name,
     type,
     metadata = {}
   }) => {
     let requestParams = {
-      type: "", // TODO: Why doesn't it accept a type?
+      type: "",
       meta: {
         "eluv.name": name,
         "eluv.type": type,
@@ -95,6 +100,7 @@ let Fabric = {
 
     return client.CreateContentObject({
       libraryId: libraryId,
+      libraryContractAddress: await Fabric.GetContentLibraryContractAddress({libraryId}),
       options: requestParams
     });
   },
@@ -135,6 +141,18 @@ let Fabric = {
       writeToken,
       metadataSubtree,
       metadata
+    });
+  },
+
+  DeleteMetadata: async ({
+    libraryId,
+    writeToken,
+    metadataSubtree
+  }) => {
+    client.DeleteMetadata({
+      libraryId,
+      writeToken,
+      metadataSubtree
     });
   },
 
@@ -224,6 +242,13 @@ let Fabric = {
     return client.CallContractMethod({contractAddress, abi, methodName, methodArgs});
   },
 
+  SetCustomContentContract: ({contentContractAddress, customContractAddress}) => {
+    return client.SetCustomContentContract({
+      contentContractAddress,
+      customContractAddress
+    });
+  },
+
   /* Naming */
 
   async GetByName({name}) {
@@ -273,7 +298,104 @@ let Fabric = {
 
   Proofs: ({libraryId, contentHash, partHash}) => {
     return client.Proofs({libraryId, contentHash, partHash});
+  },
+
+  FabricBrowser: {
+    async Info() {
+      try {
+        const info = await client.GetByName({
+          name: "elv-fabric-browser"
+        });
+
+        return JSON.parse(info.target);
+      } catch(error) {
+        if(error.status === 404) {
+          throw new Error("Please run the seed script to initialize the fabric browser");
+        } else {
+          throw error;
+        }
+      }
+    },
+
+    async Contracts() {
+      const info = await Fabric.FabricBrowser.Info();
+
+      return (await Fabric.GetContentObjectMetadata({
+        libraryId: info.libraryId,
+        contentHash: info.contracts
+      })).contracts;
+    },
+
+    async AddContract({name, description, abi, bytecode}) {
+      const info = await Fabric.FabricBrowser.Info();
+
+      const editResponse = await Fabric.EditContentObject({
+        libraryId: info.libraryId,
+        objectId: info.contracts
+      });
+
+      await Fabric.MergeMetadata({
+        libraryId: info.libraryId,
+        writeToken: editResponse.write_token,
+        metadataSubtree: "contracts",
+        metadata: {
+          [name]: {
+            description,
+            abi,
+            bytecode
+          }
+        }
+      });
+
+      await Fabric.FinalizeContentObject({
+        libraryId: info.libraryId,
+        writeToken: editResponse.write_token
+      });
+    },
+
+    async RemoveContract({name}) {
+      const info = await Fabric.FabricBrowser.Info();
+
+      const editResponse = await Fabric.EditContentObject({
+        libraryId: info.libraryId,
+        objectId: info.contracts
+      });
+
+      // TODO: Delete metadata currently doesn't work
+
+      /*
+      await Fabric.DeleteMetadata({
+        libraryId: info.libraryId,
+        writeToken: editResponse.write_token,
+        metadataSubtree: Path.join("contracts", name),
+      });
+      */
+
+      // Temporary metadata deletion
+
+      const metadata = await Fabric.GetContentObjectMetadata({
+        libraryId: info.libraryId,
+        contentHash: editResponse.write_token
+      });
+
+      delete metadata.contracts[name];
+
+      await Fabric.ReplaceMetadata({
+        libraryId: info.libraryId,
+        writeToken: editResponse.write_token,
+        metadata
+      });
+
+      // End temporary metadata deletion
+
+      await Fabric.FinalizeContentObject({
+        libraryId: info.libraryId,
+        writeToken: editResponse.write_token
+      });
+    }
   }
 };
+
+
 
 export default Fabric;

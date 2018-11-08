@@ -6,6 +6,42 @@ import { WrapRequest } from "./Requests";
 // TODO: Get this thing to work like a normal module
 import "browser-solc";
 
+export const ListContracts = () => {
+  return (dispatch) => {
+    return WrapRequest({
+      dispatch: dispatch,
+      domain: "contracts",
+      action: "listContracts",
+      todo: (async () => {
+        dispatch({
+          type: ActionTypes.request.contracts.completed.list,
+          contracts: await Fabric.FabricBrowser.Contracts()
+        });
+      })
+    });
+  };
+};
+
+export const RemoveContract = ({name}) => {
+  return (dispatch) => {
+    return WrapRequest({
+      dispatch: dispatch,
+      domain: "contracts",
+      action: "removeContract",
+      todo: (async () => {
+        await Fabric.FabricBrowser.RemoveContract({name});
+
+        dispatch(SetNotificationMessage({
+          message: "Contract successfully deleted"
+        }));
+
+        // Reload contracts
+        dispatch(ListContracts());
+      })
+    });
+  };
+};
+
 export const CompileContracts = (contractFiles) => {
   return (dispatch) => {
     return WrapRequest({
@@ -64,14 +100,54 @@ export const CompileContracts = (contractFiles) => {
   };
 };
 
-
-export const DeployContract = ({abi, bytecode, inputs}) => {
+export const SaveContract = ({name, description, abi, bytecode}) => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
       domain: "contracts",
-      action: "compileContracts",
+      action: "saveContract",
       todo: (async () => {
+        await Fabric.FabricBrowser.AddContract({
+          name,
+          description,
+          abi,
+          bytecode
+        });
+
+        dispatch(SetNotificationMessage({
+          message: "Contract successfully saved",
+          redirect: true
+        }));
+      })
+    });
+  };
+};
+
+export const DeployContentContract = ({
+  libraryId,
+  objectId,
+  contractName,
+  contractDescription,
+  abi,
+  bytecode,
+  inputs
+}) => {
+  return (dispatch) => {
+    return WrapRequest({
+      dispatch: dispatch,
+      domain: "contracts",
+      action: "deployContentContract",
+      todo: (async () => {
+        const metadata = await Fabric.GetContentObjectMetadata({
+          libraryId,
+          contentHash: objectId
+        });
+        const contentContractAddress = metadata.caddr;
+
+        if(!contentContractAddress) {
+          throw Error("Content object does not have a contract set");
+        }
+
         let constructorArgs = [];
         if(inputs.length > 0) {
           constructorArgs = await Fabric.FormatContractArguments({
@@ -85,6 +161,34 @@ export const DeployContract = ({abi, bytecode, inputs}) => {
           abi,
           bytecode,
           constructorArgs
+        });
+
+        await Fabric.SetCustomContentContract({
+          contentContractAddress,
+          customContractAddress: contractInfo.address
+        });
+
+        // Custom contract successfully deployed and set - update metadata
+        const editResponse = await Fabric.EditContentObject({
+          libraryId,
+          objectId
+        });
+
+        await Fabric.MergeMetadata({
+          libraryId,
+          writeToken: editResponse.write_token,
+          metadata: {
+            customContract: {
+              name: contractName,
+              description: contractDescription,
+              address: contractInfo.address
+            }
+          }
+        });
+
+        await Fabric.FinalizeContentObject({
+          libraryId,
+          writeToken: editResponse.write_token
         });
 
         dispatch({
