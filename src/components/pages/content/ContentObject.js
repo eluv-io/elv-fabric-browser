@@ -16,6 +16,8 @@ class ContentObject extends React.Component {
       visibleVersions: {},
       appRef: React.createRef()
     };
+
+    this.SetContentObject = this.SetContentObject.bind(this);
   }
 
   componentDidMount() {
@@ -27,6 +29,16 @@ class ContentObject extends React.Component {
     this.setState({
       requestId: requestId
     });
+  }
+
+  SetContentObject() {
+    const contentObject = this.props.contentObjects[this.state.objectId];
+
+    if(contentObject) {
+      this.setState({
+        contentObject
+      })
+    }
   }
 
   ToggleVersion(hash) {
@@ -208,6 +220,8 @@ class ContentObject extends React.Component {
         <LabelledField label={"Object ID"} value={contentObject.objectId} />
         <LabelledField label={"Name"} value={contentObject.name} />
         <LabelledField label={"Type"} value={contentObject.type} />
+        <LabelledField label={"Description"} value={contentObject.description} />
+        <LabelledField label={"Contract Address"} value={contentObject.contractAddress} />
         <LabelledField label={"Versions"} value={contentObject.versions.length} />
         <LabelledField label={"Parts"} value={contentObject.parts.length} />
         <LabelledField label={"Total size"} value={contentObject.TotalSize()} />
@@ -222,12 +236,10 @@ class ContentObject extends React.Component {
   }
 
   ContentObject() {
-    let contentObject = this.props.contentObjects[this.state.objectId];
-
-    if(!contentObject) { return null; }
+    if(!this.state.contentObject) { return null; }
 
     let appLink;
-    if(contentObject.metadata && contentObject.metadata.app) {
+    if(this.state.contentObject.metadata && this.state.contentObject.metadata.app) {
       appLink = (
         <Link to={Path.join(this.props.match.url, "app")} className="action">
           View App
@@ -239,15 +251,15 @@ class ContentObject extends React.Component {
       <div className="page-container content-page-container">
         <div className="actions-container">
           <Link to={Path.dirname(this.props.match.url)} className="action secondary" >Back</Link>
-          <Link to={Path.join(this.props.match.url, "edit")} className="action" >Edit Metadata</Link>
-          <Link to={Path.join(this.props.match.url, "upload")} className="action" >Upload Parts</Link>
+          <Link to={Path.join(this.props.match.url, "edit")} className="action" >Edit Content Object</Link>
           <Link to={Path.join(this.props.match.url, "deploy")} className="action" >Set Custom Contract</Link>
+          <Link to={Path.join(this.props.match.url, "upload")} className="action" >Upload Parts</Link>
           { appLink }
         </div>
         <div className="object-display">
-          <h3 className="page-header">{ contentObject.name }</h3>
-          { this.ObjectMedia(contentObject) }
-          { this.ObjectInfo(contentObject) }
+          <h3 className="page-header">{ this.state.contentObject.name }</h3>
+          { this.ObjectMedia(this.state.contentObject) }
+          { this.ObjectInfo(this.state.contentObject) }
         </div>
       </div>
     );
@@ -259,6 +271,7 @@ class ContentObject extends React.Component {
         pageContent={this.ContentObject()}
         requestId={this.state.requestId}
         requests={this.props.requests}
+        OnRequestComplete={this.SetContentObject}
       />
     );
   }

@@ -29,6 +29,10 @@ const Fabric = {
     return await client.CreateContentLibrary({name, description, publicMetadata, privateMetadata});
   },
 
+  ReplacePublicLibraryMetadata: async ({libraryId, metadata}) => {
+    return await client.ReplacePublicLibraryMetadata({libraryId, metadata});
+  },
+
   /* Objects */
 
   ListContentObjects: async ({libraryId}) => {
@@ -85,17 +89,11 @@ const Fabric = {
 
   CreateContentObject: async ({
     libraryId,
-    name,
-    type,
     metadata = {}
   }) => {
     let requestParams = {
       type: "",
-      meta: {
-        "eluv.name": name,
-        "eluv.type": type,
-        ...metadata
-      }
+      meta: metadata
     };
 
     return client.CreateContentObject({
@@ -170,14 +168,10 @@ const Fabric = {
   // -- takes same arguments as CreateContentObject
   CreateAndFinalizeContentObject: async ({
     libraryId,
-    name,
-    type,
-    metadata
+    metadata={}
   }) => {
     let createResponse = await Fabric.CreateContentObject({
       libraryId,
-      name,
-      type,
       metadata
     });
 
