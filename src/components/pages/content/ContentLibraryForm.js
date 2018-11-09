@@ -1,5 +1,6 @@
 import React from "react";
 import RequestForm from "../../forms/RequestForm";
+import { JsonTextArea } from "../../../utils/Input";
 
 class ContentLibraryForm extends React.Component {
   constructor(props) {
@@ -7,7 +8,9 @@ class ContentLibraryForm extends React.Component {
 
     this.state = {
       name: "",
-      description: ""
+      description: "",
+      publicMetadata: "",
+      privateMetadata: ""
     };
 
     this.FormContent = this.FormContent.bind(this);
@@ -21,11 +24,12 @@ class ContentLibraryForm extends React.Component {
     });
   }
 
-  HandleSubmit({signer}) {
+  HandleSubmit() {
     let requestId = this.props.CreateContentLibrary({
       name: this.state.name,
       description: this.state.description,
-      signer
+      publicMetadata: this.state.publicMetadata,
+      privateMetadata: this.state.privateMetadata
     });
 
     this.setState({ formSubmitRequestId: requestId });
@@ -41,6 +45,24 @@ class ContentLibraryForm extends React.Component {
         <div className="labelled-input">
           <label className="textarea-label" htmlFor="description">Description</label>
           <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
+        </div>
+        <div className="labelled-input">
+          <label className="textarea-label" htmlFor="publicMetadata">Public Metadata</label>
+          <JsonTextArea
+            name="publicMetadata"
+            value={this.state.publicMetadata}
+            onChange={this.HandleInputChange}
+            UpdateValue={formattedMetadata => this.setState({publicMetadata: formattedMetadata})}
+          />
+        </div>
+        <div className="labelled-input">
+          <label className="textarea-label" htmlFor="privateMetadata">Private Metadata</label>
+          <JsonTextArea
+            name="privateMetadata"
+            value={this.state.privateMetadata}
+            onChange={this.HandleInputChange}
+            UpdateValue={formattedMetadata => this.setState({privateMetadata: formattedMetadata})}
+          />
         </div>
       </div>
     );
