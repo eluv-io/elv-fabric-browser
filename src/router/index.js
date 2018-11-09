@@ -42,6 +42,7 @@ function Routes(){
         <Route exact path="/content" component={ContentLibrariesContainer} />
         <Route exact path="/content/create" component={ContentLibraryFormContainer} />
         <Route exact path="/content/:libraryId" component={ContentObjectsContainer} />
+        <Route exact path="/content/:libraryId/edit" component={ContentLibraryFormContainer} />
         <Route exact path="/content/:libraryId/create" component={ContentObjectFormContainer} />
         <Route exact path="/content/:libraryId/:objectId" component={ContentObjectContainer} />
         <Route exact path="/content/:libraryId/:objectId/edit" component={ContentObjectFormContainer} />
