@@ -35,8 +35,8 @@ const SeedLibrary = async (fabricBrowserInfo, signer) => {
       };
     } else {
       const libraryInfo = await client.CreateContentLibrary({
-        libraryName: "Eluvio Content Fabric Browser",
-        libraryDescription: "Information used by Eluvio Content Fabric Browser",
+        name: "Eluvio Content Fabric Browser",
+        description: "Information used by Eluvio Content Fabric Browser",
         signer
       });
 

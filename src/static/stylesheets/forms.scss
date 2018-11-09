@@ -1,5 +1,6 @@
 @import "variables/mixins";
 @import "variables/colors";
+@import "variables/spacing";
 
 form {
   @include no-select;
@@ -50,6 +51,7 @@ form {
       border: 1px solid $color-midgray;
       font-size: 16px;
       height: 1.8em;
+      padding: 0 $spacing-xxs;
       width: 100%;
 
       &[type="text"] {
@@ -59,7 +61,10 @@ form {
 
     textarea {
       border: 1px solid $color-midgray;
+      font-family: Lato, sans-serif;
+      font-size: 14px;
       height: 10em;
+      padding: 0 $spacing-xxs;
       width: 100%;
     }
 

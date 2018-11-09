@@ -44,6 +44,29 @@ export const ListContentLibraries = () => {
   };
 };
 
+export const GetContentLibrary = ({libraryId}) => {
+  return (dispatch) => {
+    return WrapRequest({
+      dispatch: dispatch,
+      domain: "content",
+      action: "getContentLibrary",
+      todo: (async () => {
+        const libraryData = await Fabric.GetContentLibrary({libraryId});
+
+        dispatch({
+          type: ActionTypes.request.content.completed.list.library,
+          libraryId: libraryId,
+          contentLibrary: new ContentLibrary({
+            libraryId,
+            libraryMetadata: libraryData.meta,
+            url: libraryData.url
+          })
+        });
+      })
+    });
+  };
+};
+
 export const CreateContentLibrary = ({name, description, publicMetadata, privateMetadata}) => {
   return (dispatch) => {
     return WrapRequest({
@@ -60,6 +83,36 @@ export const CreateContentLibrary = ({name, description, publicMetadata, private
 
         dispatch(SetNotificationMessage({
           message: "Successfully created content library '" + name + "'",
+          redirect: true
+        }));
+      })
+    });
+  };
+};
+
+export const UpdateContentLibrary = ({libraryId, name, description, contractAddress, publicMetadata}) => {
+  return (dispatch) => {
+    return WrapRequest({
+      dispatch: dispatch,
+      domain: "content",
+      action: "createContentLibrary",
+      todo: (async () => {
+        const contentLibrary = new ContentLibrary({
+          libraryId,
+          libraryMetadata: ParseInputJson(publicMetadata)
+        });
+
+        contentLibrary.name = name;
+        contentLibrary.description = description;
+        contentLibrary.contractAddress = contractAddress;
+
+        await Fabric.ReplacePublicLibraryMetadata({
+          libraryId,
+          metadata: contentLibrary.FullMetadata()
+        });
+
+        dispatch(SetNotificationMessage({
+          message: "Successfully updated content library '" + name + "'",
           redirect: true
         }));
       })
@@ -133,18 +186,25 @@ export const GetContentObjectMetadata = ({ libraryId, objectId }) => {
   };
 };
 
-export const CreateContentObject = ({libraryId, name, type, metadata}) => {
+export const CreateContentObject = ({libraryId, name, description, type, metadata}) => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
       domain: "content",
       action: "createContentObject",
       todo: (async () => {
+        const contentObject = new ContentObject({
+          libraryId,
+          contentObjectData: {meta: ParseInputJson(metadata)}
+        });
+
+        contentObject.name = name;
+        contentObject.description = description;
+        contentObject.type = type;
+
         await Fabric.CreateAndFinalizeContentObject({
           libraryId,
-          name: name,
-          type: type,
-          metadata: ParseInputJson(metadata)
+          metadata: contentObject.FullMetadata()
         });
 
         dispatch(SetNotificationMessage({
@@ -156,19 +216,29 @@ export const CreateContentObject = ({libraryId, name, type, metadata}) => {
   };
 };
 
-export const UpdateContentObject = ({libraryId, objectId, metadata}) => {
+export const UpdateContentObject = ({libraryId, objectId, name, description, type, contractAddress, metadata}) => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
       domain: "content",
       action: "updateContentObject",
       todo: (async () => {
+        const contentObject = new ContentObject({
+          libraryId,
+          contentObjectData: {meta: ParseInputJson(metadata)}
+        });
+
+        contentObject.name = name;
+        contentObject.description = description;
+        contentObject.type = type;
+        contentObject.contractAddress = contractAddress;
+
         let contentDraft = await Fabric.EditContentObject({ libraryId, objectId });
 
         await Fabric.ReplaceMetadata({
           libraryId,
           writeToken: contentDraft.write_token,
-          metadata: ParseInputJson(metadata)
+          metadata: ParseInputJson(contentObject.FullMetadata())
         });
 
         await Fabric.FinalizeContentObject({

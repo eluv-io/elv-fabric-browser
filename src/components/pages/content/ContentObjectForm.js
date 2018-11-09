@@ -12,6 +12,7 @@ class ContentObjectForm extends React.Component {
       libraryId: this.props.match.params.libraryId,
       objectId: this.props.match.params.objectId,
       name: "",
+      description: "",
       type: "",
       metadata: "",
       createForm: this.props.location.pathname.endsWith("create")
@@ -43,6 +44,10 @@ class ContentObjectForm extends React.Component {
 
     if(contentObject && contentObject.metadata) {
       this.setState({
+        name: contentObject.name,
+        type: contentObject.type,
+        description: contentObject.description,
+        contractAddress: contentObject.contractAddress,
         metadata: JSON.stringify(contentObject.metadata, null, 2),
         contentObject
       });
@@ -55,28 +60,40 @@ class ContentObjectForm extends React.Component {
     });
   }
 
-  HandleSubmit({signer}) {
-    const submitFunction = this.state.createForm ? this.props.CreateContentObject : this.props.UpdateContentObject;
+  HandleSubmit() {
+    let requestId;
 
-    let requestId = submitFunction({
-      libraryId: this.state.libraryId,
-      objectId: this.state.objectId,
-      name: this.state.name,
-      type: this.state.type,
-      metadata: this.state.metadata,
-      signer
-    });
+    if(this.state.createForm) {
+      requestId = this.props.CreateContentObject({
+        libraryId: this.state.libraryId,
+        objectId: this.state.objectId,
+        name: this.state.name,
+        type: this.state.type,
+        description: this.state.description,
+        metadata: this.state.metadata
+      })
+    } else {
+      requestId = this.props.UpdateContentObject({
+        libraryId: this.state.libraryId,
+        objectId: this.state.objectId,
+        name: this.state.name,
+        type: this.state.type,
+        description: this.state.description,
+        contractAddress: this.state.contractAddress,
+        metadata: this.state.metadata
+      })
+    }
 
     this.setState({ formSubmitRequestId: requestId });
   }
 
-  CreateField({label, name, value}) {
+  TypeField() {
     if(!this.state.createForm) { return null; }
 
     return (
       <div className="labelled-input">
-        <label className="label" htmlFor={name}>{label}</label>
-        <input name={name} value={value} onChange={this.HandleInputChange} />
+        <label className="label" htmlFor="type">Content Type</label>
+        <input name="type" value={this.state.type} onChange={this.HandleInputChange} />
       </div>
     );
   }
@@ -84,8 +101,15 @@ class ContentObjectForm extends React.Component {
   FormContent() {
     return (
       <div className="form-content">
-        { this.CreateField({label: "Name", name: "name", value: this.state.name}) }
-        { this.CreateField({label: "Content Type", name: "type", value: this.state.type}) }
+        <div className="labelled-input">
+          <label className="label" htmlFor="name">Name</label>
+          <input name="name" value={this.state.name} onChange={this.HandleInputChange} />
+        </div>
+        { this.TypeField() }
+        <div className="labelled-input">
+          <label className="textarea-label" htmlFor="description">Description</label>
+          <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
+        </div>
         <div className="labelled-input">
           <label className="textarea-label" htmlFor="metadata">Metadata</label>
           <JsonTextArea

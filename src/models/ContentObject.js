@@ -3,6 +3,37 @@ import URI from "urijs";
 import PrettyBytes from "pretty-bytes";
 
 class ContentObject {
+  EluvioKeys() {
+    return [
+      "eluv.name",
+      "eluv.type",
+      "eluv.description",
+      "caddr"
+    ];
+  }
+
+  FilterMetadata(metadata) {
+    const toRemove = this.EluvioKeys();
+    return Object.keys(metadata)
+      .filter(key => !toRemove.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = metadata[key];
+        return obj;
+      }, {});
+  }
+
+  FullMetadata() {
+    return Object.assign(
+      {
+        "eluv.name": this.name,
+        "eluv.description": this.description,
+        "eluv.type": this.type,
+        "caddr": this.contractAddress
+      },
+      this.metadata || {}
+    );
+  }
+
   constructor({ libraryId, contentObjectData }) {
     this.rawData = contentObjectData;
 
@@ -17,7 +48,7 @@ class ContentObject {
     this.objectId = contentObjectData.id;
 
     // Library metadata object has same ID as library, with different prefix
-    if(this.libraryId === this.objectId.replace("iq__", "ilib")) {
+    if(this.objectId && this.libraryId === this.objectId.replace("iq__", "ilib")) {
       this.name = "Library Content Object";
     }
 
@@ -25,14 +56,18 @@ class ContentObject {
       this.versions = contentObjectData.versions.map(
         version => new ContentObject({libraryId, contentObjectData: version})
       );
+
       this.latestVersion = this.versions[0];
     }
 
+    const metadata = (this.latestVersion && this.latestVersion.FullMetadata()) || contentObjectData.meta || {};
+
     this.hash = contentObjectData.hash;
-    this.metadata = (this.latestVersion && this.latestVersion.metadata) || contentObjectData.meta || {};
-    this.name = this.name || this.metadata["eluv.name"] || "Content Object " + contentObjectData.id;
-    this.type = contentObjectData.type || this.metadata["eluv.type"];
-    this.description = this.metadata["description"];
+    this.name = this.name || metadata["eluv.name"] || "Content Object " + contentObjectData.id;
+    this.type = contentObjectData.type || metadata["eluv.type"];
+    this.description = metadata["eluv.description"];
+    this.contractAddress = metadata.caddr;
+    this.metadata = this.FilterMetadata(metadata);
     this.verification = contentObjectData.verification;
 
     if(contentObjectData.parts) {
