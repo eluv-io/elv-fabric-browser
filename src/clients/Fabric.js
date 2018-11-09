@@ -25,8 +25,8 @@ const Fabric = {
     return libraryInfo.meta["eluv.contract_address"];
   },
 
-  CreateContentLibrary: async ({libraryName, libraryDescription}) => {
-    return await client.CreateContentLibrary({libraryName, libraryDescription});
+  CreateContentLibrary: async ({name, description, publicMetadata, privateMetadata}) => {
+    return await client.CreateContentLibrary({name, description, publicMetadata, privateMetadata});
   },
 
   /* Objects */
