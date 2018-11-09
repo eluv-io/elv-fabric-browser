@@ -5,6 +5,7 @@ import { WrapRequest } from "./Requests";
 import ContentLibrary from "../models/ContentLibrary";
 import ContentObject from "../models/ContentObject";
 import {Wait} from "../utils/Helpers";
+import { ParseInputJson } from "../utils/Input";
 
 export const ListContentLibraries = () => {
   return (dispatch) => {
@@ -38,6 +39,29 @@ export const ListContentLibraries = () => {
           type: ActionTypes.request.content.completed.list.all,
           contentLibraries
         });
+      })
+    });
+  };
+};
+
+export const CreateContentLibrary = ({name, description, publicMetadata, privateMetadata}) => {
+  return (dispatch) => {
+    return WrapRequest({
+      dispatch: dispatch,
+      domain: "content",
+      action: "createContentLibrary",
+      todo: (async () => {
+        await Fabric.CreateContentLibrary({
+          name,
+          description,
+          publicMetadata: ParseInputJson(publicMetadata),
+          privateMetadata: ParseInputJson(privateMetadata)
+        });
+
+        dispatch(SetNotificationMessage({
+          message: "Successfully created content library '" + name + "'",
+          redirect: true
+        }));
       })
     });
   };
@@ -120,7 +144,7 @@ export const CreateContentObject = ({libraryId, name, type, metadata}) => {
           libraryId,
           name: name,
           type: type,
-          metadata: ParseMetadata(metadata)
+          metadata: ParseInputJson(metadata)
         });
 
         dispatch(SetNotificationMessage({
@@ -144,7 +168,7 @@ export const UpdateContentObject = ({libraryId, objectId, metadata}) => {
         await Fabric.ReplaceMetadata({
           libraryId,
           writeToken: contentDraft.write_token,
-          metadata: ParseMetadata(metadata)
+          metadata: ParseInputJson(metadata)
         });
 
         await Fabric.FinalizeContentObject({
@@ -300,39 +324,4 @@ export const DownloadPart = ({libraryId, contentHash, partHash, callback}) => {
       })
     });
   };
-};
-
-export const CreateContentLibrary = ({name, description}) => {
-  return (dispatch) => {
-    return WrapRequest({
-      dispatch: dispatch,
-      domain: "content",
-      action: "createContentLibrary",
-      todo: (async () => {
-        let libraryInfo = await Fabric.CreateContentLibrary({
-          libraryName: name,
-          libraryDescription: description
-        });
-
-        dispatch(SetNotificationMessage({
-          message: "Successfully created content library '" + name + "'",
-          redirect: true
-        }));
-      })
-    });
-  };
-};
-
-const ParseMetadata = (metadata) => {
-  if(typeof metadata === "string") {
-    if(metadata.trim() === "") { return null; }
-
-    try {
-      return JSON.parse(metadata);
-    } catch(error) {
-      throw Error("Invalid JSON");
-    }
-  }
-
-  return metadata;
 };
