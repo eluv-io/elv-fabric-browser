@@ -58,7 +58,7 @@
   @include no-select;
   display: flex;
   max-width: 100%;
-  padding: $spacing-m 0 $spacing-m $spacing-s;
+  padding: $spacing-s 0;
   width: 100%;
 
   .icon {
@@ -71,7 +71,7 @@
     padding: 0;
 
     .cropped-image {
-      $image-size: 10vw;
+      $image-size: 5vw;
       @include cropped-image($image-size, $image-size, 50%, $image-size, $image-size);
     }
   }

@@ -68,6 +68,17 @@
       }
     }
 
+    &.delete-action {
+      background: $color-bg-white;
+      border: 1px solid $color-mediumred;
+      color: $color-mediumred;
+
+      &:hover {
+        background: $color-mediumred;
+        color: $color-text-white;
+      }
+    }
+
     &.action-compact {
       font-size: 12px;
       height: auto;
@@ -82,7 +93,7 @@
   }
 
   .action-loading {
-    color: $color-midgray;
+    color: $color-mediumgray;
     margin: 0;
   }
 }

@@ -21,7 +21,6 @@ class App extends React.Component {
             </div>
           </ScrollToTop>
         </ConnectedRouter>
-        <Debug />
       </div>
     );
   }
