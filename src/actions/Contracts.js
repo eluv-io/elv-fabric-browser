@@ -138,16 +138,6 @@ export const DeployContentContract = ({
       domain: "contracts",
       action: "deployContentContract",
       todo: (async () => {
-        const metadata = await Fabric.GetContentObjectMetadata({
-          libraryId,
-          contentHash: objectId
-        });
-        const contentContractAddress = metadata.caddr;
-
-        if(!contentContractAddress) {
-          throw Error("Content object does not have a contract set");
-        }
-
         let constructorArgs = [];
         if(inputs.length > 0) {
           constructorArgs = await Fabric.FormatContractArguments({
@@ -164,8 +154,9 @@ export const DeployContentContract = ({
         });
 
         await Fabric.SetCustomContentContract({
-          contentContractAddress,
-          customContractAddress: contractInfo.address
+          objectId,
+          customContractAddress: contractInfo.contractAddress,
+          overrides: { gasLimit: 60000000, gasPrice: 1000000 },
         });
 
         // Custom contract successfully deployed and set - update metadata
@@ -176,18 +167,20 @@ export const DeployContentContract = ({
 
         await Fabric.MergeMetadata({
           libraryId,
+          objectId,
           writeToken: editResponse.write_token,
           metadata: {
             customContract: {
               name: contractName,
               description: contractDescription,
-              address: contractInfo.address
+              address: contractInfo.contractAddress
             }
           }
         });
 
         await Fabric.FinalizeContentObject({
           libraryId,
+          objectId,
           writeToken: editResponse.write_token
         });
 

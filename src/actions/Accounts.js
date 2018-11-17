@@ -110,6 +110,7 @@ export const UpdateAccountInfo = ({
 
           await Fabric.MergeMetadata({
             libraryId,
+            objectId: accountInfoObject.objectId,
             writeToken,
             metadata: {
               name,
@@ -133,12 +134,14 @@ export const UpdateAccountInfo = ({
           const imageData = await new Response(profileImageFile).blob();
           const uploadResponse = await Fabric.UploadPart({
             libraryId,
+            objectId: accountInfoObject.objectId,
             writeToken,
             data: imageData
           });
 
           await Fabric.MergeMetadata({
             libraryId,
+            objectId: accountInfoObject.objectId,
             writeToken,
             metadata: {
               profileImageHash: uploadResponse.part.hash
@@ -150,6 +153,7 @@ export const UpdateAccountInfo = ({
 
         let finalizeResponse = await Fabric.FinalizeContentObject({
           libraryId,
+          objectId: accountInfoObject.objectId,
           writeToken
         });
 

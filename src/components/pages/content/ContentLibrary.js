@@ -5,17 +5,22 @@ import Path from "path";
 import ContentIcon from "../../../static/icons/content.svg";
 import RequestPage from "../RequestPage";
 import { LabelledField } from "../../components/LabelledField";
+import Redirect from "react-router/es/Redirect";
+import Fabric from "../../../clients/Fabric";
 
 class ContentLibrary extends React.Component {
   constructor(props) {
     super(props);
 
+    const libraryId = this.props.match.params.libraryId;
+
     this.state = {
-      libraryId: this.props.match.params.libraryId,
-      metadataVisible: false
+      libraryId,
+      metadataVisible: false,
+      isContentSpaceLibrary: Fabric.utils.EqualHash(Fabric.contentSpaceId, libraryId)
     };
 
-    this.SetLibrary = this.SetLibrary.bind(this);
+    this.RequestComplete = this.RequestComplete.bind(this);
   }
 
   componentDidMount() {
@@ -24,10 +29,36 @@ class ContentLibrary extends React.Component {
     });
   }
 
-  SetLibrary() {
+  RequestComplete() {
+    if(this.state.deleting) {
+      this.setState({
+        deleted: true
+      });
+    }
+
     this.setState({
       contentLibrary: this.props.contentLibraries[this.state.libraryId]
     });
+  }
+
+  DeleteContentLibrary() {
+    if(confirm("Are you sure you want to delete this library?")) {
+      this.setState({
+        requestId: this.props.DeleteContentLibrary({libraryId: this.state.libraryId}),
+        deleting: true
+      });
+    }
+  }
+
+  DeleteContentLibraryButton() {
+    // Don't allow deletion of special content space library
+    if(this.state.isContentSpaceLibrary) { return null; }
+
+    return (
+      <button className="action delete-action" onClick={() => this.DeleteContentLibrary()}>
+        Delete Content Library
+      </button>
+    );
   }
 
   ContentObjects() {
@@ -108,12 +139,17 @@ class ContentLibrary extends React.Component {
   PageContent() {
     if(!this.state.contentLibrary) { return null; }
 
+    if(this.state.deleted) {
+      return <Redirect push to={"/content"}/>;
+    }
+
     return (
       <div className="page-container contents-page-container">
         <div className="actions-container">
           <Link to={Path.dirname(this.props.match.url)} className="action secondary" >Back</Link>
           <Link to={Path.join(this.props.match.url, "edit")} className="action" >Edit Content Library</Link>
           <Link to={Path.join(this.props.match.url, "create")} className="action" >New Content Object</Link>
+          { this.DeleteContentLibraryButton() }
         </div>
         <div className="object-display">
           <h3 className="page-header">{ this.state.contentLibrary.name }</h3>
@@ -130,7 +166,7 @@ class ContentLibrary extends React.Component {
         pageContent={this.PageContent()}
         requestId={this.state.requestId}
         requests={this.props.requests}
-        OnRequestComplete={this.SetLibrary}
+        OnRequestComplete={this.RequestComplete}
       />
     );
   }

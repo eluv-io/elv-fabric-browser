@@ -48,7 +48,7 @@ form {
     }
 
     input {
-      border: 1px solid $color-midgray;
+      border: 1px solid $color-mediumgray;
       font-size: 16px;
       height: 1.8em;
       padding: 0 $spacing-xxs;
@@ -60,7 +60,7 @@ form {
     }
 
     textarea {
-      border: 1px solid $color-midgray;
+      border: 1px solid $color-mediumgray;
       font-family: Lato, sans-serif;
       font-size: 14px;
       height: 10em;
@@ -70,7 +70,7 @@ form {
 
     select {
       background: $color-bg-white;
-      border: 1px solid $color-midgray;
+      border: 1px solid $color-mediumgray;
       border-radius: 0;
       font-size: 16px;
       height: 2em;

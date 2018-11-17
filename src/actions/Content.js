@@ -14,19 +14,24 @@ export const ListContentLibraries = () => {
       domain: "content",
       action: "listContentLibraries",
       todo: (async () => {
-        let libraryIds = await Fabric.ListContentLibraries();
+        const libraryIds = await Fabric.ListContentLibraries();
+
+        // Query libraries one at a time to avoid blockchain nonce collisions and cache access transactions
+        const libraryMetadata = {};
+        for(const libraryId of libraryIds) {
+          libraryMetadata[libraryId] = (await Fabric.GetContentLibrary({libraryId})).meta;
+        }
 
         let contentLibraries = {};
         await Promise.all(
           libraryIds.map(async libraryId => {
             try {
-              let libraryMetadata = (await Fabric.GetContentLibrary({libraryId})).meta;
               // Query for content objects
-              let contentObjects = (await Fabric.ListContentObjects({libraryId})).contents;
+              const contentObjects = (await Fabric.ListContentObjects({libraryId})).contents;
 
               contentLibraries[libraryId] = new ContentLibrary({
                 libraryId,
-                libraryMetadata,
+                libraryMetadata: libraryMetadata[libraryId],
                 contentObjectsData: contentObjects
               });
             } catch(error) {
@@ -120,6 +125,24 @@ export const UpdateContentLibrary = ({libraryId, name, description, contractAddr
   };
 };
 
+export const DeleteContentLibrary = ({ libraryId }) => {
+  return (dispatch) => {
+    return WrapRequest({
+      dispatch: dispatch,
+      domain: "content",
+      action: "deleteContentLibrary",
+      todo: (async () => {
+        await Fabric.DeleteContentLibrary({libraryId});
+
+        dispatch(SetNotificationMessage({
+          message: "Successfully deleted content library",
+          redirect: true
+        }));
+      })
+    });
+  };
+};
+
 export const ListContentObjects = ({ libraryId }) => {
   return (dispatch) => {
     return WrapRequest({
@@ -172,7 +195,7 @@ export const GetContentObjectMetadata = ({ libraryId, objectId }) => {
       action: "getContentObjectMetadata",
       todo: (async () => {
         let contentObjectData = await Fabric.GetContentObject({ libraryId, objectId });
-        contentObjectData.meta = await Fabric.GetContentObjectMetadata({ libraryId, contentHash: objectId });
+        contentObjectData.meta = await Fabric.GetContentObjectMetadata({ libraryId, objectId });
 
         let contentObject = new ContentObject({libraryId, contentObjectData});
 
@@ -204,11 +227,48 @@ export const CreateContentObject = ({libraryId, name, description, type, metadat
 
         await Fabric.CreateAndFinalizeContentObject({
           libraryId,
+          type,
           metadata: contentObject.FullMetadata()
         });
 
         dispatch(SetNotificationMessage({
           message: "Successfully created content object",
+          redirect: true
+        }));
+      })
+    });
+  };
+};
+
+export const DeleteContentObject = ({ libraryId, objectId }) => {
+  return (dispatch) => {
+    return WrapRequest({
+      dispatch: dispatch,
+      domain: "content",
+      action: "deleteContentObject",
+      todo: (async () => {
+        await Fabric.DeleteContentObject({libraryId, objectId});
+
+        dispatch(SetNotificationMessage({
+          message: "Successfully deleted content object",
+          redirect: true
+        }));
+      })
+    });
+  };
+};
+
+export const DeleteContentVersion = ({ libraryId, objectId, versionHash }) => {
+  return (dispatch) => {
+    return WrapRequest({
+      dispatch: dispatch,
+      domain: "content",
+      action: "deleteContentObject",
+      todo: (async () => {
+        await Fabric.DeleteContentVersion({libraryId, objectId, versionHash});
+
+        dispatch(SetNotificationMessage({
+          message: "Successfully deleted content version",
           redirect: true
         }));
       })
@@ -237,12 +297,14 @@ export const UpdateContentObject = ({libraryId, objectId, name, description, typ
 
         await Fabric.ReplaceMetadata({
           libraryId,
+          objectId,
           writeToken: contentDraft.write_token,
           metadata: ParseInputJson(contentObject.FullMetadata())
         });
 
         await Fabric.FinalizeContentObject({
           libraryId,
+          objectId,
           writeToken: contentDraft.write_token
         });
 
@@ -269,6 +331,7 @@ export const UploadParts = ({libraryId, objectId, files}) => {
 
           await Fabric.UploadPart({
             libraryId,
+            objectId,
             writeToken: contentDraft.write_token,
             data
           });
@@ -276,6 +339,7 @@ export const UploadParts = ({libraryId, objectId, files}) => {
 
         await Fabric.FinalizeContentObject({
           libraryId,
+          objectId,
           writeToken: contentDraft.write_token
         });
 
@@ -342,6 +406,7 @@ export const UploadParts2 = ({libraryId, objectId, files}) => {
         while(true) {
           let statusResponse = (await Fabric.GetUploadJobStatus({
             libraryId,
+            objectId,
             writeToken: contentDraft.write_token,
             jobId: uploadJob.id
           })).upload_jobs[0];
@@ -361,11 +426,13 @@ export const UploadParts2 = ({libraryId, objectId, files}) => {
 
         await Fabric.FinalizeUploadJobs({
           libraryId,
+          objectId,
           writeToken: contentDraft.write_token
         });
 
         await Fabric.FinalizeContentObject({
           libraryId,
+          objectId,
           writeToken: contentDraft.write_token
         });
 
@@ -380,14 +447,14 @@ export const UploadParts2 = ({libraryId, objectId, files}) => {
   };
 };
 
-export const DownloadPart = ({libraryId, contentHash, partHash, callback}) => {
+export const DownloadPart = ({libraryId, objectId, versionHash, partHash, callback}) => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
       domain: "content",
       action: "getContentObject",
       todo: (async () => {
-        let blob = await Fabric.DownloadPart({ libraryId, contentHash, partHash, format: "blob" });
+        let blob = await Fabric.DownloadPart({ libraryId, objectId, versionHash, partHash, format: "blob" });
         let url = window.URL.createObjectURL(blob);
 
         callback(url);

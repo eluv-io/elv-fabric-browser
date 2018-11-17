@@ -11,7 +11,10 @@ import {
   DownloadPart,
   GetContentObjectMetadata,
   GetContentLibrary,
-  UpdateContentLibrary
+  UpdateContentLibrary,
+  DeleteContentLibrary,
+  DeleteContentObject,
+  DeleteContentVersion
 } from "../../actions/Content";
 import ContentLibraries from "../../components/pages/content/ContentLibraries";
 import ContentLibrary from "../../components/pages/content/ContentLibrary";
@@ -36,8 +39,11 @@ const mapDispatchToProps = dispatch =>
       ListContentLibraries,
       GetContentLibrary,
       UpdateContentLibrary,
+      DeleteContentLibrary,
       ListContentObjects,
       CreateContentLibrary,
+      DeleteContentObject,
+      DeleteContentVersion,
       GetFullContentObject,
       GetContentObjectMetadata,
       CreateContentObject,
