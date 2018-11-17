@@ -32,7 +32,7 @@ class CompileContractForm extends React.Component {
 
     return (
       <pre>
-        { JSON.stringify(this.props.contracts.errors, null, 2)}
+        { "Compilation errors: \n\n" + this.props.contracts.errors }
       </pre>
     );
   }

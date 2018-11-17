@@ -1,5 +1,9 @@
 import { FrameClient } from "elv-client-js/ElvFrameClient-min";
 import ContentObject from "../models/ContentObject";
+import URI from "urijs";
+import Path from "path";
+
+const Configuration = require("../../configuration.json");
 
 const client = new FrameClient({
   target: window.parent,
@@ -7,6 +11,11 @@ const client = new FrameClient({
 });
 
 const Fabric = {
+  /* Utils */
+  // TODO: Get the content space ID in the frameclient from parent
+  contentSpaceId: Configuration.fabric.contentSpaceId,
+  utils: client.utils,
+
   /* Libraries */
 
   ListContentLibraries: () => {
@@ -29,6 +38,10 @@ const Fabric = {
     return await client.CreateContentLibrary({name, description, publicMetadata, privateMetadata});
   },
 
+  DeleteContentLibrary: async ({libraryId}) => {
+    await client.DeleteContentLibrary({libraryId});
+  },
+
   ReplacePublicLibraryMetadata: async ({libraryId, metadata}) => {
     return await client.ReplacePublicLibraryMetadata({libraryId, metadata});
   },
@@ -41,21 +54,23 @@ const Fabric = {
 
     return {
       contents: contentObjectData.contents.map(data => {
-        data.url = libraryUrl + "/q/" + data.id;
+        const uri = new URI(libraryUrl);
+        uri.path(Path.join(uri.path(), "q", data.id));
+        data.url = uri.toString();
         return data;
       })
     };
   },
 
   GetContentObject: async ({libraryId, objectId}) => {
-    const contentObjectData = await client.ContentObject({ libraryId, contentHash: objectId });
-    contentObjectData.url = await Fabric.FabricUrl({libraryId, contentHash: objectId});
+    const contentObjectData = await client.ContentObject({ libraryId, objectId });
+    contentObjectData.url = await Fabric.FabricUrl({libraryId, objectId});
 
     return contentObjectData;
   },
 
-  GetContentObjectMetadata: ({libraryId, contentHash}) => {
-    return client.ContentObjectMetadata({ libraryId, contentHash });
+  GetContentObjectMetadata: ({libraryId, objectId, versionHash}) => {
+    return client.ContentObjectMetadata({ libraryId, objectId, versionHash });
   },
 
   GetContentObjectVersions: ({libraryId, objectId}) => {
@@ -65,42 +80,50 @@ const Fabric = {
   GetFullContentObject: async ({libraryId, objectId}) => {
     let contentObjectData = await Fabric.GetContentObject({ libraryId, objectId });
 
-    const contentHash = contentObjectData.hash;
-    contentObjectData.meta = await Fabric.GetContentObjectMetadata({ libraryId, contentHash });
-    contentObjectData.parts = (await Fabric.ListParts({ libraryId, contentHash })).parts;
+    const versionHash = contentObjectData.hash;
+    contentObjectData.meta = await Fabric.GetContentObjectMetadata({ libraryId, objectId, versionHash });
+    contentObjectData.parts = (await Fabric.ListParts({ libraryId, objectId, versionHash })).parts;
 
-    let versions = (await Fabric.GetContentObjectVersions({ libraryId, objectId: contentObjectData.id })).versions;
+    let versions = (await Fabric.GetContentObjectVersions({ libraryId, objectId })).versions;
     for(const version of versions) {
-      version.meta = await Fabric.GetContentObjectMetadata({ libraryId, contentHash: version.hash });
-      version.parts = (await Fabric.ListParts({ libraryId, contentHash: version.hash })).parts;
-      version.verification = await Fabric.VerifyContentObject({libraryId, partHash: version.hash});
+      version.meta = await Fabric.GetContentObjectMetadata({ libraryId, objectId, versionHash: version.hash });
+      version.parts = (await Fabric.ListParts({ libraryId, objectId, versionHash: version.hash })).parts;
+      version.verification = await Fabric.VerifyContentObject({libraryId, objectId, partHash: version.hash});
 
       for(const part of version.parts) {
-        part.proofs = await Fabric.Proofs({libraryId, contentHash: objectId, partHash: part.hash});
+        part.proofs = await Fabric.Proofs({libraryId, objectId, versionHash: version.hash, partHash: part.hash});
       }
     }
 
     contentObjectData.versions = versions;
 
-    return new ContentObject({ libraryId, contentObjectData });
+    return new ContentObject({libraryId, contentObjectData});
   },
 
   /* Object creation / modification */
 
   CreateContentObject: async ({
     libraryId,
+    type,
     metadata = {}
   }) => {
     let requestParams = {
-      type: "",
+      type,
       meta: metadata
     };
 
     return client.CreateContentObject({
       libraryId: libraryId,
-      libraryContractAddress: await Fabric.GetContentLibraryContractAddress({libraryId}),
       options: requestParams
     });
+  },
+
+  DeleteContentObject: async ({libraryId, objectId}) => {
+    await client.DeleteContentObject({libraryId, objectId});
+  },
+
+  DeleteContentVersion: async ({libraryId, objectId, versionHash}) => {
+    await client.DeleteContentVersion({libraryId, objectId, versionHash});
   },
 
   EditContentObject: ({
@@ -109,19 +132,21 @@ const Fabric = {
   }) => {
     return client.EditContentObject({
       libraryId,
-      contentId: objectId,
+      objectId,
       options: {}
     });
   },
 
   MergeMetadata: ({
     libraryId,
+    objectId,
     writeToken,
     metadataSubtree,
     metadata
   }) => {
     client.MergeMetadata({
       libraryId,
+      objectId,
       writeToken,
       metadataSubtree,
       metadata
@@ -130,12 +155,14 @@ const Fabric = {
 
   ReplaceMetadata: ({
     libraryId,
+    objectId,
     writeToken,
     metadataSubtree,
     metadata
   }) => {
     client.ReplaceMetadata({
       libraryId,
+      objectId,
       writeToken,
       metadataSubtree,
       metadata
@@ -144,11 +171,13 @@ const Fabric = {
 
   DeleteMetadata: async ({
     libraryId,
+    objectId,
     writeToken,
     metadataSubtree
   }) => {
     client.DeleteMetadata({
       libraryId,
+      objectId,
       writeToken,
       metadataSubtree
     });
@@ -156,11 +185,13 @@ const Fabric = {
 
   FinalizeContentObject: ({
     libraryId,
+    objectId,
     writeToken
   }) => {
     return client.FinalizeContentObject({
-      libraryId: libraryId,
-      writeToken: writeToken
+      libraryId,
+      objectId,
+      writeToken
     });
   },
 
@@ -168,16 +199,19 @@ const Fabric = {
   // -- takes same arguments as CreateContentObject
   CreateAndFinalizeContentObject: async ({
     libraryId,
+    type,
     metadata={}
   }) => {
     let createResponse = await Fabric.CreateContentObject({
       libraryId,
+      type,
       metadata
     });
 
     return (
       await Fabric.FinalizeContentObject({
         libraryId,
+        objectId: createResponse.id,
         writeToken: createResponse.write_token
       })
     );
@@ -185,42 +219,42 @@ const Fabric = {
 
   /* Files */
 
-  CreateFileUploadJob: ({libraryId, writeToken, fileInfo}) => {
-    return client.CreateFileUploadJob({libraryId, writeToken, fileInfo});
+  CreateFileUploadJob: ({libraryId, objectId, writeToken, fileInfo}) => {
+    return client.CreateFileUploadJob({libraryId, objectId, writeToken, fileInfo});
   },
 
-  UploadFileData: ({libraryId, writeToken, jobId, fileData}) => {
-    return client.UploadFileData({libraryId, writeToken, jobId, fileData});
+  UploadFileData: ({libraryId, objectId, writeToken, jobId, fileData}) => {
+    return client.UploadFileData({libraryId, objectId, writeToken, jobId, fileData});
   },
 
-  GetUploadJobStatus: ({libraryId, writeToken, jobId}) => {
-    return client.UploadJobStatus({libraryId, writeToken, jobId});
+  GetUploadJobStatus: ({libraryId, objectId, writeToken, jobId}) => {
+    return client.UploadJobStatus({libraryId, objectId, writeToken, jobId});
   },
 
-  FinalizeUploadJobs: ({libraryId, writeToken}) => {
-    return client.FinalizeUploadJobs({libraryId, writeToken});
+  FinalizeUploadJobs: ({libraryId, objectId, writeToken}) => {
+    return client.FinalizeUploadJobs({libraryId, objectId, writeToken});
   },
 
-  DownloadFiles: ({libraryId, writeToken, filePath}) => {
-    return client.DownloadFiles({libraryId, writeToken, filePath});
+  DownloadFiles: ({libraryId, objectId, writeToken, filePath}) => {
+    return client.DownloadFiles({libraryId, objectId, writeToken, filePath});
   },
 
   /* Parts */
 
-  ListParts: ({libraryId, contentHash}) => {
-    return client.ContentParts({libraryId, contentHash});
+  ListParts: ({libraryId, objectId, versionHash}) => {
+    return client.ContentParts({libraryId, objectId, versionHash});
   },
 
-  DownloadPart: ({libraryId, contentHash, partHash, format}) => {
-    return client.DownloadPart({ libraryId, contentHash, partHash, format});
+  DownloadPart: ({libraryId, objectId ,versionHash, partHash, format}) => {
+    return client.DownloadPart({ libraryId, objectId, versionHash, partHash, format});
   },
 
-  UploadPart: ({libraryId, writeToken, data}) => {
-    return client.UploadPart({libraryId, writeToken, data});
+  UploadPart: ({libraryId, objectId, writeToken, data}) => {
+    return client.UploadPart({libraryId, objectId, writeToken, data});
   },
 
-  FabricUrl: ({libraryId, contentHash, partHash}) => {
-    return client.FabricUrl({libraryId, contentHash, partHash});
+  FabricUrl: ({libraryId, objectId, versionHash, partHash}) => {
+    return client.FabricUrl({libraryId, objectId, versionHash, partHash});
   },
 
   /* Contracts */
@@ -236,10 +270,15 @@ const Fabric = {
     return client.CallContractMethod({contractAddress, abi, methodName, methodArgs});
   },
 
-  SetCustomContentContract: ({contentContractAddress, customContractAddress}) => {
+  CallContractMethodAndWait: ({contractAddress, abi, methodName, methodArgs}) => {
+    return client.CallContractMethodAndWait({contractAddress, abi, methodName, methodArgs});
+  },
+
+  SetCustomContentContract: ({objectId, customContractAddress, overrides={}}) => {
     return client.SetCustomContentContract({
-      contentContractAddress,
-      customContractAddress
+      objectId,
+      customContractAddress,
+      overrides
     });
   },
 
@@ -285,13 +324,14 @@ const Fabric = {
 
   VerifyContentObject: ({
     libraryId,
+    objectId,
     partHash
   }) => {
-    return client.VerifyContentObject({libraryId, partHash});
+    return client.VerifyContentObject({libraryId, objectId, partHash});
   },
 
-  Proofs: ({libraryId, contentHash, partHash}) => {
-    return client.Proofs({libraryId, contentHash, partHash});
+  Proofs: ({libraryId, objectId, versionHash, partHash}) => {
+    return client.Proofs({libraryId, objectId, versionHash, partHash});
   },
 
   FabricBrowser: {
@@ -316,7 +356,7 @@ const Fabric = {
 
       return (await Fabric.GetContentObjectMetadata({
         libraryId: info.libraryId,
-        contentHash: info.contracts
+        objectId: info.contracts
       })).contracts;
     },
 
@@ -330,6 +370,7 @@ const Fabric = {
 
       await Fabric.MergeMetadata({
         libraryId: info.libraryId,
+        objectId: info.contracts,
         writeToken: editResponse.write_token,
         metadataSubtree: "contracts",
         metadata: {
@@ -343,6 +384,7 @@ const Fabric = {
 
       await Fabric.FinalizeContentObject({
         libraryId: info.libraryId,
+        objectId: info.contracts,
         writeToken: editResponse.write_token
       });
     },
@@ -369,13 +411,14 @@ const Fabric = {
 
       const metadata = await Fabric.GetContentObjectMetadata({
         libraryId: info.libraryId,
-        contentHash: editResponse.write_token
+        objectId: info.contracts
       });
 
       delete metadata.contracts[name];
 
       await Fabric.ReplaceMetadata({
         libraryId: info.libraryId,
+        objectId: info.contracts,
         writeToken: editResponse.write_token,
         metadata
       });
@@ -384,6 +427,7 @@ const Fabric = {
 
       await Fabric.FinalizeContentObject({
         libraryId: info.libraryId,
+        objectId: info.contracts,
         writeToken: editResponse.write_token
       });
     }

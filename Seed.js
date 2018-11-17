@@ -1,18 +1,8 @@
 // Create initial library + content objects needed to store fabric browser info
 
-const ElvClient = require("elv-client-js/ElvClient-node-min").ElvClient;
-const fs = require("fs");
-const configuration = JSON.parse(fs.readFileSync("./configuration.json"));
+const { ElvClient } = require("elv-client-js/ElvClient-node-min");
 
-const client = new ElvClient({
-  //contentSpaceId: AppConfiguration.fabric.contentSpaceId,
-  hostname: configuration.fabric.hostname,
-  port: configuration.fabric.port,
-  useHTTPS: configuration.fabric.use_https,
-  ethHostname: configuration.ethereum.hostname,
-  ethPort: configuration.ethereum.port,
-  ethUseHTTPS: configuration.ethereum.use_https
-});
+const client = ElvClient.FromConfiguration({configuration: require("./configuration")});
 
 const GetByName = async (name) => {
   try {
@@ -24,7 +14,7 @@ const GetByName = async (name) => {
   }
 };
 
-const SeedLibrary = async (fabricBrowserInfo, signer) => {
+const SeedLibrary = async (fabricBrowserInfo) => {
   // Get/create library
   try {
     if(fabricBrowserInfo) {
@@ -34,16 +24,12 @@ const SeedLibrary = async (fabricBrowserInfo, signer) => {
         contractAddress: libraryResponse.meta["eluv.contract_address"]
       };
     } else {
-      const libraryInfo = await client.CreateContentLibrary({
+      const libraryId = await client.CreateContentLibrary({
         name: "Eluvio Content Fabric Browser",
-        description: "Information used by Eluvio Content Fabric Browser",
-        signer
+        description: "Information used by Eluvio Content Fabric Browser"
       });
 
-      return {
-        libraryId: libraryInfo.libraryId,
-        contractAddress: libraryInfo.contractAddress
-      };
+      return libraryId;
     }
   } catch(error) {
     console.error(error);
@@ -51,26 +37,25 @@ const SeedLibrary = async (fabricBrowserInfo, signer) => {
   }
 };
 
-const SeedContracts = async (fabricBrowserInfo, libraryInfo, signer) => {
+const SeedContracts = async (fabricBrowserInfo, libraryId) => {
   try {
     // Get/create library
     if (fabricBrowserInfo && fabricBrowserInfo.contracts) {
       return fabricBrowserInfo.contracts;
     } else {
       const createResponse = await client.CreateContentObject({
-        libraryId: libraryInfo.libraryId,
-        libraryContractAddress: libraryInfo.contractAddress,
+        libraryId,
         options: {
           meta: {
             "eluv.name": "Contracts",
             contracts: {}
           }
-        },
-        signer
+        }
       });
 
       const finalizeResponse = await client.FinalizeContentObject({
-        libraryId: libraryInfo.libraryId,
+        libraryId,
+        objectId: createResponse.id,
         writeToken: createResponse.write_token
       });
 
@@ -82,21 +67,20 @@ const SeedContracts = async (fabricBrowserInfo, libraryInfo, signer) => {
   }
 };
 
-const Seed = async (signer) => {
+const Seed = async () => {
   try {
     // Get / Create seeded info
     let fabricBrowserInfo = await GetByName("elv-fabric-browser");
     if(fabricBrowserInfo) { fabricBrowserInfo = JSON.parse(fabricBrowserInfo.target); }
 
-    const libraryInfo = await SeedLibrary(fabricBrowserInfo, signer);
+    const libraryId = await SeedLibrary(fabricBrowserInfo);
 
-    console.log(libraryInfo);
-    const contractsObjectId = await SeedContracts(fabricBrowserInfo, libraryInfo, signer);
+    const contractsObjectId = await SeedContracts(fabricBrowserInfo, libraryId);
 
     await client.SetByName({
       name: "elv-fabric-browser",
       target: JSON.stringify({
-        libraryId: libraryInfo.libraryId,
+        libraryId,
         contracts: contractsObjectId
       })
     });
@@ -118,6 +102,8 @@ const signer = wallet.AddAccount({
   privateKey: process.argv[2]
 });
 
-Seed(signer).then(async () => {
+client.SetSigner({signer})
+
+Seed().then(async () => {
   console.log(await client.GetByName({name: "elv-fabric-browser"}));
 });

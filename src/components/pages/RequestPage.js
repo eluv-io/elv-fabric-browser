@@ -9,6 +9,7 @@ class RequestPage extends React.Component {
     super(props);
 
     this.state = {
+      requestId: this.props.requestId,
       requestCompleted: false
     };
   }
@@ -39,7 +40,13 @@ class RequestPage extends React.Component {
   }
 
   componentDidUpdate() {
-    if(!this.state.requestCompleted) {
+    // If requestId updated, clear requestCompleted flag
+    if(this.props.requestId !== this.state.requestId) {
+      this.setState({
+        requestId: this.props.requestId,
+        requestCompleted: false
+      })
+    } else if(!this.state.requestCompleted) {
       if(this.RequestCompleted()) {
         this.setState({
           requestCompleted: true
