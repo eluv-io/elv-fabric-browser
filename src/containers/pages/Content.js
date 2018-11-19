@@ -63,7 +63,7 @@ export const ContentLibraryFormContainer = connect(
   mapDispatchToProps
 )(ContentLibraryForm);
 
-export const ContentObjectsContainer = connect(
+export const ContentLibraryContainer = connect(
   mapStateToProps,
   mapDispatchToProps
 )(ContentLibrary);

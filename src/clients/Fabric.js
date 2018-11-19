@@ -14,12 +14,13 @@ const Fabric = {
   /* Utils */
   // TODO: Get the content space ID in the frameclient from parent
   contentSpaceId: Configuration.fabric.contentSpaceId,
+  contentSpaceLibraryId: Configuration.fabric.contentSpaceId.replace("ispc", "ilib"),
   utils: client.utils,
 
   /* Libraries */
 
-  ListContentLibraries: () => {
-    return client.ContentLibraries();
+  ListContentLibraries: async () => {
+    return await client.ContentLibraries();
   },
 
   GetContentLibrary: async ({libraryId}) => {
@@ -69,12 +70,12 @@ const Fabric = {
     return contentObjectData;
   },
 
-  GetContentObjectMetadata: ({libraryId, objectId, versionHash}) => {
-    return client.ContentObjectMetadata({ libraryId, objectId, versionHash });
+  GetContentObjectMetadata: async ({libraryId, objectId, versionHash}) => {
+    return await client.ContentObjectMetadata({ libraryId, objectId, versionHash });
   },
 
-  GetContentObjectVersions: ({libraryId, objectId}) => {
-    return client.ContentObjectVersions({libraryId, objectId});
+  GetContentObjectVersions: async ({libraryId, objectId}) => {
+    return await client.ContentObjectVersions({libraryId, objectId});
   },
 
   GetFullContentObject: async ({libraryId, objectId}) => {
@@ -126,25 +127,25 @@ const Fabric = {
     await client.DeleteContentVersion({libraryId, objectId, versionHash});
   },
 
-  EditContentObject: ({
+  EditContentObject: async ({
     libraryId,
     objectId
   }) => {
-    return client.EditContentObject({
+    return await client.EditContentObject({
       libraryId,
       objectId,
       options: {}
     });
   },
 
-  MergeMetadata: ({
+  MergeMetadata: async ({
     libraryId,
     objectId,
     writeToken,
     metadataSubtree,
     metadata
   }) => {
-    client.MergeMetadata({
+    await client.MergeMetadata({
       libraryId,
       objectId,
       writeToken,
@@ -153,14 +154,14 @@ const Fabric = {
     });
   },
 
-  ReplaceMetadata: ({
+  ReplaceMetadata: async ({
     libraryId,
     objectId,
     writeToken,
     metadataSubtree,
     metadata
   }) => {
-    client.ReplaceMetadata({
+    await client.ReplaceMetadata({
       libraryId,
       objectId,
       writeToken,
@@ -175,7 +176,7 @@ const Fabric = {
     writeToken,
     metadataSubtree
   }) => {
-    client.DeleteMetadata({
+    await client.DeleteMetadata({
       libraryId,
       objectId,
       writeToken,
@@ -183,12 +184,12 @@ const Fabric = {
     });
   },
 
-  FinalizeContentObject: ({
+  FinalizeContentObject: async ({
     libraryId,
     objectId,
     writeToken
   }) => {
-    return client.FinalizeContentObject({
+    return await client.FinalizeContentObject({
       libraryId,
       objectId,
       writeToken

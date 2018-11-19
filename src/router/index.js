@@ -1,5 +1,6 @@
 import React from "react";
 import {Route, Switch} from "react-router";
+import Path from "path";
 
 import AccessGroups from "../containers/pages/AccessGroups";
 import {
@@ -12,7 +13,7 @@ import {
 import {
   ContentLibrariesContainer,
   ContentLibraryFormContainer,
-  ContentObjectsContainer,
+  ContentLibraryContainer,
   ContentObjectContainer,
   ContentObjectFormContainer,
   ContentObjectUploadFormContainer, ContentObjectAppContainer
@@ -25,6 +26,18 @@ import {
   DeployContentContractFormContainer
 } from "../containers/pages/Contracts";
 import Services from "../containers/pages/Services";
+import Fabric from "../clients/Fabric";
+
+// Inject content space library ID into match parameters
+const ContentTypeRoute = ({subPath, component}) => {
+  const ContentRoute = (args) => {
+    args.match.params.libraryId = Fabric.contentSpaceLibraryId;
+
+    return React.createElement(component, args);
+  };
+
+  return <Route exact path={Path.join("/content-types", subPath)} component={ContentRoute} />;
+};
 
 function Routes(){
   return (
@@ -41,7 +54,8 @@ function Routes(){
 
         <Route exact path="/content" component={ContentLibrariesContainer} />
         <Route exact path="/content/create" component={ContentLibraryFormContainer} />
-        <Route exact path="/content/:libraryId" component={ContentObjectsContainer} />
+
+        <Route exact path="/content/:libraryId" component={ContentLibraryContainer} />
         <Route exact path="/content/:libraryId/edit" component={ContentLibraryFormContainer} />
         <Route exact path="/content/:libraryId/create" component={ContentObjectFormContainer} />
         <Route exact path="/content/:libraryId/:objectId" component={ContentObjectContainer} />
@@ -50,7 +64,14 @@ function Routes(){
         <Route exact path="/content/:libraryId/:objectId/app" component={ContentObjectAppContainer} />
         <Route exact path="/content/:libraryId/:objectId/deploy" component={DeployContentContractFormContainer} />
 
-        <Route exact path="/content-types" component={ContentLibrariesContainer} />
+        { ContentTypeRoute({subPath: "/", component: ContentLibraryContainer}) }
+        { ContentTypeRoute({subPath: "/edit", component: ContentLibraryFormContainer}) }
+        { ContentTypeRoute({subPath: "/create", component: ContentObjectFormContainer}) }
+        { ContentTypeRoute({subPath: "/:objectId", component: ContentObjectContainer}) }
+        { ContentTypeRoute({subPath: "/:objectId/edit", component: ContentObjectFormContainer}) }
+        { ContentTypeRoute({subPath: "/:objectId/upload", component: ContentObjectUploadFormContainer}) }
+        { ContentTypeRoute({subPath: "/:objectId/app", component: ContentObjectAppContainer}) }
+        { ContentTypeRoute({subPath: "/:objectId/deploy", component: DeployContentContractFormContainer}) }
 
         <Route exact path="/contracts" component={ContractsContainer} />
         <Route exact path="/contracts/compile" component={CompileContractFormContainer} />
