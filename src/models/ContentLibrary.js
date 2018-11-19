@@ -1,4 +1,5 @@
 import ContentObject from "./ContentObject";
+import Fabric from "../clients/Fabric";
 
 class ContentLibrary {
   EluvioKeys() {
@@ -46,6 +47,10 @@ class ContentLibrary {
       let contentObject = new ContentObject({ libraryId, contentObjectData: contentObjectData });
 
       this.contentObjects.push(contentObject);
+    }
+
+    if(this.libraryId === Fabric.contentSpaceLibraryId) {
+      this.isContentSpaceLibrary = true;
     }
   }
 }
