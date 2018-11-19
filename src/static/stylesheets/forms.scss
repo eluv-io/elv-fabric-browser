@@ -57,6 +57,11 @@ form {
       &[type="text"] {
         padding: 0 10px;
       }
+
+      &:read-only {
+        background: $color-lightergray;
+        color: $color-darkgray;
+      }
     }
 
     textarea {
