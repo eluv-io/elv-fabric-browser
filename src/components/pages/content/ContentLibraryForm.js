@@ -42,6 +42,7 @@ class ContentLibraryForm extends React.Component {
 
     if(contentLibrary) {
       this.setState({
+        isContentSpaceLibrary: contentLibrary.isContentSpaceLibrary,
         name: contentLibrary.name,
         description: contentLibrary.description,
         contractAddress: contentLibrary.contractAddress,
@@ -102,7 +103,7 @@ class ContentLibraryForm extends React.Component {
       <div className="form-content">
         <div className="labelled-input">
           <label htmlFor="name">Name</label>
-          <input name="name" value={this.state.name} onChange={this.HandleInputChange} />
+          <input name="name" value={this.state.name} onChange={this.HandleInputChange} readOnly={this.state.isContentSpaceLibrary} />
         </div>
         <div className="labelled-input">
           <label className="textarea-label" htmlFor="description">Description</label>

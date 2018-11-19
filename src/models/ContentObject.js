@@ -50,6 +50,7 @@ class ContentObject {
     // Library metadata object has same ID as library, with different prefix
     if(this.objectId && this.libraryId === this.objectId.replace("iq__", "ilib")) {
       this.name = "Library Content Object";
+      this.isLibraryObject = true;
     }
 
     if(contentObjectData.versions) {

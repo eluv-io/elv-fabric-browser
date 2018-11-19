@@ -44,6 +44,7 @@ class ContentObjectForm extends React.Component {
 
     if(contentObject && contentObject.metadata) {
       this.setState({
+        isLibraryObject: contentObject.isLibraryObject,
         name: contentObject.name,
         type: contentObject.type,
         description: contentObject.description,
@@ -103,7 +104,7 @@ class ContentObjectForm extends React.Component {
       <div className="form-content">
         <div className="labelled-input">
           <label className="label" htmlFor="name">Name</label>
-          <input name="name" value={this.state.name} onChange={this.HandleInputChange} />
+          <input name="name" value={this.state.name} onChange={this.HandleInputChange} readOnly={this.state.isLibraryObject} />
         </div>
         { this.TypeField() }
         <div className="labelled-input">
