@@ -39,9 +39,6 @@ export const SmallCard = ({className, link, name, description, title, onDelete})
         <Link className="card-name" to={link}>
           {name}
         </Link>
-        <div className="card-delete" title="Delete contract" onClick={handleDelete}>
-          X
-        </div>
       </div>
       <ClippedText text={description || "No description"} className="card-description" />
     </div>

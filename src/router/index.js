@@ -21,6 +21,7 @@ import {
 
 import {
   CompileContractFormContainer,
+  ContractContainer,
   ContractFormContainer,
   ContractsContainer,
   DeployContentContractFormContainer
@@ -76,6 +77,8 @@ function Routes(){
         <Route exact path="/contracts" component={ContractsContainer} />
         <Route exact path="/contracts/compile" component={CompileContractFormContainer} />
         <Route exact path="/contracts/save" component={ContractFormContainer} />
+        <Route exact path="/contracts/:contractName" component={ContractContainer} />
+        <Route exact path="/contracts/:contractName/edit" component={ContractFormContainer} />
         <Route path="/services" component={Services} />
       </Switch>
     </div>

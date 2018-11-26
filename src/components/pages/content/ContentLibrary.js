@@ -7,6 +7,7 @@ import RequestPage from "../RequestPage";
 import { LabelledField } from "../../components/LabelledField";
 import Redirect from "react-router/es/Redirect";
 import Fabric from "../../../clients/Fabric";
+import ClippedText from "../../components/ClippedText";
 
 class ContentLibrary extends React.Component {
   constructor(props) {
@@ -30,7 +31,7 @@ class ContentLibrary extends React.Component {
   }
 
   RequestComplete() {
-    if(this.state.deleting) {
+    if(this.state.deleting && this.props.requests[this.state.requestId].completed) {
       this.setState({
         deleted: true
       });
@@ -124,11 +125,13 @@ class ContentLibrary extends React.Component {
   }
 
   LibraryInfo() {
+    const description = <ClippedText className="object-description" text={this.state.contentLibrary.description} />;
+
     return (
       <div className="object-info label-box">
         <h3>Content Library Info</h3>
         <LabelledField label={"Library ID"} value={this.state.libraryId} />
-        <LabelledField label={"Description"} value={this.state.contentLibrary.description} />
+        <LabelledField label={"Description"} value={description} />
         <LabelledField label={"Contract Address"} value={this.state.contentLibrary.contractAddress} />
         <LabelledField label={"Content Objects"} value={this.state.contentLibrary.contentObjects.length} />
         { this.LibraryMetadata() }
