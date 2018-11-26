@@ -9,20 +9,12 @@ class Contracts extends React.Component {
   constructor(props) {
     super(props);
     this.state = {};
-
-    this.RemoveContract = this.RemoveContract.bind(this);
   }
 
   componentDidMount() {
     this.setState({
       requestId: this.props.ListContracts()
     });
-  }
-
-  RemoveContract(contractName) {
-    if(confirm("Are you sure you want to remove this contract?")) {
-      this.props.RemoveContract({name: contractName});
-    }
   }
 
   Contracts() {
@@ -36,8 +28,7 @@ class Contracts extends React.Component {
               link={Path.join("/contracts", contractName)}
               name={contractName}
               description={contract.description}
-              title={"Contract " + contractName}
-              onDelete={() => this.RemoveContract(contractName)}/>
+              title={"Contract " + contractName}/>
           </div>
         );
       })
