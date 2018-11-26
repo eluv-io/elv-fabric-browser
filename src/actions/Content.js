@@ -14,7 +14,10 @@ export const ListContentLibraries = () => {
       domain: "content",
       action: "listContentLibraries",
       todo: (async () => {
-        const libraryIds = await Fabric.ListContentLibraries();
+        let libraryIds = await Fabric.ListContentLibraries();
+
+        // Exclude special content space library
+        libraryIds = libraryIds.filter(libraryId => libraryId !== Fabric.contentSpaceLibraryId);
 
         // Query libraries one at a time to avoid blockchain nonce collisions and cache access transactions
         const libraryMetadata = {};
