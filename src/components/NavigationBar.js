@@ -3,11 +3,9 @@ import { Link } from "react-router-dom";
 import InlineSVG from "svg-inline-react";
 
 import ContentIcon from "../static/icons/content.svg";
-import AccountsIcon from "../static/icons/accounts.svg";
 import GroupsIcon from "../static/icons/groups.svg";
 import ContentTypeIcon from "../static/icons/content_types.svg";
 import ContractsIcon from "../static/icons/contracts.svg";
-import ServicesIcon from "../static/icons/services.svg";
 
 class NavigationBar extends React.Component {
   static Links() {
@@ -17,11 +15,6 @@ class NavigationBar extends React.Component {
         text: "Content",
         rootPath: true,
         icon: ContentIcon
-      },
-      {
-        link: "accounts",
-        text: "Accounts",
-        icon: AccountsIcon
       },
       {
         link: "access-groups",
@@ -37,11 +30,6 @@ class NavigationBar extends React.Component {
         link: "contracts",
         text: "Contracts",
         icon: ContractsIcon
-      },
-      {
-        link: "services",
-        text: "Services",
-        icon: ServicesIcon
       }
     ];
   }
