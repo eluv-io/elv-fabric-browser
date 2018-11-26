@@ -7,6 +7,7 @@ import { LabelledField } from "../../components/LabelledField";
 import DashVideo from "../DashVideo";
 import Redirect from "react-router/es/Redirect";
 import Fabric from "../../../clients/Fabric";
+import ClippedText from "../../components/ClippedText";
 
 class ContentObject extends React.Component {
   constructor(props) {
@@ -38,7 +39,7 @@ class ContentObject extends React.Component {
   }
 
   RequestComplete() {
-    if(this.state.deleting) {
+    if(this.state.deleting && this.props.requests[this.state.requestId].completed) {
       this.setState({
         deleted: true
       });
@@ -286,6 +287,8 @@ class ContentObject extends React.Component {
   }
 
   ObjectInfo(contentObject) {
+    const description = <ClippedText className="object-description" text={contentObject.description} />;
+
     return (
       <div className="object-info label-box">
         <h3>Content Object Info</h3>
@@ -294,7 +297,7 @@ class ContentObject extends React.Component {
         <LabelledField label={"Object ID"} value={contentObject.objectId} />
         <LabelledField label={"Name"} value={contentObject.name} />
         <LabelledField label={"Type"} value={contentObject.type} />
-        <LabelledField label={"Description"} value={contentObject.description} />
+        <LabelledField label={"Description"} value={description} />
         <LabelledField label={"Contract Address"} value={contentObject.contractAddress} />
         <LabelledField label={"Versions"} value={contentObject.versions.length} />
         <LabelledField label={"Parts"} value={contentObject.parts.length} />

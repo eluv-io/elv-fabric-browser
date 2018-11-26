@@ -12,6 +12,7 @@ import DeployContractForm from "../../components/pages/contracts/DeployContractF
 import { SetErrorMessage } from "../../actions/Notifications";
 import ContractForm from "../../components/pages/contracts/ContractForm";
 import Contracts from "../../components/pages/contracts/Contracts";
+import Contract from "../../components/pages/contracts/Contract";
 
 const mapStateToProps = (state) => ({
   requests: state.requests.contracts,
@@ -35,6 +36,11 @@ export const ContractsContainer = connect(
   mapStateToProps,
   mapDispatchToProps
 )(Contracts);
+
+export const ContractContainer = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Contract);
 
 export const CompileContractFormContainer = connect(
   mapStateToProps,

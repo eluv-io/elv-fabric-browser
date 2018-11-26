@@ -9,6 +9,8 @@ import { connectRouter } from "connected-react-router";
 import RootReducer from "./reducers";
 import App from "./components/App";
 
+import "./utils/StringExtensions";
+
 const history = createHashHistory();
 
 const store = createStore(

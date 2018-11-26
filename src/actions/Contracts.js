@@ -32,7 +32,8 @@ export const RemoveContract = ({name}) => {
         await Fabric.FabricBrowser.RemoveContract({name});
 
         dispatch(SetNotificationMessage({
-          message: "Contract successfully deleted"
+          message: "Contract successfully deleted",
+          redirect: true
         }));
 
         // Reload contracts
@@ -100,7 +101,7 @@ export const CompileContracts = (contractFiles) => {
   };
 };
 
-export const SaveContract = ({name, description, abi, bytecode}) => {
+export const SaveContract = ({name, oldContractName, description, abi, bytecode}) => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
@@ -113,6 +114,13 @@ export const SaveContract = ({name, description, abi, bytecode}) => {
           abi,
           bytecode
         });
+
+        // TODO: Handle this better
+        if(oldContractName && oldContractName !== name) {
+          await Fabric.FabricBrowser.RemoveContract({
+            name: oldContractName
+          });
+        }
 
         dispatch(SetNotificationMessage({
           message: "Contract successfully saved",

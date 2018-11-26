@@ -82,3 +82,16 @@ iframe {
     margin-bottom: 30px;
   }
 }
+
+.object-description {
+  height: 100%;
+  &.show {
+    max-height: 100%;
+  }
+
+  &.hide {
+    max-height: 3.5em;
+  }
+
+  margin-bottom: 5px;
+}
