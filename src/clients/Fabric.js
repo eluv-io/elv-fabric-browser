@@ -1,14 +1,30 @@
 import { FrameClient } from "elv-client-js/ElvFrameClient-min";
+import { ElvClient } from "elv-client-js/src/ElvClient";
 import ContentObject from "../models/ContentObject";
 import URI from "urijs";
 import Path from "path";
 
 const Configuration = require("../../configuration.json");
 
-const client = new FrameClient({
-  target: window.parent,
-  timeout: 10
-});
+let client;
+
+if(window.self === window.top) {
+  client = ElvClient.FromConfiguration({configuration: Configuration});
+
+  let wallet = client.GenerateWallet();
+  let signer = wallet.AddAccount({
+    accountName: "Alice",
+    //privateKey: "04832aec82a6572d9a5782c4af9d7d88b0eb89116349ee484e96b97daeab5ca6"
+    privateKey: "1307df44f8f5033ec86434a7965234015da85261df149ed498cb29907df38d72"
+  });
+  client.SetSigner({signer});
+} else {
+  // Contained in IFrame
+  client = new FrameClient({
+    target: window.parent,
+    timeout: 10
+  });
+}
 
 const Fabric = {
   /* Utils */
@@ -281,6 +297,14 @@ const Fabric = {
       customContractAddress,
       overrides
     });
+  },
+
+  ContentObjectContractEvents: ({objectId}) => {
+    return client.ContentObjectContractEvents({objectId});
+  },
+
+  ContractEvents: ({contractAddress, abi}) => {
+    return client.ContractEvents({contractAddress, abi});
   },
 
   /* Naming */

@@ -40,7 +40,7 @@ class ContentObjectForm extends React.Component {
 
   // Set loaded content object
   OnContentObjectLoaded() {
-    let contentObject = this.props.contentObjectMetadata[this.state.objectId];
+    let contentObject = this.props.contentObjects[this.state.objectId];
 
     if(contentObject && contentObject.metadata) {
       this.setState({

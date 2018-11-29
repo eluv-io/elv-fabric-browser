@@ -25,11 +25,8 @@ import ContentObjectUploadForm from "../../components/pages/content/UploadForm";
 import ContentObjectApp from "../../components/pages/content/ContentApp";
 
 const mapStateToProps = (state) => ({
-  requests: state.requests.content,
-  contentLibraries: state.content.contentLibraries,
-  formattedLibraries: state.content.formattedLibraries,
-  contentObjects: state.content.contentObjects,
-  contentObjectMetadata: state.content.contentObjectMetadata
+  requests: state.requests,
+  ...state.content
 });
 
 const mapDispatchToProps = dispatch =>

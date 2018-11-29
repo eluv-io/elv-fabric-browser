@@ -26,12 +26,24 @@ const ContentReducer = (state = {}, action) => {
         }
       };
 
-    case ActionTypes.request.content.completed.list.contentObjectMetadata:
+    case ActionTypes.request.content.completed.list.contentObjectEvents:
       return {
         ...state,
-        contentObjectMetadata: {
-          ...state.contentObjectMetadata,
-          [action.contentObject.objectId]: action.contentObject
+        contentObjectEvents: {
+          ...state.contentObjectEvents,
+          [action.contractAddress]: action.events
+        }
+      };
+
+    case ActionTypes.request.content.completed.contract.call:
+      return {
+        ...state,
+        contractMethodResults: {
+          ...state.contractMethodResults,
+          [action.contractAddress]: {
+            ...state.contractMethodResults[action.contractAddress],
+            [action.methodName]: action.result
+          }
         }
       };
 
@@ -40,7 +52,9 @@ const ContentReducer = (state = {}, action) => {
         ...state,
         contentLibraries: state.contentLibraries || {},
         contentObjects: state.contentObjects || {},
-        contentObjectMetadata: state.contentObjectMetadata || {}
+        contentObjectMetadata: state.contentObjectMetadata || {},
+        contentObjectEvents: state.contentObjectEvents || {},
+        contractMethodResults: state.contractMethodResults || {}
       };
   }
 };
