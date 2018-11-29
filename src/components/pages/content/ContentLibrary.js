@@ -1,5 +1,5 @@
 import React from "react";
-import {LibraryCard, ThreeCard} from "../../components/DisplayCards";
+import {LibraryCard} from "../../components/DisplayCards";
 import { Link } from "react-router-dom";
 import Path from "path";
 import ContentIcon from "../../../static/icons/content.svg";
@@ -81,7 +81,7 @@ class ContentLibrary extends React.Component {
           link={Path.join(this.props.match.url, contentObject.objectId)}
           icon={icon}
           name={contentObject.name}
-          description={contentObject.metadata && contentObject.metadata.description}
+          description={contentObject.description}
           title={contentObject.name}
         />
       );
@@ -124,11 +124,25 @@ class ContentLibrary extends React.Component {
     );
   }
 
+  LibraryImage() {
+    const imageUrl = this.state.contentLibrary.ImageUrl();
+    if(imageUrl) {
+      return (
+        <div className="object-image">
+          <img src={imageUrl} />
+        </div>
+      );
+    }
+
+    return null;
+  }
+
   LibraryInfo() {
     const description = <ClippedText className="object-description" text={this.state.contentLibrary.description} />;
 
     return (
       <div className="object-info label-box">
+        { this.LibraryImage() }
         <h3>Content Library Info</h3>
         <LabelledField label={"Library ID"} value={this.state.libraryId} />
         <LabelledField label={"Description"} value={description} />

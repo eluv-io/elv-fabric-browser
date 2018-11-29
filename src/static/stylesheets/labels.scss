@@ -1,22 +1,23 @@
 @import "./variables/colors";
+@import "./variables/spacing";
 
 .label-box {
-  width: 800px;
+  width: 100%;
 
   h2 {
     font-size: 20px;
     font-weight: 400;
-    margin: 20px 0 15px;
+    margin: $spacing-m 0 $spacing-s;
   }
 
   h3 {
     font-size: 18px;
-    margin: 20px 0 15px;
+    margin: $spacing-m 0 $spacing-s;
   }
 
   .labelled-field {
     display: flex;
-    margin: 7px 0;
+    padding: $spacing-xxs $spacing-s $spacing-xxs 0;
 
     label {
       color: $color-text-light;
@@ -33,7 +34,7 @@
   }
 
   .indented {
-    padding-left: 20px;
+    padding-left: $spacing-m;
   }
 
   pre {

@@ -32,6 +32,10 @@ class ContentLibrary {
     );
   }
 
+  ImageUrl() {
+    return this.libraryObject && this.libraryObject.HasImage() && this.libraryObject.RepUrl("image");
+  }
+
   constructor({ libraryId, libraryMetadata, contentObjectsData=[], url }) {
     libraryMetadata = libraryMetadata || {};
     this.libraryId = libraryId;
@@ -47,6 +51,10 @@ class ContentLibrary {
       let contentObject = new ContentObject({ libraryId, contentObjectData: contentObjectData });
 
       this.contentObjects.push(contentObject);
+
+      if(contentObject.isLibraryObject) {
+        this.libraryObject = contentObject;
+      }
     }
 
     if(this.libraryId === Fabric.contentSpaceLibraryId) {
