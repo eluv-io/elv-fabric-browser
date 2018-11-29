@@ -3,18 +3,17 @@
 ##### Note: The fabric browser should be run as a contained application of [Eluvio Web Core](https://github.com/eluv-io/elv-web-core)
 
 Quick start:
-
 - Clone ```elv-fabric-browser```, ```elv-core-js```, ```elv-client-js```
-
 - In ```elv-client-js```, initialize a new content space:
 ```
-  node InitContentSpace.js <path-to-qfab-config> <path-to-content-fabric-dir>
+node InitContentSpace.js <path-to-qfab-config> <path-to-content-fabric-dir>
 ```
-
 - Copy generated TestConfiguration.json in ```elv-client-js``` to configuration.json in ```elv-core-js``` and ```elv-fabric-browser```
-
+- Seed the library ```elv-fabric-browser``` uses to store contract information:
+```
+node Seed.js <private-key>
+```
 - npm install + npm run serve ```elv-core-js``` and ```elv-fabric-browser```
-
 - Open [http://localhost:8082](http://localhost:8082)
 
 
