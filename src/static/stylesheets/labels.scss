@@ -26,9 +26,17 @@
         min-width: 250px;
       }
     }
+
+    .inline-link {
+      color: $color-mediumblue;
+    }
   }
 
   .indented {
     padding-left: 20px;
+  }
+
+  pre.event-log {
+    max-height: 500px;
   }
 }

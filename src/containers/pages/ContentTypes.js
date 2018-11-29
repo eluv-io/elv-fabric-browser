@@ -4,7 +4,7 @@ import { ListContentLibraries } from "../../actions/Content";
 import ContentLibraries from "../../components/pages/content/ContentLibraries";
 
 const mapStateToProps = (state) => ({
-  requests: state.requests.contentTypes,
+  requests: state.requests,
   contentTypes: state.contentTypes.contentTypes
 });
 

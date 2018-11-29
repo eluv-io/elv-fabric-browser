@@ -76,7 +76,7 @@ class ContentObject extends React.Component {
   }
 
   DeleteContentVersion(versionHash) {
-    if(confirm("Are you sure you want to delete this content object?")) {
+    if(confirm("Are you sure you want to delete this content version?")) {
       this.setState({
         requestId: this.props.DeleteContentVersion({
           libraryId: this.state.libraryId,
@@ -286,6 +286,27 @@ class ContentObject extends React.Component {
     );
   }
 
+  ContractInfo(contentObject) {
+    let contractInfo = [];
+    contractInfo.push(
+      <LabelledField
+        key={"contract-" + contentObject.contractAddress}
+        label={"Contract Address"}
+        value={<Link className="inline-link" to={Path.join(this.props.match.url, "contract")}>{contentObject.contractAddress}</Link>} />
+    );
+
+    if(contentObject.metadata.customContract) {
+      const customContractAddress = contentObject.metadata.customContract.address.toLowerCase();
+      contractInfo.push(
+        <LabelledField
+          key={"contract-" + customContractAddress}
+          label={"Custom Contract"}
+          value={<Link className="inline-link" to={Path.join(this.props.match.url, "custom-contract")}>{customContractAddress}</Link>} />);
+    }
+
+    return contractInfo;
+  }
+
   ObjectInfo(contentObject) {
     const description = <ClippedText className="object-description" text={contentObject.description} />;
 
@@ -298,7 +319,7 @@ class ContentObject extends React.Component {
         <LabelledField label={"Name"} value={contentObject.name} />
         <LabelledField label={"Type"} value={contentObject.type} />
         <LabelledField label={"Description"} value={description} />
-        <LabelledField label={"Contract Address"} value={contentObject.contractAddress} />
+        { this.ContractInfo(contentObject) }
         <LabelledField label={"Versions"} value={contentObject.versions.length} />
         <LabelledField label={"Parts"} value={contentObject.parts.length} />
         <LabelledField label={"Total size"} value={contentObject.TotalSize()} />

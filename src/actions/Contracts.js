@@ -10,7 +10,6 @@ export const ListContracts = () => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
-      domain: "contracts",
       action: "listContracts",
       todo: (async () => {
         dispatch({
@@ -26,7 +25,6 @@ export const RemoveContract = ({name}) => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
-      domain: "contracts",
       action: "removeContract",
       todo: (async () => {
         await Fabric.FabricBrowser.RemoveContract({name});
@@ -47,7 +45,6 @@ export const CompileContracts = (contractFiles) => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
-      domain: "contracts",
       action: "compileContracts",
       todo: (async () => {
         let sources = {};
@@ -105,7 +102,6 @@ export const SaveContract = ({name, oldContractName, description, abi, bytecode}
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
-      domain: "contracts",
       action: "saveContract",
       todo: (async () => {
         await Fabric.FabricBrowser.AddContract({
@@ -143,7 +139,6 @@ export const DeployContentContract = ({
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
-      domain: "contracts",
       action: "deployContentContract",
       todo: (async () => {
         let constructorArgs = [];
@@ -173,16 +168,16 @@ export const DeployContentContract = ({
           objectId
         });
 
-        await Fabric.MergeMetadata({
+        await Fabric.ReplaceMetadata({
           libraryId,
           objectId,
           writeToken: editResponse.write_token,
+          metadataSubtree: "customContract",
           metadata: {
-            customContract: {
-              name: contractName,
-              description: contractDescription,
-              address: contractInfo.contractAddress
-            }
+            name: contractName,
+            description: contractDescription,
+            address: contractInfo.contractAddress,
+            abi
           }
         });
 
@@ -199,6 +194,73 @@ export const DeployContentContract = ({
 
         dispatch(SetNotificationMessage({
           message: "Contract successfully deployed",
+          redirect: true
+        }));
+      })
+    });
+  };
+};
+
+export const GetContractEvents = ({objectId, contractAddress, abi}) => {
+  return (dispatch) => {
+    return WrapRequest({
+      dispatch: dispatch,
+      action: "getContractEvents",
+      todo: (async () => {
+        let events;
+        if(objectId && !contractAddress) {
+          contractAddress = Fabric.utils.HashToAddress({hash: objectId});
+          events = await Fabric.ContentObjectContractEvents({objectId});
+        } else {
+          events = await Fabric.ContractEvents({contractAddress, abi});
+        }
+
+        dispatch({
+          type: ActionTypes.request.content.completed.list.contentObjectEvents,
+          objectId,
+          contractAddress,
+          events: events.reverse()
+        });
+      })
+    });
+  };
+};
+
+export const CallContractMethod = ({
+  contractAddress,
+  abi,
+  methodName,
+  methodArgs
+}) => {
+  return (dispatch) => {
+    return WrapRequest({
+      dispatch: dispatch,
+      action: "callContractMethod",
+      todo: (async () => {
+        if(methodArgs.length > 0) {
+          methodArgs = await Fabric.FormatContractArguments({
+            abi,
+            methodName,
+            args: methodArgs
+          });
+        }
+
+        const result = await Fabric.CallContractMethod({
+          contractAddress,
+          abi,
+          methodName,
+          methodArgs
+        });
+
+        dispatch({
+          type: ActionTypes.request.content.completed.contract.call,
+          contractAddress,
+          methodName,
+          result
+        });
+
+        dispatch(SetNotificationMessage({
+          message: "Method successfully called",
           redirect: true
         }));
       })

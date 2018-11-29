@@ -66,7 +66,7 @@ class Form extends React.Component {
     }
 
     return (
-      <div className="page-container">
+      <div className="form-container">
         <form onSubmit={this.HandleSubmit}>
           <fieldset>
             <legend>{this.props.legend}</legend>

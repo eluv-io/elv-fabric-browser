@@ -82,7 +82,7 @@ class ContentLibrary extends React.Component {
           icon={icon}
           name={contentObject.name}
           description={contentObject.metadata && contentObject.metadata.description}
-          title={JSON.stringify(contentObject, null, 2)}
+          title={contentObject.name}
         />
       );
     }

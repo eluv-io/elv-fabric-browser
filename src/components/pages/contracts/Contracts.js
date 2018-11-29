@@ -3,7 +3,9 @@ import { Link } from "react-router-dom";
 import Path from "path";
 
 import RequestPage from "../RequestPage";
-import {SmallCard} from "../../components/DisplayCards";
+import { LibraryCard } from "../../components/DisplayCards";
+
+import ContractIcon from "../../../static/icons/contracts.svg";
 
 class Contracts extends React.Component {
   constructor(props) {
@@ -22,11 +24,19 @@ class Contracts extends React.Component {
     return (
       Object.keys(contracts).map(contractName => {
         const contract = contracts[contractName];
+        let eventCount = Object.values(contract.abi).filter(element => element.type === "event").length;
+        eventCount = eventCount === 1 ? eventCount + " event" : eventCount + " events";
+
+        let methodCount = Object.values(contract.abi).filter(element => element.type === "function").length;
+        methodCount = methodCount === 1 ? methodCount + " method" : methodCount + " methods";
+
         return (
           <div className="contracts" key={"contract-" + contractName}>
-            <SmallCard
+            <LibraryCard
+              icon={ContractIcon}
               link={Path.join("/contracts", contractName)}
               name={contractName}
+              infoText={`${eventCount}, ${methodCount}`}
               description={contract.description}
               title={"Contract " + contractName}/>
           </div>
