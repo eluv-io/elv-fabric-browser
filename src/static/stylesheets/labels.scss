@@ -36,7 +36,9 @@
     padding-left: 20px;
   }
 
-  pre.event-log {
-    max-height: 500px;
+  pre {
+    &.event-log {
+      max-height: 500px;
+    }
   }
 }

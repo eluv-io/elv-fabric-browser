@@ -393,17 +393,15 @@ const Fabric = {
         objectId: info.contracts
       });
 
-      await Fabric.MergeMetadata({
+      await Fabric.ReplaceMetadata({
         libraryId: info.libraryId,
         objectId: info.contracts,
         writeToken: editResponse.write_token,
-        metadataSubtree: "contracts",
+        metadataSubtree: Path.join("contracts", name),
         metadata: {
-          [name]: {
-            description,
-            abi,
-            bytecode
-          }
+          description,
+          abi,
+          bytecode
         }
       });
 
@@ -422,33 +420,11 @@ const Fabric = {
         objectId: info.contracts
       });
 
-      // TODO: Delete metadata currently doesn't work
-
-      /*
       await Fabric.DeleteMetadata({
         libraryId: info.libraryId,
         writeToken: editResponse.write_token,
         metadataSubtree: Path.join("contracts", name),
       });
-      */
-
-      // Temporary metadata deletion
-
-      const metadata = await Fabric.GetContentObjectMetadata({
-        libraryId: info.libraryId,
-        objectId: info.contracts
-      });
-
-      delete metadata.contracts[name];
-
-      await Fabric.ReplaceMetadata({
-        libraryId: info.libraryId,
-        objectId: info.contracts,
-        writeToken: editResponse.write_token,
-        metadata
-      });
-
-      // End temporary metadata deletion
 
       await Fabric.FinalizeContentObject({
         libraryId: info.libraryId,

@@ -85,6 +85,8 @@ iframe {
 
 .object-description {
   height: 100%;
+  margin-bottom: 5px;
+
   &.show {
     max-height: 100%;
   }
@@ -92,6 +94,4 @@ iframe {
   &.hide {
     max-height: 3.5em;
   }
-
-  margin-bottom: 5px;
 }
