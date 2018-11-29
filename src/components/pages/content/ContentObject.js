@@ -190,8 +190,8 @@ class ContentObject extends React.Component {
     } else {
       return (
         <div className="object-media">
-          {image}
           {video}
+          {image}
         </div>
       );
     }
@@ -287,6 +287,8 @@ class ContentObject extends React.Component {
   }
 
   ContractInfo(contentObject) {
+    if(contentObject.isLibraryObject){ return null; }
+
     let contractInfo = [];
     contractInfo.push(
       <LabelledField
@@ -349,12 +351,15 @@ class ContentObject extends React.Component {
       );
     }
 
+    const setContractButton = this.state.contentObject.isLibraryObject ?
+      null : <Link to={Path.join(this.props.match.url, "deploy")} className="action" >Set Custom Contract</Link>
+
     return (
       <div className="page-container content-page-container">
         <div className="actions-container">
           <Link to={Path.dirname(this.props.match.url)} className="action secondary" >Back</Link>
           <Link to={Path.join(this.props.match.url, "edit")} className="action" >Edit Content Object</Link>
-          <Link to={Path.join(this.props.match.url, "deploy")} className="action" >Set Custom Contract</Link>
+          { setContractButton }
           <Link to={Path.join(this.props.match.url, "upload")} className="action" >Upload Parts</Link>
           { this.DeleteObjectButton() }
           { appLink }

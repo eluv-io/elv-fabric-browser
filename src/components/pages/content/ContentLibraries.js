@@ -47,7 +47,7 @@ class ContentLibraries extends React.Component {
           key={libraryId}
           libraryId={libraryId}
           link={Path.join(path, libraryId)}
-          icon={LibraryIcon}
+          icon={contentLibrary.ImageUrl() || LibraryIcon}
           previews={this.LibraryPreviewImages(contentLibrary)}
           name={contentLibrary.name}
           infoText={contentLibrary.contentObjects.length + " Content Objects"}
