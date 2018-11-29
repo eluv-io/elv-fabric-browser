@@ -11,7 +11,6 @@ export const ListContentLibraries = () => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
-      domain: "content",
       action: "listContentLibraries",
       todo: (async () => {
         let libraryIds = await Fabric.ListContentLibraries();
@@ -56,7 +55,6 @@ export const GetContentLibrary = ({libraryId}) => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
-      domain: "content",
       action: "getContentLibrary",
       todo: (async () => {
         const libraryData = await Fabric.GetContentLibrary({libraryId});
@@ -79,7 +77,6 @@ export const CreateContentLibrary = ({name, description, publicMetadata, private
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
-      domain: "content",
       action: "createContentLibrary",
       todo: (async () => {
         await Fabric.CreateContentLibrary({
@@ -102,7 +99,6 @@ export const UpdateContentLibrary = ({libraryId, name, description, contractAddr
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
-      domain: "content",
       action: "createContentLibrary",
       todo: (async () => {
         const contentLibrary = new ContentLibrary({
@@ -132,7 +128,6 @@ export const DeleteContentLibrary = ({ libraryId }) => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
-      domain: "content",
       action: "deleteContentLibrary",
       todo: (async () => {
         await Fabric.DeleteContentLibrary({libraryId});
@@ -150,7 +145,6 @@ export const ListContentObjects = ({ libraryId }) => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
-      domain: "content",
       action: "listContentObjects",
       todo: (async () => {
         let libraryData = (await Fabric.GetContentLibrary({libraryId}));
@@ -175,7 +169,6 @@ export const GetFullContentObject = ({ libraryId, objectId }) => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
-      domain: "content",
       action: "getFullContentObject",
       todo: (async () => {
         let contentObject = await Fabric.GetFullContentObject({ libraryId, objectId });
@@ -194,16 +187,14 @@ export const GetContentObjectMetadata = ({ libraryId, objectId }) => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
-      domain: "content",
       action: "getContentObjectMetadata",
       todo: (async () => {
         let contentObjectData = await Fabric.GetContentObject({ libraryId, objectId });
         contentObjectData.meta = await Fabric.GetContentObjectMetadata({ libraryId, objectId });
 
         let contentObject = new ContentObject({libraryId, contentObjectData});
-
         dispatch({
-          type: ActionTypes.request.content.completed.list.contentObjectMetadata,
+          type: ActionTypes.request.content.completed.list.contentObject,
           libraryId: libraryId,
           contentObject
         });
@@ -216,7 +207,6 @@ export const CreateContentObject = ({libraryId, name, description, type, metadat
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
-      domain: "content",
       action: "createContentObject",
       todo: (async () => {
         const contentObject = new ContentObject({
@@ -247,7 +237,6 @@ export const DeleteContentObject = ({ libraryId, objectId }) => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
-      domain: "content",
       action: "deleteContentObject",
       todo: (async () => {
         await Fabric.DeleteContentObject({libraryId, objectId});
@@ -265,7 +254,6 @@ export const DeleteContentVersion = ({ libraryId, objectId, versionHash }) => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
-      domain: "content",
       action: "deleteContentObject",
       todo: (async () => {
         await Fabric.DeleteContentVersion({libraryId, objectId, versionHash});
@@ -283,7 +271,6 @@ export const UpdateContentObject = ({libraryId, objectId, name, description, typ
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
-      domain: "content",
       action: "updateContentObject",
       todo: (async () => {
         const contentObject = new ContentObject({
@@ -324,7 +311,6 @@ export const UploadParts = ({libraryId, objectId, files}) => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
-      domain: "content",
       action: "uploadParts",
       todo: (async () => {
         let contentDraft = await Fabric.EditContentObject({ libraryId, objectId });
@@ -361,7 +347,6 @@ export const UploadParts2 = ({libraryId, objectId, files}) => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
-      domain: "content",
       action: "uploadParts",
       todo: (async () => {
         let contentDraft = await Fabric.EditContentObject({ libraryId, objectId });
@@ -454,8 +439,7 @@ export const DownloadPart = ({libraryId, objectId, versionHash, partHash, callba
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
-      domain: "content",
-      action: "getContentObject",
+      action: "downloadPart",
       todo: (async () => {
         let blob = await Fabric.DownloadPart({ libraryId, objectId, versionHash, partHash, format: "blob" });
         let url = window.URL.createObjectURL(blob);

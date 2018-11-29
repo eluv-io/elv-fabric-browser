@@ -21,10 +21,13 @@ const ActionTypes = {
           all: "COMPLETED_LIST_ALL_CONTENT",
           library: "COMPLETED_LIST_CONTENT_LIBRARY",
           contentObject: "COMPLETED_LIST_CONTENT_OBJECT",
-          contentObjectMetadata: "COMPLETED_LIST_CONTENT_OBJECT_METADATA"
+          contentObjectEvents: "COMPLETED_LIST_CONTENT_OBJECT_EVENTS"
         },
         create: {
           library: "COMPLETED_CREATE_CONTENT_LIBRARY"
+        },
+        contract: {
+          call: "COMPLETED_CALL_LIBRARY_CONTRACT"
         }
       }
     },

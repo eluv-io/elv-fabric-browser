@@ -39,6 +39,8 @@ class RequestForm extends React.Component {
   }
 
   componentDidUpdate() {
+    if(this.state.completed[this.props.requestId]) { return; }
+
     const completed = this.RequestCompleted();
     const errorMessage = this.RequestError();
 
@@ -49,6 +51,7 @@ class RequestForm extends React.Component {
           [this.props.requestId]: true
         }
       });
+
       if (completed && this.props.OnComplete) {
         this.props.OnComplete();
       } else if (errorMessage && this.props.OnError) {

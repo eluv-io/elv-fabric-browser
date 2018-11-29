@@ -90,7 +90,7 @@ export class LibraryCard extends React.Component {
 }
 
 LibraryCard.propTypes = {
-  libraryId: PropTypes.string.isRequired,
+  libraryId: PropTypes.string,
   link: PropTypes.string,
   icon: PropTypes.string,
   previews: PropTypes.array,

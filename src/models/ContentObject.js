@@ -1,6 +1,7 @@
 import Path from "path";
 import URI from "urijs";
 import PrettyBytes from "pretty-bytes";
+import Fabric from "../clients/Fabric";
 
 class ContentObject {
   EluvioKeys() {
@@ -27,8 +28,7 @@ class ContentObject {
       {
         "eluv.name": this.name,
         "eluv.description": this.description,
-        "eluv.type": this.type,
-        "caddr": this.contractAddress
+        "eluv.type": this.type
       },
       this.metadata || {}
     );
@@ -46,6 +46,10 @@ class ContentObject {
 
     this.libraryId = libraryId;
     this.objectId = contentObjectData.id;
+
+    if(this.objectId) {
+      this.contractAddress = Fabric.utils.HashToAddress({hash: this.objectId});
+    }
 
     // Library metadata object has same ID as library, with different prefix
     if(this.objectId && this.libraryId === this.objectId.replace("iq__", "ilib")) {
@@ -67,7 +71,6 @@ class ContentObject {
     this.name = this.name || metadata["eluv.name"] || "Content Object " + contentObjectData.id;
     this.type = contentObjectData.type || metadata["eluv.type"];
     this.description = metadata["eluv.description"];
-    this.contractAddress = metadata.caddr;
     this.metadata = this.FilterMetadata(metadata);
     this.verification = contentObjectData.verification;
 

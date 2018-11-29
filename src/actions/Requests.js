@@ -5,21 +5,17 @@ import { Wait } from "../utils/Helpers";
 
 // Wrap actions with requests to keep request state updated automatically
 // Returns a unique ID corresponding to the request state
-export const WrapRequest = (
-  {
-    dispatch,
-    domain,
-    action,
-    modal=false,
-    todo
-  }
-) => {
+export const WrapRequest = ({
+  dispatch,
+  action,
+  modal=false,
+  todo
+}) => {
   let requestId = Id.next();
 
   Request({
     requestId,
     dispatch,
-    domain,
     action,
     modal,
     todo
@@ -28,17 +24,14 @@ export const WrapRequest = (
   return requestId;
 };
 
-const Request = async (
-  {
-    requestId,
-    dispatch,
-    domain,
-    action,
-    modal,
-    todo
-  }
-) => {
-  dispatch(RequestSubmitted(requestId, domain, action));
+const Request = async ({
+  requestId,
+  dispatch,
+  action,
+  modal,
+  todo
+}) => {
+  dispatch(RequestSubmitted(requestId, action));
 
   try {
     // Simulate loading time
@@ -46,7 +39,7 @@ const Request = async (
 
     await todo();
 
-    dispatch(RequestCompleted(requestId, domain, action));
+    dispatch(RequestCompleted(requestId, action));
   } catch(error) {
     console.error(error);
 
@@ -59,7 +52,7 @@ const Request = async (
         error;
     }
 
-    dispatch(RequestError(requestId, domain, action, errorMessage));
+    dispatch(RequestError(requestId, action, errorMessage));
 
     // Modals will handle their own errors
     if(!modal) {
@@ -68,30 +61,27 @@ const Request = async (
   }
 };
 
-const RequestSubmitted = (requestId, domain, action) => {
+const RequestSubmitted = (requestId, action) => {
   return {
     type: ActionTypes.request.request.status.submitted,
-    requestId: requestId,
-    domain: domain,
-    action: action
+    requestId,
+    action
   };
 };
 
-const RequestCompleted = (requestId, domain, action) => {
+const RequestCompleted = (requestId, action) => {
   return {
     type: ActionTypes.request.request.status.completed,
-    requestId: requestId,
-    domain: domain,
-    action: action
+    requestId,
+    action
   };
 };
 
-const RequestError = (requestId, domain, action, error_message) => {
+const RequestError = (requestId, action, error_message) => {
   return {
     type: ActionTypes.request.request.status.error,
-    requestId: requestId,
-    domain: domain,
-    action: action,
-    error_message: error_message
+    requestId,
+    action,
+    error_message
   };
 };

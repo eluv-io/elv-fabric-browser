@@ -7,7 +7,6 @@ export const ListContentTypes = () => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
-      domain: "content",
       action: "listContentTypes",
       todo: (async () => {
         /*
