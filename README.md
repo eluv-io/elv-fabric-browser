@@ -2,11 +2,20 @@
 
 ##### Note: The fabric browser should be run as a contained application of [Eluvio Web Core](https://github.com/eluv-io/elv-web-core)
 
-TL;DR:
-- Run this on localhost:8080 using ```npm run serve```
-- Update configuration.json in Elv Web Core to point to fabric/blockchain
-- Run Elv Web Core on localhost:8082 using ```npm run serve```
-- Open Elv Web Core in the browser at http//localhost:8082
+Quick start:
+
+- Clone ```elv-fabric-browser```, ```elv-core-js```, ```elv-client-js```
+
+- In ```elv-client-js```, initialize a new content space:
+```
+  node InitContentSpace.js <path-to-qfab-config> <path-to-content-fabric-dir>
+```
+
+- Copy generated TestConfiguration.json in ```elv-client-js``` to configuration.json in ```elv-core-js``` and ```elv-fabric-browser```
+
+- npm install + npm run serve ```elv-core-js``` and ```elv-fabric-browser```
+
+- Open [http://localhost:8082](http://localhost:8082)
 
 
 #### Running with NPM
