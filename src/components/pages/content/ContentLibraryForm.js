@@ -3,6 +3,7 @@ import RequestForm from "../../forms/RequestForm";
 import { JsonTextArea } from "../../../utils/Input";
 import RequestPage from "../RequestPage";
 import Path from "path";
+import BrowseWidget from "../../components/BrowseWidget";
 
 class ContentLibraryForm extends React.Component {
   constructor(props) {
@@ -13,12 +14,15 @@ class ContentLibraryForm extends React.Component {
       description: "",
       publicMetadata: "",
       privateMetadata: "",
+      imagePreviewUrl: "",
+      imageSelection: "",
       libraryId: this.props.match.params.libraryId,
       createForm: this.props.location.pathname.endsWith("create")
     };
 
     this.FormContent = this.FormContent.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
+    this.HandleImageChange = this.HandleImageChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
     this.OnContentLibraryLoaded = this.OnContentLibraryLoaded.bind(this);
   }
@@ -26,12 +30,12 @@ class ContentLibraryForm extends React.Component {
   // Load existing content library on edit
   componentDidMount() {
     if(!this.state.createForm) {
-      let requestId = this.props.GetContentLibrary({
+      let requestId = this.props.ListContentObjects({
         libraryId: this.state.libraryId
       });
 
       this.setState({
-        libraryRequestId: requestId
+        libraryRequestId: requestId,
       });
     }
   }
@@ -46,7 +50,8 @@ class ContentLibraryForm extends React.Component {
         name: contentLibrary.name,
         description: contentLibrary.description,
         contractAddress: contentLibrary.contractAddress,
-        publicMetadata: JSON.stringify(contentLibrary.metadata, null, 2)
+        publicMetadata: JSON.stringify(contentLibrary.metadata, null, 2),
+        imagePreviewUrl: contentLibrary.ImageUrl()
       })
     }
   }
@@ -57,6 +62,20 @@ class ContentLibraryForm extends React.Component {
     });
   }
 
+  HandleImageChange(event) {
+    // Create preview image and set image selection state
+    if (event.target.files) {
+      const file = event.target.files[0];
+      new Response(file).blob()
+        .then(imageData => {
+          this.setState({
+            imagePreviewUrl: window.URL.createObjectURL(imageData),
+            imageSelection: file
+          });
+        });
+    }
+  }
+
   HandleSubmit() {
     let requestId;
 
@@ -65,7 +84,8 @@ class ContentLibraryForm extends React.Component {
         name: this.state.name,
         description: this.state.description,
         publicMetadata: this.state.publicMetadata,
-        privateMetadata: this.state.privateMetadata
+        privateMetadata: this.state.privateMetadata,
+        image: this.state.imageSelection
       });
     } else {
       requestId = this.props.UpdateContentLibrary({
@@ -73,11 +93,22 @@ class ContentLibraryForm extends React.Component {
         name: this.state.name,
         description: this.state.description,
         contractAddress: this.state.contractAddress,
-        publicMetadata: this.state.publicMetadata
+        publicMetadata: this.state.publicMetadata,
+        image: this.state.imageSelection
       })
     }
 
     this.setState({ formSubmitRequestId: requestId });
+  }
+
+  ImagePreview() {
+    if(!this.state.imagePreviewUrl) { return null; }
+
+    return (
+      <div className="image-preview">
+        <img src={this.state.imagePreviewUrl} />
+      </div>
+    );
   }
 
   PrivateMetadata() {
@@ -101,6 +132,14 @@ class ContentLibraryForm extends React.Component {
   FormContent() {
     return (
       <div className="form-content">
+        { this.ImagePreview() }
+        <BrowseWidget
+          label="Image"
+          required={true}
+          multiple={false}
+          accept="image/*"
+          onChange={this.HandleImageChange}
+        />
         <div className="labelled-input">
           <label htmlFor="name">Name</label>
           <input name="name" value={this.state.name} onChange={this.HandleInputChange} readOnly={this.state.isContentSpaceLibrary} />

@@ -88,6 +88,8 @@ class ContentObject {
 
     const url = new URI(this.url);
     url.path(Path.join(url.path(), "rep", rep));
+    // Add hash to end of url to bust cache if object is updated
+    url.query({...url.query(true), hash: this.latestVersion.hash});
 
     return url.toString();
   }
