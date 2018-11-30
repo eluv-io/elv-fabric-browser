@@ -17,7 +17,7 @@ class ContentLibrary extends React.Component {
 
     this.state = {
       libraryId,
-      metadataVisible: false,
+      visibleItems: {},
       isContentSpaceLibrary: Fabric.utils.EqualHash(Fabric.contentSpaceId, libraryId)
     };
 
@@ -95,14 +95,20 @@ class ContentLibrary extends React.Component {
     )
   }
 
-  ToggleMetadataButton() {
-    const toggleVisible = () => this.setState({metadataVisible: !this.state.metadataVisible});
-    const toggleButtonText = (this.state.metadataVisible ? "Hide Metadata" : "Show Metadata");
+  ToggleButton(label, id) {
+    const visible = this.state.visibleItems[id];
+    const toggleVisible = () => this.setState({
+      visibleItems: {
+        ...this.state.visibleItems,
+        [id]: !visible
+      }
+    });
+    const toggleButtonText = (visible ? "Hide " : "Show ") + label;
 
     return (
       <div className="actions-container">
         <button
-          className={"action action-compact action-wide " + (this.state.metadataVisible ? "" : "secondary")}
+          className={"action action-compact action-wide " + (visible ? "" : "secondary")}
           onClick={toggleVisible}>
           { toggleButtonText }
         </button>
@@ -111,17 +117,26 @@ class ContentLibrary extends React.Component {
   }
 
   LibraryMetadata() {
-    let content;
-    if(this.state.metadataVisible) {
-      content = <pre className="content-object-data">{JSON.stringify(this.state.contentLibrary.metadata, null, 2)}</pre>;
+    let metadata;
+    if(this.state.visibleItems["metadata"]) {
+      metadata = <pre className="content-object-data">{JSON.stringify(this.state.contentLibrary.metadata, null, 2)}</pre>;
     }
 
-    return (
-      <div className="formatted-data">
-        <LabelledField label="Metadata" value={this.ToggleMetadataButton()} />
-        { content }
+    let privateMetadata;
+    if(this.state.visibleItems["privateMetadata"]) {
+      privateMetadata = <pre className="content-object-data">{JSON.stringify(this.state.contentLibrary.privateMetadata, null, 2)}</pre>;
+    }
+
+    return [
+      <div className="formatted-data" key="metadata">
+        <LabelledField label="Public Metadata" value={this.ToggleButton("Metadata", "metadata")} />
+        { metadata }
+      </div>,
+      <div className="formatted-data" key="privateMetadata">
+        <LabelledField label="Private Metadata" value={this.ToggleButton("Metadata", "privateMetadata")} />
+        { privateMetadata }
       </div>
-    );
+    ]
   }
 
   LibraryImage() {

@@ -112,7 +112,7 @@ form {
     }
 
     .selected-files {
-      margin: $spacing-xs 0;
+      margin: $spacing-s 0 $spacing-xs;
 
       .selected-file {
         background: $color-bg-dark;

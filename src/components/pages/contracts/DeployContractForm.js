@@ -2,6 +2,7 @@ import React from "react";
 import Path from "path";
 import RequestForm from "../../forms/RequestForm";
 import RequestPage from "../RequestPage";
+import Link from "react-router-dom/es/Link";
 
 class DeployContractForm extends React.Component {
   constructor(props) {
@@ -149,6 +150,19 @@ class DeployContractForm extends React.Component {
 
   PageContent() {
     if(!this.state.contracts) { return null; }
+
+    if(Object.keys(this.state.contracts).length === 0){
+      return (
+        <div className="page-container">
+          <div className="actions-container">
+            <Link className="action secondary" to={Path.dirname(this.props.match.url)}>Back</Link>
+          </div>
+          <h3 className="page-header">
+            No custom contracts available
+          </h3>
+        </div>
+      );
+    }
 
     return (
       <RequestForm

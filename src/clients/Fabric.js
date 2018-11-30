@@ -4,7 +4,10 @@ import ContentObject from "../models/ContentObject";
 import URI from "urijs";
 import Path from "path";
 
+import BaseContentContract from "elv-client-js/src/contracts/BaseContent";
+
 const Configuration = require("../../configuration.json");
+const Ethers = require("ethers");
 
 let client;
 
@@ -98,6 +101,17 @@ const Fabric = {
     return await client.ContentObjectVersions({libraryId, objectId});
   },
 
+  GetContentObjectStatus: async ({objectId}) => {
+    const result = await Fabric.CallContractMethod({
+      contractAddress: client.utils.HashToAddress({hash: objectId}),
+      abi: BaseContentContract.abi,
+      methodName: "statusDescription",
+      methodArgs: []
+    });
+
+    return Ethers.utils.toUtf8String(result);
+  },
+
   GetFullContentObject: async ({libraryId, objectId}) => {
     let contentObjectData = await Fabric.GetContentObject({ libraryId, objectId });
 
@@ -117,6 +131,8 @@ const Fabric = {
     }
 
     contentObjectData.versions = versions;
+
+    contentObjectData.status = await Fabric.GetContentObjectStatus({objectId});
 
     return new ContentObject({libraryId, contentObjectData});
   },
@@ -236,6 +252,18 @@ const Fabric = {
         writeToken: createResponse.write_token
       })
     );
+  },
+
+  EditAndFinalizeContentObject: async({
+    libraryId,
+    objectId,
+    todo
+  }) => {
+    const editResponse = await Fabric.EditContentObject({libraryId, objectId});
+
+    await todo({writeToken: editResponse.write_token});
+
+    await Fabric.FinalizeContentObject({libraryId, objectId, writeToken: editResponse.write_token});
   },
 
   /* Files */

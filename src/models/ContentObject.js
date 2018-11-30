@@ -73,6 +73,7 @@ class ContentObject {
     this.description = metadata["eluv.description"];
     this.metadata = this.FilterMetadata(metadata);
     this.verification = contentObjectData.verification;
+    this.status = contentObjectData.status;
 
     if(contentObjectData.parts) {
       this.parts = contentObjectData.parts;
