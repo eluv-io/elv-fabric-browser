@@ -50,10 +50,11 @@ class ContentLibrary {
     for(const contentObjectData of contentObjectsData) {
       let contentObject = new ContentObject({ libraryId, contentObjectData: contentObjectData });
 
-      this.contentObjects.push(contentObject);
-
       if(contentObject.isLibraryObject) {
         this.libraryObject = contentObject;
+        this.privateMetadata = this.libraryObject.metadata;
+      } else {
+        this.contentObjects.push(contentObject);
       }
     }
 
