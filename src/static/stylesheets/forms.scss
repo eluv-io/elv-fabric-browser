@@ -14,8 +14,14 @@ form {
   }
 
   .image-preview {
-    max-height: 50px;
-    max-width: 50px;
+    display: flex;
+    justify-content: center;
+    margin: $spacing-s 0;
+    width: 100%;
+
+    img {
+      max-width: 100%;
+    }
   }
 
   .labelled-input {
@@ -92,5 +98,34 @@ form {
   .actions-container {
     justify-content: flex-end;
     margin-top: 20px;
+  }
+
+  .browse-widget {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+
+    .actions-container {
+      justify-content: flex-start;
+      margin: 0;
+      width: 100%;
+    }
+
+    .selected-files {
+      margin: $spacing-xs 0;
+
+      .selected-file {
+        background: $color-bg-dark;
+        border: 1px solid $color-gray;
+        border-bottom: 0;
+        display: flex;
+        justify-content: space-between;
+        padding: $spacing-xxs $spacing-xs;
+
+        &:last-child {
+          border-bottom: 1px solid $color-gray;
+        }
+      }
+    }
   }
 }
