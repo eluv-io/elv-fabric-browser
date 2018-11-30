@@ -102,11 +102,20 @@ export const CreateContentLibrary = ({name, description, publicMetadata, private
   };
 };
 
-export const UpdateContentLibrary = ({libraryId, name, description, contractAddress, publicMetadata, image}) => {
+export const UpdateContentLibrary = ({
+  libraryId,
+  libraryObjectId,
+  name,
+  description,
+  contractAddress,
+  publicMetadata,
+  privateMetadata,
+  image
+}) => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
-      action: "createContentLibrary",
+      action: "updateContentLibrary",
       todo: (async () => {
         const contentLibrary = new ContentLibrary({
           libraryId,
@@ -120,6 +129,19 @@ export const UpdateContentLibrary = ({libraryId, name, description, contractAddr
         await Fabric.ReplacePublicLibraryMetadata({
           libraryId,
           metadata: contentLibrary.FullMetadata()
+        });
+
+        await Fabric.EditAndFinalizeContentObject({
+          libraryId,
+          objectId: libraryObjectId,
+          todo: async ({writeToken}) => {
+            await Fabric.ReplaceMetadata({
+              libraryId,
+              objectId: libraryObjectId,
+              writeToken,
+              metadata: ParseInputJson(privateMetadata)
+            });
+          }
         });
 
         if(image) {

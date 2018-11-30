@@ -100,6 +100,8 @@ class Contract extends React.Component {
     const contractConstructor = contractElements.filter(element => element.type === "constructor");
     const contractEvents = contractElements.filter(element => element.type === "event");
     const contractMethods = contractElements.filter(element => element.type === "function");
+    const constantMethods = contractMethods.filter(element => element.constant);
+    const dynamicMethods = contractMethods.filter(element => !element.constant);
 
     return (
       <div className="page-container contracts-page-container">
@@ -117,12 +119,14 @@ class Contract extends React.Component {
             { abiDisplayInfo }
             <LabelledField label="Bytecode" value={this.ToggleButton("Bytecode", "__bytecode")} />
             { bytecodeDisplayInfo }
-            <h3>Constructor</h3>
+            <h3>Contract Constructor</h3>
             { this.ContractInfo(contractConstructor) }
-            <h3>Events</h3>
+            <h3>Contract Events</h3>
             { this.ContractInfo(contractEvents) }
-            <h3>Methods</h3>
-            { this.ContractInfo(contractMethods) }
+            <h3>Constant Methods</h3>
+            { this.ContractInfo(constantMethods) }
+            <h3>Dynamic Methods</h3>
+            { this.ContractInfo(dynamicMethods) }
           </div>
         </div>
       </div>

@@ -316,11 +316,12 @@ class ContentObject extends React.Component {
       <div className="object-info label-box">
         <h3>Content Object Info</h3>
 
+        <LabelledField label={"Name"} value={contentObject.name} />
+        <LabelledField label={"Status"} value={contentObject.status} />
+        <LabelledField label={"Description"} value={description} />
         <LabelledField label={"Library ID"} value={contentObject.libraryId} />
         <LabelledField label={"Object ID"} value={contentObject.objectId} />
-        <LabelledField label={"Name"} value={contentObject.name} />
         <LabelledField label={"Type"} value={contentObject.type} />
-        <LabelledField label={"Description"} value={description} />
         { this.ContractInfo(contentObject) }
         <LabelledField label={"Versions"} value={contentObject.versions.length} />
         <LabelledField label={"Parts"} value={contentObject.parts.length} />

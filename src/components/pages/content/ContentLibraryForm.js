@@ -43,14 +43,15 @@ class ContentLibraryForm extends React.Component {
   // Set loaded content object
   OnContentLibraryLoaded() {
     const contentLibrary = this.props.contentLibraries[this.state.libraryId];
-
     if(contentLibrary) {
       this.setState({
         isContentSpaceLibrary: contentLibrary.isContentSpaceLibrary,
+        libraryObjectId: contentLibrary.libraryObject.objectId,
         name: contentLibrary.name,
         description: contentLibrary.description,
         contractAddress: contentLibrary.contractAddress,
         publicMetadata: JSON.stringify(contentLibrary.metadata, null, 2),
+        privateMetadata: JSON.stringify(contentLibrary.privateMetadata, null, 2),
         imagePreviewUrl: contentLibrary.ImageUrl()
       })
     }
@@ -90,10 +91,12 @@ class ContentLibraryForm extends React.Component {
     } else {
       requestId = this.props.UpdateContentLibrary({
         libraryId: this.state.libraryId,
+        libraryObjectId: this.state.libraryObjectId,
         name: this.state.name,
         description: this.state.description,
         contractAddress: this.state.contractAddress,
         publicMetadata: this.state.publicMetadata,
+        privateMetadata: this.state.privateMetadata,
         image: this.state.imageSelection
       })
     }
@@ -111,31 +114,13 @@ class ContentLibraryForm extends React.Component {
     );
   }
 
-  PrivateMetadata() {
-    // Don't allow editing of private metadata on existing libraries
-    // Should be done in the object
-    if(!this.state.createForm) { return null; }
-
-    return (
-      <div className="labelled-input">
-        <label className="textarea-label" htmlFor="privateMetadata">Private Metadata</label>
-        <JsonTextArea
-          name="privateMetadata"
-          value={this.state.privateMetadata}
-          onChange={this.HandleInputChange}
-          UpdateValue={formattedMetadata => this.setState({privateMetadata: formattedMetadata})}
-        />
-      </div>
-    );
-  }
-
   FormContent() {
     return (
       <div className="form-content">
         { this.ImagePreview() }
         <BrowseWidget
           label="Image"
-          required={true}
+          required={false}
           multiple={false}
           accept="image/*"
           onChange={this.HandleImageChange}
@@ -157,13 +142,21 @@ class ContentLibraryForm extends React.Component {
             UpdateValue={formattedMetadata => this.setState({publicMetadata: formattedMetadata})}
           />
         </div>
-        { this.PrivateMetadata() }
+        <div className="labelled-input">
+          <label className="textarea-label" htmlFor="privateMetadata">Private Metadata</label>
+          <JsonTextArea
+            name="privateMetadata"
+            value={this.state.privateMetadata}
+            onChange={this.HandleInputChange}
+            UpdateValue={formattedMetadata => this.setState({privateMetadata: formattedMetadata})}
+          />
+        </div>
       </div>
     );
   }
 
   PageContent() {
-    const legend = this.state.createForm ? "Create a new content library" : "Edit content library";
+    const legend = this.state.createForm ? "Create content library" : "Edit content library";
 
     return (
       <RequestForm
