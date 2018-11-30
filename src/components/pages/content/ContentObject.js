@@ -15,13 +15,17 @@ class ContentObject extends React.Component {
 
     const libraryId = this.props.match.params.libraryId;
     const objectId = this.props.match.params.objectId;
+    const isContentType = this.props.match.url.startsWith("/content-types");
+    const isLibraryObject = Fabric.utils.EqualHash(libraryId, objectId);
 
     this.state = {
       libraryId,
       objectId,
       visibleVersions: {},
       appRef: React.createRef(),
-      isLibraryObject: Fabric.utils.EqualHash(libraryId, objectId)
+      isContentType,
+      isLibraryObject,
+      isNormalObject: !isContentType && !isLibraryObject
     };
 
     this.RequestComplete = this.RequestComplete.bind(this);
@@ -30,7 +34,8 @@ class ContentObject extends React.Component {
   componentDidMount() {
     let requestId = this.props.GetFullContentObject({
       libraryId: this.state.libraryId,
-      objectId: this.state.objectId
+      objectId: this.state.objectId,
+      includeStatus: this.state.isNormalObject
     });
 
     this.setState({
@@ -49,7 +54,8 @@ class ContentObject extends React.Component {
         deletingVersion: false,
         requestId: this.props.GetFullContentObject({
           libraryId: this.state.libraryId,
-          objectId: this.state.objectId
+          objectId: this.state.objectId,
+          includeStatus: !this.state.isContentType
         })
       });
     }
@@ -86,16 +92,6 @@ class ContentObject extends React.Component {
         deletingVersion: true
       });
     }
-  }
-
-  DeleteObjectButton() {
-    // Don't allow deleting of library content object
-    if(this.state.isLibraryObject) { return null; }
-    return (
-      <button className="action delete-action" onClick={() => this.DeleteContentObject()}>
-        Delete Content Object
-      </button>
-    );
   }
 
   DeleteVersionButton(versionHash) {
@@ -311,14 +307,15 @@ class ContentObject extends React.Component {
 
   ObjectInfo(contentObject) {
     const description = <ClippedText className="object-description" text={contentObject.description} />;
+    const status = this.state.isNormalObject ? <LabelledField label={"Status"} value={contentObject.status} /> : null;
 
     return (
       <div className="object-info label-box">
         <h3>Content Object Info</h3>
 
         <LabelledField label={"Name"} value={contentObject.name} />
-        <LabelledField label={"Status"} value={contentObject.status} />
         <LabelledField label={"Description"} value={description} />
+        { status }
         <LabelledField label={"Library ID"} value={contentObject.libraryId} />
         <LabelledField label={"Object ID"} value={contentObject.objectId} />
         <LabelledField label={"Type"} value={contentObject.type} />
@@ -333,6 +330,16 @@ class ContentObject extends React.Component {
 
         { this.PreviousVersions(contentObject) }
       </div>
+    );
+  }
+
+  DeleteObjectButton() {
+    // Don't allow deleting of library content object
+    if(!this.state.isNormalObject) { return null; }
+    return (
+      <button className="action delete-action" onClick={() => this.DeleteContentObject()}>
+        Delete Content Object
+      </button>
     );
   }
 
@@ -352,8 +359,9 @@ class ContentObject extends React.Component {
       );
     }
 
-    const setContractButton = this.state.contentObject.isLibraryObject ?
-      null : <Link to={Path.join(this.props.match.url, "deploy")} className="action" >Set Custom Contract</Link>
+    const setContractButton = this.state.isNormalObject ?
+      <Link to={Path.join(this.props.match.url, "deploy")} className="action" >Set Custom Contract</Link>
+      : null;
 
     return (
       <div className="page-container content-page-container">

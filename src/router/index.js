@@ -27,7 +27,8 @@ import {
   ContractsContainer,
   DeployContentContractFormContainer,
   ContentContractContainer,
-  ContentContractMethodFormContainer
+  ContentContractMethodFormContainer,
+  ContentContractFundsFormContainer
 } from "../containers/pages/Contracts";
 import Fabric from "../clients/Fabric";
 
@@ -89,11 +90,17 @@ function Routes(){
         <Route exact path="/content/:libraryId/:objectId/contract" component={ContentContractContainer} />
         { ContentTypeRoute({subPath: "/:objectId/contract", component: ContentContractContainer}) }
 
+        <Route exact path="/content/:libraryId/:objectId/contract/funds" component={ContentContractFundsFormContainer} />
+        { ContentTypeRoute({subPath: "/:objectId/contract/funds", component: ContentContractFundsFormContainer}) }
+
         <Route exact path="/content/:libraryId/:objectId/contract/call/:method" component={ContentContractMethodFormContainer} />
         { ContentTypeRoute({subPath: "/:objectId/contract/call/:method", component: ContentContractMethodFormContainer}) }
 
         <Route exact path="/content/:libraryId/:objectId/custom-contract" component={ContentContractContainer} />
         { ContentTypeRoute({subPath: "/:objectId/custom-contract", component: ContentContractContainer}) }
+
+        <Route exact path="/content/:libraryId/:objectId/custom-contract/funds" component={ContentContractFundsFormContainer} />
+        { ContentTypeRoute({subPath: "/:objectId/custom-contract/funds", component: ContentContractFundsFormContainer}) }
 
         <Route exact path="/content/:libraryId/:objectId/custom-contract/call/:method" component={ContentContractMethodFormContainer} />
         { ContentTypeRoute({subPath: "/:objectId/custom-contract/call/:method", component: ContentContractMethodFormContainer}) }
