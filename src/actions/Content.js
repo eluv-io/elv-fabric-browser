@@ -73,18 +73,25 @@ export const GetContentLibrary = ({libraryId}) => {
   };
 };
 
-export const CreateContentLibrary = ({name, description, publicMetadata, privateMetadata}) => {
+export const CreateContentLibrary = ({name, description, publicMetadata, privateMetadata, image}) => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
       action: "createContentLibrary",
       todo: (async () => {
-        await Fabric.CreateContentLibrary({
+        const libraryId = await Fabric.CreateContentLibrary({
           name,
           description,
           publicMetadata: ParseInputJson(publicMetadata),
           privateMetadata: ParseInputJson(privateMetadata)
         });
+
+        if(image) {
+          await Fabric.SetContentLibraryImage({
+            libraryId,
+            image: await new Response(image).blob()
+          });
+        }
 
         dispatch(SetNotificationMessage({
           message: "Successfully created content library '" + name + "'",
@@ -95,7 +102,7 @@ export const CreateContentLibrary = ({name, description, publicMetadata, private
   };
 };
 
-export const UpdateContentLibrary = ({libraryId, name, description, contractAddress, publicMetadata}) => {
+export const UpdateContentLibrary = ({libraryId, name, description, contractAddress, publicMetadata, image}) => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
@@ -114,6 +121,13 @@ export const UpdateContentLibrary = ({libraryId, name, description, contractAddr
           libraryId,
           metadata: contentLibrary.FullMetadata()
         });
+
+        if(image) {
+          await Fabric.SetContentLibraryImage({
+            libraryId,
+            image: await new Response(image).blob()
+          });
+        }
 
         dispatch(SetNotificationMessage({
           message: "Successfully updated content library '" + name + "'",

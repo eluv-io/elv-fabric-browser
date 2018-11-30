@@ -1,7 +1,7 @@
 import React from "react";
 import Path from "path";
-import PrettyBytes from "pretty-bytes";
 import RequestForm from "../../forms/RequestForm";
+import BrowseWidget from "../../components/BrowseWidget";
 
 class ContentObjectUploadForm extends React.Component {
   constructor(props) {
@@ -23,47 +23,18 @@ class ContentObjectUploadForm extends React.Component {
     });
   }
 
-  HandleSubmit({signer}) {
+  HandleSubmit() {
     let requestId = this.props.UploadParts({
       libraryId: this.state.libraryId,
       objectId: this.state.objectId,
-      files: this.state.files,
-      signer
+      files: this.state.files
     });
 
     this.setState({ formSubmitRequestId: requestId });
   }
 
-  FileInfo() {
-    if(!this.state.files) {
-      return null;
-    }
-
-    return (
-      <div className="file-info">
-        {Array.from(this.state.files).map((file) => {
-          return (
-            <div key={file.name} className="labelled-input">
-              <label>{file.name}</label>
-              <span>{PrettyBytes(file.size)}</span>
-            </div>
-          );
-        })}
-
-      </div>
-    );
-  }
-
   FormContent() {
-    return (
-      <div className="form-content">
-        <div className="labelled-input">
-          <label htmlFor="files">Files</label>
-          <input type="file" required multiple name="files" onChange={this.HandleFileSelect} />
-        </div>
-        { this.FileInfo() }
-      </div>
-    );
+    return <BrowseWidget label="Files" onChange={this.HandleFileSelect} required={true} multiple={true}/>;
   }
 
   render() {

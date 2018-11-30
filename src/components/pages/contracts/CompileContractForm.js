@@ -1,6 +1,7 @@
 import React from "react";
 import "browser-solc";
 import RequestForm from "../../forms/RequestForm";
+import BrowseWidget from "../../components/BrowseWidget";
 
 class CompileContractForm extends React.Component {
   constructor(props) {
@@ -40,10 +41,12 @@ class CompileContractForm extends React.Component {
   ContractFileForm() {
     return (
       <div className="contracts-form-data">
-        <div className="labelled-input">
-          <label className="label" htmlFor="contract-files">Contract File(s)</label>
-          <input name="contract-files" type="file" multiple={true} onChange={this.HandleFileSelect} />
-        </div>
+        <BrowseWidget
+          label="Contract File(s)"
+          onChange={this.HandleFileSelect}
+          required={true}
+          multiple={true}
+        />
         { this.Errors() }
       </div>
     );

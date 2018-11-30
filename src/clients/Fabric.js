@@ -59,6 +59,10 @@ const Fabric = {
     await client.DeleteContentLibrary({libraryId});
   },
 
+  SetContentLibraryImage: async ({libraryId, image}) =>{
+    await client.SetContentLibraryImage({libraryId, image});
+  },
+
   ReplacePublicLibraryMetadata: async ({libraryId, metadata}) => {
     return await client.ReplacePublicLibraryMetadata({libraryId, metadata});
   },
