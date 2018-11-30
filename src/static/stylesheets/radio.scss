@@ -1,0 +1,22 @@
+.radio-options {
+  width: 100%;
+
+  .radio-option {
+    display: flex;
+
+    label,
+    input {
+      flex-grow: 0;
+      width: auto;
+    }
+
+    input {
+      cursor: pointer;
+      padding: 0 10px;
+    }
+
+    label {
+      cursor: pointer;
+    }
+  }
+}

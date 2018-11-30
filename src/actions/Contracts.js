@@ -267,3 +267,37 @@ export const CallContractMethod = ({
     });
   };
 };
+
+export const SendFunds = ({sender, recipient, ether}) => {
+  return (dispatch) => {
+    return WrapRequest({
+      dispatch: dispatch,
+      action: "SendFunds",
+      todo: (async () => {
+        await Fabric.SendFunds({sender, recipient, ether});
+
+        dispatch(SetNotificationMessage({
+          message: "Successfully sent " + ether + " Eluvio Bux to " + recipient,
+          redirect: true
+        }));
+      })
+    });
+  };
+};
+
+export const WithdrawContractFunds = ({contractAddress, abi, ether}) => {
+  return (dispatch) => {
+    return WrapRequest({
+      dispatch: dispatch,
+      action: "WithdrawContractFunds",
+      todo: (async () => {
+        await Fabric.WithdrawContractFunds({contractAddress, abi, ether});
+
+        dispatch(SetNotificationMessage({
+          message: "Successfully withdrew " + ether + " Eluvio Bux from contract",
+          redirect: true
+        }));
+      })
+    });
+  };
+};

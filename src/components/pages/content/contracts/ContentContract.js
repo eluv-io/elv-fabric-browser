@@ -36,6 +36,18 @@ class ContentContract extends React.Component {
     });
   }
 
+  GetBalance() {
+    Fabric.GetBalance({address: this.state.contract.address})
+      .then(balance => {
+        this.setState({
+          contract: {
+            ...this.state.contract,
+            balance: balance + " Eluvio Bux"
+          }
+        });
+      });
+  }
+
   RequestComplete() {
     const contentObject = this.props.content.contentObjects[this.state.objectId];
 
@@ -48,7 +60,7 @@ class ContentContract extends React.Component {
           abi: contentObject.metadata.customContract.abi
         },
         contentObject
-      });
+      }, this.GetBalance);
     } else {
       this.setState({
         contract: {
@@ -58,7 +70,7 @@ class ContentContract extends React.Component {
           abi: BaseContentContract.abi
         },
         contentObject
-      })
+      }, this.GetBalance)
     }
   }
 
@@ -194,6 +206,7 @@ class ContentContract extends React.Component {
       <div className="page-container contracts-page-container">
         <div className="actions-container">
           <Link to={Path.dirname(this.props.match.url)} className="action secondary" >Back</Link>
+          <Link to={Path.join(this.props.match.url, "funds")} className="action" >Transfer Funds</Link>
         </div>
         <div className="object-display">
           <h3 className="page-header">{ this.state.contentObject.name }</h3>
@@ -202,6 +215,7 @@ class ContentContract extends React.Component {
             <h3>Contract Info</h3>
             <LabelledField label="Description" value={description} />
             <LabelledField label="Contract Address" value={this.state.contract.address} />
+            <LabelledField label="Balance" value={this.state.contract.balance} />
             { this.AbiInfo() }
             <h3>Events</h3>
             <div className="actions-container">

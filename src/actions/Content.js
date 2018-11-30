@@ -201,13 +201,13 @@ export const ListContentObjects = ({ libraryId }) => {
   };
 };
 
-export const GetFullContentObject = ({ libraryId, objectId }) => {
+export const GetFullContentObject = ({ libraryId, objectId, includeStatus=true }) => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
       action: "getFullContentObject",
       todo: (async () => {
-        let contentObject = await Fabric.GetFullContentObject({ libraryId, objectId });
+        let contentObject = await Fabric.GetFullContentObject({ libraryId, objectId, includeStatus });
 
         dispatch({
           type: ActionTypes.request.content.completed.list.contentObject,

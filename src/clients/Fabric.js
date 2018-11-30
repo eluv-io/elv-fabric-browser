@@ -112,7 +112,7 @@ const Fabric = {
     return Ethers.utils.toUtf8String(result);
   },
 
-  GetFullContentObject: async ({libraryId, objectId}) => {
+  GetFullContentObject: async ({libraryId, objectId, includeStatus=true}) => {
     let contentObjectData = await Fabric.GetContentObject({ libraryId, objectId });
 
     const versionHash = contentObjectData.hash;
@@ -132,7 +132,9 @@ const Fabric = {
 
     contentObjectData.versions = versions;
 
-    contentObjectData.status = await Fabric.GetContentObjectStatus({objectId});
+    if(includeStatus) {
+      contentObjectData.status = await Fabric.GetContentObjectStatus({objectId});
+    }
 
     return new ContentObject({libraryId, contentObjectData});
   },
@@ -339,6 +341,10 @@ const Fabric = {
     return client.ContractEvents({contractAddress, abi});
   },
 
+  WithdrawContractFunds: ({contractAddress, abi, ether}) => {
+    return client.WithdrawContractFunds({contractAddress, abi, ether});
+  },
+
   /* Naming */
 
   async GetByName({name}) {
@@ -389,6 +395,14 @@ const Fabric = {
 
   Proofs: ({libraryId, objectId, versionHash, partHash}) => {
     return client.Proofs({libraryId, objectId, versionHash, partHash});
+  },
+
+  GetBalance: ({address}) => {
+    return client.GetBalance({address});
+  },
+
+  SendFunds: ({sender, recipient, ether}) => {
+    return client.SendFunds({sender, recipient, ether});
   },
 
   FabricBrowser: {
