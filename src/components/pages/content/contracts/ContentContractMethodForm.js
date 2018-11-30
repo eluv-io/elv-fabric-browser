@@ -195,7 +195,6 @@ class ContentContractMethodForm extends React.Component {
           <LabelledField label="Contract" value={this.state.contract.name} />
           <LabelledField label="Method" value={this.state.method} />
         </div>
-        <br />
         <RequestForm
           requests={this.props.requests}
           requestId={this.state.submitRequestId}
