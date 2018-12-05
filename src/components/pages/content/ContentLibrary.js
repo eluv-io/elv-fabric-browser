@@ -117,6 +117,31 @@ class ContentLibrary extends React.Component {
     );
   }
 
+  LibraryGroups() {
+    return Object.keys(this.state.contentLibrary.groups).map(groupType => {
+      const groups = this.state.contentLibrary.groups[groupType];
+
+      if(groups.length === 0) { return null; }
+
+      return (
+        <div className="library-groups-info indented" key={"library-group-" + groupType}>
+          <h4>{groupType.capitalize()}</h4>
+          {
+            groups.map(group => {
+              return (
+                <div className="group-info indented" key={"library-group-" + groupType + "-" + group.address}>
+                  <h4>{group.name || "Unknown Group"}</h4>
+                  <LabelledField label="Address" value={group.address} />
+                </div>
+              )
+            })
+          }
+
+        </div>
+      );
+    });
+  }
+
   LibraryMetadata() {
     let metadata;
     if(this.state.visibleItems["metadata"]) {
@@ -166,6 +191,8 @@ class ContentLibrary extends React.Component {
         <LabelledField label={"Contract Address"} value={this.state.contentLibrary.contractAddress} />
         <LabelledField label={"Content Objects"} value={this.state.contentLibrary.contentObjects.length} />
         { this.LibraryMetadata() }
+        <h3>Groups</h3>
+        { this.LibraryGroups() }
       </div>
     )
   }
