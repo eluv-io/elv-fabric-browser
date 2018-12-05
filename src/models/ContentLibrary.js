@@ -36,10 +36,11 @@ class ContentLibrary {
     return this.libraryObject && this.libraryObject.HasImage() && this.libraryObject.RepUrl("image");
   }
 
-  constructor({ libraryId, owner, libraryMetadata, contentObjectsData=[], url }) {
+  constructor({ libraryId, owner, libraryMetadata, contentObjectsData=[], groups={}, url }) {
     libraryMetadata = libraryMetadata || {};
     this.libraryId = libraryId;
     this.owner = owner;
+    this.groups = groups;
     this.url = url;
     this.name = libraryMetadata["eluv.name"] || "Content Library " + libraryId;
     this.description = libraryMetadata["eluv.description"];

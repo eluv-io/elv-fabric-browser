@@ -190,6 +190,7 @@ export const ListContentObjects = ({ libraryId }) => {
         const libraryData = (await Fabric.GetContentLibrary({libraryId}));
         const contentObjectsData = await Fabric.ListContentObjects({libraryId});
         const libraryOwner = await Fabric.GetContentLibraryOwner({libraryId});
+        const libraryGroups = await Fabric.GetContentLibraryGroups({libraryId});
 
         dispatch({
           type: ActionTypes.request.content.completed.list.library,
@@ -199,7 +200,8 @@ export const ListContentObjects = ({ libraryId }) => {
             owner: libraryOwner,
             libraryMetadata: libraryData.meta,
             contentObjectsData: contentObjectsData.contents,
-            url: libraryData.url
+            url: libraryData.url,
+            groups: libraryGroups
           })
         });
       })
