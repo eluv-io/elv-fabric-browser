@@ -16,7 +16,7 @@ class ContentLibraryForm extends React.Component {
       privateMetadata: "",
       imagePreviewUrl: "",
       imageSelection: "",
-      libraryId: this.props.match.params.libraryId,
+      libraryId: this.props.libraryId || this.props.match.params.libraryId,
       createForm: this.props.location.pathname.endsWith("create")
     };
 
@@ -82,6 +82,7 @@ class ContentLibraryForm extends React.Component {
 
     if(this.state.createForm) {
       requestId = this.props.CreateContentLibrary({
+        owner: this.props.currentAccountAddress,
         name: this.state.name,
         description: this.state.description,
         publicMetadata: this.state.publicMetadata,

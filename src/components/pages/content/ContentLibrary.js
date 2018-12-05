@@ -13,7 +13,7 @@ class ContentLibrary extends React.Component {
   constructor(props) {
     super(props);
 
-    const libraryId = this.props.match.params.libraryId;
+    const libraryId = this.props.libraryId || this.props.match.params.libraryId;
 
     this.state = {
       libraryId,

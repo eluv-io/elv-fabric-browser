@@ -13,7 +13,7 @@ class ContentObject extends React.Component {
   constructor(props) {
     super(props);
 
-    const libraryId = this.props.match.params.libraryId;
+    const libraryId = this.props.libraryId || this.props.match.params.libraryId;
     const objectId = this.props.match.params.objectId;
     const isContentType = this.props.match.url.startsWith("/content-types");
     const isLibraryObject = Fabric.utils.EqualHash(libraryId, objectId);
