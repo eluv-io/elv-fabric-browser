@@ -24,7 +24,7 @@ import ContentContractFundsForm from "../../components/pages/content/contracts/C
 
 const mapStateToProps = (state) => ({
   requests: state.requests,
-  contracts: state.contracts,
+  ...state.contracts,
   content: state.content
 });
 

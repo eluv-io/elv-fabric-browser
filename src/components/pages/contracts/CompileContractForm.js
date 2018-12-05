@@ -29,11 +29,11 @@ class CompileContractForm extends React.Component {
   }
 
   Errors() {
-    if(!this.props.contracts.errors) { return null; }
+    if(!this.props.errors) { return null; }
 
     return (
       <pre>
-        { "Compilation errors: \n\n" + this.props.contracts.errors }
+        { "Compilation errors: \n\n" + this.props.errors }
       </pre>
     );
   }

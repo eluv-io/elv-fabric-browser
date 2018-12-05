@@ -37,17 +37,17 @@ const SeedLibrary = async (fabricBrowserInfo) => {
   }
 };
 
-const SeedContracts = async (fabricBrowserInfo, libraryId) => {
+const SeedObject = async ({label, name, fabricBrowserInfo, libraryId}) => {
   try {
     // Get/create library
-    if (fabricBrowserInfo && fabricBrowserInfo.contracts) {
-      return fabricBrowserInfo.contracts;
+    if (fabricBrowserInfo && fabricBrowserInfo[name]) {
+      return fabricBrowserInfo[name];
     } else {
       const createResponse = await client.CreateContentObject({
         libraryId,
         options: {
           meta: {
-            "eluv.name": "Contracts",
+            "eluv.name": label,
             contracts: {}
           }
         }
@@ -73,14 +73,30 @@ const Seed = async () => {
     let fabricBrowserInfo = await GetByName("elv-fabric-browser");
     if(fabricBrowserInfo) { fabricBrowserInfo = JSON.parse(fabricBrowserInfo.target); }
 
+    console.log("Creating library...");
     const libraryId = await SeedLibrary(fabricBrowserInfo);
 
-    const contractsObjectId = await SeedContracts(fabricBrowserInfo, libraryId);
+    console.log("Creating access group container...");
+    const accessGroupsObjectId = await SeedObject({
+      label: "Access Groups",
+      name: "accessGroups",
+      fabricBrowserInfo,
+      libraryId
+    });
+
+    console.log("Creating contracts container...");
+    const contractsObjectId = await SeedObject({
+      label: "Contracts",
+      name: "contracts",
+      fabricBrowserInfo,
+      libraryId
+    });
 
     await client.SetByName({
       name: "elv-fabric-browser",
       target: JSON.stringify({
         libraryId,
+        accessGroups: accessGroupsObjectId,
         contracts: contractsObjectId
       })
     });
@@ -102,7 +118,7 @@ const signer = wallet.AddAccount({
   privateKey: process.argv[2]
 });
 
-client.SetSigner({signer})
+client.SetSigner({signer});
 
 Seed().then(async () => {
   console.log(await client.GetByName({name: "elv-fabric-browser"}));

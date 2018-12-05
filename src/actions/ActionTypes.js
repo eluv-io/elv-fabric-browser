@@ -7,9 +7,15 @@ const ActionTypes = {
         error: "REQUEST_ERROR"
       }
     },
+    accessGroups: {
+      completed: {
+        list: "COMPLETED_LIST_ACCESS_GROUPS"
+      }
+    },
     accounts: {
       completed: {
         list: {
+          currentAccountAddress: "COMPLETED_GET_CURRENT_ACCOUNT_ADDRESS",
           accounts: "COMPLETED_LIST_ACCOUNTS",
           account: "COMPLETED_LIST_ACCOUNT"
         }

@@ -53,7 +53,7 @@ class Contract extends React.Component {
       });
     } else {
       this.setState({
-        contract: this.props.contracts.contracts[this.state.contractName]
+        contract: this.props.contracts[this.state.contractName]
       });
     }
   }

@@ -31,10 +31,10 @@ class DeployContractForm extends React.Component {
 
   // Initialize selected contract to be the first contract in the list
   HandleContractsLoaded() {
-    const firstContract = Object.keys(this.props.contracts.contracts)[0];
+    const firstContract = Object.keys(this.props.contracts)[0];
 
     this.setState({
-      contracts: this.props.contracts.contracts,
+      contracts: this.props.contracts,
       selectedContract: firstContract
     });
 

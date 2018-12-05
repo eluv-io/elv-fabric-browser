@@ -33,8 +33,8 @@ class ContractForm extends React.Component {
       })
     }
 
-    if(this.props.contracts.contractData) {
-      const firstContractName = Object.keys(this.props.contracts.contractData)[0];
+    if(this.props.contractData) {
+      const firstContractName = Object.keys(this.props.contractData)[0];
       this.SwitchContract(firstContractName);
     }
   }
@@ -46,9 +46,9 @@ class ContractForm extends React.Component {
   }
 
   SetContract() {
-    if(!this.props.contracts.contracts) { return; }
+    if(!this.props.contracts) { return; }
 
-    const contractInfo = this.props.contracts.contracts[this.state.contractName];
+    const contractInfo = this.props.contracts[this.state.contractName];
 
     this.setState({
       name: this.state.contractName,
@@ -60,10 +60,10 @@ class ContractForm extends React.Component {
   }
 
   SwitchContract(contractName) {
-    if(!this.props.contracts.contractData) { return; }
+    if(!this.props.contractData) { return; }
 
     const formattedName = contractName.split(":").slice(-1)[0];
-    const contract = this.props.contracts.contractData[contractName];
+    const contract = this.props.contractData[contractName];
 
     this.setState({
       name: formattedName,
@@ -87,7 +87,7 @@ class ContractForm extends React.Component {
   }
 
   AvailableContracts() {
-    const options = Object.keys(this.props.contracts.contractData).map(contract => {
+    const options = Object.keys(this.props.contractData).map(contract => {
       return <option key={contract} value={contract}>{contract}</option>;
     });
 
@@ -149,7 +149,7 @@ class ContractForm extends React.Component {
   render() {
     if (this.state.createForm) {
       // Ensure contract data is set from compilation
-      if (!this.props.contracts.contractData) {
+      if (!this.props.contractData) {
         this.props.SetErrorMessage({
           message: "No contract data",
           redirect: true
