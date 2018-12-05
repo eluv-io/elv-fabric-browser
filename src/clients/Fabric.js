@@ -4,6 +4,7 @@ import ContentObject from "../models/ContentObject";
 import URI from "urijs";
 import Path from "path";
 
+import BaseLibraryContract from "elv-client-js/src/contracts/BaseLibrary";
 import BaseContentContract from "elv-client-js/src/contracts/BaseContent";
 
 const Configuration = require("../../configuration.json");
@@ -95,6 +96,52 @@ const Fabric = {
 
   GetContentLibraryOwner: async ({libraryId}) => {
     return await client.ContentLibraryOwner({libraryId});
+  },
+
+  // Get a list of library groups of the specified type
+  // - Get the number of groups by querying <type>GroupsLength
+  // - Iterate over the list of <type>Groups to collect the addresses
+  // - Check if the address matches a known group - if so include additional information
+  CollectLibraryGroups: async ({libraryId, type, knownGroups}) => {
+    let numGroups = await client.CallContractMethod({
+      contractAddress: client.utils.HashToAddress({hash: libraryId}),
+      abi: BaseLibraryContract.abi,
+      methodName: type + "GroupsLength"
+    });
+
+    numGroups = parseInt(numGroups._hex, 16);
+
+    let groups = [];
+    for(let i = 0; i < numGroups; i++) {
+      const groupAddress = await client.CallContractMethod({
+        contractAddress: client.utils.HashToAddress({hash: libraryId}),
+        abi: BaseLibraryContract.abi,
+        methodName: type + "Groups",
+        methodArgs: [i]
+      });
+
+      const knownGroup = Object.values(knownGroups)
+        .find(knownGroup => knownGroup.address.toLowerCase() === groupAddress.toLowerCase());
+
+      if(knownGroup) {
+        groups.push(knownGroup);
+      } else {
+        groups.push({
+          address: groupAddress
+        });
+      }
+    }
+
+    return groups;
+  },
+
+  GetContentLibraryGroups: async ({libraryId}) => {
+    const knownGroups = await Fabric.FabricBrowser.AccessGroups();
+    return {
+      accessor: await Fabric.CollectLibraryGroups({libraryId, type: "accessor", knownGroups}),
+      contributor: await Fabric.CollectLibraryGroups({libraryId, type: "contributor", knownGroups}),
+      reviewer: await Fabric.CollectLibraryGroups({libraryId, type: "reviewer", knownGroups})
+    };
   },
 
   CreateContentLibrary: async ({name, description, publicMetadata, privateMetadata}) => {
