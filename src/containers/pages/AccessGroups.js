@@ -1,14 +1,48 @@
 import { connect } from "react-redux";
-import AccessGroups from "../../components/pages/AccessGroups";
+import Thunk from "../../utils/Thunk";
+import {
+  SaveAccessGroup,
+  ListAccessGroups,
+  RemoveAccessGroup, UpdateAccessGroupMembers
+} from "../../actions/AccessGroups";
+import AccessGroups from "../../components/pages/access_groups/AccessGroups";
+import AccessGroup from "../../components/pages/access_groups/AccessGroup";
+import AccessGroupForm from "../../components/pages/access_groups/AccessGroupForm";
+import AccessGroupMembersForm from "../../components/pages/access_groups/AccessGroupMembersForm";
 
 const mapStateToProps = state => ({
-  state: state,
+  requests: state.requests,
+  currentAccountAddress: state.accounts.currentAccountAddress,
+  ...state.accessGroups
 });
 
-const mapDispatchToProps = dispatch => ({
-});
+const mapDispatchToProps = dispatch =>
+  Thunk(
+    dispatch,
+    [
+      ListAccessGroups,
+      SaveAccessGroup,
+      UpdateAccessGroupMembers,
+      RemoveAccessGroup
+    ]
+  );
 
-export default connect(
+export const AccessGroupsContainer = connect(
   mapStateToProps,
   mapDispatchToProps
 )(AccessGroups);
+
+export const AccessGroupContainer = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(AccessGroup);
+
+export const AccessGroupFormContainer = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(AccessGroupForm);
+
+export const AccessGroupMembersFormContainer = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(AccessGroupMembersForm);
