@@ -86,13 +86,23 @@
   .header {
     align-items: center;
     display: flex;
-    justify-content: space-between;
+    height: 30px;
     padding-bottom: $spacing-xs;
 
     .name {
       @include ellipsis;
       color: $color-text-dark;
       font-size: 19px;
+    }
+
+    .header-icon {
+      height: auto;
+      margin: $spacing-xs 0 0 $spacing-xs;
+      padding: 0;
+
+      svg {
+        height: 25px;
+      }
     }
 
     .actions-container {
