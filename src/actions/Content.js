@@ -73,7 +73,7 @@ export const GetContentLibrary = ({libraryId}) => {
   };
 };
 
-export const CreateContentLibrary = ({name, description, publicMetadata, privateMetadata, image}) => {
+export const CreateContentLibrary = ({owner, name, description, publicMetadata, privateMetadata, image}) => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
@@ -82,7 +82,7 @@ export const CreateContentLibrary = ({name, description, publicMetadata, private
         const libraryId = await Fabric.CreateContentLibrary({
           name,
           description,
-          publicMetadata: ParseInputJson(publicMetadata),
+          publicMetadata: { owner, ...ParseInputJson(publicMetadata) },
           privateMetadata: ParseInputJson(privateMetadata)
         });
 
