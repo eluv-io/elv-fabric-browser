@@ -3,6 +3,7 @@ import RequestForm from "../../forms/RequestForm";
 import RequestPage from "../RequestPage";
 import Path from "path";
 import Id from "../../../utils/Id";
+import Fabric from "../../../clients/Fabric";
 
 class AccessGroupMembersForm extends React.Component {
   constructor(props) {
@@ -42,7 +43,7 @@ class AccessGroupMembersForm extends React.Component {
 
     this.setState({
       accessGroup,
-      isCreator: this.props.currentAccountAddress.toLowerCase() === accessGroup.creator.toLowerCase(),
+      isOwner: this.props.currentAccountAddress.toLowerCase() === accessGroup.owner.toLowerCase(),
       name: accessGroup.name,
       description: accessGroup.description,
       address: accessGroup.address,
@@ -71,7 +72,7 @@ class AccessGroupMembersForm extends React.Component {
     Object.values(this.state.members).map(member => {
       members[member.name] = {
         name: member.name,
-        address: member.address,
+        address: Fabric.FormatMemberAddress(member.address),
         manager: member.manager
       }
     });
@@ -119,7 +120,9 @@ class AccessGroupMembersForm extends React.Component {
           </button>
         </div>
       );
-      const disabled = !this.state.creator && member.manager;
+
+      // Disallow non-owners from modifying managers
+      const disabled = !this.state.isOwner && member.manager;
 
       return (
         <div key={"member-" + memberId}>
@@ -133,7 +136,7 @@ class AccessGroupMembersForm extends React.Component {
           </div>
           <div className="labelled-input labelled-checkbox-input">
             <label className="label" htmlFor="manager">Manager</label>
-            <input disabled={!this.state.isCreator} name="manager" type="checkbox" value={member.manager} checked={member.manager} onChange={this.HandleInputChange(memberId)} />
+            <input disabled={!this.state.isOwner} name="manager" type="checkbox" value={member.manager} checked={member.manager} onChange={this.HandleInputChange(memberId)} />
           </div>
           <div className="labelled-input">
             <label className="label" htmlFor="removeMember"></label>

@@ -30,9 +30,11 @@ export const ListContentLibraries = () => {
             try {
               // Query for content objects
               const contentObjects = (await Fabric.ListContentObjects({libraryId})).contents;
+              const libraryOwner = await Fabric.GetContentLibraryOwner({libraryId});
 
               contentLibraries[libraryId] = new ContentLibrary({
                 libraryId,
+                owner: libraryOwner,
                 libraryMetadata: libraryMetadata[libraryId],
                 contentObjectsData: contentObjects
               });
@@ -58,12 +60,14 @@ export const GetContentLibrary = ({libraryId}) => {
       action: "getContentLibrary",
       todo: (async () => {
         const libraryData = await Fabric.GetContentLibrary({libraryId});
+        const owner = await Fabric.ContentLibraryOwner({libraryId});
 
         dispatch({
           type: ActionTypes.request.content.completed.list.library,
           libraryId: libraryId,
           contentLibrary: new ContentLibrary({
             libraryId,
+            owner,
             libraryMetadata: libraryData.meta,
             url: libraryData.url
           })
@@ -73,7 +77,7 @@ export const GetContentLibrary = ({libraryId}) => {
   };
 };
 
-export const CreateContentLibrary = ({owner, name, description, publicMetadata, privateMetadata, image}) => {
+export const CreateContentLibrary = ({name, description, publicMetadata, privateMetadata, image}) => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
@@ -82,7 +86,7 @@ export const CreateContentLibrary = ({owner, name, description, publicMetadata, 
         const libraryId = await Fabric.CreateContentLibrary({
           name,
           description,
-          publicMetadata: { owner, ...ParseInputJson(publicMetadata) },
+          publicMetadata: ParseInputJson(publicMetadata),
           privateMetadata: ParseInputJson(privateMetadata)
         });
 
@@ -183,14 +187,16 @@ export const ListContentObjects = ({ libraryId }) => {
       dispatch: dispatch,
       action: "listContentObjects",
       todo: (async () => {
-        let libraryData = (await Fabric.GetContentLibrary({libraryId}));
-        let contentObjectsData = await Fabric.ListContentObjects({libraryId});
+        const libraryData = (await Fabric.GetContentLibrary({libraryId}));
+        const contentObjectsData = await Fabric.ListContentObjects({libraryId});
+        const libraryOwner = await Fabric.GetContentLibraryOwner({libraryId});
 
         dispatch({
           type: ActionTypes.request.content.completed.list.library,
           libraryId: libraryId,
           contentLibrary: new ContentLibrary({
             libraryId,
+            owner: libraryOwner,
             libraryMetadata: libraryData.meta,
             contentObjectsData: contentObjectsData.contents,
             url: libraryData.url
@@ -228,7 +234,9 @@ export const GetContentObjectMetadata = ({ libraryId, objectId }) => {
         let contentObjectData = await Fabric.GetContentObject({ libraryId, objectId });
         contentObjectData.meta = await Fabric.GetContentObjectMetadata({ libraryId, objectId });
 
-        let contentObject = new ContentObject({libraryId, contentObjectData});
+        const owner = await Fabric.GetContentObjectOwner({objectId});
+
+        const contentObject = new ContentObject({libraryId, owner, contentObjectData});
         dispatch({
           type: ActionTypes.request.content.completed.list.contentObject,
           libraryId: libraryId,

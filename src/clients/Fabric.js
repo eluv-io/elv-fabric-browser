@@ -46,20 +46,38 @@ const Fabric = {
     return await client.CreateAccessGroup();
   },
 
+  FormatMemberAddress: (memberAddress) => {
+    if(!memberAddress.startsWith("0x")) { memberAddress = "0x" + memberAddress; }
+    return memberAddress.toLowerCase();
+  },
+
   async AddAccessGroupMember({contractAddress, memberAddress}) {
-    return await client.AddAccessGroupMember({contractAddress, memberAddress});
+
+    return await client.AddAccessGroupMember({
+      contractAddress,
+      memberAddress: Fabric.FormatMemberAddress(memberAddress)
+    });
   },
 
   async RemoveAccessGroupMember({contractAddress, memberAddress}) {
-    return await client.RemoveAccessGroupMember({contractAddress, memberAddress});
+    return await client.RemoveAccessGroupMember({
+      contractAddress,
+      memberAddress: Fabric.FormatMemberAddress(memberAddress)
+    });
   },
 
   async AddAccessGroupManager({contractAddress, memberAddress}) {
-    return await client.AddAccessGroupManager({contractAddress, memberAddress});
+    return await client.AddAccessGroupManager({
+      contractAddress,
+      memberAddress: Fabric.FormatMemberAddress(memberAddress)
+    });
   },
 
   async RemoveAccessGroupManager({contractAddress, memberAddress}) {
-    return await client.RemoveAccessGroupManager({contractAddress, memberAddress});
+    return await client.RemoveAccessGroupManager({
+      contractAddress,
+      memberAddress: Fabric.FormatMemberAddress(memberAddress)
+    });
   },
 
   /* Libraries */
@@ -73,6 +91,10 @@ const Fabric = {
     contentLibraryData.url = await Fabric.FabricUrl({libraryId});
 
     return contentLibraryData;
+  },
+
+  GetContentLibraryOwner: async ({libraryId}) => {
+    return await client.ContentLibraryOwner({libraryId});
   },
 
   CreateContentLibrary: async ({name, description, publicMetadata, privateMetadata}) => {
@@ -97,13 +119,16 @@ const Fabric = {
     const libraryUrl = await client.FabricUrl({libraryId});
     const contentObjectData = await client.ContentObjects({ libraryId });
 
+    // Inject URL and owner into content object
     return {
-      contents: contentObjectData.contents.map(data => {
+      contents: await Promise.all(contentObjectData.contents.map(async data => {
         const uri = new URI(libraryUrl);
         uri.path(Path.join(uri.path(), "q", data.id));
         data.url = uri.toString();
+
+        data.owner = await Fabric.GetContentObjectOwner({objectId: data.id});
         return data;
-      })
+      }))
     };
   },
 
@@ -112,6 +137,10 @@ const Fabric = {
     contentObjectData.url = await Fabric.FabricUrl({libraryId, objectId});
 
     return contentObjectData;
+  },
+
+  GetContentObjectOwner: async ({objectId}) => {
+    return await client.ContentObjectOwner({objectId});
   },
 
   GetContentObjectMetadata: async ({libraryId, objectId, versionHash}) => {
@@ -157,7 +186,9 @@ const Fabric = {
       contentObjectData.status = await Fabric.GetContentObjectStatus({objectId});
     }
 
-    return new ContentObject({libraryId, contentObjectData});
+    const owner = await Fabric.GetContentObjectOwner({objectId});
+
+    return new ContentObject({libraryId, owner, contentObjectData});
   },
 
   /* Object creation / modification */
@@ -492,7 +523,22 @@ const Fabric = {
     /* Access Groups */
 
     async AccessGroups() {
-      return await Fabric.FabricBrowser.Entries({type: "accessGroups"});
+      let accessGroups = await Fabric.FabricBrowser.Entries({type: "accessGroups"});
+
+      // Inject owner address into access groups
+      await Promise.all(Object.values(accessGroups).map(async accessGroup => {
+        const owner = await Fabric.FabricBrowser.GetAccessGroupOwner({contractAddress: accessGroup.address});
+        accessGroups[accessGroup.name].owner = owner;
+      }));
+
+      return accessGroups;
+    },
+
+    async GetAccessGroupOwner({name, contractAddress}) {
+      if(!contractAddress) {
+        contractAddress = Fabric.FabricBrowser.AccessGroups()[name].address;
+      }
+      return await client.AccessGroupOwner({contractAddress});
     },
 
     async AddAccessGroup({creator, name, description, address, members={}}) {

@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { ImageIcon } from "./Icons";
 import ClippedText from "./ClippedText";
+import OwnerIcon from "../../static/icons/owner.svg";
 
 export const ThreeCard = ({link, icon, name, description, title}) => {
   return (
@@ -58,6 +59,8 @@ export class LibraryCard extends React.Component {
   render() {
     let previews = this.props.previews || [];
 
+    const ownerIcon = this.props.isOwner ? <ImageIcon className="header-icon" title={"Owner"} icon={OwnerIcon} /> : null;
+
     return (
       <div className="display-card library-card" title={this.props.title}>
         <Link to={this.props.link} className="image-container">
@@ -68,6 +71,7 @@ export class LibraryCard extends React.Component {
         <div className="info-container">
           <div className="header">
             <Link to={this.props.link} className="name">{this.props.name}</Link>
+            { ownerIcon }
           </div>
           <div className="info">
             {this.props.infoText}
@@ -95,6 +99,7 @@ LibraryCard.propTypes = {
   icon: PropTypes.string,
   previews: PropTypes.array,
   name: PropTypes.string.isRequired,
+  isOwner: PropTypes.bool,
   infoText: PropTypes.string,
   description: PropTypes.string,
   title: PropTypes.string

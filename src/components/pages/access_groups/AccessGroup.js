@@ -82,17 +82,17 @@ class AccessGroup extends React.Component {
   Actions() {
     const isManager = Object.values(this.state.accessGroup.members)
       .some(member => member.address.toLowerCase() === this.props.currentAccountAddress.toLowerCase() && member.manager);
-    const isCreator = this.props.currentAccountAddress.toLowerCase() === this.state.accessGroup.creator.toLowerCase();
+    const isOwner = this.props.currentAccountAddress.toLowerCase() === this.state.accessGroup.owner.toLowerCase();
 
     let editButton;
     let deleteButton;
-    if(isCreator) {
+    if(isOwner) {
       editButton = <Link to={Path.join(this.props.match.url, "edit")} className="action" >Edit Access Group</Link>;
       deleteButton = <button className="action delete-action" onClick={() => this.DeleteAccessGroup(this.state.accessGroupName)}>Delete Access Group</button>;
     }
 
     let manageButton;
-    if(isManager || isCreator) {
+    if(isManager || isOwner) {
       manageButton = <Link to={Path.join(this.props.match.url, "members")} className="action" >Manage Members</Link>;
     }
 
@@ -109,8 +109,6 @@ class AccessGroup extends React.Component {
   PageContent() {
     if(!this.state.accessGroup){ return null; }
 
-    this.state.accessGroup.creator = this.state.accessGroup.creator  || "";
-
     if(this.state.deleted) {
       return <Redirect push to={Path.dirname(this.props.match.url)}/>;
     }
@@ -123,8 +121,8 @@ class AccessGroup extends React.Component {
         <div className="object-display">
           <h3 className="page-header">{ this.state.accessGroupName }</h3>
           <div className="label-box">
-            <LabelledField label="Creator Address" value={this.state.accessGroup.creator} />
             <LabelledField label="Description" value={description} />
+            <LabelledField label="Owner" value={this.state.accessGroup.owner} />
             <LabelledField label="Contract Address" value={this.state.accessGroup.address} />
             <h3>Members</h3>
             { this.AccessGroupMembers() }

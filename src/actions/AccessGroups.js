@@ -9,9 +9,10 @@ export const ListAccessGroups = () => {
       dispatch: dispatch,
       action: "listAccessGroups",
       todo: (async () => {
+        const accessGroups = await Fabric.FabricBrowser.AccessGroups();
         dispatch({
           type: ActionTypes.request.accessGroups.completed.list,
-          accessGroups: await Fabric.FabricBrowser.AccessGroups()
+          accessGroups
         });
       })
     });

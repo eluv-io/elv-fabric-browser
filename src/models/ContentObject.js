@@ -34,7 +34,7 @@ class ContentObject {
     );
   }
 
-  constructor({ libraryId, contentObjectData }) {
+  constructor({ libraryId, owner, contentObjectData }) {
     this.rawData = contentObjectData;
 
     if(!contentObjectData) {
@@ -46,6 +46,7 @@ class ContentObject {
 
     this.libraryId = libraryId;
     this.objectId = contentObjectData.id;
+    this.owner = owner;
 
     if(this.objectId) {
       this.contractAddress = Fabric.utils.HashToAddress({hash: this.objectId});

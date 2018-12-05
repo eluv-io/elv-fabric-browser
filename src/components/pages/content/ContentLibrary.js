@@ -81,6 +81,7 @@ class ContentLibrary extends React.Component {
           link={Path.join(this.props.match.url, contentObject.objectId)}
           icon={icon}
           name={contentObject.name}
+          isOwner={contentObject.owner.toLowerCase() === this.props.currentAccountAddress.toLowerCase()}
           description={contentObject.description}
           title={contentObject.name}
         />
@@ -160,6 +161,7 @@ class ContentLibrary extends React.Component {
         { this.LibraryImage() }
         <h3>Content Library Info</h3>
         <LabelledField label={"Library ID"} value={this.state.libraryId} />
+        <LabelledField label={"Owner"} value={this.state.contentLibrary.owner} />
         <LabelledField label={"Description"} value={description} />
         <LabelledField label={"Contract Address"} value={this.state.contentLibrary.contractAddress} />
         <LabelledField label={"Content Objects"} value={this.state.contentLibrary.contentObjects.length} />
