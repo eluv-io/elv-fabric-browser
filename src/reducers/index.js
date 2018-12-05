@@ -6,6 +6,7 @@ import ContentTypesReducer from "./ContentTypesReducer";
 import ContractsReducer from "./ContractsReducer";
 import NotificationsReducer from "./NotificationsReducer";
 import RequestsReducer from "./RequestsReducer";
+import AccessGroupsReducer from "./AccessGroupsReducer";
 
 const DebugReducer = (state = {}, action) => {
   let actions = state.actions || [];
@@ -21,6 +22,7 @@ const DebugReducer = (state = {}, action) => {
 };
 
 export default combineReducers({
+  accessGroups: AccessGroupsReducer,
   accounts: AccountsReducer,
   content: ContentReducer,
   contentTypes: ContentTypesReducer,

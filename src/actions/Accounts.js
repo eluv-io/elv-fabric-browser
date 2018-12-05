@@ -3,6 +3,16 @@ import Fabric from "../clients/Fabric";
 import { SetNotificationMessage } from "./Notifications";
 import { WrapRequest } from "./Requests";
 
+export const SetCurrentAccount = () => {
+  return async (dispatch) => {
+    const currentAccountAddress = await Fabric.CurrentAccountAddress();
+    dispatch({
+      type: ActionTypes.request.accounts.completed.list.currentAccountAddress,
+      address: currentAccountAddress.toLowerCase()
+    });
+  };
+};
+
 export const ListAccounts = () => {
   return (dispatch) => {
     return WrapRequest({

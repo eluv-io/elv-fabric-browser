@@ -9,6 +9,11 @@ import Debug from "./Debug";
 import ScrollToTop from "../router/ScrollToTop";
 
 class App extends React.Component {
+  // Set the current account by asking the client
+  componentDidMount() {
+    this.props.SetCurrentAccount();
+  }
+
   render() {
     return (
       <div className="app-container">
@@ -21,6 +26,7 @@ class App extends React.Component {
             </div>
           </ScrollToTop>
         </ConnectedRouter>
+        <Debug/>
       </div>
     );
   }

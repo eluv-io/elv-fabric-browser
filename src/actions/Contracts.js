@@ -33,9 +33,6 @@ export const RemoveContract = ({name}) => {
           message: "Contract successfully deleted",
           redirect: true
         }));
-
-        // Reload contracts
-        dispatch(ListContracts());
       })
     });
   };
@@ -111,7 +108,6 @@ export const SaveContract = ({name, oldContractName, description, abi, bytecode}
           bytecode
         });
 
-        // TODO: Handle this better
         if(oldContractName && oldContractName !== name) {
           await Fabric.FabricBrowser.RemoveContract({
             name: oldContractName

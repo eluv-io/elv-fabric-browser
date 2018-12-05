@@ -2,7 +2,12 @@ import React from "react";
 import {Route, Switch} from "react-router";
 import Path from "path";
 
-import AccessGroups from "../containers/pages/AccessGroups";
+import {
+  AccessGroupContainer,
+  AccessGroupFormContainer,
+  AccessGroupMembersFormContainer,
+  AccessGroupsContainer
+} from "../containers/pages/AccessGroups";
 import {
   AccountsContainer,
   AccountFormContainer,
@@ -49,7 +54,11 @@ function Routes(){
       <Switch>
         <Route exact path="/" component={ContentLibrariesContainer} />
 
-        <Route path="/access-groups" component={AccessGroups} />
+        <Route exact path="/access-groups" component={AccessGroupsContainer} />
+        <Route exact path="/access-groups/create" component={AccessGroupFormContainer} />
+        <Route exact path="/access-groups/:accessGroupName" component={AccessGroupContainer} />
+        <Route exact path="/access-groups/:accessGroupName/edit" component={AccessGroupFormContainer} />
+        <Route exact path="/access-groups/:accessGroupName/members" component={AccessGroupMembersFormContainer} />
 
         <Route exact path="/accounts" component={AccountsContainer} />
         <Route exact path="/accounts/create" component={AccountFormContainer} />

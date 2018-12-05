@@ -2,6 +2,11 @@ import ActionTypes from "../actions/ActionTypes";
 
 const AccountsReducer = (state = {}, action) => {
   switch (action.type) {
+    case ActionTypes.request.accounts.completed.list.currentAccountAddress:
+      return {
+        ...state,
+        currentAccountAddress: action.address
+      };
     case ActionTypes.request.accounts.completed.list.accounts:
       return {
         ...state,
@@ -24,6 +29,7 @@ const AccountsReducer = (state = {}, action) => {
     default:
       return {
         ...state,
+        currentAccountAddress: state.currentAccountAddress,
         accounts: state.accounts || {},
         accountInfo: state.accountInfo || {}
       };

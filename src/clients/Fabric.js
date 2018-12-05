@@ -25,7 +25,7 @@ if(window.self === window.top) {
   // Contained in IFrame
   client = new FrameClient({
     target: window.parent,
-    timeout: 10
+    timeout: 15
   });
 }
 
@@ -35,6 +35,32 @@ const Fabric = {
   contentSpaceId: Configuration.fabric.contentSpaceId,
   contentSpaceLibraryId: Configuration.fabric.contentSpaceId.replace("ispc", "ilib"),
   utils: client.utils,
+
+  CurrentAccountAddress: async () => {
+    return await client.CurrentAccountAddress();
+  },
+
+  /* Access Groups */
+
+  CreateAccessGroup: async () => {
+    return await client.CreateAccessGroup();
+  },
+
+  async AddAccessGroupMember({contractAddress, memberAddress}) {
+    return await client.AddAccessGroupMember({contractAddress, memberAddress});
+  },
+
+  async RemoveAccessGroupMember({contractAddress, memberAddress}) {
+    return await client.RemoveAccessGroupMember({contractAddress, memberAddress});
+  },
+
+  async AddAccessGroupManager({contractAddress, memberAddress}) {
+    return await client.AddAccessGroupManager({contractAddress, memberAddress});
+  },
+
+  async RemoveAccessGroupManager({contractAddress, memberAddress}) {
+    return await client.RemoveAccessGroupManager({contractAddress, memberAddress});
+  },
 
   /* Libraries */
 
@@ -47,11 +73,6 @@ const Fabric = {
     contentLibraryData.url = await Fabric.FabricUrl({libraryId});
 
     return contentLibraryData;
-  },
-
-  GetContentLibraryContractAddress: async ({libraryId}) => {
-    const libraryInfo = await Fabric.GetContentLibrary({libraryId});
-    return libraryInfo.meta["eluv.contract_address"];
   },
 
   CreateContentLibrary: async ({name, description, publicMetadata, privateMetadata}) => {
@@ -406,6 +427,7 @@ const Fabric = {
   },
 
   FabricBrowser: {
+    // Get info pointing to fabric browser library and its entry objects
     async Info() {
       try {
         const info = await client.GetByName({
@@ -422,61 +444,96 @@ const Fabric = {
       }
     },
 
-    async Contracts() {
+    async Entries({type}) {
       const info = await Fabric.FabricBrowser.Info();
 
       return (await Fabric.GetContentObjectMetadata({
         libraryId: info.libraryId,
-        objectId: info.contracts
-      })).contracts;
+        objectId: info[type]
+      }))[type] || {};
+    },
+
+    // Add entry by appending to object metadata
+    async AddEntry({type, name, metadata={}}) {
+      const info = await Fabric.FabricBrowser.Info();
+
+      await Fabric.EditAndFinalizeContentObject({
+        libraryId: info.libraryId,
+        objectId: info[type],
+        todo: async ({writeToken}) => {
+          await Fabric.ReplaceMetadata({
+            libraryId: info.libraryId,
+            objectId: info[type],
+            writeToken,
+            metadataSubtree: Path.join(type, name),
+            metadata
+          });
+        }
+      });
+    },
+
+    // Remove entry by info deleting from object metadata
+    async RemoveEntry({type, name}) {
+      const info = await Fabric.FabricBrowser.Info();
+
+      await Fabric.EditAndFinalizeContentObject({
+        libraryId: info.libraryId,
+        objectId: info[type],
+        todo: async ({writeToken}) => {
+          await Fabric.DeleteMetadata({
+            libraryId: info.libraryId,
+            writeToken,
+            metadataSubtree: Path.join(type, name),
+          });
+        }
+      });
+    },
+
+    /* Access Groups */
+
+    async AccessGroups() {
+      return await Fabric.FabricBrowser.Entries({type: "accessGroups"});
+    },
+
+    async AddAccessGroup({creator, name, description, address, members={}}) {
+      await Fabric.FabricBrowser.AddEntry({
+        type: "accessGroups",
+        name,
+        metadata: {
+          creator,
+          name,
+          description,
+          address,
+          members
+        }
+      });
+    },
+
+    async RemoveAccessGroup({name, contractAddress}) {
+      await client.DeleteAccessGroup({contractAddress});
+      await Fabric.FabricBrowser.RemoveEntry({type: "accessGroups", name});
+    },
+
+    /* Contracts */
+
+    async Contracts() {
+      return await Fabric.FabricBrowser.Entries({type: "contracts"});
     },
 
     async AddContract({name, description, abi, bytecode}) {
-      const info = await Fabric.FabricBrowser.Info();
-
-      const editResponse = await Fabric.EditContentObject({
-        libraryId: info.libraryId,
-        objectId: info.contracts
-      });
-
-      await Fabric.ReplaceMetadata({
-        libraryId: info.libraryId,
-        objectId: info.contracts,
-        writeToken: editResponse.write_token,
-        metadataSubtree: Path.join("contracts", name),
+      await Fabric.FabricBrowser.AddEntry({
+        type: "contracts",
+        name,
         metadata: {
           description,
           abi,
           bytecode
         }
       });
-
-      await Fabric.FinalizeContentObject({
-        libraryId: info.libraryId,
-        objectId: info.contracts,
-        writeToken: editResponse.write_token
-      });
     },
 
     async RemoveContract({name}) {
-      const info = await Fabric.FabricBrowser.Info();
-
-      const editResponse = await Fabric.EditContentObject({
-        libraryId: info.libraryId,
-        objectId: info.contracts
-      });
-
-      await Fabric.DeleteMetadata({
-        libraryId: info.libraryId,
-        writeToken: editResponse.write_token,
-        metadataSubtree: Path.join("contracts", name),
-      });
-
-      await Fabric.FinalizeContentObject({
-        libraryId: info.libraryId,
-        objectId: info.contracts,
-        writeToken: editResponse.write_token
-      });
+      await Fabric.FabricBrowser.RemoveEntry({type: "contracts", name});
     }
   }
 };

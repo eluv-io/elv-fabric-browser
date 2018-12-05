@@ -20,7 +20,7 @@ class Contracts extends React.Component {
   }
 
   Contracts() {
-    const contracts = this.props.contracts.contracts;
+    const contracts = this.props.contracts;
     return (
       Object.keys(contracts).map(contractName => {
         const contract = contracts[contractName];
