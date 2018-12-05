@@ -26,6 +26,7 @@ import ContentObjectApp from "../../components/pages/content/ContentApp";
 
 const mapStateToProps = (state) => ({
   requests: state.requests,
+  currentAccountAddress: state.accounts.currentAccountAddress,
   ...state.content
 });
 

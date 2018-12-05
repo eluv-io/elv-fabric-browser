@@ -12,7 +12,7 @@ class ContentContractFundsForm extends React.Component {
     super(props);
 
     this.state = {
-      libraryId: this.props.match.params.libraryId,
+      libraryId: this.props.libraryId || this.props.match.params.libraryId,
       objectId: this.props.match.params.objectId,
       direction: "deposit",
       amount: 0
