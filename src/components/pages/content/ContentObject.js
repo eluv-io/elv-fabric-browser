@@ -318,6 +318,7 @@ class ContentObject extends React.Component {
         { status }
         <LabelledField label={"Library ID"} value={contentObject.libraryId} />
         <LabelledField label={"Object ID"} value={contentObject.objectId} />
+        <LabelledField label={"Owner"} value={contentObject.owner} />
         <LabelledField label={"Type"} value={contentObject.type} />
         { this.ContractInfo(contentObject) }
         <LabelledField label={"Versions"} value={contentObject.versions.length} />

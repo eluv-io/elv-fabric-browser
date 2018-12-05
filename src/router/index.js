@@ -1,6 +1,5 @@
 import React from "react";
 import {Route, Switch} from "react-router";
-import Path from "path";
 
 import {
   AccessGroupContainer,

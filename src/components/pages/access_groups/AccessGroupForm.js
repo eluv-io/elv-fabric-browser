@@ -50,7 +50,6 @@ class AccessGroupForm extends React.Component {
   HandleSubmit() {
     this.setState({
       submitRequestId: this.props.SaveAccessGroup({
-        creator: this.props.currentAccountAddress,
         name: this.state.name,
         description: this.state.description,
         address: this.state.address,
