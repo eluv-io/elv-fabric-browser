@@ -9,7 +9,7 @@ import { connectRouter } from "connected-react-router";
 import RootReducer from "./reducers";
 
 import "./utils/StringExtensions";
-import AppContainer from "./containers/AppContainer";
+import App from "./components/App";
 
 const history = createHashHistory();
 
@@ -20,7 +20,7 @@ const store = createStore(
 
 render(
   <Provider store={store}>
-    <AppContainer history={history} />
+    <App history={history} />
   </Provider>,
   document.getElementById("app")
 );

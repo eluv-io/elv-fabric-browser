@@ -29,7 +29,11 @@ class ContractForm extends React.Component {
   componentDidMount() {
     if(!this.state.createForm) {
       this.setState({
-        loadRequestId: this.props.ListContracts()
+        loadRequestId: this.props.WrapRequest({
+          todo: async () => {
+            await this.props.ListContracts();
+          }
+        })
       })
     }
 
@@ -76,12 +80,16 @@ class ContractForm extends React.Component {
 
   HandleSubmit() {
     this.setState({
-      submitRequestId: this.props.SaveContract({
-        name: this.state.name,
-        oldContractName: this.state.contractName || this.state.name,
-        description: this.state.description,
-        abi: this.state.contract.interface || this.state.contract.abi,
-        bytecode: this.state.contract.bytecode
+      submitRequestId: this.props.WrapRequest({
+        todo: async () => {
+          await this.props.SaveContract({
+            name: this.state.name,
+            oldContractName: this.state.contractName || this.state.name,
+            description: this.state.description,
+            abi: this.state.contract.interface || this.state.contract.abi,
+            bytecode: this.state.contract.bytecode
+          });
+        }
       })
     });
   }

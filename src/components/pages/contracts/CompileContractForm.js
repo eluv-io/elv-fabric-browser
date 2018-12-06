@@ -8,7 +8,7 @@ class CompileContractForm extends React.Component {
     super(props);
 
     this.state = {
-      compileRequestId: undefined,
+      submitRequestId: undefined,
       files: []
     };
 
@@ -24,7 +24,11 @@ class CompileContractForm extends React.Component {
 
   HandleSubmit() {
     this.setState({
-      compileRequestId: this.props.CompileContracts(this.state.files)
+      submitRequestId: this.props.WrapRequest({
+        todo: async () => {
+          await this.props.CompileContracts(this.state.files);
+        }
+      })
     });
   }
 
@@ -56,7 +60,7 @@ class CompileContractForm extends React.Component {
     return (
       <RequestForm
         requests={this.props.requests}
-        requestId={this.state.compileRequestId}
+        requestId={this.state.submitRequestId}
         legend={"Compile contracts"}
         formContent={this.ContractFileForm()}
         redirectPath="/contracts/save"

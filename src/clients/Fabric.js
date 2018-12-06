@@ -47,6 +47,10 @@ const Fabric = {
     return await client.CreateAccessGroup();
   },
 
+  DeleteAccessGroup: async ({contractAddress}) => {
+    return await client.DeleteAccessGroup({contractAddress});
+  },
+
   FormatAddress: (address) => {
     if(!address.startsWith("0x")) { address = "0x" + address; }
     return address.toLowerCase();
@@ -630,12 +634,11 @@ const Fabric = {
       return await client.AccessGroupOwner({contractAddress});
     },
 
-    async AddAccessGroup({creator, name, description, address, members={}}) {
+    async AddAccessGroup({name, description, address, members={}}) {
       await Fabric.FabricBrowser.AddEntry({
         type: "accessGroups",
         name,
         metadata: {
-          creator,
           name,
           description,
           address,
@@ -644,8 +647,7 @@ const Fabric = {
       });
     },
 
-    async RemoveAccessGroup({name, contractAddress}) {
-      await client.DeleteAccessGroup({contractAddress});
+    async RemoveAccessGroup({name}) {
       await Fabric.FabricBrowser.RemoveEntry({type: "accessGroups", name});
     },
 

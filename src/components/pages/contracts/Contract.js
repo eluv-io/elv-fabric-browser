@@ -21,7 +21,11 @@ class Contract extends React.Component {
 
   componentDidMount() {
     this.setState({
-      requestId: this.props.ListContracts()
+      requestId: this.props.WrapRequest({
+        todo: async () => {
+          await this.props.ListContracts();
+        }
+      })
     });
   }
 
@@ -61,10 +65,13 @@ class Contract extends React.Component {
   DeleteContract(contractName) {
     if (confirm("Are you sure you want to remove this contract?")) {
       this.setState({
-        requestId: this.props.RemoveContract({name: contractName}),
+        requestId: this.props.WrapRequest({
+          todo: async () => {
+            await this.props.RemoveContract({name: contractName});
+          }
+        }),
         deleting: true
       });
-
     }
   }
 

@@ -15,13 +15,16 @@ class ContentObjectApp extends React.Component {
   }
 
   componentDidMount() {
-    let requestId = this.props.GetContentObjectMetadata({
-      libraryId: this.state.libraryId,
-      objectId: this.state.objectId
-    });
-
     this.setState({
-      requestId: requestId
+      requestId: this.props.WrapRequest({
+        todo: async () => {
+          await this.props.SetCurrentAccount();
+          await this.props.GetContentObjectMetadata({
+            libraryId: this.state.libraryId,
+            objectId: this.state.objectId
+          });
+        }
+      })
     });
   }
 

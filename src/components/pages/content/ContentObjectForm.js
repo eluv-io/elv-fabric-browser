@@ -27,13 +27,15 @@ class ContentObjectForm extends React.Component {
   // Load existing content object on edit
   componentDidMount() {
     if(!this.state.createForm) {
-      let requestId = this.props.GetContentObjectMetadata({
-        libraryId: this.state.libraryId,
-        objectId: this.state.objectId
-      });
-
       this.setState({
-        objectRequestId: requestId
+        loadRequestId: this.props.WrapRequest({
+          todo: async () => {
+            await this.props.GetContentObjectMetadata({
+              libraryId: this.state.libraryId,
+              objectId: this.state.objectId
+            });
+          }
+        })
       });
     }
   }
@@ -62,30 +64,38 @@ class ContentObjectForm extends React.Component {
   }
 
   HandleSubmit() {
-    let requestId;
-
     if(this.state.createForm) {
-      requestId = this.props.CreateContentObject({
-        libraryId: this.state.libraryId,
-        objectId: this.state.objectId,
-        name: this.state.name,
-        type: this.state.type,
-        description: this.state.description,
-        metadata: this.state.metadata
-      })
+      this.setState({
+        submitRequestId: this.props.WrapRequest({
+          todo: async () => {
+            await this.props.CreateContentObject({
+              libraryId: this.state.libraryId,
+              objectId: this.state.objectId,
+              name: this.state.name,
+              type: this.state.type,
+              description: this.state.description,
+              metadata: this.state.metadata
+            });
+          }
+        })
+      });
     } else {
-      requestId = this.props.UpdateContentObject({
-        libraryId: this.state.libraryId,
-        objectId: this.state.objectId,
-        name: this.state.name,
-        type: this.state.type,
-        description: this.state.description,
-        contractAddress: this.state.contractAddress,
-        metadata: this.state.metadata
-      })
+      this.setState({
+        submitRequestId: this.props.WrapRequest({
+          todo: async () => {
+            await this.props.UpdateContentObject({
+              libraryId: this.state.libraryId,
+              objectId: this.state.objectId,
+              name: this.state.name,
+              type: this.state.type,
+              description: this.state.description,
+              contractAddress: this.state.contractAddress,
+              metadata: this.state.metadata
+            });
+          }
+        })
+      });
     }
-
-    this.setState({ formSubmitRequestId: requestId });
   }
 
   TypeField() {
@@ -130,7 +140,7 @@ class ContentObjectForm extends React.Component {
     return (
       <RequestForm
         requests={this.props.requests}
-        requestId={this.state.formSubmitRequestId}
+        requestId={this.state.submitRequestId}
         legend={legend}
         formContent={this.FormContent()}
         redirectPath={Path.dirname(this.props.match.url)}
@@ -147,7 +157,7 @@ class ContentObjectForm extends React.Component {
       return (
         <RequestPage
           pageContent={this.PageContent()}
-          requestId={this.state.objectRequestId}
+          requestId={this.state.loadRequestId}
           requests={this.props.requests}
           OnRequestComplete={this.OnContentObjectLoaded}
         />

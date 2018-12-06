@@ -21,6 +21,7 @@ import ContentContract from "../../components/pages/content/contracts/ContentCon
 import ContentContractMethodForm from "../../components/pages/content/contracts/ContentContractMethodForm";
 import {GetContentObjectMetadata} from "../../actions/Content";
 import ContentContractFundsForm from "../../components/pages/content/contracts/ContentContractFundsForm";
+import {WrapRequest} from "../../actions/Requests";
 
 const mapStateToProps = (state) => ({
   requests: state.requests,
@@ -32,6 +33,7 @@ const mapDispatchToProps = dispatch =>
   Thunk(
     dispatch,
     [
+      WrapRequest,
       ListContracts,
       RemoveContract,
       CompileContracts,

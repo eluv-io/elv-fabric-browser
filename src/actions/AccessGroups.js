@@ -1,53 +1,40 @@
-import { WrapRequest } from "./Requests";
 import ActionTypes from "./ActionTypes";
 import Fabric from "../clients/Fabric";
 import {SetNotificationMessage} from "./Notifications";
 
 export const ListAccessGroups = () => {
-  return (dispatch) => {
-    return WrapRequest({
-      dispatch: dispatch,
-      action: "listAccessGroups",
-      todo: (async () => {
-        const accessGroups = await Fabric.FabricBrowser.AccessGroups();
-        dispatch({
-          type: ActionTypes.request.accessGroups.completed.list,
-          accessGroups
-        });
-      })
+  return async (dispatch) => {
+    const accessGroups = await Fabric.FabricBrowser.AccessGroups();
+    dispatch({
+      type: ActionTypes.request.accessGroups.completed.list,
+      accessGroups
     });
   };
 };
 
-export const SaveAccessGroup = ({creator, originalName, name, description, address, members}) => {
-  return (dispatch) => {
-    return WrapRequest({
-      dispatch: dispatch,
-      action: "SaveAccessGroup",
-      todo: (async () => {
-        if(address) {
-          // Existing access group - update attributes
-          await Fabric.FabricBrowser.AddAccessGroup({creator, name, description, address, members});
+export const SaveAccessGroup = ({originalName, name, description, address, members}) => {
+  return async (dispatch) => {
+    if(address) {
+      // Existing access group - update attributes
+      await Fabric.FabricBrowser.AddAccessGroup({name, description, address, members});
 
-          // If name changed, remove old entry
-          if(originalName !== name) { await Fabric.FabricBrowser.RemoveAccessGroup({name: originalName}); }
+      // If name changed, remove old entry
+      if(originalName !== name) { await Fabric.FabricBrowser.RemoveAccessGroup({name: originalName}); }
 
-          dispatch(SetNotificationMessage({
-            message: "Access group successfully updated",
-            redirect: true
-          }));
-        } else {
-          // New access group - deploy contract
-          address = await Fabric.CreateAccessGroup();
-          await Fabric.FabricBrowser.AddAccessGroup({creator, name, description, address, members});
+      dispatch(SetNotificationMessage({
+        message: "Access group successfully updated",
+        redirect: true
+      }));
+    } else {
+      // New access group - deploy contract
+      address = await Fabric.CreateAccessGroup();
+      await Fabric.FabricBrowser.AddAccessGroup({name, description, address, members});
 
-          dispatch(SetNotificationMessage({
-            message: "Access group successfully created",
-            redirect: true
-          }));
-        }
-      })
-    });
+      dispatch(SetNotificationMessage({
+        message: "Access group successfully created",
+        redirect: true
+      }));
+    }
   };
 };
 
@@ -81,46 +68,34 @@ const UpdateMembers = async ({contractAddress, members, originalMembers}) => {
 };
 
 export const UpdateAccessGroupMembers = ({name, members, originalMembers}) => {
-  return (dispatch) => {
-    return WrapRequest({
-      dispatch: dispatch,
-      action: "UpdateAccessGroupMembers",
-      todo: (async () => {
-        const accessGroup = (await Fabric.FabricBrowser.AccessGroups())[name];
+  return async (dispatch) => {
+    const accessGroup = (await Fabric.FabricBrowser.AccessGroups())[name];
 
-        await UpdateMembers({contractAddress: accessGroup.address, members, originalMembers});
+    await UpdateMembers({contractAddress: accessGroup.address, members, originalMembers});
 
-        await Fabric.FabricBrowser.AddAccessGroup({
-          name,
-          creator: accessGroup.creator,
-          description: accessGroup.description,
-          address: accessGroup.address,
-          members
-        });
-
-        dispatch(SetNotificationMessage({
-          message: "Access group members successfully updated",
-          redirect: true
-        }));
-      })
+    await Fabric.FabricBrowser.AddAccessGroup({
+      name,
+      creator: accessGroup.creator,
+      description: accessGroup.description,
+      address: accessGroup.address,
+      members
     });
-  };
 
+    dispatch(SetNotificationMessage({
+      message: "Access group members successfully updated",
+      redirect: true
+    }));
+  };
 };
 
 export const RemoveAccessGroup = ({name, contractAddress}) => {
-  return (dispatch) => {
-    return WrapRequest({
-      dispatch: dispatch,
-      action: "removeAccessGroup",
-      todo: (async () => {
-        await Fabric.FabricBrowser.RemoveAccessGroup({name, contractAddress});
+  return async (dispatch) => {
+    await Fabric.DeleteAccessGroup({contractAddress});
+    await Fabric.FabricBrowser.RemoveAccessGroup({name, contractAddress});
 
-        dispatch(SetNotificationMessage({
-          message: "Access group successfully deleted",
-          redirect: true
-        }));
-      })
-    });
+    dispatch(SetNotificationMessage({
+      message: "Access group successfully deleted",
+      redirect: true
+    }));
   };
 };

@@ -34,9 +34,13 @@ class ContentContractMethodForm extends React.Component {
 
   componentDidMount() {
     this.setState({
-      loadRequestId: this.props.GetContentObjectMetadata({
-        libraryId: this.state.libraryId,
-        objectId: this.state.objectId
+      loadRequestId: this.props.WrapRequest({
+        todo: async () => {
+          await this.props.GetContentObjectMetadata({
+            libraryId: this.state.libraryId,
+            objectId: this.state.objectId
+          });
+        }
       })
     });
   }
@@ -102,11 +106,15 @@ class ContentContractMethodForm extends React.Component {
     const methodArgs = Object.values(this.state.inputs);
 
     this.setState({
-      submitRequestId: this.props.CallContractMethod({
-        contractAddress: this.state.contract.address,
-        abi: this.state.contract.abi,
-        methodName: this.state.method,
-        methodArgs
+      submitRequestId: this.props.WrapRequest({
+        todo: async () => {
+          await this.props.CallContractMethod({
+            contractAddress: this.state.contract.address,
+            abi: this.state.contract.abi,
+            methodName: this.state.method,
+            methodArgs
+          })
+        }
       })
     });
   }
