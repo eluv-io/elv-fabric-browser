@@ -65,3 +65,8 @@ pre {
   white-space: pre-wrap;
   word-wrap: break-word;
 }
+
+// sass-lint:disable no-important
+.hidden {
+  display: none !important;
+}

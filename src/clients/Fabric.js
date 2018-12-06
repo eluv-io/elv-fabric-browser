@@ -47,37 +47,37 @@ const Fabric = {
     return await client.CreateAccessGroup();
   },
 
-  FormatMemberAddress: (memberAddress) => {
-    if(!memberAddress.startsWith("0x")) { memberAddress = "0x" + memberAddress; }
-    return memberAddress.toLowerCase();
+  FormatAddress: (address) => {
+    if(!address.startsWith("0x")) { address = "0x" + address; }
+    return address.toLowerCase();
   },
 
   async AddAccessGroupMember({contractAddress, memberAddress}) {
 
     return await client.AddAccessGroupMember({
       contractAddress,
-      memberAddress: Fabric.FormatMemberAddress(memberAddress)
+      memberAddress: Fabric.FormatAddress(memberAddress)
     });
   },
 
   async RemoveAccessGroupMember({contractAddress, memberAddress}) {
     return await client.RemoveAccessGroupMember({
       contractAddress,
-      memberAddress: Fabric.FormatMemberAddress(memberAddress)
+      memberAddress: Fabric.FormatAddress(memberAddress)
     });
   },
 
   async AddAccessGroupManager({contractAddress, memberAddress}) {
     return await client.AddAccessGroupManager({
       contractAddress,
-      memberAddress: Fabric.FormatMemberAddress(memberAddress)
+      memberAddress: Fabric.FormatAddress(memberAddress)
     });
   },
 
   async RemoveAccessGroupManager({contractAddress, memberAddress}) {
     return await client.RemoveAccessGroupManager({
       contractAddress,
-      memberAddress: Fabric.FormatMemberAddress(memberAddress)
+      memberAddress: Fabric.FormatAddress(memberAddress)
     });
   },
 
@@ -97,6 +97,24 @@ const Fabric = {
   GetContentLibraryOwner: async ({libraryId}) => {
     return await client.ContentLibraryOwner({libraryId});
   },
+
+  CreateContentLibrary: async ({name, description, publicMetadata, privateMetadata}) => {
+    return await client.CreateContentLibrary({name, description, publicMetadata, privateMetadata});
+  },
+
+  DeleteContentLibrary: async ({libraryId}) => {
+    await client.DeleteContentLibrary({libraryId});
+  },
+
+  SetContentLibraryImage: async ({libraryId, image}) =>{
+    await client.SetContentLibraryImage({libraryId, image});
+  },
+
+  ReplacePublicLibraryMetadata: async ({libraryId, metadata}) => {
+    return await client.ReplacePublicLibraryMetadata({libraryId, metadata});
+  },
+
+  /* Library Groups */
 
   // Get a list of library groups of the specified type
   // - Get the number of groups by querying <type>GroupsLength
@@ -144,20 +162,44 @@ const Fabric = {
     };
   },
 
-  CreateContentLibrary: async ({name, description, publicMetadata, privateMetadata}) => {
-    return await client.CreateContentLibrary({name, description, publicMetadata, privateMetadata});
+  AddContentLibraryGroup: async ({libraryId, address, groupType}) => {
+    try {
+      const event = await client.CallContractMethodAndWait({
+        contractAddress: client.utils.HashToAddress({hash: libraryId}),
+        abi: BaseLibraryContract.abi,
+        methodName: "add" + groupType.capitalize() + "Group",
+        methodArgs: [Fabric.FormatAddress(address)]
+      });
+
+      await client.ExtractEventFromLogs({
+        abi: BaseLibraryContract.abi,
+        event,
+        eventName: groupType.capitalize() + "GroupAdded"
+      });
+    } catch(error) {
+      console.error(error);
+      throw Error("Failed to add " + groupType + "group " + address);
+    }
   },
 
-  DeleteContentLibrary: async ({libraryId}) => {
-    await client.DeleteContentLibrary({libraryId});
-  },
+  RemoveContentLibraryGroup: async ({libraryId, address, groupType}) => {
+    try {
+      const event = await client.CallContractMethodAndWait({
+        contractAddress: client.utils.HashToAddress({hash: libraryId}),
+        abi: BaseLibraryContract.abi,
+        methodName: "remove" + groupType.capitalize() + "Group",
+        methodArgs: [Fabric.FormatAddress(address)]
+      });
 
-  SetContentLibraryImage: async ({libraryId, image}) =>{
-    await client.SetContentLibraryImage({libraryId, image});
-  },
-
-  ReplacePublicLibraryMetadata: async ({libraryId, metadata}) => {
-    return await client.ReplacePublicLibraryMetadata({libraryId, metadata});
+      await client.ExtractEventFromLogs({
+        abi: BaseLibraryContract.abi,
+        event,
+        eventName: groupType.capitalize() + "GroupRemoved"
+      });
+    } catch(error) {
+      console.error(error);
+      throw Error("Failed to add " + groupType + "group " + address);
+    }
   },
 
   /* Objects */

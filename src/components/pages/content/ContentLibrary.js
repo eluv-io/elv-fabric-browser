@@ -118,28 +118,41 @@ class ContentLibrary extends React.Component {
   }
 
   LibraryGroups() {
-    return Object.keys(this.state.contentLibrary.groups).map(groupType => {
-      const groups = this.state.contentLibrary.groups[groupType];
+    // Return if no groups exist
+    if(!Object.values(this.state.contentLibrary.groups).some(groups => groups.length > 0)) { return null; }
 
-      if(groups.length === 0) { return null; }
+    return (
+      <div>
+        <h3>Groups</h3>
+        {
+          Object.keys(this.state.contentLibrary.groups).map(groupType => {
+            const groups = this.state.contentLibrary.groups[groupType];
 
-      return (
-        <div className="library-groups-info indented" key={"library-group-" + groupType}>
-          <h4>{groupType.capitalize()}</h4>
-          {
-            groups.map(group => {
-              return (
-                <div className="group-info indented" key={"library-group-" + groupType + "-" + group.address}>
-                  <h4>{group.name || "Unknown Group"}</h4>
-                  <LabelledField label="Address" value={group.address} />
-                </div>
-              )
-            })
-          }
+            // Display nothing if no groups of this type exist
+            if (groups.length === 0) {
+              return null;
+            }
 
-        </div>
-      );
-    });
+            return (
+              <div className="library-groups-info indented" key={"library-group-" + groupType}>
+                <h4>{groupType.capitalize()}</h4>
+                {
+                  groups.map(group => {
+                    return (
+                      <div className="group-info indented" key={"library-group-" + groupType + "-" + group.address}>
+                        <h4>{group.name || "Unknown Group"}</h4>
+                        <LabelledField label="Address" value={group.address}/>
+                      </div>
+                    )
+                  })
+                }
+
+              </div>
+            );
+          })
+        }
+      </div>
+    );
   }
 
   LibraryMetadata() {
@@ -191,7 +204,6 @@ class ContentLibrary extends React.Component {
         <LabelledField label={"Contract Address"} value={this.state.contentLibrary.contractAddress} />
         <LabelledField label={"Content Objects"} value={this.state.contentLibrary.contentObjects.length} />
         { this.LibraryMetadata() }
-        <h3>Groups</h3>
         { this.LibraryGroups() }
       </div>
     )
@@ -209,6 +221,7 @@ class ContentLibrary extends React.Component {
         <div className="actions-container">
           <Link to={Path.dirname(this.props.match.url)} className="action secondary" >Back</Link>
           <Link to={Path.join(this.props.match.url, "edit")} className="action" >Edit Content Library</Link>
+          <Link to={Path.join(this.props.match.url, "groups")} className="action" >Manage Groups</Link>
           <Link to={Path.join(this.props.match.url, "create")} className="action" >New Content Object</Link>
           { this.DeleteContentLibraryButton() }
         </div>
