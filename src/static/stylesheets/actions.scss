@@ -92,6 +92,10 @@
       min-width: 120px;
     }
 
+    &.action-full-width {
+      width: 100%;
+    }
+
     &.action-inline {
       margin-right: $spacing-xs;
     }
