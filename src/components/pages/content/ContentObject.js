@@ -32,14 +32,16 @@ class ContentObject extends React.Component {
   }
 
   componentDidMount() {
-    let requestId = this.props.GetFullContentObject({
-      libraryId: this.state.libraryId,
-      objectId: this.state.objectId,
-      includeStatus: this.state.isNormalObject
-    });
-
     this.setState({
-      requestId: requestId
+      requestId: this.props.WrapRequest({
+        todo: async () => {
+          await this.props.GetFullContentObject({
+            libraryId: this.state.libraryId,
+            objectId: this.state.objectId,
+            includeStatus: this.state.isNormalObject
+          });
+        }
+      })
     });
   }
 
@@ -52,10 +54,14 @@ class ContentObject extends React.Component {
       // Version deleted - reload object
       this.setState({
         deletingVersion: false,
-        requestId: this.props.GetFullContentObject({
-          libraryId: this.state.libraryId,
-          objectId: this.state.objectId,
-          includeStatus: !this.state.isContentType
+        requestId: this.props.WrapRequest({
+          todo: async () => {
+            await this.props.GetFullContentObject({
+              libraryId: this.state.libraryId,
+              objectId: this.state.objectId,
+              includeStatus: !this.state.isContentType
+            });
+          }
         })
       });
     }
@@ -72,9 +78,13 @@ class ContentObject extends React.Component {
   DeleteContentObject() {
     if(confirm("Are you sure you want to delete this content object?")) {
       this.setState({
-        requestId: this.props.DeleteContentObject({
-          libraryId: this.state.libraryId,
-          objectId: this.state.objectId
+        requestId: this.props.WrapRequest({
+          todo: async () => {
+            await this.props.DeleteContentObject({
+              libraryId: this.state.libraryId,
+              objectId: this.state.objectId
+            });
+          },
         }),
         deleting: true
       });
@@ -84,10 +94,14 @@ class ContentObject extends React.Component {
   DeleteContentVersion(versionHash) {
     if(confirm("Are you sure you want to delete this content version?")) {
       this.setState({
-        requestId: this.props.DeleteContentVersion({
-          libraryId: this.state.libraryId,
-          objectId: this.state.objectId,
-          versionHash
+        requestId: this.props.WrapRequest({
+          todo: async () => {
+            await this.props.DeleteContentVersion({
+              libraryId: this.state.libraryId,
+              objectId: this.state.objectId,
+              versionHash
+            });
+          }
         }),
         deletingVersion: true
       });

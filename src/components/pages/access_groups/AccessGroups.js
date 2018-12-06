@@ -15,7 +15,12 @@ class AccessGroups extends React.Component {
 
   componentDidMount() {
     this.setState({
-      requestId: this.props.ListAccessGroups()
+      requestId: this.props.WrapRequest({
+        todo: async () => {
+          await this.props.SetCurrentAccount();
+          await this.props.ListAccessGroups();
+        }
+      })
     });
   }
 

@@ -16,8 +16,6 @@ const ActionTypes = {
       completed: {
         list: {
           currentAccountAddress: "COMPLETED_GET_CURRENT_ACCOUNT_ADDRESS",
-          accounts: "COMPLETED_LIST_ACCOUNTS",
-          account: "COMPLETED_LIST_ACCOUNT"
         }
       }
     },

@@ -26,7 +26,13 @@ class ContentLibrary extends React.Component {
 
   componentDidMount() {
     this.setState({
-      requestId: this.props.ListContentObjects({ libraryId: this.state.libraryId })
+      requestId: this.props.WrapRequest({
+        todo: async () => {
+          await this.props.SetCurrentAccount();
+          await this.props.ListContentObjects({ libraryId: this.state.libraryId });
+          await this.props.ListAccessGroups();
+        }
+      })
     });
   }
 
@@ -45,7 +51,11 @@ class ContentLibrary extends React.Component {
   DeleteContentLibrary() {
     if(confirm("Are you sure you want to delete this library?")) {
       this.setState({
-        requestId: this.props.DeleteContentLibrary({libraryId: this.state.libraryId}),
+        requestId: this.props.WrapRequest({
+          todo: async () => {
+            await this.props.DeleteContentLibrary({libraryId: this.state.libraryId});
+          }
+        }),
         deleting: true
       });
     }
@@ -209,6 +219,25 @@ class ContentLibrary extends React.Component {
     )
   }
 
+  Actions() {
+    const isOwner = this.state.contentLibrary.owner.toLowerCase() === this.props.currentAccountAddress.toLowerCase();
+
+    let manageGroupsButton;
+    if(isOwner) {
+      manageGroupsButton = <Link to={Path.join(this.props.match.url, "groups")} className="action" >Manage Groups</Link>;
+    }
+
+    return (
+      <div className="actions-container">
+        <Link to={Path.dirname(this.props.match.url)} className="action secondary" >Back</Link>
+        <Link to={Path.join(this.props.match.url, "edit")} className="action" >Edit Content Library</Link>
+        { manageGroupsButton }
+        <Link to={Path.join(this.props.match.url, "create")} className="action" >New Content Object</Link>
+        { this.DeleteContentLibraryButton() }
+      </div>
+    )
+  }
+
   PageContent() {
     if(!this.state.contentLibrary) { return null; }
 
@@ -218,13 +247,7 @@ class ContentLibrary extends React.Component {
 
     return (
       <div className="page-container contents-page-container">
-        <div className="actions-container">
-          <Link to={Path.dirname(this.props.match.url)} className="action secondary" >Back</Link>
-          <Link to={Path.join(this.props.match.url, "edit")} className="action" >Edit Content Library</Link>
-          <Link to={Path.join(this.props.match.url, "groups")} className="action" >Manage Groups</Link>
-          <Link to={Path.join(this.props.match.url, "create")} className="action" >New Content Object</Link>
-          { this.DeleteContentLibraryButton() }
-        </div>
+        { this.Actions() }
         <div className="object-display">
           <h3 className="page-header">{ this.state.contentLibrary.name }</h3>
           { this.LibraryInfo() }

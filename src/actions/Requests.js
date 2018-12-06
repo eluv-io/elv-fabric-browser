@@ -1,45 +1,35 @@
 import ActionTypes from "./ActionTypes";
 import { SetErrorMessage } from "./Notifications";
 import Id from "../utils/Id";
-import { Wait } from "../utils/Helpers";
 
 // Wrap actions with requests to keep request state updated automatically
 // Returns a unique ID corresponding to the request state
-export const WrapRequest = ({
-  dispatch,
-  action,
-  modal=false,
-  todo
-}) => {
-  let requestId = Id.next();
+export const WrapRequest = ({todo}) => {
+  return (dispatch) => {
+    let requestId = Id.next();
 
-  Request({
-    requestId,
-    dispatch,
-    action,
-    modal,
-    todo
-  });
+    Request({
+      requestId,
+      dispatch,
+      todo
+    });
 
-  return requestId;
+    return requestId;
+  };
 };
 
 const Request = async ({
   requestId,
   dispatch,
-  action,
   modal,
   todo
 }) => {
-  dispatch(RequestSubmitted(requestId, action));
+  dispatch(RequestSubmitted(requestId));
 
   try {
-    // Simulate loading time
-    //await Wait(500);
-
     await todo();
 
-    dispatch(RequestCompleted(requestId, action));
+    dispatch(RequestCompleted(requestId));
   } catch(error) {
     console.error(error);
 
@@ -61,27 +51,24 @@ const Request = async ({
   }
 };
 
-const RequestSubmitted = (requestId, action) => {
+const RequestSubmitted = (requestId) => {
   return {
     type: ActionTypes.request.request.status.submitted,
-    requestId,
-    action
+    requestId
   };
 };
 
-const RequestCompleted = (requestId, action) => {
+const RequestCompleted = (requestId) => {
   return {
     type: ActionTypes.request.request.status.completed,
-    requestId,
-    action
+    requestId
   };
 };
 
-const RequestError = (requestId, action, error_message) => {
+const RequestError = (requestId, error_message) => {
   return {
     type: ActionTypes.request.request.status.error,
     requestId,
-    action,
     error_message
   };
 };

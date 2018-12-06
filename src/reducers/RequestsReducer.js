@@ -6,7 +6,6 @@ const RequestsReducer = (state = {}, action) => {
       return {
         ...state,
         [action.requestId]: {
-          action: action.action,
           updatedAt: Date.now(),
           loading: true,
           completed: false,
@@ -18,7 +17,6 @@ const RequestsReducer = (state = {}, action) => {
       return {
         ...state,
         [action.requestId]: {
-          action: action.action,
           updatedAt: Date.now(),
           loading: false,
           completed: true,
@@ -30,7 +28,6 @@ const RequestsReducer = (state = {}, action) => {
       return {
         ...state,
         [action.requestId]: {
-          action: action.action,
           updatedAt: Date.now(),
           loading: false,
           completed: false,

@@ -15,7 +15,8 @@ class ContentContractFundsForm extends React.Component {
       libraryId: this.props.libraryId || this.props.match.params.libraryId,
       objectId: this.props.match.params.objectId,
       direction: "deposit",
-      amount: 0
+      amount: 0,
+      isCustom: this.props.location.pathname.includes("custom-contract")
     };
 
     this.RequestComplete = this.RequestComplete.bind(this);
@@ -27,9 +28,13 @@ class ContentContractFundsForm extends React.Component {
 
   componentDidMount() {
     this.setState({
-      loadRequestId: this.props.GetContentObjectMetadata({
-        libraryId: this.state.libraryId,
-        objectId: this.state.objectId
+      loadRequestId: this.props.WrapRequest({
+        todo: async () => {
+          await this.props.GetContentObjectMetadata({
+            libraryId: this.state.libraryId,
+            objectId: this.state.objectId
+          });
+        }
       })
     });
   }
@@ -72,18 +77,26 @@ class ContentContractFundsForm extends React.Component {
     if(this.state.direction === "deposit") {
       // Send funds to contract
       this.setState({
-        submitRequestId: this.props.SendFunds({
-          recipient: this.state.contract.address,
-          ether: this.state.amount
+        submitRequestId: this.props.WrapRequest({
+          todo: async () => {
+            await this.props.SendFunds({
+              recipient: this.state.contract.address,
+              ether: this.state.amount
+            });
+          }
         })
       });
     } else {
       // Transfer funds from contract
       this.setState({
-        submitRequestId: this.props.WithdrawContractFunds({
-          contractAddress: this.state.contract.address,
-          abi: this.state.contract.abi,
-          ether: this.state.amount
+        submitRequestId: this.props.WrapRequest({
+          todo: async () => {
+            await this.props.WithdrawContractFunds({
+              contractAddress: this.state.contract.address,
+              abi: this.state.contract.abi,
+              ether: this.state.amount
+            })
+          }
         })
       });
     }
@@ -121,7 +134,7 @@ class ContentContractFundsForm extends React.Component {
         <div className="actions-container">
           <Link className="action secondary" to={Path.dirname(this.props.match.url)}>Back</Link>
         </div>
-        <h3 className="page-header">{ this.state.contentObject.name}</h3>
+        <h3 className="page-header">{ this.state.contentObject.name + (this.state.isCustom ? " - Custom Contract" : "")}</h3>
         <RequestForm
           requests={this.props.requests}
           requestId={this.state.submitRequestId}

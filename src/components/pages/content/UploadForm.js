@@ -24,13 +24,17 @@ class ContentObjectUploadForm extends React.Component {
   }
 
   HandleSubmit() {
-    let requestId = this.props.UploadParts({
-      libraryId: this.state.libraryId,
-      objectId: this.state.objectId,
-      files: this.state.files
+    this.setState({
+      submitRequestId: this.props.WrapRequest({
+        todo: async () => {
+          await this.props.UploadParts({
+            libraryId: this.state.libraryId,
+            objectId: this.state.objectId,
+            files: this.state.files
+          });
+        }
+      })
     });
-
-    this.setState({ formSubmitRequestId: requestId });
   }
 
   FormContent() {
@@ -41,7 +45,7 @@ class ContentObjectUploadForm extends React.Component {
     return (
       <RequestForm
         requests={this.props.requests}
-        requestId={this.state.formSubmitRequestId}
+        requestId={this.state.submitRequestId}
         legend="Upload parts"
         formContent={this.FormContent()}
         redirectPath={Path.dirname(this.props.match.url)}

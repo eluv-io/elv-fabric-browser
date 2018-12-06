@@ -23,11 +23,14 @@ class ContentLibraryGroupsForm extends React.Component {
   }
 
   componentDidMount() {
-    this.props.ListAccessGroups();
-
     this.setState({
-      loadRequestId: this.props.GetContentLibrary({libraryId: this.state.libraryId})
-    })
+      loadRequestId: this.props.WrapRequest({
+        todo: async () => {
+          await this.props.ListAccessGroups();
+          await this.props.GetContentLibrary({libraryId: this.state.libraryId})
+        }
+      })
+    });
   }
 
   RequestComplete() {
@@ -93,10 +96,14 @@ class ContentLibraryGroupsForm extends React.Component {
     });
 
     this.setState({
-      submitRequestId: this.props.UpdateContentLibraryGroups({
-        libraryId: this.state.libraryId,
-        groups: libraryGroups,
-        originalGroups: this.state.originalGroups
+      submitRequestId: this.props.WrapRequest({
+        todo: async () => {
+          await this.props.UpdateContentLibraryGroups({
+            libraryId: this.state.libraryId,
+            groups: libraryGroups,
+            originalGroups: this.state.originalGroups
+          });
+        }
       })
     });
   }

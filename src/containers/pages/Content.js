@@ -26,6 +26,8 @@ import ContentObjectUploadForm from "../../components/pages/content/UploadForm";
 import ContentObjectApp from "../../components/pages/content/ContentApp";
 import ContentLibraryGroupsForm from "../../components/pages/content/ContentLibraryGroupsForm";
 import {ListAccessGroups} from "../../actions/AccessGroups";
+import {WrapRequest} from "../../actions/Requests";
+import {SetCurrentAccount} from "../../actions/Accounts";
 
 const mapStateToProps = (state) => ({
   requests: state.requests,
@@ -38,6 +40,8 @@ const mapDispatchToProps = dispatch =>
   Thunk(
     dispatch,
     [
+      WrapRequest,
+      SetCurrentAccount,
       ListContentLibraries,
       GetContentLibrary,
       UpdateContentLibrary,
