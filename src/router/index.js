@@ -7,12 +7,6 @@ import {
   AccessGroupMembersFormContainer,
   AccessGroupsContainer
 } from "../containers/pages/AccessGroups";
-import {
-  AccountsContainer,
-  AccountFormContainer,
-  AccountContainer,
-  AccountInfoFormContainer
-} from "../containers/pages/Accounts";
 
 import {
   ContentLibrariesContainer,
@@ -48,11 +42,6 @@ function Routes(){
         <Route exact path="/access-groups/:accessGroupName" component={AccessGroupContainer} />
         <Route exact path="/access-groups/:accessGroupName/edit" component={AccessGroupFormContainer} />
         <Route exact path="/access-groups/:accessGroupName/members" component={AccessGroupMembersFormContainer} />
-
-        <Route exact path="/accounts" component={AccountsContainer} />
-        <Route exact path="/accounts/create" component={AccountFormContainer} />
-        <Route exact path="/accounts/:accountAddress" component={AccountContainer} />
-        <Route exact path="/accounts/:accountAddress/edit" component={AccountInfoFormContainer} />
 
         <Route exact path="/content" component={ContentLibrariesContainer} />
         <Route exact path="/content/create" component={ContentLibraryFormContainer} />

@@ -25,8 +25,12 @@ class AccessGroupForm extends React.Component {
   componentDidMount() {
     if(!this.state.createForm) {
       this.setState({
-        loadRequestId: this.props.ListAccessGroups()
-      })
+        loadRequestId: this.props.WrapRequest({
+          todo: async () => {
+            await this.props.ListAccessGroups();
+          }
+        })
+      });
     }
   }
 
@@ -49,12 +53,16 @@ class AccessGroupForm extends React.Component {
 
   HandleSubmit() {
     this.setState({
-      submitRequestId: this.props.SaveAccessGroup({
-        name: this.state.name,
-        description: this.state.description,
-        address: this.state.address,
-        members: this.state.members,
-        originalName: this.state.accessGroupName
+      submitRequestId: this.props.WrapRequest({
+        todo: async () => {
+          await this.props.SaveAccessGroup({
+            name: this.state.name,
+            description: this.state.description,
+            address: this.state.address,
+            members: this.state.members,
+            originalName: this.state.accessGroupName
+          });
+        }
       })
     });
   }

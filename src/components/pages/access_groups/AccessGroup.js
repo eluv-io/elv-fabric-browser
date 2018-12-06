@@ -21,7 +21,12 @@ class AccessGroup extends React.Component {
 
   componentDidMount() {
     this.setState({
-      requestId: this.props.ListAccessGroups()
+      requestId: this.props.WrapRequest({
+        todo: async () => {
+          await this.props.SetCurrentAccount();
+          await this.props.ListAccessGroups();
+        }
+      })
     });
   }
 
@@ -60,8 +65,14 @@ class AccessGroup extends React.Component {
 
   DeleteAccessGroup(accessGroupName) {
     if (confirm("Are you sure you want to delete this access group?")) {
+      const deleteRequestId = this.props.WrapRequest({
+        todo: async () => {
+          await this.props.RemoveAccessGroup({name: accessGroupName, contractAddress: this.state.accessGroup.address})
+        }
+      });
+
       this.setState({
-        requestId: this.props.RemoveAccessGroup({name: accessGroupName, contractAddress: this.state.accessGroup.address}),
+        requestId: deleteRequestId,
         deleting: true
       });
     }

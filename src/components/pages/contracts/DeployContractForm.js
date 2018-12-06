@@ -12,8 +12,8 @@ class DeployContractForm extends React.Component {
       libraryId: this.props.libraryId || this.props.match.params.libraryId,
       objectId: this.props.match.params.objectId,
       selectedContract: "",
-      contractRequestId: undefined,
-      deployRequestId: undefined
+      loadRequestId: undefined,
+      submitRequestId: undefined
     };
 
     this.HandleContractsLoaded = this.HandleContractsLoaded.bind(this);
@@ -25,7 +25,11 @@ class DeployContractForm extends React.Component {
   componentDidMount() {
     // Load available contracts
     this.setState({
-      contractRequestId: this.props.ListContracts()
+      loadRequestId: this.props.WrapRequest({
+        todo: async () => {
+          await this.props.ListContracts();
+        }
+      })
     });
   }
 
@@ -88,18 +92,20 @@ class DeployContractForm extends React.Component {
 
   HandleSubmit() {
     const contract = this.state.contracts[this.state.selectedContract];
-    const deployRequestId = this.props.DeployContentContract({
-      libraryId: this.state.libraryId,
-      objectId: this.state.objectId,
-      contractName: this.state.selectedContract,
-      contractDescription: contract.description,
-      abi: contract.abi,
-      bytecode: contract.bytecode,
-      inputs: this.ConstructorInput()
-    });
-
     this.setState({
-      deployRequestId
+      submitRequestId: this.props.WrapRequest({
+        todo: async () => {
+          await this.props.DeployContentContract({
+            libraryId: this.state.libraryId,
+            objectId: this.state.objectId,
+            contractName: this.state.selectedContract,
+            contractDescription: contract.description,
+            abi: contract.abi,
+            bytecode: contract.bytecode,
+            inputs: this.ConstructorInput()
+          });
+        }
+      })
     });
   }
 
@@ -167,7 +173,7 @@ class DeployContractForm extends React.Component {
     return (
       <RequestForm
         requests={this.props.requests}
-        requestId={this.state.deployRequestId}
+        requestId={this.state.submitRequestId}
         legend={"Set custom contract"}
         formContent={this.ContractFileForm()}
         redirectPath={Path.dirname(this.props.match.url)}
@@ -182,7 +188,7 @@ class DeployContractForm extends React.Component {
     return (
       <RequestPage
         pageContent={this.PageContent()}
-        requestId={this.state.contractRequestId}
+        requestId={this.state.loadRequestId}
         requests={this.props.requests}
         OnRequestComplete={this.HandleContractsLoaded}
       />

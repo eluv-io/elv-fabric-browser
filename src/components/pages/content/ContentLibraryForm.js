@@ -30,12 +30,14 @@ class ContentLibraryForm extends React.Component {
   // Load existing content library on edit
   componentDidMount() {
     if(!this.state.createForm) {
-      let requestId = this.props.ListContentObjects({
-        libraryId: this.state.libraryId
-      });
-
       this.setState({
-        libraryRequestId: requestId,
+        loadRequestId: this.props.WrapRequest({
+          todo: async () => {
+            await this.props.ListContentObjects({
+              libraryId: this.state.libraryId
+            });
+          }
+        })
       });
     }
   }
@@ -78,31 +80,39 @@ class ContentLibraryForm extends React.Component {
   }
 
   HandleSubmit() {
-    let requestId;
-
     if(this.state.createForm) {
-      requestId = this.props.CreateContentLibrary({
-        owner: this.props.currentAccountAddress,
-        name: this.state.name,
-        description: this.state.description,
-        publicMetadata: this.state.publicMetadata,
-        privateMetadata: this.state.privateMetadata,
-        image: this.state.imageSelection
+      this.setState({
+        submitRequestId: this.props.WrapRequest({
+          todo: async () => {
+            await this.props.CreateContentLibrary({
+              owner: this.props.currentAccountAddress,
+              name: this.state.name,
+              description: this.state.description,
+              publicMetadata: this.state.publicMetadata,
+              privateMetadata: this.state.privateMetadata,
+              image: this.state.imageSelection
+            });
+          }
+        })
       });
     } else {
-      requestId = this.props.UpdateContentLibrary({
-        libraryId: this.state.libraryId,
-        libraryObjectId: this.state.libraryObjectId,
-        name: this.state.name,
-        description: this.state.description,
-        contractAddress: this.state.contractAddress,
-        publicMetadata: this.state.publicMetadata,
-        privateMetadata: this.state.privateMetadata,
-        image: this.state.imageSelection
-      })
+      this.setState({
+        submitRequestId: this.props.WrapRequest({
+          todo: async () => {
+            await this.props.UpdateContentLibrary({
+              libraryId: this.state.libraryId,
+              libraryObjectId: this.state.libraryObjectId,
+              name: this.state.name,
+              description: this.state.description,
+              contractAddress: this.state.contractAddress,
+              publicMetadata: this.state.publicMetadata,
+              privateMetadata: this.state.privateMetadata,
+              image: this.state.imageSelection
+            })
+          }
+        })
+      });
     }
-
-    this.setState({ formSubmitRequestId: requestId });
   }
 
   ImagePreview() {
@@ -162,7 +172,7 @@ class ContentLibraryForm extends React.Component {
     return (
       <RequestForm
         requests={this.props.requests}
-        requestId={this.state.formSubmitRequestId}
+        requestId={this.state.submitRequestId}
         legend={legend}
         formContent={this.FormContent()}
         redirectPath={Path.dirname(this.props.match.url)}
@@ -179,7 +189,7 @@ class ContentLibraryForm extends React.Component {
       return (
         <RequestPage
           pageContent={this.PageContent()}
-          requestId={this.state.libraryRequestId}
+          requestId={this.state.loadRequestId}
           requests={this.props.requests}
           OnRequestComplete={this.OnContentLibraryLoaded}
         />

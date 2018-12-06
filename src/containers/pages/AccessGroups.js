@@ -9,6 +9,8 @@ import AccessGroups from "../../components/pages/access_groups/AccessGroups";
 import AccessGroup from "../../components/pages/access_groups/AccessGroup";
 import AccessGroupForm from "../../components/pages/access_groups/AccessGroupForm";
 import AccessGroupMembersForm from "../../components/pages/access_groups/AccessGroupMembersForm";
+import {WrapRequest} from "../../actions/Requests";
+import {SetCurrentAccount} from "../../actions/Accounts";
 
 const mapStateToProps = state => ({
   requests: state.requests,
@@ -20,6 +22,8 @@ const mapDispatchToProps = dispatch =>
   Thunk(
     dispatch,
     [
+      WrapRequest,
+      SetCurrentAccount,
       ListAccessGroups,
       SaveAccessGroup,
       UpdateAccessGroupMembers,

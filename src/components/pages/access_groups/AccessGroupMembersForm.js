@@ -25,7 +25,12 @@ class AccessGroupMembersForm extends React.Component {
 
   componentDidMount() {
     this.setState({
-      loadRequestId: this.props.ListAccessGroups()
+      loadRequestId: this.props.WrapRequest({
+        todo: async () => {
+          await this.props.SetCurrentAccount();
+          await this.props.ListAccessGroups();
+        }
+      })
     })
   }
 
@@ -78,10 +83,14 @@ class AccessGroupMembersForm extends React.Component {
     });
 
     this.setState({
-      submitRequestId: this.props.UpdateAccessGroupMembers({
-        name: this.state.name,
-        members: members,
-        originalMembers: this.state.originalMembers
+      submitRequestId: this.props.WrapRequest({
+        todo: async () => {
+          await this.props.UpdateAccessGroupMembers({
+            name: this.state.name,
+            members: members,
+            originalMembers: this.state.originalMembers
+          });
+        }
       })
     });
   }

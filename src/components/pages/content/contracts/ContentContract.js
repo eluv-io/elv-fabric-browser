@@ -29,9 +29,13 @@ class ContentContract extends React.Component {
 
   componentDidMount() {
     this.setState({
-      loadRequestId: this.props.GetContentObjectMetadata({
-        libraryId: this.state.libraryId,
-        objectId: this.state.objectId
+      loadRequestId: this.props.WrapRequest({
+        todo: async () => {
+          await this.props.GetContentObjectMetadata({
+            libraryId: this.state.libraryId,
+            objectId: this.state.objectId
+          })
+        }
       })
     });
   }
@@ -224,12 +228,12 @@ class ContentContract extends React.Component {
             { this.ContractEvents() }
             <h3>Contract Constructor</h3>
             { this.ContractInfo(contractConstructor) }
-            <h3>Contract Events</h3>
-            { this.ContractInfo(contractEvents) }
             <h3>Constant Methods</h3>
             { this.ContractInfo(constantMethods) }
             <h3>Dynamic Methods</h3>
             { this.ContractInfo(dynamicMethods) }
+            <h3>Contract Events</h3>
+            { this.ContractInfo(contractEvents) }
           </div>
         </div>
       </div>
