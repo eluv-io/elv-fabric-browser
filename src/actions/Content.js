@@ -6,6 +6,7 @@ import ContentLibrary from "../models/ContentLibrary";
 import ContentObject from "../models/ContentObject";
 import {Wait} from "../utils/Helpers";
 import { ParseInputJson } from "../utils/Input";
+import { ListAccessGroups } from "./AccessGroups";
 
 export const ListContentLibraries = () => {
   return (dispatch) => {
@@ -53,14 +54,21 @@ export const ListContentLibraries = () => {
   };
 };
 
+// TODO: Move WrapRequest to components
 export const GetContentLibrary = ({libraryId}) => {
   return (dispatch) => {
     return WrapRequest({
       dispatch: dispatch,
       action: "getContentLibrary",
       todo: (async () => {
+        dispatch(ListAccessGroups());
         const libraryData = await Fabric.GetContentLibrary({libraryId});
-        const owner = await Fabric.ContentLibraryOwner({libraryId});
+        const owner = await Fabric.GetContentLibraryOwner({libraryId});
+
+        let libraryGroups = {};
+        if(libraryId !== Fabric.contentSpaceLibraryId) {
+          libraryGroups = await Fabric.GetContentLibraryGroups({libraryId});
+        }
 
         dispatch({
           type: ActionTypes.request.content.completed.list.library,
@@ -68,6 +76,7 @@ export const GetContentLibrary = ({libraryId}) => {
           contentLibrary: new ContentLibrary({
             libraryId,
             owner,
+            groups: libraryGroups,
             libraryMetadata: libraryData.meta,
             url: libraryData.url
           })
@@ -181,6 +190,38 @@ export const DeleteContentLibrary = ({ libraryId }) => {
   };
 };
 
+export const UpdateContentLibraryGroups = ({libraryId, groups, originalGroups}) => {
+  return (dispatch) => {
+    return WrapRequest({
+      dispatch: dispatch,
+      action: "UpdateContentLibraryGroups",
+      todo: (async () => {
+        for(const groupType of Object.keys(groups)) {
+          const oldGroupAddresses = originalGroups[groupType].map(group => Fabric.FormatAddress(group.address));
+          const newGroupAddresses = groups[groupType].map(group => Fabric.FormatAddress(group.address));
+
+          // Remove groups in original groups but not in new groups
+          const toRemove = oldGroupAddresses.filter(address => !newGroupAddresses.includes(address));
+          for(const address of toRemove) {
+            await Fabric.RemoveContentLibraryGroup({libraryId, address, groupType});
+          }
+
+          // Add groups in new groups but not in original groups
+          const toAdd = newGroupAddresses.filter(address => !oldGroupAddresses.includes(address));
+          for(const address of toAdd) {
+            await Fabric.AddContentLibraryGroup({libraryId, address, groupType});
+          }
+        }
+
+        dispatch(SetNotificationMessage({
+          message: "Successfully updated library groups",
+          redirect: true
+        }));
+      })
+    });
+  };
+};
+
 export const ListContentObjects = ({ libraryId }) => {
   return (dispatch) => {
     return WrapRequest({
@@ -190,7 +231,11 @@ export const ListContentObjects = ({ libraryId }) => {
         const libraryData = (await Fabric.GetContentLibrary({libraryId}));
         const contentObjectsData = await Fabric.ListContentObjects({libraryId});
         const libraryOwner = await Fabric.GetContentLibraryOwner({libraryId});
-        const libraryGroups = await Fabric.GetContentLibraryGroups({libraryId});
+
+        let libraryGroups = {};
+        if(libraryId !== Fabric.contentSpaceLibraryId) {
+          libraryGroups = await Fabric.GetContentLibraryGroups({libraryId});
+        }
 
         dispatch({
           type: ActionTypes.request.content.completed.list.library,

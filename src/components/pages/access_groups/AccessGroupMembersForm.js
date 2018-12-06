@@ -72,7 +72,7 @@ class AccessGroupMembersForm extends React.Component {
     Object.values(this.state.members).map(member => {
       members[member.name] = {
         name: member.name,
-        address: Fabric.FormatMemberAddress(member.address),
+        address: Fabric.FormatAddress(member.address),
         manager: member.manager
       }
     });
@@ -148,17 +148,13 @@ class AccessGroupMembersForm extends React.Component {
   }
 
   MembersForm() {
-    const addMemberButton = (
-      <div className="actions-container left">
-        <button className="action action-compact action-wide" type="button" onClick={this.AddMember}>Add Member</button>
-      </div>
-    );
-
     return (
       <div className="access-group-form-data">
         <div className="labelled-input">
           <label className="label" htmlFor="addMember" ></label>
-          { addMemberButton }
+          <div className="actions-container left">
+            <button className="action action-compact action-full-width" type="button" onClick={this.AddMember}>Add Member</button>
+          </div>
         </div>
 
         { this.Members() }
@@ -169,18 +165,13 @@ class AccessGroupMembersForm extends React.Component {
   PageContent() {
     if(!this.state.accessGroup) { return null; }
 
-    // If name changes, make sure to update redirect path to new name
-    const redirectPath = this.state.createForm ?
-      this.props.match.url :
-      this.props.match.url.replace(this.state.accessGroup.name, this.state.name);
-
     return (
       <RequestForm
         requests={this.props.requests}
         requestId={this.state.submitRequestId}
         legend={"Manage Access Group Members"}
         formContent={this.MembersForm()}
-        redirectPath={Path.dirname(redirectPath)}
+        redirectPath={Path.dirname(this.props.match.url)}
         cancelPath={Path.dirname(this.props.match.url)}
         OnSubmit={this.HandleSubmit}
       />
