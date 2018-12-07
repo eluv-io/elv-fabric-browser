@@ -7,31 +7,11 @@ const AccountsReducer = (state = {}, action) => {
         ...state,
         currentAccountAddress: action.address
       };
-    case ActionTypes.request.accounts.completed.list.accounts:
-      return {
-        ...state,
-        accounts: {
-          ...state.accounts,
-          ...action.accounts
-        }
-      };
-
-    case ActionTypes.request.accounts.completed.list.account:
-      return {
-        ...state,
-        accountInfo: {
-          ...state.accountInfo,
-          [action.accountAddress]: action.accountInfo
-        }
-      };
-
 
     default:
       return {
         ...state,
-        currentAccountAddress: state.currentAccountAddress,
-        accounts: state.accounts || {},
-        accountInfo: state.accountInfo || {}
+        currentAccountAddress: state.currentAccountAddress
       };
   }
 };
