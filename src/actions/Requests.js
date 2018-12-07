@@ -42,7 +42,7 @@ const Request = async ({
         error;
     }
 
-    dispatch(RequestError(requestId, action, errorMessage));
+    dispatch(RequestError(requestId, errorMessage));
 
     // Modals will handle their own errors
     if(!modal) {

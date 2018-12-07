@@ -28,6 +28,7 @@ class ContentObject extends React.Component {
       isNormalObject: !isContentType && !isLibraryObject
     };
 
+    this.PageContent = this.PageContent.bind(this);
     this.RequestComplete = this.RequestComplete.bind(this);
   }
 
@@ -71,7 +72,7 @@ class ContentObject extends React.Component {
     if(contentObject) {
       this.setState({
         contentObject
-      })
+      });
     }
   }
 
@@ -248,7 +249,7 @@ class ContentObject extends React.Component {
 
     let versionHeader;
     if(!latestVersion) {
-      versionHeader = <LabelledField label={<h4>{"Version " + versionNumber}</h4>} value={this.ToggleButton("Version", version.hash)} />;
+      versionHeader = <LabelledField label={"Version " + versionNumber} value={this.ToggleButton("Version", version.hash)} />;
     } else {
       versionHeader = <h3>{"Latest Version"}</h3>;
     }
@@ -321,19 +322,19 @@ class ContentObject extends React.Component {
 
   ObjectInfo(contentObject) {
     const description = <ClippedText className="object-description" text={contentObject.description} />;
-    const status = this.state.isNormalObject ? <LabelledField label={"Status"} value={contentObject.status} /> : null;
+    const header = this.state.isContentType ? "Content Type Info" : "Content Object Info";
 
     return (
       <div className="object-info label-box">
-        <h3>Content Object Info</h3>
+        <h3>{ header }</h3>
 
         <LabelledField label={"Name"} value={contentObject.name} />
         <LabelledField label={"Description"} value={description} />
-        { status }
+        <LabelledField label={"Status"} value={contentObject.status} hidden={this.state.isContentType} />
         <LabelledField label={"Library ID"} value={contentObject.libraryId} />
         <LabelledField label={"Object ID"} value={contentObject.objectId} />
         <LabelledField label={"Owner"} value={contentObject.owner} />
-        <LabelledField label={"Type"} value={contentObject.type} />
+        <LabelledField label={"Type"} value={contentObject.type} hidden={this.state.isContentType} />
         { this.ContractInfo(contentObject) }
         <LabelledField label={"Versions"} value={contentObject.versions.length} />
         <LabelledField label={"Parts"} value={contentObject.parts.length} />
@@ -358,9 +359,7 @@ class ContentObject extends React.Component {
     );
   }
 
-  ContentObject() {
-    if(!this.state.contentObject) { return null; }
-
+  PageContent() {
     if(this.state.deleted) {
       return <Redirect push to={Path.join("/content", this.state.libraryId)}/>;
     }
@@ -400,9 +399,9 @@ class ContentObject extends React.Component {
   render() {
     return (
       <RequestPage
-        pageContent={this.ContentObject()}
         requestId={this.state.requestId}
         requests={this.props.requests}
+        pageContent={this.PageContent}
         OnRequestComplete={this.RequestComplete}
       />
     );

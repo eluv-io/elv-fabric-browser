@@ -10,7 +10,10 @@ import ContractIcon from "../../../static/icons/contracts.svg";
 class Contracts extends React.Component {
   constructor(props) {
     super(props);
+
     this.state = {};
+
+    this.PageContent = this.PageContent.bind(this);
   }
 
   componentDidMount() {
@@ -46,7 +49,7 @@ class Contracts extends React.Component {
           </div>
         );
       })
-    )
+    );
   }
 
   PageContent() {
@@ -64,9 +67,9 @@ class Contracts extends React.Component {
   render() {
     return (
       <RequestPage
-        pageContent={this.PageContent()}
         requestId={this.state.requestId}
         requests={this.props.requests}
+        pageContent={this.PageContent}
       />
     );
   }

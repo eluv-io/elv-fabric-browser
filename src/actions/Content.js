@@ -3,7 +3,6 @@ import Fabric from "../clients/Fabric";
 import { SetNotificationMessage } from "./Notifications";
 import ContentLibrary from "../models/ContentLibrary";
 import ContentObject from "../models/ContentObject";
-import {Wait} from "../utils/Helpers";
 import { ParseInputJson } from "../utils/Input";
 
 export const ListContentLibraries = () => {
@@ -330,92 +329,6 @@ export const UploadParts = ({libraryId, objectId, files}) => {
         data
       });
     }
-
-    await Fabric.FinalizeContentObject({
-      libraryId,
-      objectId,
-      writeToken: contentDraft.write_token
-    });
-
-    const partsText = files.length > 1 ? "parts" : "part";
-
-    dispatch(SetNotificationMessage({
-      message: "Successfully uploaded " + partsText,
-      redirect: true
-    }));
-  };
-};
-
-export const UploadParts2 = ({libraryId, objectId, files}) => {
-  return async (dispatch) => {
-    let contentDraft = await Fabric.EditContentObject({ libraryId, objectId });
-
-    const fileInfo = Array.from(files).map(file => {
-      return (
-        {
-          name: file.name,
-          description: "test description",
-          path: file.name,
-          size: file.size,
-          type: "file",
-          security_groups: [],
-          mime_type: "text/plain"
-        }
-      );
-    });
-
-    console.log(JSON.stringify(fileInfo, null, 2));
-
-    const uploadJob = (await Fabric.CreateFileUploadJob({
-      libraryId,
-      writeToken: contentDraft.write_token,
-      fileInfo
-    })).upload_jobs[0];
-
-    console.log("created upload job");
-
-    await Wait(5000);
-
-    await Promise.all(
-      Array.from(files).reverse().map(async (file) => {
-        console.log("uploading file " + file.name);
-        const fileData = await new Response(file).blob();
-        await Fabric.UploadFileData({
-          libraryId,
-          writeToken: contentDraft.write_token,
-          jobId: uploadJob.id,
-          fileData
-        });
-      })
-    );
-
-    console.log("Getting status");
-    while(true) {
-      let statusResponse = (await Fabric.GetUploadJobStatus({
-        libraryId,
-        objectId,
-        writeToken: contentDraft.write_token,
-        jobId: uploadJob.id
-      })).upload_jobs[0];
-
-      console.log(JSON.stringify(statusResponse, null, 2));
-
-      const complete = !statusResponse.files.some(fileInfo => {
-        return fileInfo.rem !== 0;
-      });
-
-      if(complete) {
-        break;
-      }
-      console.log("waiting");
-      await Wait(2000);
-    }
-
-    await Fabric.FinalizeUploadJobs({
-      libraryId,
-      objectId,
-      writeToken: contentDraft.write_token
-    });
 
     await Fabric.FinalizeContentObject({
       libraryId,

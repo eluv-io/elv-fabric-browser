@@ -11,6 +11,8 @@ class AccessGroups extends React.Component {
   constructor(props) {
     super(props);
     this.state = {};
+
+    this.PageContent = this.PageContent.bind(this);
   }
 
   componentDidMount() {
@@ -41,7 +43,7 @@ class AccessGroups extends React.Component {
           </div>
         );
       })
-    )
+    );
   }
 
   PageContent() {
@@ -59,7 +61,7 @@ class AccessGroups extends React.Component {
   render() {
     return (
       <RequestPage
-        pageContent={this.PageContent()}
+        pageContent={this.PageContent}
         requestId={this.state.requestId}
         requests={this.props.requests}
       />

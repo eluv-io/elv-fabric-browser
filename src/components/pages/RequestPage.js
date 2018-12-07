@@ -30,12 +30,12 @@ class RequestPage extends React.Component {
   }
 
   OnRequestComplete() {
+    if(this.props.OnRequestComplete) {
+      this.props.OnRequestComplete();
+    }
+
     this.setState({
       requestCompleted: true
-    }, () => {
-      if(this.props.OnRequestComplete) {
-        this.props.OnRequestComplete();
-      }
     });
   }
 
@@ -45,7 +45,7 @@ class RequestPage extends React.Component {
       this.setState({
         requestId: this.props.requestId,
         requestCompleted: false
-      })
+      });
     } else if(!this.state.requestCompleted) {
       if(this.RequestCompleted()) {
         this.setState({
@@ -61,7 +61,7 @@ class RequestPage extends React.Component {
 
   render() {
     if(this.state.requestCompleted) {
-      return this.props.pageContent;
+      return this.props.pageContent();
     } else if (this.RequestInProgress()) {
       return (
         <div className="page-container loading-page-container">
@@ -77,7 +77,7 @@ class RequestPage extends React.Component {
 RequestPage.propTypes = {
   requests: PropTypes.object,
   requestId: PropTypes.number,
-  pageContent: PropTypes.node,
+  pageContent: PropTypes.func,
   OnRequestComplete: PropTypes.func
 };
 

@@ -16,6 +16,7 @@ class ContentLibraryGroupsForm extends React.Component {
       loadRequestId: undefined,
     };
 
+    this.PageContent = this.PageContent.bind(this);
     this.RequestComplete = this.RequestComplete.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
@@ -27,7 +28,7 @@ class ContentLibraryGroupsForm extends React.Component {
       loadRequestId: this.props.WrapRequest({
         todo: async () => {
           await this.props.ListAccessGroups();
-          await this.props.GetContentLibrary({libraryId: this.state.libraryId})
+          await this.props.GetContentLibrary({libraryId: this.state.libraryId});
         }
       })
     });
@@ -86,7 +87,7 @@ class ContentLibraryGroupsForm extends React.Component {
           }
         }
       });
-    }
+    };
   }
 
   HandleSubmit() {
@@ -124,7 +125,7 @@ class ContentLibraryGroupsForm extends React.Component {
           }
         }
       });
-    }
+    };
   }
 
   RemoveGroup(groupType, groupId) {
@@ -134,8 +135,8 @@ class ContentLibraryGroupsForm extends React.Component {
 
       this.setState({
         groups
-      })
-    }
+      });
+    };
   }
 
   GroupSelection(groupType, groupId) {
@@ -161,7 +162,7 @@ class ContentLibraryGroupsForm extends React.Component {
       >
         { options }
       </select>
-    )
+    );
   }
 
   Groups(groupType) {
@@ -226,8 +227,6 @@ class ContentLibraryGroupsForm extends React.Component {
   }
 
   PageContent() {
-    if(!this.state.contentLibrary) { return null; }
-
     return (
       <RequestForm
         requests={this.props.requests}
@@ -249,10 +248,10 @@ class ContentLibraryGroupsForm extends React.Component {
         <RequestPage
           requests={this.props.requests}
           requestId={this.state.loadRequestId}
-          pageContent={this.PageContent()}
+          pageContent={this.PageContent}
           OnRequestComplete={this.RequestComplete}
         />
-      )
+      );
     }
   }
 }

@@ -21,6 +21,7 @@ class ContentLibrary extends React.Component {
       isContentSpaceLibrary: Fabric.utils.EqualHash(Fabric.contentSpaceId, libraryId)
     };
 
+    this.PageContent = this.PageContent.bind(this);
     this.RequestComplete = this.RequestComplete.bind(this);
   }
 
@@ -103,7 +104,7 @@ class ContentLibrary extends React.Component {
         <h3>Content</h3>
         {objectElements}
       </div>
-    )
+    );
   }
 
   ToggleButton(label, id) {
@@ -153,7 +154,7 @@ class ContentLibrary extends React.Component {
                         <h4>{group.name || "Unknown Group"}</h4>
                         <LabelledField label="Address" value={group.address}/>
                       </div>
-                    )
+                    );
                   })
                 }
 
@@ -185,7 +186,7 @@ class ContentLibrary extends React.Component {
         <LabelledField label="Private Metadata" value={this.ToggleButton("Metadata", "privateMetadata")} />
         { privateMetadata }
       </div>
-    ]
+    ];
   }
 
   LibraryImage() {
@@ -216,7 +217,7 @@ class ContentLibrary extends React.Component {
         { this.LibraryMetadata() }
         { this.LibraryGroups() }
       </div>
-    )
+    );
   }
 
   Actions() {
@@ -235,12 +236,10 @@ class ContentLibrary extends React.Component {
         <Link to={Path.join(this.props.match.url, "create")} className="action" >New Content Object</Link>
         { this.DeleteContentLibraryButton() }
       </div>
-    )
+    );
   }
 
   PageContent() {
-    if(!this.state.contentLibrary) { return null; }
-
     if(this.state.deleted) {
       return <Redirect push to={"/content"}/>;
     }
@@ -260,7 +259,7 @@ class ContentLibrary extends React.Component {
   render() {
     return (
       <RequestPage
-        pageContent={this.PageContent()}
+        pageContent={this.PageContent}
         requestId={this.state.requestId}
         requests={this.props.requests}
         OnRequestComplete={this.RequestComplete}

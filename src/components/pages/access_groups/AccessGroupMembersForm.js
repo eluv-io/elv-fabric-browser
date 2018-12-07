@@ -17,6 +17,7 @@ class AccessGroupMembersForm extends React.Component {
       accessGroupName: this.props.match.params.accessGroupName
     };
 
+    this.PageContent = this.PageContent.bind(this);
     this.RequestComplete = this.RequestComplete.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
@@ -31,7 +32,7 @@ class AccessGroupMembersForm extends React.Component {
           await this.props.ListAccessGroups();
         }
       })
-    })
+    });
   }
 
   RequestComplete() {
@@ -69,7 +70,7 @@ class AccessGroupMembersForm extends React.Component {
           }
         }
       });
-    }
+    };
   }
 
   HandleSubmit() {
@@ -79,7 +80,7 @@ class AccessGroupMembersForm extends React.Component {
         name: member.name,
         address: Fabric.FormatAddress(member.address),
         manager: member.manager
-      }
+      };
     });
 
     this.setState({
@@ -105,7 +106,7 @@ class AccessGroupMembersForm extends React.Component {
           manager: false
         }
       }
-    })
+    });
   }
 
   RemoveMember(memberId) {
@@ -115,8 +116,8 @@ class AccessGroupMembersForm extends React.Component {
 
       this.setState({
         members
-      })
-    }
+      });
+    };
   }
 
   Members() {
@@ -172,8 +173,6 @@ class AccessGroupMembersForm extends React.Component {
   }
 
   PageContent() {
-    if(!this.state.accessGroup) { return null; }
-
     return (
       <RequestForm
         requests={this.props.requests}
@@ -195,10 +194,10 @@ class AccessGroupMembersForm extends React.Component {
         <RequestPage
           requests={this.props.requests}
           requestId={this.state.loadRequestId}
-          pageContent={this.PageContent()}
+          pageContent={this.PageContent}
           OnRequestComplete={this.RequestComplete}
         />
-      )
+      );
     }
   }
 }

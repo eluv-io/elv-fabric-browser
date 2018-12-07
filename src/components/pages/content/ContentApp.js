@@ -12,6 +12,8 @@ class ContentObjectApp extends React.Component {
       libraryId: this.props.libraryId || this.props.match.params.libraryId,
       objectId: this.props.match.params.objectId
     };
+
+    this.PageContent = this.PageContent.bind(this);
   }
 
   componentDidMount() {
@@ -28,10 +30,8 @@ class ContentObjectApp extends React.Component {
     });
   }
 
-  ContentObjectApp() {
+  PageContent() {
     let contentObject = this.props.contentObjects[this.state.objectId];
-
-    if(!contentObject) { return null; }
 
     return (
       <div className="page-container content-page-container">
@@ -46,7 +46,7 @@ class ContentObjectApp extends React.Component {
   render() {
     return (
       <RequestPage
-        pageContent={this.ContentObjectApp()}
+        pageContent={this.PageContent}
         requestId={this.state.requestId}
         requests={this.props.requests}
       />
