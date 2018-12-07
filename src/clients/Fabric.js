@@ -57,7 +57,6 @@ const Fabric = {
   },
 
   async AddAccessGroupMember({contractAddress, memberAddress}) {
-
     return await client.AddAccessGroupMember({
       contractAddress,
       memberAddress: Fabric.FormatAddress(memberAddress)
@@ -181,7 +180,6 @@ const Fabric = {
         eventName: groupType.capitalize() + "GroupAdded"
       });
     } catch(error) {
-      console.error(error);
       throw Error("Failed to add " + groupType + "group " + address);
     }
   },
@@ -201,7 +199,6 @@ const Fabric = {
         eventName: groupType.capitalize() + "GroupRemoved"
       });
     } catch(error) {
-      console.error(error);
       throw Error("Failed to add " + groupType + "group " + address);
     }
   },

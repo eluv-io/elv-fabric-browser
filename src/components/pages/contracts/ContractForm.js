@@ -20,6 +20,7 @@ class ContractForm extends React.Component {
       createForm: !this.props.location.pathname.endsWith("edit")
     };
 
+    this.PageContent = this.PageContent.bind(this);
     this.SetContract = this.SetContract.bind(this);
     this.SwitchContract = this.SwitchContract.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
@@ -34,7 +35,7 @@ class ContractForm extends React.Component {
             await this.props.ListContracts();
           }
         })
-      })
+      });
     }
 
     if(this.props.contractData) {
@@ -134,8 +135,6 @@ class ContractForm extends React.Component {
   }
 
   PageContent() {
-    if(!this.state.createForm && !this.state.contract) { return null; }
-
     // If name changes, make sure to update redirect path to new name
     const redirectPath = this.state.createForm ?
       this.props.match.url :
@@ -171,10 +170,10 @@ class ContractForm extends React.Component {
         <RequestPage
           requests={this.props.requests}
           requestId={this.state.loadRequestId}
-          pageContent={this.PageContent()}
+          pageContent={this.PageContent}
           OnRequestComplete={this.SetContract}
         />
-      )
+      );
     }
   }
 }

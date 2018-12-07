@@ -17,6 +17,7 @@ class AccessGroupForm extends React.Component {
       accessGroupName: this.props.match.params.accessGroupName
     };
 
+    this.PageContent = this.PageContent.bind(this);
     this.RequestComplete = this.RequestComplete.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
@@ -83,8 +84,6 @@ class AccessGroupForm extends React.Component {
   }
 
   PageContent() {
-    if(!this.state.createForm && !this.state.accessGroup) { return null; }
-
     // If name changes, make sure to update redirect path to new name
     const redirectPath = this.state.createForm ?
       this.props.match.url :
@@ -111,10 +110,10 @@ class AccessGroupForm extends React.Component {
         <RequestPage
           requests={this.props.requests}
           requestId={this.state.loadRequestId}
-          pageContent={this.PageContent()}
+          pageContent={this.PageContent}
           OnRequestComplete={this.RequestComplete}
         />
-      )
+      );
     }
   }
 }

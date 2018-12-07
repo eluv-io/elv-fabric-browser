@@ -4,10 +4,13 @@ import { JsonTextArea } from "../../../utils/Input";
 import RequestPage from "../RequestPage";
 import Path from "path";
 import BrowseWidget from "../../components/BrowseWidget";
+import Fabric from "../../../clients/Fabric";
 
 class ContentLibraryForm extends React.Component {
   constructor(props) {
     super(props);
+
+    const libraryId = this.props.libraryId || this.props.match.params.libraryId;
 
     this.state = {
       name: "",
@@ -16,10 +19,12 @@ class ContentLibraryForm extends React.Component {
       privateMetadata: "",
       imagePreviewUrl: "",
       imageSelection: "",
-      libraryId: this.props.libraryId || this.props.match.params.libraryId,
-      createForm: this.props.location.pathname.endsWith("create")
+      libraryId,
+      createForm: this.props.location.pathname.endsWith("create"),
+      isContentSpaceLibrary: Fabric.utils.EqualHash(Fabric.contentSpaceId, libraryId)
     };
 
+    this.PageContent = this.PageContent.bind(this);
     this.FormContent = this.FormContent.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleImageChange = this.HandleImageChange.bind(this);
@@ -55,7 +60,7 @@ class ContentLibraryForm extends React.Component {
         publicMetadata: JSON.stringify(contentLibrary.metadata, null, 2),
         privateMetadata: JSON.stringify(contentLibrary.privateMetadata, null, 2),
         imagePreviewUrl: contentLibrary.ImageUrl()
-      })
+      });
     }
   }
 
@@ -108,27 +113,29 @@ class ContentLibraryForm extends React.Component {
               publicMetadata: this.state.publicMetadata,
               privateMetadata: this.state.privateMetadata,
               image: this.state.imageSelection
-            })
+            });
           }
         })
       });
     }
   }
 
-  ImagePreview() {
-    if(!this.state.imagePreviewUrl) { return null; }
+  Image() {
+    // Content Space library can't have an image
+    if(this.state.isContentSpaceLibrary) { return null; }
+
+    let imagePreview;
+    if(this.state.imagePreviewUrl) {
+      imagePreview = (
+        <div className="image-preview">
+          <img src={this.state.imagePreviewUrl}/>
+        </div>
+      );
+    }
 
     return (
-      <div className="image-preview">
-        <img src={this.state.imagePreviewUrl} />
-      </div>
-    );
-  }
-
-  FormContent() {
-    return (
-      <div className="form-content">
-        { this.ImagePreview() }
+      <div>
+        { imagePreview }
         <BrowseWidget
           label="Image"
           required={false}
@@ -136,6 +143,14 @@ class ContentLibraryForm extends React.Component {
           accept="image/*"
           onChange={this.HandleImageChange}
         />
+      </div>
+    );
+  }
+
+  FormContent() {
+    return (
+      <div className="form-content">
+        { this.Image() }
         <div className="labelled-input">
           <label htmlFor="name">Name</label>
           <input name="name" value={this.state.name} onChange={this.HandleInputChange} readOnly={this.state.isContentSpaceLibrary} />
@@ -188,9 +203,9 @@ class ContentLibraryForm extends React.Component {
     } else {
       return (
         <RequestPage
-          pageContent={this.PageContent()}
           requestId={this.state.loadRequestId}
           requests={this.props.requests}
+          pageContent={this.PageContent}
           OnRequestComplete={this.OnContentLibraryLoaded}
         />
       );

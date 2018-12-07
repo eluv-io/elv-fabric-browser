@@ -16,6 +16,7 @@ class DeployContractForm extends React.Component {
       submitRequestId: undefined
     };
 
+    this.PageContent = this.PageContent.bind(this);
     this.HandleContractsLoaded = this.HandleContractsLoaded.bind(this);
     this.HandleContractChange = this.HandleContractChange.bind(this);
     this.HandleConstructorInputChange = this.HandleConstructorInputChange.bind(this);
@@ -42,7 +43,7 @@ class DeployContractForm extends React.Component {
       selectedContract: firstContract
     });
 
-    this.HandleContractChange({target: { value: firstContract}})
+    this.HandleContractChange({target: { value: firstContract}});
   }
 
   // When selected contract is changed, find the constructor description in the ABI
@@ -155,8 +156,6 @@ class DeployContractForm extends React.Component {
   }
 
   PageContent() {
-    if(!this.state.contracts) { return null; }
-
     if(Object.keys(this.state.contracts).length === 0){
       return (
         <div className="page-container">
@@ -187,12 +186,12 @@ class DeployContractForm extends React.Component {
     // Load available contracts
     return (
       <RequestPage
-        pageContent={this.PageContent()}
         requestId={this.state.loadRequestId}
         requests={this.props.requests}
+        pageContent={this.PageContent}
         OnRequestComplete={this.HandleContractsLoaded}
       />
-    )
+    );
   }
 }
 

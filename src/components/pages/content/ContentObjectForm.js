@@ -18,6 +18,7 @@ class ContentObjectForm extends React.Component {
       createForm: this.props.location.pathname.endsWith("create")
     };
 
+    this.PageContent = this.PageContent.bind(this);
     this.FormContent = this.FormContent.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
@@ -156,9 +157,9 @@ class ContentObjectForm extends React.Component {
     } else {
       return (
         <RequestPage
-          pageContent={this.PageContent()}
           requestId={this.state.loadRequestId}
           requests={this.props.requests}
+          pageContent={this.PageContent}
           OnRequestComplete={this.OnContentObjectLoaded}
         />
       );
