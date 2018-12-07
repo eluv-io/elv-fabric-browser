@@ -7,6 +7,7 @@ import {LabelledField} from "../../../components/LabelledField";
 import ClippedText from "../../../components/ClippedText";
 
 import BaseContentContract from "elv-client-js/src/contracts/BaseContent";
+import BaseContentTypeContract from "elv-client-js/src/contracts/BaseContentType";
 import Fabric from "../../../../clients/Fabric";
 
 class ContentContract extends React.Component {
@@ -20,9 +21,11 @@ class ContentContract extends React.Component {
       libraryId,
       objectId,
       visibleMethods: {},
-      isCustom: this.props.location.pathname.endsWith("custom-contract")
+      isCustom: this.props.location.pathname.endsWith("custom-contract"),
+      isContentType: Fabric.utils.EqualHash(Fabric.contentSpaceId, libraryId)
     };
 
+    this.PageContent = this.PageContent.bind(this);
     this.RequestComplete = this.RequestComplete.bind(this);
     this.LoadEvents = this.LoadEvents.bind(this);
   }
@@ -34,7 +37,7 @@ class ContentContract extends React.Component {
           await this.props.GetContentObjectMetadata({
             libraryId: this.state.libraryId,
             objectId: this.state.objectId
-          })
+          });
         }
       })
     });
@@ -66,15 +69,18 @@ class ContentContract extends React.Component {
         contentObject
       }, this.GetBalance);
     } else {
+      const contractType = this.state.isContentType ? "Base Content Type Contract" : "Base Content Contract";
+      const contractAbi = this.state.isContentType ? BaseContentTypeContract.abi : BaseContentContract.abi;
+
       this.setState({
         contract: {
-          name: "Base Content Contract",
-          description: "Base Content Contract",
+          name: contractType,
+          description: contractType,
           address: Fabric.utils.HashToAddress({hash: this.state.objectId}),
-          abi: BaseContentContract.abi
+          abi: contractAbi
         },
         contentObject
-      }, this.GetBalance)
+      }, this.GetBalance);
     }
   }
 
@@ -141,7 +147,7 @@ class ContentContract extends React.Component {
             to={Path.join(this.props.match.url, "call", entry.name)}
           >
             Call Method
-          </Link>
+          </Link>;
       }
 
       return (
@@ -195,8 +201,6 @@ class ContentContract extends React.Component {
   }
 
   PageContent() {
-    if(!this.state.contract){ return null; }
-
     const description = <ClippedText className="object-description" text={this.state.contract.description} />;
 
     const contractElements = Object.values(this.state.contract.abi);
@@ -243,9 +247,9 @@ class ContentContract extends React.Component {
   render() {
     return (
       <RequestPage
-        pageContent={this.PageContent()}
         requestId={this.state.loadRequestId}
         requests={this.props.requests}
+        pageContent={this.PageContent}
         OnRequestComplete={this.RequestComplete}
       />
     );

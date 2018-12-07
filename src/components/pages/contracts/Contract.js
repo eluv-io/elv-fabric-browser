@@ -15,6 +15,7 @@ class Contract extends React.Component {
       visibleMethods: {}
     };
 
+    this.PageContent = this.PageContent.bind(this);
     this.RequestComplete = this.RequestComplete.bind(this);
     this.DeleteContract = this.DeleteContract.bind(this);
   }
@@ -93,8 +94,6 @@ class Contract extends React.Component {
   }
 
   PageContent() {
-    if(!this.state.contract){ return null; }
-
     if(this.state.deleted) {
       return <Redirect push to={Path.dirname(this.props.match.url)}/>;
     }
@@ -143,9 +142,9 @@ class Contract extends React.Component {
   render() {
     return (
       <RequestPage
-        pageContent={this.PageContent()}
         requestId={this.state.requestId}
         requests={this.props.requests}
+        pageContent={this.PageContent}
         OnRequestComplete={this.RequestComplete}
       />
     );

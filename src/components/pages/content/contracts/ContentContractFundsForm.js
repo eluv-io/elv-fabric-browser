@@ -19,8 +19,8 @@ class ContentContractFundsForm extends React.Component {
       isCustom: this.props.location.pathname.includes("custom-contract")
     };
 
+    this.PageContent = this.PageContent.bind(this);
     this.RequestComplete = this.RequestComplete.bind(this);
-
     this.HandleSubmit = this.HandleSubmit.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleError = this.HandleError.bind(this);
@@ -95,7 +95,7 @@ class ContentContractFundsForm extends React.Component {
               contractAddress: this.state.contract.address,
               abi: this.state.contract.abi,
               ether: this.state.amount
-            })
+            });
           }
         })
       });
@@ -123,12 +123,10 @@ class ContentContractFundsForm extends React.Component {
           <input name="amount" type="number" step={0.0000000001} value={this.state.amount} onChange={this.HandleInputChange} />
         </div>
       </div>
-    )
+    );
   }
 
   PageContent() {
-    if(!this.state.contentObject) { return null; }
-
     return (
       <div className="page-container">
         <div className="actions-container">
@@ -154,10 +152,10 @@ class ContentContractFundsForm extends React.Component {
       <RequestPage
         requests={this.props.requests}
         requestId={this.state.loadRequestId}
-        pageContent={this.PageContent()}
+        pageContent={this.PageContent}
         OnRequestComplete={this.RequestComplete}
       />
-    )
+    );
   }
 }
 

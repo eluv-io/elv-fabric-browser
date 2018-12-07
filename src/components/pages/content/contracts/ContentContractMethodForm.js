@@ -3,10 +3,12 @@ import RequestForm from "../../../forms/RequestForm";
 import RequestPage from "../../RequestPage";
 import Path from "path";
 import Fabric from "../../../../clients/Fabric";
-import BaseContentContract from "elv-client-js/src/contracts/BaseContent";
 import {LabelledField} from "../../../components/LabelledField";
 import Link from "react-router-dom/es/Link";
 const Ethers = require("ethers");
+
+import BaseContentContract from "elv-client-js/src/contracts/BaseContent";
+import BaseContentTypeContract from "elv-client-js/src/contracts/BaseContentType";
 
 class ContentContractMethodForm extends React.Component {
   constructor(props) {
@@ -20,12 +22,13 @@ class ContentContractMethodForm extends React.Component {
       objectId,
       method: this.props.match.params.method,
       visibleMethods: {},
-      isCustom: this.props.location.pathname.includes("custom-contract")
+      isCustom: this.props.location.pathname.includes("custom-contract"),
+      isContentType: Fabric.utils.EqualHash(Fabric.contentSpaceId, libraryId)
     };
 
+    this.PageContent = this.PageContent.bind(this);
     this.RequestComplete = this.RequestComplete.bind(this);
     this.SetMethodInterface = this.SetMethodInterface.bind(this);
-
     this.HandleSubmit = this.HandleSubmit.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleError = this.HandleError.bind(this);
@@ -62,13 +65,11 @@ class ContentContractMethodForm extends React.Component {
     this.setState({
       methodInterface,
       inputs: inputState
-    })
+    });
   }
 
   RequestComplete() {
     const contentObject = this.props.content.contentObjects[this.state.objectId];
-
-    if(!contentObject) { return null; }
 
     if(this.state.isCustom) {
       this.setState({
@@ -81,12 +82,15 @@ class ContentContractMethodForm extends React.Component {
         contentObject
       }, this.SetMethodInterface);
     } else {
+      const contractType = this.state.isContentType ? "Base Content Type Contract" : "Base Content Contract";
+      const contractAbi = this.state.isContentType ? BaseContentTypeContract.abi : BaseContentContract.abi;
+
       this.setState({
         contract: {
-          name: "Base Content Contract",
-          description: "Base Content Contract",
+          name: contractType,
+          description: contractType,
           address: Fabric.utils.HashToAddress({hash: this.state.objectId}),
-          abi: BaseContentContract.abi
+          abi: contractAbi
         },
         contentObject
       }, this.SetMethodInterface);
@@ -113,7 +117,7 @@ class ContentContractMethodForm extends React.Component {
             abi: this.state.contract.abi,
             methodName: this.state.method,
             methodArgs
-          })
+          });
         }
       })
     });
@@ -167,7 +171,7 @@ class ContentContractMethodForm extends React.Component {
             onChange={this.HandleInputChange}
           />
         </div>
-      )
+      );
     });
   }
 
@@ -183,10 +187,11 @@ class ContentContractMethodForm extends React.Component {
         <h3>Results: </h3>
         { results }
       </div>
-    )
+    );
   }
 
   PageContent() {
+    // Method Interface may not be set immediately - ensure it is set before rendering
     if(!this.state.methodInterface) { return null; }
 
     // Don't redirect after calling constant method
@@ -224,10 +229,10 @@ class ContentContractMethodForm extends React.Component {
       <RequestPage
         requests={this.props.requests}
         requestId={this.state.loadRequestId}
-        pageContent={this.PageContent()}
+        pageContent={this.PageContent}
         OnRequestComplete={this.RequestComplete}
       />
-    )
+    );
   }
 }
 

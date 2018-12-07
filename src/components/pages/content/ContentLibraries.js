@@ -11,6 +11,8 @@ class ContentLibraries extends React.Component {
   constructor(props) {
     super(props);
     this.state = {};
+
+    this.PageContent = this.PageContent.bind(this);
   }
 
   componentDidMount() {
@@ -18,7 +20,7 @@ class ContentLibraries extends React.Component {
       requestId: this.props.WrapRequest({
         todo: async () => {
           await this.props.SetCurrentAccount();
-          await this.props.ListContentLibraries()
+          await this.props.ListContentLibraries();
         }
       })
     });
@@ -82,7 +84,7 @@ class ContentLibraries extends React.Component {
   render() {
     return (
       <RequestPage
-        pageContent={this.PageContent()}
+        pageContent={this.PageContent}
         requestId={this.state.requestId}
         requests={this.props.requests}
       />

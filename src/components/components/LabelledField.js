@@ -1,12 +1,12 @@
 import React from "react";
 
-export const LabelledField = ({label, value, wideLabel=false}) => {
+export const LabelledField = ({label, value, wideLabel=false, hidden=false}) => {
   if(typeof label === "string") {
     label = label + ":";
   }
 
   return (
-    <div className="labelled-field">
+    <div className={"labelled-field" + (hidden ? " hidden" : "")}>
       <label htmlFor={label} className={wideLabel ? "wide" : ""}>{ label }</label>
       <div name={label}>{ value }</div>
     </div>

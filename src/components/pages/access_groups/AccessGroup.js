@@ -15,6 +15,7 @@ class AccessGroup extends React.Component {
       visibleElements: {}
     };
 
+    this.PageContent = this.PageContent.bind(this);
     this.RequestComplete = this.RequestComplete.bind(this);
     this.DeleteAccessGroup = this.DeleteAccessGroup.bind(this);
   }
@@ -67,7 +68,7 @@ class AccessGroup extends React.Component {
     if (confirm("Are you sure you want to delete this access group?")) {
       const deleteRequestId = this.props.WrapRequest({
         todo: async () => {
-          await this.props.RemoveAccessGroup({name: accessGroupName, contractAddress: this.state.accessGroup.address})
+          await this.props.RemoveAccessGroup({name: accessGroupName, contractAddress: this.state.accessGroup.address});
         }
       });
 
@@ -118,8 +119,6 @@ class AccessGroup extends React.Component {
   }
 
   PageContent() {
-    if(!this.state.accessGroup){ return null; }
-
     if(this.state.deleted) {
       return <Redirect push to={Path.dirname(this.props.match.url)}/>;
     }
@@ -146,7 +145,7 @@ class AccessGroup extends React.Component {
   render() {
     return (
       <RequestPage
-        pageContent={this.PageContent()}
+        pageContent={this.PageContent}
         requestId={this.state.requestId}
         requests={this.props.requests}
         OnRequestComplete={this.RequestComplete}
