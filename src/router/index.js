@@ -30,6 +30,7 @@ import {
   ContentContractFundsFormContainer
 } from "../containers/pages/Contracts";
 import Fabric from "../clients/Fabric";
+import ErrorHandler from "./ErrorHandler";
 
 function Routes(){
   return (
@@ -123,4 +124,7 @@ function Routes(){
   );
 }
 
-export default Routes;
+// Wrap the router in an error handler to ensure a crash in the main content does not
+// crash the entire app (particularly, the navbar)
+export default (props) => <ErrorHandler component={Routes} {...props} />;
+
