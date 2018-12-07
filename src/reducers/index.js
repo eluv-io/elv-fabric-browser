@@ -1,13 +1,14 @@
+import { connectRouter } from "connected-react-router";
 import { combineReducers } from "redux";
 
 import AccountsReducer from "./AccountsReducer";
 import ContentReducer from "./ContentReducer";
-import ContentTypesReducer from "./ContentTypesReducer";
 import ContractsReducer from "./ContractsReducer";
 import NotificationsReducer from "./NotificationsReducer";
 import RequestsReducer from "./RequestsReducer";
 import AccessGroupsReducer from "./AccessGroupsReducer";
 
+// Collect all dispatched actions
 const DebugReducer = (state = {}, action) => {
   let actions = state.actions || [];
   const actionRecord = {
@@ -21,13 +22,12 @@ const DebugReducer = (state = {}, action) => {
   };
 };
 
-export default combineReducers({
+export default (history) => combineReducers({
+  router: connectRouter(history),
   accessGroups: AccessGroupsReducer,
   accounts: AccountsReducer,
   content: ContentReducer,
-  contentTypes: ContentTypesReducer,
   contracts: ContractsReducer,
   notifications: NotificationsReducer,
-  requests: RequestsReducer,
-  debug: DebugReducer
+  requests: RequestsReducer
 });
