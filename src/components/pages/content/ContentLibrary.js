@@ -223,7 +223,7 @@ class ContentLibrary extends React.Component {
     const isOwner = this.state.contentLibrary.owner.toLowerCase() === this.props.currentAccountAddress.toLowerCase();
 
     let manageGroupsButton;
-    if(isOwner) {
+    if(isOwner && !this.state.isContentSpaceLibrary) {
       manageGroupsButton = <Link to={Path.join(this.props.match.url, "groups")} className="action" >Manage Groups</Link>;
     }
 

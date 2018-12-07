@@ -1,26 +1,45 @@
+import "./static/stylesheets/app.scss";
+
 import React from "react";
 import { render } from "react-dom";
 import { Provider } from "react-redux";
 import { createHashHistory } from "history";
-import { createStore, applyMiddleware } from "redux";
+import {createStore, applyMiddleware, compose} from "redux";
 import Thunk from "redux-thunk";
-import { connectRouter } from "connected-react-router";
+import { ConnectedRouter } from "connected-react-router";
 
 import RootReducer from "./reducers";
 
 import "./utils/StringExtensions";
-import App from "./components/App";
+import ScrollToTop from "./router/ScrollToTop";
+import NavigationBar from "./containers/NavigationBar";
+import Notifications from "./containers/Notifications";
+import Routes from "./router";
+import Debug from "./components/Debug";
 
 const history = createHashHistory();
 
 const store = createStore(
-  connectRouter(history)(RootReducer),
-  applyMiddleware(Thunk)
+  RootReducer(history),
+  compose(
+    applyMiddleware(Thunk)
+  )
 );
 
 render(
   <Provider store={store}>
-    <App history={history} />
+    <div className="app-container">
+      <ConnectedRouter history={history}>
+        <ScrollToTop>
+          <div className="view-container">
+            <NavigationBar />
+            <Notifications />
+            <Routes />
+          </div>
+        </ScrollToTop>
+      </ConnectedRouter>
+      <Debug />
+    </div>
   </Provider>,
   document.getElementById("app")
 );
