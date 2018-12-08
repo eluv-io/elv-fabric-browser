@@ -2,7 +2,7 @@ import ActionTypes from "../actions/ActionTypes";
 
 const AccessGroupsReducer = (state = {}, action) => {
   switch (action.type) {
-    case ActionTypes.request.accessGroups.completed.list:
+    case ActionTypes.accessGroups.list:
       return {
         ...state,
         accessGroups: action.accessGroups

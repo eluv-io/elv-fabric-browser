@@ -6,7 +6,7 @@ export const ListAccessGroups = () => {
   return async (dispatch) => {
     const accessGroups = await Fabric.FabricBrowser.AccessGroups();
     dispatch({
-      type: ActionTypes.request.accessGroups.completed.list,
+      type: ActionTypes.accessGroups.list,
       accessGroups
     });
   };

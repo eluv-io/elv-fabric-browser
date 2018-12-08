@@ -9,7 +9,7 @@ import {
   CallContractMethod,
   GetContractEvents,
   SendFunds,
-  WithdrawContractFunds
+  WithdrawContractFunds, GetContractBalance
 } from "../../actions/Contracts";
 import CompileContractForm from "../../components/pages/contracts/CompileContractForm";
 import DeployContractForm from "../../components/pages/contracts/DeployContractForm";
@@ -19,9 +19,9 @@ import Contracts from "../../components/pages/contracts/Contracts";
 import Contract from "../../components/pages/contracts/Contract";
 import ContentContract from "../../components/pages/content/contracts/ContentContract";
 import ContentContractMethodForm from "../../components/pages/content/contracts/ContentContractMethodForm";
-import {GetContentObjectMetadata} from "../../actions/Content";
+import { GetContentObject } from "../../actions/Content";
 import ContentContractFundsForm from "../../components/pages/content/contracts/ContentContractFundsForm";
-import {WrapRequest} from "../../actions/Requests";
+import { WrapRequest } from "../../actions/Requests";
 
 const mapStateToProps = (state) => ({
   requests: state.requests,
@@ -40,11 +40,12 @@ const mapDispatchToProps = dispatch =>
       SaveContract,
       DeployContentContract,
       SetErrorMessage,
-      GetContentObjectMetadata,
+      GetContentObject,
       CallContractMethod,
       GetContractEvents,
       SendFunds,
-      WithdrawContractFunds
+      WithdrawContractFunds,
+      GetContractBalance
     ]
   );
 

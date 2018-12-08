@@ -30,8 +30,12 @@ class ContentLibrary extends React.Component {
       requestId: this.props.WrapRequest({
         todo: async () => {
           await this.props.SetCurrentAccount();
-          await this.props.ListContentObjects({ libraryId: this.state.libraryId });
-          await this.props.ListAccessGroups();
+          await this.props.GetContentLibrary({libraryId: this.state.libraryId});
+          await this.props.ListContentObjects({libraryId: this.state.libraryId});
+
+          if(!this.state.isContentSpaceLibrary) {
+            await this.props.ListContentLibraryGroups({libraryId: this.state.libraryId});
+          }
         }
       })
     });
@@ -45,7 +49,7 @@ class ContentLibrary extends React.Component {
     }
 
     this.setState({
-      contentLibrary: this.props.contentLibraries[this.state.libraryId]
+      library: this.props.libraries[this.state.libraryId]
     });
   }
 
@@ -74,27 +78,21 @@ class ContentLibrary extends React.Component {
   }
 
   ContentObjects() {
-    if(!this.state.contentLibrary) { return this.state.contentLibrary; }
-
     let objectElements = [];
 
-    for(const contentObject of this.state.contentLibrary.contentObjects.sort()) {
-      let icon = ContentIcon;
-
-      if(contentObject.HasImage()) {
-        icon = contentObject.RepUrl("image");
-      }
+    for(const objectId of this.state.library.objects.sort()) {
+      const object = this.props.objects[objectId];
 
       objectElements.push(
         <LibraryCard
-          key={contentObject.objectId}
-          libraryId={contentObject.objectId}
-          link={Path.join(this.props.match.url, contentObject.objectId)}
-          icon={icon}
-          name={contentObject.name}
-          isOwner={contentObject.owner.toLowerCase() === this.props.currentAccountAddress.toLowerCase()}
-          description={contentObject.description}
-          title={contentObject.name}
+          key={object.id}
+          libraryId={object.objectId}
+          link={Path.join(this.props.match.url, object.id)}
+          icon={object.imageUrl || ContentIcon}
+          name={object.name}
+          isOwner={object.owner.toLowerCase() === this.props.currentAccountAddress.toLowerCase()}
+          description={object.description}
+          title={object.name}
         />
       );
     }
@@ -129,15 +127,17 @@ class ContentLibrary extends React.Component {
   }
 
   LibraryGroups() {
+    if(this.state.isContentSpaceLibrary) { return null; }
+
     // Return if no groups exist
-    if(!Object.values(this.state.contentLibrary.groups).some(groups => groups.length > 0)) { return null; }
+    if(!Object.values(this.state.library.groups).some(groups => groups.length > 0)) { return null; }
 
     return (
       <div>
         <h3>Groups</h3>
         {
-          Object.keys(this.state.contentLibrary.groups).map(groupType => {
-            const groups = this.state.contentLibrary.groups[groupType];
+          Object.keys(this.state.library.groups).map(groupType => {
+            const groups = this.state.library.groups[groupType];
 
             // Display nothing if no groups of this type exist
             if (groups.length === 0) {
@@ -168,33 +168,32 @@ class ContentLibrary extends React.Component {
 
   LibraryMetadata() {
     let metadata;
-    if(this.state.visibleItems["metadata"]) {
-      metadata = <pre className="content-object-data">{JSON.stringify(this.state.contentLibrary.metadata, null, 2)}</pre>;
+    if(this.state.visibleItems["meta"]) {
+      metadata = <pre className="content-object-data">{JSON.stringify(this.state.library.meta, null, 2)}</pre>;
     }
 
     let privateMetadata;
-    if(this.state.visibleItems["privateMetadata"]) {
-      privateMetadata = <pre className="content-object-data">{JSON.stringify(this.state.contentLibrary.privateMetadata, null, 2)}</pre>;
+    if(this.state.visibleItems["privateMeta"]) {
+      privateMetadata = <pre className="content-object-data">{JSON.stringify(this.state.library.privateMeta, null, 2)}</pre>;
     }
 
     return [
-      <div className="formatted-data" key="metadata">
-        <LabelledField label="Public Metadata" value={this.ToggleButton("Metadata", "metadata")} />
+      <div className="formatted-data" key="meta">
+        <LabelledField label="Public Metadata" value={this.ToggleButton("Metadata", "meta")} />
         { metadata }
       </div>,
-      <div className="formatted-data" key="privateMetadata">
-        <LabelledField label="Private Metadata" value={this.ToggleButton("Metadata", "privateMetadata")} />
+      <div className="formatted-data" key="privateMeta">
+        <LabelledField label="Private Metadata" value={this.ToggleButton("Metadata", "privateMeta")} />
         { privateMetadata }
       </div>
     ];
   }
 
   LibraryImage() {
-    const imageUrl = this.state.contentLibrary.ImageUrl();
-    if(imageUrl) {
+    if(this.state.library.imageUrl) {
       return (
         <div className="object-image">
-          <img src={imageUrl} />
+          <img src={this.state.library.imageUrl} />
         </div>
       );
     }
@@ -203,17 +202,17 @@ class ContentLibrary extends React.Component {
   }
 
   LibraryInfo() {
-    const description = <ClippedText className="object-description" text={this.state.contentLibrary.description} />;
+    const description = <ClippedText className="object-description" text={this.state.library.description} />;
 
     return (
       <div className="object-info label-box">
         { this.LibraryImage() }
         <h3>Content Library Info</h3>
         <LabelledField label={"Library ID"} value={this.state.libraryId} />
-        <LabelledField label={"Owner"} value={this.state.contentLibrary.owner} />
+        <LabelledField label={"Owner"} value={this.state.library.owner} />
         <LabelledField label={"Description"} value={description} />
-        <LabelledField label={"Contract Address"} value={this.state.contentLibrary.contractAddress} />
-        <LabelledField label={"Content Objects"} value={this.state.contentLibrary.contentObjects.length} />
+        <LabelledField label={"Contract Address"} value={this.state.library.contractAddress} />
+        <LabelledField label={"Content Objects"} value={this.state.library.objects.length} />
         { this.LibraryMetadata() }
         { this.LibraryGroups() }
       </div>
@@ -221,7 +220,7 @@ class ContentLibrary extends React.Component {
   }
 
   Actions() {
-    const isOwner = this.state.contentLibrary.owner.toLowerCase() === this.props.currentAccountAddress.toLowerCase();
+    const isOwner = this.state.library.owner.toLowerCase() === this.props.currentAccountAddress.toLowerCase();
 
     let manageGroupsButton;
     if(isOwner && !this.state.isContentSpaceLibrary) {
@@ -248,7 +247,7 @@ class ContentLibrary extends React.Component {
       <div className="page-container contents-page-container">
         { this.Actions() }
         <div className="object-display">
-          <h3 className="page-header">{ this.state.contentLibrary.name }</h3>
+          <h3 className="page-header">{ this.state.library.name }</h3>
           { this.LibraryInfo() }
           { this.ContentObjects() }
         </div>

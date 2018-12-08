@@ -27,15 +27,17 @@ class ContentLibraryGroupsForm extends React.Component {
     this.setState({
       loadRequestId: this.props.WrapRequest({
         todo: async () => {
+          await this.props.SetCurrentAccount();
           await this.props.ListAccessGroups();
           await this.props.GetContentLibrary({libraryId: this.state.libraryId});
+          await this.props.ListContentLibraryGroups({libraryId: this.state.libraryId});
         }
       })
     });
   }
 
   RequestComplete() {
-    const contentLibrary = this.props.contentLibraries[this.state.libraryId];
+    const library = this.props.libraries[this.state.libraryId];
 
     // Attach IDs to each existing group
     // Form:
@@ -44,9 +46,9 @@ class ContentLibraryGroupsForm extends React.Component {
     //    ...
     /// }
     let libraryGroups = {};
-    Object.keys(contentLibrary.groups).map(groupType => {
+    Object.keys(library.groups).map(groupType => {
       let libraryGroup = {};
-      Object.values(contentLibrary.groups[groupType]).forEach(group => {
+      Object.values(library.groups[groupType]).forEach(group => {
         const groupExists = Object.values(this.props.accessGroups.accessGroups)
           .some(existingGroup => group.address === existingGroup.address);
 
@@ -60,10 +62,10 @@ class ContentLibraryGroupsForm extends React.Component {
     });
 
     this.setState({
-      contentLibrary,
+      library,
       groups: libraryGroups,
-      isOwner: this.props.currentAccountAddress.toLowerCase() === contentLibrary.owner.toLowerCase(),
-      originalGroups: contentLibrary.groups
+      isOwner: this.props.currentAccountAddress.toLowerCase() === library.owner.toLowerCase(),
+      originalGroups: library.groups
     });
   }
 
@@ -200,7 +202,7 @@ class ContentLibraryGroupsForm extends React.Component {
     return (
       <div className="library-group-form-data">
         <div className="labelled-input">
-          <label className="label" htmlFor="addGroup" ></label>
+          <label className="label bold" htmlFor="addGroup" >{groupType.capitalize() + "s"}</label>
           <div className="actions-container left">
             <button className="action action-compact action-full-width" type="button" onClick={this.AddGroup(groupType)}>
               { `Add ${groupType.capitalize()} Group` }
@@ -216,11 +218,8 @@ class ContentLibraryGroupsForm extends React.Component {
   FormContent() {
     return (
       <div className="library-group-form">
-        <h4>Accessors</h4>
         { this.GroupsForm("accessor") }
-        <h4>Contributors</h4>
         { this.GroupsForm("contributor") }
-        <h4>Reviewers</h4>
         { this.GroupsForm("reviewer") }
       </div>
     );

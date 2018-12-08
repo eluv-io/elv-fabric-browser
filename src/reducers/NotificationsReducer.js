@@ -2,14 +2,14 @@ import ActionTypes from "../actions/ActionTypes";
 
 const NotificationsReducer = (state = {}, action) => {
   switch (action.type) {
-    case ActionTypes.notifications.error.set:
+    case ActionTypes.notifications.error:
       return {
         ...state,
         errorMessage: action.message,
         notificationMessage: "",
         redirect: action.redirect || false
       };
-    case ActionTypes.notifications.notification.set:
+    case ActionTypes.notifications.notification:
       return {
         ...state,
         errorMessage: "",

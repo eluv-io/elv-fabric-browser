@@ -4,18 +4,16 @@ import {
   ListContentLibraries,
   ListContentObjects,
   CreateContentLibrary,
-  GetFullContentObject,
   CreateContentObject,
   UpdateContentObject,
   UploadParts,
   DownloadPart,
-  GetContentObjectMetadata,
   GetContentLibrary,
   UpdateContentLibrary,
   DeleteContentLibrary,
   DeleteContentObject,
   DeleteContentVersion,
-  UpdateContentLibraryGroups
+  UpdateContentLibraryGroups, ListContentLibraryGroups, GetContentObject, GetContentObjectVersions
 } from "../../actions/Content";
 import ContentLibraries from "../../components/pages/content/ContentLibraries";
 import ContentLibrary from "../../components/pages/content/ContentLibrary";
@@ -47,17 +45,18 @@ const mapDispatchToProps = dispatch =>
       UpdateContentLibrary,
       DeleteContentLibrary,
       ListContentObjects,
+      GetContentObject,
+      GetContentObjectVersions,
       CreateContentLibrary,
       UpdateContentLibraryGroups,
       DeleteContentObject,
       DeleteContentVersion,
-      GetFullContentObject,
-      GetContentObjectMetadata,
       CreateContentObject,
       UpdateContentObject,
       UploadParts,
       DownloadPart,
-      ListAccessGroups
+      ListAccessGroups,
+      ListContentLibraryGroups
     ]
   );
 

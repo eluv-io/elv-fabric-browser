@@ -22,7 +22,7 @@ class ContentObjectForm extends React.Component {
     this.FormContent = this.FormContent.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
-    this.OnContentObjectLoaded = this.OnContentObjectLoaded.bind(this);
+    this.RequestComplete = this.RequestComplete.bind(this);
   }
 
   // Load existing content object on edit
@@ -31,7 +31,7 @@ class ContentObjectForm extends React.Component {
       this.setState({
         loadRequestId: this.props.WrapRequest({
           todo: async () => {
-            await this.props.GetContentObjectMetadata({
+            await this.props.GetContentObject({
               libraryId: this.state.libraryId,
               objectId: this.state.objectId
             });
@@ -41,21 +41,16 @@ class ContentObjectForm extends React.Component {
     }
   }
 
-  // Set loaded content object
-  OnContentObjectLoaded() {
-    let contentObject = this.props.contentObjects[this.state.objectId];
+  RequestComplete() {
+    let object = this.props.objects[this.state.objectId];
 
-    if(contentObject && contentObject.metadata) {
-      this.setState({
-        isLibraryObject: contentObject.isLibraryObject,
-        name: contentObject.name,
-        type: contentObject.type,
-        description: contentObject.description,
-        contractAddress: contentObject.contractAddress,
-        metadata: JSON.stringify(contentObject.metadata, null, 2),
-        contentObject
-      });
-    }
+    this.setState({
+      isLibraryObject: object.isLibraryObject,
+      name: object.name,
+      type: object.type,
+      description: object.description,
+      metadata: JSON.stringify(object.meta, null, 2),
+    });
   }
 
   HandleInputChange(event) {
@@ -90,7 +85,6 @@ class ContentObjectForm extends React.Component {
               name: this.state.name,
               type: this.state.type,
               description: this.state.description,
-              contractAddress: this.state.contractAddress,
               metadata: this.state.metadata
             });
           }
@@ -160,7 +154,7 @@ class ContentObjectForm extends React.Component {
           requestId={this.state.loadRequestId}
           requests={this.props.requests}
           pageContent={this.PageContent}
-          OnRequestComplete={this.OnContentObjectLoaded}
+          OnRequestComplete={this.RequestComplete}
         />
       );
     }

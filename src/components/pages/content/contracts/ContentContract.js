@@ -34,40 +34,42 @@ class ContentContract extends React.Component {
     this.setState({
       loadRequestId: this.props.WrapRequest({
         todo: async () => {
-          await this.props.GetContentObjectMetadata({
+          await this.props.GetContentObject({
             libraryId: this.state.libraryId,
             objectId: this.state.objectId
+          });
+
+          // Determine contract address in order to query for balance
+          const object = this.props.content.objects[this.state.objectId];
+          const contractAddress = this.state.isCustom ? object.meta.customContract.address : object.contractAddress;
+
+          this.setState({
+            contract: { address: contractAddress }
+          });
+
+          await this.props.GetContractBalance({
+            contractAddress
           });
         }
       })
     });
   }
 
-  GetBalance() {
-    Fabric.GetBalance({address: this.state.contract.address})
-      .then(balance => {
-        this.setState({
-          contract: {
-            ...this.state.contract,
-            balance: balance + " Eluvio Bux"
-          }
-        });
-      });
-  }
-
   RequestComplete() {
-    const contentObject = this.props.content.contentObjects[this.state.objectId];
+    const object = this.props.content.objects[this.state.objectId];
+    const contractState = this.props.deployedContracts[this.state.contract.address];
 
     if(this.state.isCustom) {
       this.setState({
         contract: {
-          name: contentObject.metadata.customContract.name,
-          description: contentObject.metadata.customContract.description,
-          address: contentObject.metadata.customContract.address,
-          abi: contentObject.metadata.customContract.abi
+          name: object.meta.customContract.name,
+          description: object.meta.customContract.description,
+          address: object.meta.customContract.address,
+          abi: object.meta.customContract.abi,
+          balance: contractState.balance
         },
-        contentObject
-      }, this.GetBalance);
+        object
+      });
     } else {
       const contractType = this.state.isContentType ? "Base Content Type Contract" : "Base Content Contract";
       const contractAbi = this.state.isContentType ? BaseContentTypeContract.abi : BaseContentContract.abi;
@@ -77,10 +79,11 @@ class ContentContract extends React.Component {
           name: contractType,
           description: contractType,
           address: Fabric.utils.HashToAddress({hash: this.state.objectId}),
-          abi: contractAbi
+          abi: contractAbi,
+          balance: contractState.balance
         },
-        contentObject
-      }, this.GetBalance);
+        object
+      });
     }
   }
 
@@ -169,13 +172,13 @@ class ContentContract extends React.Component {
   }
 
   ContractEvents() {
-    const events = this.props.content.contentObjectEvents[this.state.contract.address];
+    const contractState = this.props.deployedContracts[this.state.contract.address];
 
-    if(!events) { return null; }
+    if(!contractState || !contractState.events) { return null; }
 
     return(
       <pre className="event-log">
-        { JSON.stringify(events, null, 2) }
+        { JSON.stringify(contractState.events, null, 2) }
       </pre>
     );
   }
@@ -217,7 +220,7 @@ class ContentContract extends React.Component {
           <Link to={Path.join(this.props.match.url, "funds")} className="action" >Transfer Funds</Link>
         </div>
         <div className="object-display">
-          <h3 className="page-header">{ this.state.contentObject.name }</h3>
+          <h3 className="page-header">{ this.state.object.name }</h3>
           <h3>{ this.state.contract.name }</h3>
           <div className="label-box">
             <h3>Contract Info</h3>

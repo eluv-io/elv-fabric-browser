@@ -21,7 +21,7 @@ class ContentObjectApp extends React.Component {
       requestId: this.props.WrapRequest({
         todo: async () => {
           await this.props.SetCurrentAccount();
-          await this.props.GetContentObjectMetadata({
+          await this.props.GetContentObject({
             libraryId: this.state.libraryId,
             objectId: this.state.objectId
           });
