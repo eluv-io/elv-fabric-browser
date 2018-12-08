@@ -2,7 +2,7 @@ import ActionTypes from "./ActionTypes";
 
 export const SetErrorMessage = ({message, redirect=false}) => {
   return ({
-    type: ActionTypes.notifications.error.set,
+    type: ActionTypes.notifications.error,
     message: message.toString(),
     redirect: redirect
   });
@@ -10,7 +10,7 @@ export const SetErrorMessage = ({message, redirect=false}) => {
 
 export const SetNotificationMessage = ({message, redirect=false}) => {
   return ({
-    type: ActionTypes.notifications.notification.set,
+    type: ActionTypes.notifications.notification,
     message: message.toString(),
     redirect: redirect
   });

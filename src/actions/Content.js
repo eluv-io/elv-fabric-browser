@@ -7,64 +7,38 @@ import { ParseInputJson } from "../utils/Input";
 
 export const ListContentLibraries = () => {
   return async (dispatch) => {
-    let libraryIds = await Fabric.ListContentLibraries();
+    let libraries = await Fabric.ListContentLibraries();
 
     // Exclude special content space library
-    libraryIds = libraryIds.filter(libraryId => libraryId !== Fabric.contentSpaceLibraryId);
-
-    // Query libraries one at a time to avoid blockchain nonce collisions and cache access transactions
-    const libraryMetadata = {};
-    for(const libraryId of libraryIds) {
-      libraryMetadata[libraryId] = (await Fabric.GetContentLibrary({libraryId})).meta;
-    }
-
-    let contentLibraries = {};
-    await Promise.all(
-      libraryIds.map(async libraryId => {
-        try {
-          // Query for content objects
-          const contentObjects = (await Fabric.ListContentObjects({libraryId})).contents;
-          const libraryOwner = await Fabric.GetContentLibraryOwner({libraryId});
-
-          contentLibraries[libraryId] = new ContentLibrary({
-            libraryId,
-            owner: libraryOwner,
-            libraryMetadata: libraryMetadata[libraryId],
-            contentObjectsData: contentObjects
-          });
-        } catch(error) {
-          console.error("Error querying library: \n" + JSON.stringify(error, null, 2));
-        }
-      })
-    );
+    delete libraries[Fabric.contentSpaceLibraryId];
 
     dispatch({
-      type: ActionTypes.request.content.completed.list.all,
-      contentLibraries
+      type: ActionTypes.content.libraries.list,
+      libraries
     });
   };
 };
 
 export const GetContentLibrary = ({libraryId}) => {
   return async (dispatch) => {
-    const libraryData = await Fabric.GetContentLibrary({libraryId});
-    const owner = await Fabric.GetContentLibraryOwner({libraryId});
-
-    let libraryGroups = {};
-    if(libraryId !== Fabric.contentSpaceLibraryId) {
-      libraryGroups = await Fabric.GetContentLibraryGroups({libraryId});
-    }
+    const library = await Fabric.GetContentLibrary({libraryId});
 
     dispatch({
-      type: ActionTypes.request.content.completed.list.library,
+      type: ActionTypes.content.libraries.get,
       libraryId: libraryId,
-      contentLibrary: new ContentLibrary({
-        libraryId,
-        owner,
-        groups: libraryGroups,
-        libraryMetadata: libraryData.meta,
-        url: libraryData.url
-      })
+      library
+    });
+  };
+};
+
+export const ListContentLibraryGroups = ({libraryId}) => {
+  return async (dispatch) => {
+    const groups = await Fabric.GetContentLibraryGroups({libraryId});
+
+    dispatch({
+      type: ActionTypes.content.libraries.groups,
+      libraryId,
+      groups
     });
   };
 };
@@ -94,10 +68,8 @@ export const CreateContentLibrary = ({name, description, publicMetadata, private
 
 export const UpdateContentLibrary = ({
   libraryId,
-  libraryObjectId,
   name,
   description,
-  contractAddress,
   publicMetadata,
   privateMetadata,
   image
@@ -110,13 +82,13 @@ export const UpdateContentLibrary = ({
 
     contentLibrary.name = name;
     contentLibrary.description = description;
-    contentLibrary.contractAddress = contractAddress;
 
     await Fabric.ReplacePublicLibraryMetadata({
       libraryId,
       metadata: contentLibrary.FullMetadata()
     });
 
+    const libraryObjectId = libraryId.replace("ilib", "iq__");
     await Fabric.EditAndFinalizeContentObject({
       libraryId,
       objectId: libraryObjectId,
@@ -181,56 +153,37 @@ export const UpdateContentLibraryGroups = ({libraryId, groups, originalGroups}) 
   };
 };
 
-export const ListContentObjects = ({ libraryId }) => {
+export const ListContentObjects = ({libraryId}) => {
   return async (dispatch) => {
-    const libraryData = (await Fabric.GetContentLibrary({libraryId}));
-    const contentObjectsData = await Fabric.ListContentObjects({libraryId});
-    const libraryOwner = await Fabric.GetContentLibraryOwner({libraryId});
-
-    let libraryGroups = {};
-    if(libraryId !== Fabric.contentSpaceLibraryId) {
-      libraryGroups = await Fabric.GetContentLibraryGroups({libraryId});
-    }
+    const objects = await Fabric.ListContentObjects({libraryId});
 
     dispatch({
-      type: ActionTypes.request.content.completed.list.library,
-      libraryId: libraryId,
-      contentLibrary: new ContentLibrary({
-        libraryId,
-        owner: libraryOwner,
-        libraryMetadata: libraryData.meta,
-        contentObjectsData: contentObjectsData.contents,
-        url: libraryData.url,
-        groups: libraryGroups
-      })
+      type: ActionTypes.content.objects.list,
+      objects
     });
   };
 };
 
-export const GetFullContentObject = ({ libraryId, objectId, includeStatus=true }) => {
+export const GetContentObject = ({libraryId, objectId}) => {
   return async (dispatch) => {
-    let contentObject = await Fabric.GetFullContentObject({ libraryId, objectId, includeStatus });
+    const object = await Fabric.GetContentObject({libraryId, objectId});
 
     dispatch({
-      type: ActionTypes.request.content.completed.list.contentObject,
-      libraryId: libraryId,
-      contentObject
+      type: ActionTypes.content.objects.get,
+      objectId: object.id,
+      object
     });
   };
 };
 
-export const GetContentObjectMetadata = ({ libraryId, objectId }) => {
+export const GetContentObjectVersions = ({libraryId, objectId}) => {
   return async (dispatch) => {
-    let contentObjectData = await Fabric.GetContentObject({ libraryId, objectId });
-    contentObjectData.meta = await Fabric.GetContentObjectMetadata({ libraryId, objectId });
+    const versions = await Fabric.GetContentObjectVersions({libraryId, objectId});
 
-    const owner = await Fabric.GetContentObjectOwner({objectId});
-
-    const contentObject = new ContentObject({libraryId, owner, contentObjectData});
     dispatch({
-      type: ActionTypes.request.content.completed.list.contentObject,
-      libraryId: libraryId,
-      contentObject
+      type: ActionTypes.content.objects.versions,
+      objectId,
+      versions
     });
   };
 };
@@ -281,7 +234,7 @@ export const DeleteContentVersion = ({ libraryId, objectId, versionHash }) => {
   };
 };
 
-export const UpdateContentObject = ({libraryId, objectId, name, description, type, contractAddress, metadata}) => {
+export const UpdateContentObject = ({libraryId, objectId, name, description, type, metadata}) => {
   return async (dispatch) => {
     const contentObject = new ContentObject({
       libraryId,
@@ -291,7 +244,6 @@ export const UpdateContentObject = ({libraryId, objectId, name, description, typ
     contentObject.name = name;
     contentObject.description = description;
     contentObject.type = type;
-    contentObject.contractAddress = contractAddress;
 
     let contentDraft = await Fabric.EditContentObject({ libraryId, objectId });
 

@@ -5,7 +5,7 @@ export const SetCurrentAccount = () => {
   return async (dispatch) => {
     const currentAccountAddress = await Fabric.CurrentAccountAddress();
     dispatch({
-      type: ActionTypes.request.accounts.completed.list.currentAccountAddress,
+      type: ActionTypes.accounts.get.currentAccountAddress,
       address: currentAccountAddress.toLowerCase()
     });
   };

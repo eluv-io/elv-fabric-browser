@@ -2,7 +2,7 @@ import ActionTypes from "../actions/ActionTypes";
 
 const RequestsReducer = (state = {}, action) => {
   switch (action.type) {
-    case ActionTypes.request.request.status.submitted:
+    case ActionTypes.requests.status.submitted:
       return {
         ...state,
         [action.requestId]: {
@@ -13,7 +13,7 @@ const RequestsReducer = (state = {}, action) => {
         }
       };
 
-    case ActionTypes.request.request.status.completed:
+    case ActionTypes.requests.status.completed:
       return {
         ...state,
         [action.requestId]: {
@@ -24,7 +24,7 @@ const RequestsReducer = (state = {}, action) => {
         }
       };
 
-    case ActionTypes.request.request.status.error:
+    case ActionTypes.requests.status.error:
       return {
         ...state,
         [action.requestId]: {

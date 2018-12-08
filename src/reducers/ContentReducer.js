@@ -2,47 +2,59 @@ import ActionTypes from "../actions/ActionTypes";
 
 const ContentReducer = (state = {}, action) => {
   switch (action.type) {
-    case ActionTypes.request.content.completed.list.all:
+    case ActionTypes.content.libraries.list:
       return {
         ...state,
-        contentLibraries: action.contentLibraries
+        libraries: action.libraries
       };
 
-    case ActionTypes.request.content.completed.list.library:
+    case ActionTypes.content.libraries.get:
       return {
         ...state,
-        contentLibraries: {
-          ...state.contentLibraries,
-          [action.libraryId]: action.contentLibrary
+        libraries: {
+          ...state.libraries,
+          [action.libraryId]: action.library
         }
       };
 
-    case ActionTypes.request.content.completed.list.contentObject:
+    case ActionTypes.content.libraries.groups:
       return {
         ...state,
-        contentObjects: {
-          ...state.contentObjects,
-          [action.contentObject.objectId]: action.contentObject
+        libraries: {
+          ...state.libraries,
+          [action.libraryId]: {
+            ...state.libraries[action.libraryId],
+            groups: action.groups
+          }
         }
       };
 
-    case ActionTypes.request.content.completed.list.contentObjectEvents:
+    case ActionTypes.content.objects.list:
       return {
         ...state,
-        contentObjectEvents: {
-          ...state.contentObjectEvents,
-          [action.contractAddress]: action.events
+        objects: {
+          ...state.objects,
+          ...action.objects
         }
       };
 
-    case ActionTypes.request.content.completed.contract.call:
+    case ActionTypes.content.objects.get:
       return {
         ...state,
-        contractMethodResults: {
-          ...state.contractMethodResults,
-          [action.contractAddress]: {
-            ...state.contractMethodResults[action.contractAddress],
-            [action.methodName]: action.result
+        objects: {
+          ...state.objects,
+          [action.objectId]: action.object
+        }
+      };
+
+    case ActionTypes.content.objects.versions:
+      return {
+        ...state,
+        objects: {
+          ...state.objects,
+          [action.objectId]: {
+            ...state.objects[action.objectId],
+            versions: action.versions
           }
         }
       };
@@ -50,11 +62,8 @@ const ContentReducer = (state = {}, action) => {
     default:
       return {
         ...state,
-        contentLibraries: state.contentLibraries || {},
-        contentObjects: state.contentObjects || {},
-        contentObjectMetadata: state.contentObjectMetadata || {},
-        contentObjectEvents: state.contentObjectEvents || {},
-        contractMethodResults: state.contractMethodResults || {}
+        libraries: state.libraries || {},
+        objects: state.objects || {}
       };
   }
 };

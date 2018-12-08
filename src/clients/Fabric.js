@@ -1,7 +1,6 @@
 import { FrameClient } from "elv-client-js/ElvFrameClient-min";
 import { ElvClient } from "elv-client-js/src/ElvClient";
 import ContentObject from "../models/ContentObject";
-import URI from "urijs";
 import Path from "path";
 
 import BaseLibraryContract from "elv-client-js/src/contracts/BaseLibrary";
@@ -87,14 +86,41 @@ const Fabric = {
   /* Libraries */
 
   ListContentLibraries: async () => {
-    return await client.ContentLibraries();
+    const libraryIds = await client.ContentLibraries();
+
+    let contentLibraries = {};
+    await Promise.all(
+      libraryIds.map(async libraryId => {
+        contentLibraries[libraryId] = await Fabric.GetContentLibrary({libraryId});
+      })
+    );
+
+    return contentLibraries;
   },
 
   GetContentLibrary: async ({libraryId}) => {
-    const contentLibraryData = await client.ContentLibrary({libraryId});
-    contentLibraryData.url = await Fabric.FabricUrl({libraryId});
+    const libraryInfo = await client.ContentLibrary({libraryId});
+    const objectIds = (await client.ContentObjects({libraryId})).contents.map(object => object.id)
+      .filter(objectId => !Fabric.utils.EqualHash(libraryId, objectId));
+    const imageUrl = await Fabric.GetContentObjectImageUrl({
+      libraryId,
+      objectId: libraryId.replace("ilib", "iq__")
+    });
+    const privateMeta = await Fabric.GetContentObjectMetadata({
+      libraryId,
+      objectId: libraryId.replace("ilib", "iq__")
+    });
 
-    return contentLibraryData;
+    return {
+      ...libraryInfo,
+      libraryId,
+      name: libraryInfo.meta["eluv.name"],
+      description: libraryInfo.meta["eluv.description"],
+      privateMeta,
+      imageUrl,
+      objects: objectIds,
+      owner: await Fabric.GetContentLibraryOwner({libraryId})
+    };
   },
 
   GetContentLibraryOwner: async ({libraryId}) => {
@@ -157,6 +183,14 @@ const Fabric = {
   },
 
   GetContentLibraryGroups: async ({libraryId}) => {
+    if(libraryId === Fabric.contentSpaceLibraryId) {
+      return {
+        accessor: [],
+        contributor: [],
+        reviewer: []
+      };
+    }
+
     const knownGroups = await Fabric.FabricBrowser.AccessGroups();
     return {
       accessor: await Fabric.CollectLibraryGroups({libraryId, type: "accessor", knownGroups}),
@@ -205,28 +239,68 @@ const Fabric = {
 
   /* Objects */
 
+  // Make sure not to call anything requiring content object authorization
   ListContentObjects: async ({libraryId}) => {
-    const libraryUrl = await client.FabricUrl({libraryId});
-    const contentObjectData = await client.ContentObjects({ libraryId });
+    const libraryObjects = (await client.ContentObjects({libraryId})).contents;
 
-    // Inject URL and owner into content object
-    return {
-      contents: await Promise.all(contentObjectData.contents.map(async data => {
-        const uri = new URI(libraryUrl);
-        uri.path(Path.join(uri.path(), "q", data.id));
-        data.url = uri.toString();
+    let objects = {};
+    for (const object of libraryObjects) {
+      // Skip library content object
+      if (Fabric.utils.EqualHash(libraryId, object.id)) { continue; }
 
-        data.owner = await Fabric.GetContentObjectOwner({objectId: data.id});
-        return data;
-      }))
-    };
+      const latestVersion = object.versions[0];
+      const imageUrl = await Fabric.GetContentObjectImageUrl({
+        libraryId,
+        objectId: object.id,
+        metadata: object.versions[0].meta
+      });
+
+      objects[object.id] = {
+        // Pull latest version info up to top level
+        ...latestVersion,
+        ...object,
+        name: latestVersion.meta["eluv.name"],
+        description: latestVersion.meta["eluv.description"],
+        imageUrl,
+        contractAddress: client.utils.HashToAddress({hash: object.id}),
+        owner: await Fabric.GetContentObjectOwner({objectId: object.id})
+      };
+    }
+
+    return objects;
   },
 
   GetContentObject: async ({libraryId, objectId}) => {
-    const contentObjectData = await client.ContentObject({ libraryId, objectId });
-    contentObjectData.url = await Fabric.FabricUrl({libraryId, objectId});
+    const object = await client.ContentObject({libraryId, objectId});
+    const metadata = await client.ContentObjectMetadata({libraryId, objectId});
+    const imageUrl = await Fabric.GetContentObjectImageUrl({libraryId, objectId});
 
-    return contentObjectData;
+    // Get the object status unless it is a content type or library object
+    let status;
+    if(libraryId !== Fabric.contentSpaceLibraryId && !Fabric.utils.EqualHash(libraryId, objectId)) {
+      status = await Fabric.GetContentObjectStatus({objectId});
+    }
+
+    return {
+      ...object,
+      meta: metadata,
+      name: metadata["eluv.name"],
+      description: metadata["eluv.description"],
+      imageUrl,
+      contractAddress: client.utils.HashToAddress({hash: objectId}),
+      owner: await Fabric.GetContentObjectOwner({objectId: object.id}),
+      status
+    };
+  },
+
+  GetContentObjectImageUrl: async ({libraryId, objectId, metadata}) => {
+    if(!metadata) { metadata = await client.ContentObjectMetadata({libraryId, objectId}); }
+
+    const imagePartHash = metadata["image"] || metadata["eluv.image"];
+
+    if(!imagePartHash) { return; }
+
+    return await client.Rep({libraryId, objectId, rep: "image"});
   },
 
   GetContentObjectOwner: async ({objectId}) => {
@@ -237,8 +311,40 @@ const Fabric = {
     return await client.ContentObjectMetadata({ libraryId, objectId, versionHash });
   },
 
-  GetContentObjectVersions: async ({libraryId, objectId}) => {
-    return await client.ContentObjectVersions({libraryId, objectId});
+  // Get all versions of the specified content object, along with metadata,
+  // parts with proofs, and verification
+  GetContentObjectVersions: async({libraryId, objectId}) => {
+    const versions = (await client.ContentObjectVersions({libraryId, objectId})).versions;
+
+    let fullVersions = [];
+    await Promise.all(
+      versions.map(async (version, index) => {
+        const metadata = await Fabric.GetContentObjectMetadata({libraryId, objectId, versionHash: version.hash});
+        const verification = await Fabric.VerifyContentObject({libraryId, objectId, partHash: version.hash});
+        const parts = (await Fabric.ListParts({ libraryId, objectId, versionHash: version.hash })).parts;
+
+        const partsWithProofs = await Promise.all(
+          parts.map(async part => {
+            const proofs = await Fabric.Proofs({libraryId, objectId, versionHash: version.hash, partHash: part.hash});
+
+            return {
+              ...part,
+              proofs
+            };
+          })
+        );
+
+        // Must keep versions in order from newest to oldest
+        fullVersions[index] = {
+          ...version,
+          meta: metadata,
+          verification,
+          parts: partsWithProofs,
+        };
+      })
+    );
+
+    return fullVersions;
   },
 
   GetContentObjectStatus: async ({objectId}) => {
@@ -250,35 +356,6 @@ const Fabric = {
     });
 
     return Ethers.utils.toUtf8String(result);
-  },
-
-  GetFullContentObject: async ({libraryId, objectId, includeStatus=true}) => {
-    let contentObjectData = await Fabric.GetContentObject({ libraryId, objectId });
-
-    const versionHash = contentObjectData.hash;
-    contentObjectData.meta = await Fabric.GetContentObjectMetadata({ libraryId, objectId, versionHash });
-    contentObjectData.parts = (await Fabric.ListParts({ libraryId, objectId, versionHash })).parts;
-
-    let versions = (await Fabric.GetContentObjectVersions({ libraryId, objectId })).versions;
-    for(const version of versions) {
-      version.meta = await Fabric.GetContentObjectMetadata({ libraryId, objectId, versionHash: version.hash });
-      version.parts = (await Fabric.ListParts({ libraryId, objectId, versionHash: version.hash })).parts;
-      version.verification = await Fabric.VerifyContentObject({libraryId, objectId, partHash: version.hash});
-
-      for(const part of version.parts) {
-        part.proofs = await Fabric.Proofs({libraryId, objectId, versionHash: version.hash, partHash: part.hash});
-      }
-    }
-
-    contentObjectData.versions = versions;
-
-    if(includeStatus) {
-      contentObjectData.status = await Fabric.GetContentObjectStatus({objectId});
-    }
-
-    const owner = await Fabric.GetContentObjectOwner({objectId});
-
-    return new ContentObject({libraryId, owner, contentObjectData});
   },
 
   /* Object creation / modification */

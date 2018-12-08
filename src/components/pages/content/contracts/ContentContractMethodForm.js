@@ -39,7 +39,7 @@ class ContentContractMethodForm extends React.Component {
     this.setState({
       loadRequestId: this.props.WrapRequest({
         todo: async () => {
-          await this.props.GetContentObjectMetadata({
+          await this.props.GetContentObject({
             libraryId: this.state.libraryId,
             objectId: this.state.objectId
           });
@@ -69,17 +69,17 @@ class ContentContractMethodForm extends React.Component {
   }
 
   RequestComplete() {
-    const contentObject = this.props.content.contentObjects[this.state.objectId];
+    const object = this.props.content.objects[this.state.objectId];
 
     if(this.state.isCustom) {
       this.setState({
         contract: {
-          name: contentObject.metadata.customContract.name,
-          description: contentObject.metadata.customContract.description,
-          address: contentObject.metadata.customContract.address,
-          abi: contentObject.metadata.customContract.abi
+          name: object.meta.customContract.name,
+          description: object.meta.customContract.description,
+          address: object.meta.customContract.address,
+          abi: object.meta.customContract.abi
         },
-        contentObject
+        object
       }, this.SetMethodInterface);
     } else {
       const contractType = this.state.isContentType ? "Base Content Type Contract" : "Base Content Contract";
@@ -92,7 +92,7 @@ class ContentContractMethodForm extends React.Component {
           address: Fabric.utils.HashToAddress({hash: this.state.objectId}),
           abi: contractAbi
         },
-        contentObject
+        object
       }, this.SetMethodInterface);
     }
   }
@@ -132,7 +132,14 @@ class ContentContractMethodForm extends React.Component {
   HandleComplete() {
     if(this.state.methodInterface.constant) {
       const outputInterface = this.state.methodInterface.outputs;
-      let results = this.props.content.contractMethodResults[this.state.contract.address][this.state.method];
+      const contractState = this.props.deployedContracts[this.state.contract.address];
+
+      // Ensure results are set
+      if(!contractState || !contractState.methodResults || !contractState.methodResults[this.state.method]) {
+        return;
+      }
+
+      let results = contractState.methodResults[this.state.method];
 
       if(!Array.isArray(results)) {
         results = [results];
@@ -203,7 +210,7 @@ class ContentContractMethodForm extends React.Component {
         <div className="actions-container">
           <Link className="action secondary" to={backPath}>Back</Link>
         </div>
-        <h3 className="page-header">{ this.state.contentObject.name}</h3>
+        <h3 className="page-header">{ this.state.object.name}</h3>
         <div className="label-box">
           <LabelledField label="Contract" value={this.state.contract.name} />
           <LabelledField label="Method" value={this.state.method} />
