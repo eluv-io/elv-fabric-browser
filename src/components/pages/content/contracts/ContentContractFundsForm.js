@@ -30,7 +30,7 @@ class ContentContractFundsForm extends React.Component {
     this.setState({
       loadRequestId: this.props.WrapRequest({
         todo: async () => {
-          await this.props.GetContentObjectMetadata({
+          await this.props.GetContentObject({
             libraryId: this.state.libraryId,
             objectId: this.state.objectId
           });
@@ -40,19 +40,19 @@ class ContentContractFundsForm extends React.Component {
   }
 
   RequestComplete() {
-    const contentObject = this.props.content.contentObjects[this.state.objectId];
+    const object = this.props.content.objects[this.state.objectId];
 
-    if(!contentObject) { return null; }
+    if(!object) { return null; }
 
     if(this.state.isCustom) {
       this.setState({
         contract: {
-          name: contentObject.metadata.customContract.name,
-          description: contentObject.metadata.customContract.description,
-          address: contentObject.metadata.customContract.address,
-          abi: contentObject.metadata.customContract.abi
+          name: object.meta.customContract.name,
+          description: object.meta.customContract.description,
+          address: object.meta.customContract.address,
+          abi: object.meta.customContract.abi
         },
-        contentObject
+        object
       });
     } else {
       this.setState({
@@ -62,7 +62,7 @@ class ContentContractFundsForm extends React.Component {
           address: Fabric.utils.HashToAddress({hash: this.state.objectId}),
           abi: BaseContentContract.abi
         },
-        contentObject
+        object
       });
     }
   }
@@ -132,7 +132,7 @@ class ContentContractFundsForm extends React.Component {
         <div className="actions-container">
           <Link className="action secondary" to={Path.dirname(this.props.match.url)}>Back</Link>
         </div>
-        <h3 className="page-header">{ this.state.contentObject.name + (this.state.isCustom ? " - Custom Contract" : "")}</h3>
+        <h3 className="page-header">{ this.state.object.name + (this.state.isCustom ? " - Custom Contract" : "")}</h3>
         <RequestForm
           requests={this.props.requests}
           requestId={this.state.submitRequestId}

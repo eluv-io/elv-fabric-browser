@@ -8,7 +8,7 @@ import "browser-solc";
 export const ListContracts = () => {
   return async (dispatch) => {
     dispatch({
-      type: ActionTypes.request.contracts.completed.list,
+      type: ActionTypes.contracts.list,
       contracts: await Fabric.FabricBrowser.Contracts()
     });
   };
@@ -39,7 +39,7 @@ export const CompileContracts = (contractFiles) => {
 
         if(errors.some(error => { return !error.includes("Warning:"); })) {
           dispatch({
-            type: ActionTypes.request.contracts.error.compile,
+            type: ActionTypes.contracts.error.compile,
             errors: output.errors
           });
 
@@ -65,7 +65,7 @@ export const CompileContracts = (contractFiles) => {
           });
 
           dispatch({
-            type: ActionTypes.request.contracts.completed.compile,
+            type: ActionTypes.contracts.compile,
             contractData
           });
 
@@ -155,7 +155,7 @@ export const DeployContentContract = ({
     });
 
     dispatch({
-      type: ActionTypes.request.contracts.completed.deploy,
+      type: ActionTypes.contracts.deploy,
       contractInfo
     });
 
@@ -177,8 +177,7 @@ export const GetContractEvents = ({objectId, contractAddress, abi}) => {
     }
 
     dispatch({
-      type: ActionTypes.request.content.completed.list.contentObjectEvents,
-      objectId,
+      type: ActionTypes.contracts.events,
       contractAddress,
       events: events.reverse()
     });
@@ -200,7 +199,7 @@ export const CallContractMethod = ({
       });
     }
 
-    const result = await Fabric.CallContractMethod({
+    const methodResults = await Fabric.CallContractMethod({
       contractAddress,
       abi,
       methodName,
@@ -208,16 +207,28 @@ export const CallContractMethod = ({
     });
 
     dispatch({
-      type: ActionTypes.request.content.completed.contract.call,
+      type: ActionTypes.contracts.call,
       contractAddress,
       methodName,
-      result
+      methodResults
     });
 
     dispatch(SetNotificationMessage({
       message: "Method successfully called",
       redirect: true
     }));
+  };
+};
+
+export const GetContractBalance = ({contractAddress})=> {
+  return async (dispatch) => {
+    const balance = await Fabric.GetBalance({address: contractAddress});
+
+    dispatch({
+      type: ActionTypes.contracts.balance,
+      contractAddress,
+      balance
+    });
   };
 };
 

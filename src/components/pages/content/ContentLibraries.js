@@ -21,23 +21,26 @@ class ContentLibraries extends React.Component {
         todo: async () => {
           await this.props.SetCurrentAccount();
           await this.props.ListContentLibraries();
+          await Promise.all(
+            Object.keys(this.props.libraries).map(async libraryId => {
+              await this.props.ListContentObjects({libraryId});
+            })
+          );
         }
       })
     });
   }
 
-  LibraryPreviewImages(contentLibrary) {
+  LibraryPreviewImages(library) {
     let previews = [];
 
-    for(const contentObject of contentLibrary.contentObjects) {
-      if(contentObject.HasImage()) {
-        const imageUrl = contentObject.RepUrl("image");
-        if (imageUrl) {
-          previews.push({
-            name: contentObject.name,
-            image: imageUrl
-          });
-        }
+    for(const objectId of library.objects) {
+      const object = this.props.objects[objectId];
+      if(object.imageUrl) {
+        previews.push({
+          name: object.name,
+          image: object.imageUrl
+        });
       }
     }
 
@@ -47,19 +50,20 @@ class ContentLibraries extends React.Component {
   ContentLibraries(path) {
     let libraryElements = [];
 
-    for(const libraryId of Object.keys(this.props.contentLibraries).sort()) {
-      let contentLibrary = this.props.contentLibraries[libraryId];
+    for(const libraryId of Object.keys(this.props.libraries).sort()) {
+      const library = this.props.libraries[libraryId];
+
       libraryElements.push(
         <LibraryCard
           key={libraryId}
           libraryId={libraryId}
           link={Path.join(path, libraryId)}
-          icon={contentLibrary.ImageUrl() || LibraryIcon}
-          previews={this.LibraryPreviewImages(contentLibrary)}
-          name={contentLibrary.name}
-          isOwner={contentLibrary.owner.toLowerCase() === this.props.currentAccountAddress.toLowerCase()}
-          infoText={contentLibrary.contentObjects.length + " Content Objects"}
-          description={contentLibrary.description}
+          icon={library.imageUrl || LibraryIcon}
+          previews={this.LibraryPreviewImages(library)}
+          name={library.name}
+          isOwner={library.owner.toLowerCase() === this.props.currentAccountAddress.toLowerCase()}
+          infoText={library.objects.length + " Content Objects"}
+          description={library.description}
         />
       );
     }

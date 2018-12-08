@@ -33,13 +33,21 @@ class ContentObject extends React.Component {
   }
 
   componentDidMount() {
+    this.LoadObject();
+  }
+  
+  LoadObject() {
     this.setState({
       requestId: this.props.WrapRequest({
         todo: async () => {
-          await this.props.GetFullContentObject({
+          await this.props.GetContentObject({
             libraryId: this.state.libraryId,
-            objectId: this.state.objectId,
-            includeStatus: this.state.isNormalObject
+            objectId: this.state.objectId
+          });
+
+          await this.props.GetContentObjectVersions({
+            libraryId: this.state.libraryId,
+            objectId: this.state.objectId
           });
         }
       })
@@ -53,27 +61,12 @@ class ContentObject extends React.Component {
       });
     } else if(this.state.deletingVersion) {
       // Version deleted - reload object
-      this.setState({
-        deletingVersion: false,
-        requestId: this.props.WrapRequest({
-          todo: async () => {
-            await this.props.GetFullContentObject({
-              libraryId: this.state.libraryId,
-              objectId: this.state.objectId,
-              includeStatus: !this.state.isContentType
-            });
-          }
-        })
-      });
+      this.LoadObject();
     }
-
-    const contentObject = this.props.contentObjects[this.state.objectId];
-
-    if(contentObject) {
-      this.setState({
-        contentObject
-      });
-    }
+    
+    this.setState({
+      object: this.props.objects[this.state.objectId]
+    });
   }
 
   DeleteContentObject() {
@@ -111,7 +104,7 @@ class ContentObject extends React.Component {
 
   DeleteVersionButton(versionHash) {
     // Don't allow deleting of last version
-    if(this.state.contentObject.versions.length === 1) { return null; }
+    if(this.state.object.versions.length === 1) { return null; }
 
     return (
       <div className="actions-container">
@@ -145,6 +138,10 @@ class ContentObject extends React.Component {
     );
   }
 
+  VersionSize(version) {
+    return PrettyBytes(version.parts.reduce((a, part) => a + part.size, 0));
+  }
+
   FormattedData(label, id, value) {
     const visible = this.state.visibleVersions[id];
 
@@ -176,22 +173,22 @@ class ContentObject extends React.Component {
     window.URL.revokeObjectURL(url);
   }
 
-  ObjectMedia(contentObject) {
+  ObjectMedia() {
     let image;
     let video;
 
-    if(contentObject.HasImage()) {
+    if(this.state.object.imageUrl) {
       image = (
         <div className="object-image">
-          <img src={contentObject.RepUrl("image")} />
+          <img src={this.state.object.imageUrl} />
         </div>
       );
     }
 
-    if(contentObject.metadata["offering.en"]) {
+    if(this.state.object.meta["offering.en"]) {
       video = (
         <div className="object-video">
-          <DashVideo videoUrl={contentObject.RepUrl("dash/en.mpd")} />
+          <DashVideo videoUrl={this.state.object.imageUrl} />
         </div>
       );
     }
@@ -269,8 +266,8 @@ class ContentObject extends React.Component {
         <div className="indented">
           <LabelledField label={"Hash"} value={version.hash} />
           <LabelledField label={"Parts"} value={version.parts.length} />
-          <LabelledField label={"Total size"} value={version.TotalSize()} />
-          { this.FormattedData("Metadata", "metadata-" + versionNumber, version.metadata) }
+          <LabelledField label={"Total size"} value={this.VersionSize(version)} />
+          { this.FormattedData("Metadata", "metadata-" + versionNumber, version.meta) }
           { this.FormattedData("Verification", "verification-" + versionNumber, version.verification) }
           { this.ObjectParts(version) }
 
@@ -282,34 +279,39 @@ class ContentObject extends React.Component {
     );
   }
 
-  PreviousVersions(contentObject) {
-    if(contentObject.versions.length < 2) { return null; }
+  PreviousVersions() {
+    if(this.state.object.versions.length < 2) { return null; }
 
     return (
       <div>
         <h3>Previous Versions</h3>
 
-        { contentObject.versions.slice(1).map((version, i) => {
-          const versionNumber = (i+1 - contentObject.versions.length) * -1;
+        { this.state.object.versions.slice(1).map((version, i) => {
+          const versionNumber = (i+1 - this.state.object.versions.length) * -1;
           return this.ObjectVersion(version, versionNumber);
         })}
       </div>
     );
   }
 
-  ContractInfo(contentObject) {
-    if(contentObject.isLibraryObject){ return null; }
+  ContractInfo() {
+    if(this.state.object.isLibraryObject){ return null; }
 
     let contractInfo = [];
     contractInfo.push(
       <LabelledField
-        key={"contract-" + contentObject.contractAddress}
+        key={"contract-" + this.state.object.contractAddress}
         label={"Contract Address"}
-        value={<Link className="inline-link" to={Path.join(this.props.match.url, "contract")}>{contentObject.contractAddress}</Link>} />
+        value={
+          <Link className="inline-link" to={Path.join(this.props.match.url, "contract")}>
+            {this.state.object.contractAddress}
+          </Link>
+        } />
+
     );
 
-    if(contentObject.metadata.customContract) {
-      const customContractAddress = contentObject.metadata.customContract.address.toLowerCase();
+    if(this.state.object.meta.customContract) {
+      const customContractAddress = this.state.object.meta.customContract.address.toLowerCase();
       contractInfo.push(
         <LabelledField
           key={"contract-" + customContractAddress}
@@ -320,31 +322,30 @@ class ContentObject extends React.Component {
     return contractInfo;
   }
 
-  ObjectInfo(contentObject) {
-    const description = <ClippedText className="object-description" text={contentObject.description} />;
+  ObjectInfo() {
+    const latestVersion = this.state.object.versions[0];
+    const description = <ClippedText className="object-description" text={this.state.object.description} />;
     const header = this.state.isContentType ? "Content Type Info" : "Content Object Info";
 
     return (
       <div className="object-info label-box">
         <h3>{ header }</h3>
 
-        <LabelledField label={"Name"} value={contentObject.name} />
+        <LabelledField label={"Name"} value={this.state.object.name} />
         <LabelledField label={"Description"} value={description} />
-        <LabelledField label={"Status"} value={contentObject.status} hidden={this.state.isContentType} />
-        <LabelledField label={"Library ID"} value={contentObject.libraryId} />
-        <LabelledField label={"Object ID"} value={contentObject.objectId} />
-        <LabelledField label={"Owner"} value={contentObject.owner} />
-        <LabelledField label={"Type"} value={contentObject.type} hidden={this.state.isContentType} />
-        { this.ContractInfo(contentObject) }
-        <LabelledField label={"Versions"} value={contentObject.versions.length} />
-        <LabelledField label={"Parts"} value={contentObject.parts.length} />
-        <LabelledField label={"Total size"} value={contentObject.TotalSize()} />
+        <LabelledField label={"Status"} value={this.state.object.status} hidden={this.state.isContentType} />
+        <LabelledField label={"Library ID"} value={this.state.libraryId} />
+        <LabelledField label={"Object ID"} value={this.state.objectId} />
+        <LabelledField label={"Owner"} value={this.state.object.owner} />
+        <LabelledField label={"Type"} value={this.state.object.type} hidden={this.state.isContentType} />
+        { this.ContractInfo() }
+        <LabelledField label={"Versions"} value={this.state.object.versions.length} />
+        <LabelledField label={"Parts"} value={latestVersion.parts.length} />
+        <LabelledField label={"Total size"} value={this.VersionSize(latestVersion)} />
 
-        { this.FormattedData("Raw Data", "rawData", contentObject.rawData) /* TODO: Remove for production */ }
+        { this.ObjectVersion(this.state.object.versions[0], this.state.object.versions.length, true) }
 
-        { this.ObjectVersion(contentObject.versions[0], contentObject.versions.length, true) }
-
-        { this.PreviousVersions(contentObject) }
+        { this.PreviousVersions() }
       </div>
     );
   }
@@ -365,7 +366,7 @@ class ContentObject extends React.Component {
     }
 
     let appLink;
-    if(this.state.contentObject.metadata && this.state.contentObject.metadata.app) {
+    if(this.state.object.meta && this.state.object.meta.app) {
       appLink = (
         <Link to={Path.join(this.props.match.url, "app")} className="action">
           View App
@@ -388,9 +389,9 @@ class ContentObject extends React.Component {
           { appLink }
         </div>
         <div className="object-display">
-          <h3 className="page-header">{ this.state.contentObject.name }</h3>
-          { this.ObjectMedia(this.state.contentObject) }
-          { this.ObjectInfo(this.state.contentObject) }
+          <h3 className="page-header">{ this.state.object.name }</h3>
+          { this.ObjectMedia() }
+          { this.ObjectInfo() }
         </div>
       </div>
     );

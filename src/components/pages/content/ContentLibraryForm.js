@@ -29,7 +29,7 @@ class ContentLibraryForm extends React.Component {
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleImageChange = this.HandleImageChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
-    this.OnContentLibraryLoaded = this.OnContentLibraryLoaded.bind(this);
+    this.RequestComplete = this.RequestComplete.bind(this);
   }
 
   // Load existing content library on edit
@@ -48,18 +48,16 @@ class ContentLibraryForm extends React.Component {
   }
 
   // Set loaded content object
-  OnContentLibraryLoaded() {
-    const contentLibrary = this.props.contentLibraries[this.state.libraryId];
-    if(contentLibrary) {
+  RequestComplete() {
+    const library = this.props.libraries[this.state.libraryId];
+    if(library) {
       this.setState({
-        isContentSpaceLibrary: contentLibrary.isContentSpaceLibrary,
-        libraryObjectId: contentLibrary.libraryObject.objectId,
-        name: contentLibrary.name,
-        description: contentLibrary.description,
-        contractAddress: contentLibrary.contractAddress,
-        publicMetadata: JSON.stringify(contentLibrary.metadata, null, 2),
-        privateMetadata: JSON.stringify(contentLibrary.privateMetadata, null, 2),
-        imagePreviewUrl: contentLibrary.ImageUrl()
+        isContentSpaceLibrary: library.isContentSpaceLibrary,
+        name: library.name,
+        description: library.description,
+        publicMetadata: JSON.stringify(library.meta, null, 2),
+        privateMetadata: JSON.stringify(library.privateMeta, null, 2),
+        imagePreviewUrl: library.imageUrl
       });
     }
   }
@@ -106,10 +104,8 @@ class ContentLibraryForm extends React.Component {
           todo: async () => {
             await this.props.UpdateContentLibrary({
               libraryId: this.state.libraryId,
-              libraryObjectId: this.state.libraryObjectId,
               name: this.state.name,
               description: this.state.description,
-              contractAddress: this.state.contractAddress,
               publicMetadata: this.state.publicMetadata,
               privateMetadata: this.state.privateMetadata,
               image: this.state.imageSelection
@@ -206,7 +202,7 @@ class ContentLibraryForm extends React.Component {
           requestId={this.state.loadRequestId}
           requests={this.props.requests}
           pageContent={this.PageContent}
-          OnRequestComplete={this.OnContentLibraryLoaded}
+          OnRequestComplete={this.RequestComplete}
         />
       );
     }

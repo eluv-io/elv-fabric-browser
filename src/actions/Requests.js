@@ -53,21 +53,21 @@ const Request = async ({
 
 const RequestSubmitted = (requestId) => {
   return {
-    type: ActionTypes.request.request.status.submitted,
+    type: ActionTypes.requests.status.submitted,
     requestId
   };
 };
 
 const RequestCompleted = (requestId) => {
   return {
-    type: ActionTypes.request.request.status.completed,
+    type: ActionTypes.requests.status.completed,
     requestId
   };
 };
 
 const RequestError = (requestId, error_message) => {
   return {
-    type: ActionTypes.request.request.status.error,
+    type: ActionTypes.requests.status.error,
     requestId,
     error_message
   };
