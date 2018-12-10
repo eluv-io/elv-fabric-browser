@@ -3,17 +3,17 @@ import Path from "path";
 import RequestPage from "../RequestPage";
 import RequestForm from "../../forms/RequestForm";
 import { JsonTextArea } from "../../../utils/Input";
+import BrowseWidget from "../../components/BrowseWidget";
 
-class ContentObjectForm extends React.Component {
+class ContentTypeForm extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      libraryId: this.props.libraryId || this.props.match.params.libraryId,
+      libraryId: this.props.libraryId,
       objectId: this.props.match.params.objectId,
       name: "",
       description: "",
-      type: "",
       metadata: "",
       createForm: this.props.location.pathname.endsWith("create")
     };
@@ -21,21 +21,14 @@ class ContentObjectForm extends React.Component {
     this.PageContent = this.PageContent.bind(this);
     this.FormContent = this.FormContent.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
+    this.HandleBitcodeChange = this.HandleBitcodeChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
     this.RequestComplete = this.RequestComplete.bind(this);
   }
 
   // Load existing content object on edit
   componentDidMount() {
-    if(this.state.createForm) {
-      this.setState({
-        loadRequestId: this.props.WrapRequest({
-          todo: async () => {
-            await this.props.ListContentTypes();
-          }
-        })
-      });
-    } else {
+    if(!this.state.createForm) {
       this.setState({
         loadRequestId: this.props.WrapRequest({
           todo: async () => {
@@ -44,7 +37,10 @@ class ContentObjectForm extends React.Component {
               objectId: this.state.objectId
             });
 
-            await this.props.ListContentTypes();
+            await this.props.GetContentObjectVersions({
+              libraryId: this.state.libraryId,
+              objectId: this.state.objectId
+            });
           }
         })
       });
@@ -52,27 +48,14 @@ class ContentObjectForm extends React.Component {
   }
 
   RequestComplete() {
-    const types = Object.values(this.props.types).map(type => {
-      const typeName = (type.meta && type.meta["eluv.name"]) || type.hash;
-      return [typeName, type.hash];
-    }).sort();
+    let object = this.props.objects[this.state.objectId];
 
     this.setState({
-      types,
-      type: types[0][1]
+      isLibraryObject: object.isLibraryObject,
+      name: object.name,
+      description: object.description,
+      metadata: JSON.stringify(object.meta, null, 2),
     });
-
-    if(!this.state.createForm) {
-      let object = this.props.objects[this.state.objectId];
-
-      this.setState({
-        isLibraryObject: object.isLibraryObject,
-        name: object.name,
-        type: object.type,
-        description: object.description,
-        metadata: JSON.stringify(object.meta, null, 2),
-      });
-    }
   }
 
   HandleInputChange(event) {
@@ -81,18 +64,22 @@ class ContentObjectForm extends React.Component {
     });
   }
 
+  HandleBitcodeChange(event) {
+    this.setState({
+      bitcode: event.target.files[0]
+    });
+  }
+
   HandleSubmit() {
     if(this.state.createForm) {
       this.setState({
         submitRequestId: this.props.WrapRequest({
           todo: async () => {
-            await this.props.CreateContentObject({
-              libraryId: this.state.libraryId,
-              objectId: this.state.objectId,
+            await this.props.CreateContentType({
               name: this.state.name,
-              type: this.state.type,
               description: this.state.description,
-              metadata: this.state.metadata
+              metadata: this.state.metadata,
+              bitcode: this.state.bitcode
             });
           }
         })
@@ -105,7 +92,6 @@ class ContentObjectForm extends React.Component {
               libraryId: this.state.libraryId,
               objectId: this.state.objectId,
               name: this.state.name,
-              type: this.state.type,
               description: this.state.description,
               metadata: this.state.metadata
             });
@@ -115,18 +101,17 @@ class ContentObjectForm extends React.Component {
     }
   }
 
-  TypeField() {
-    const options = this.state.types.map(([name, hash]) => {
-      return <option key={"type-" + hash} name="type" value={hash}>{ name }</option>;
-    });
+  BitcodeSelection() {
+    if(!this.state.createForm) { return null; }
 
     return (
-      <div className="labelled-input">
-        <label className="label" htmlFor="type">Content Type</label>
-        <select name="type" value={this.state.type} onChange={this.HandleInputChange}>
-          { options }
-        </select>
-      </div>
+      <BrowseWidget
+        label="Bitcode"
+        required={true}
+        multiple={false}
+        accept=".bc"
+        onChange={this.HandleBitcodeChange}
+      />
     );
   }
 
@@ -137,7 +122,7 @@ class ContentObjectForm extends React.Component {
           <label className="label" htmlFor="name">Name</label>
           <input name="name" value={this.state.name} onChange={this.HandleInputChange} readOnly={this.state.isLibraryObject} />
         </div>
-        { this.TypeField() }
+        { this.BitcodeSelection() }
         <div className="labelled-input">
           <label className="textarea-label" htmlFor="description">Description</label>
           <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
@@ -156,7 +141,7 @@ class ContentObjectForm extends React.Component {
   }
 
   PageContent() {
-    const legend = this.state.createForm ? "Create content object" : "Update content object";
+    const legend = this.state.createForm ? "Create content type" : "Update content type";
 
     return (
       <RequestForm
@@ -172,15 +157,19 @@ class ContentObjectForm extends React.Component {
   }
 
   render() {
-    return (
-      <RequestPage
-        requestId={this.state.loadRequestId}
-        requests={this.props.requests}
-        pageContent={this.PageContent}
-        OnRequestComplete={this.RequestComplete}
-      />
-    );
+    if(this.state.createForm) {
+      return this.PageContent();
+    } else {
+      return (
+        <RequestPage
+          requestId={this.state.loadRequestId}
+          requests={this.props.requests}
+          pageContent={this.PageContent}
+          OnRequestComplete={this.RequestComplete}
+        />
+      );
+    }
   }
 }
 
-export default ContentObjectForm;
+export default ContentTypeForm;

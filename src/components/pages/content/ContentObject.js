@@ -49,6 +49,8 @@ class ContentObject extends React.Component {
             libraryId: this.state.libraryId,
             objectId: this.state.objectId
           });
+
+          await this.props.ListContentTypes();
         }
       })
     });
@@ -63,10 +65,21 @@ class ContentObject extends React.Component {
       // Version deleted - reload object
       this.LoadObject();
     }
-    
-    this.setState({
-      object: this.props.objects[this.state.objectId]
-    });
+
+    // Determine the name of the content type
+    const object = this.props.objects[this.state.objectId];
+    if(this.state.isNormalObject && object.type) {
+      const type = this.props.types[object.type];
+      this.setState({
+        object,
+        typeHash: type.hash,
+        typeName: (type.meta && type.meta["eluv.name"]) ? type.meta["eluv.name"] : type.hash
+      });
+    } else {
+      this.setState({
+        object
+      });
+    }
   }
 
   DeleteContentObject() {
@@ -332,12 +345,12 @@ class ContentObject extends React.Component {
         <h3>{ header }</h3>
 
         <LabelledField label={"Name"} value={this.state.object.name} />
+        <LabelledField label={"Type"} value={<span title={this.state.typeHash}>{this.state.typeName}</span>} hidden={this.state.isContentType} />
         <LabelledField label={"Description"} value={description} />
         <LabelledField label={"Status"} value={this.state.object.status} hidden={this.state.isContentType} />
         <LabelledField label={"Library ID"} value={this.state.libraryId} />
         <LabelledField label={"Object ID"} value={this.state.objectId} />
         <LabelledField label={"Owner"} value={this.state.object.owner} />
-        <LabelledField label={"Type"} value={this.state.object.type} hidden={this.state.isContentType} />
         { this.ContractInfo() }
         <LabelledField label={"Versions"} value={this.state.object.versions.length} />
         <LabelledField label={"Parts"} value={latestVersion.parts.length} />
@@ -352,17 +365,18 @@ class ContentObject extends React.Component {
 
   DeleteObjectButton() {
     // Don't allow deleting of library content object
-    if(!this.state.isNormalObject) { return null; }
+    if(this.state.isLibraryObject) { return null; }
+
     return (
       <button className="action delete-action" onClick={() => this.DeleteContentObject()}>
-        Delete Content Object
+        { this.state.isContentType ? "Delete Content Type" : "Delete Content Object" }
       </button>
     );
   }
 
   PageContent() {
     if(this.state.deleted) {
-      return <Redirect push to={Path.join("/content", this.state.libraryId)}/>;
+      return <Redirect push to={Path.dirname(this.props.match.url)} />;
     }
 
     let appLink;
@@ -382,7 +396,9 @@ class ContentObject extends React.Component {
       <div className="page-container content-page-container">
         <div className="actions-container">
           <Link to={Path.dirname(this.props.match.url)} className="action secondary" >Back</Link>
-          <Link to={Path.join(this.props.match.url, "edit")} className="action" >Edit Content Object</Link>
+          <Link to={Path.join(this.props.match.url, "edit")} className="action" >
+            { this.state.isContentType ? "Edit Content Type" : "Edit Content Object" }
+          </Link>
           { setContractButton }
           <Link to={Path.join(this.props.match.url, "upload")} className="action" >Upload Parts</Link>
           { this.DeleteObjectButton() }

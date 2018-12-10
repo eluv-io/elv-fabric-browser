@@ -51,7 +51,7 @@ class BrowseWidget extends React.Component {
         <label className="textarea-label" htmlFor={inputName}>{ this.props.label }</label>
         <div className="browse-widget">
           <div className="actions-container">
-            <button className="action action-compact action-wide" type="button" onClick={() => {this.state.browseButtonRef.current.click();}}>
+            <button className="action action-compact action-full-width" type="button" onClick={() => {this.state.browseButtonRef.current.click();}}>
               Browse
             </button>
             <input
