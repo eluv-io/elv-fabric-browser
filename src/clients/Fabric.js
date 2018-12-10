@@ -1,6 +1,5 @@
 import { FrameClient } from "elv-client-js/ElvFrameClient-min";
 import { ElvClient } from "elv-client-js/src/ElvClient";
-import ContentObject from "../models/ContentObject";
 import Path from "path";
 
 import BaseLibraryContract from "elv-client-js/src/contracts/BaseLibrary";
@@ -386,12 +385,13 @@ const Fabric = {
 
   EditContentObject: async ({
     libraryId,
-    objectId
+    objectId,
+    options={}
   }) => {
     return await client.EditContentObject({
       libraryId,
       objectId,
-      options: {}
+      options
     });
   },
 
@@ -485,6 +485,23 @@ const Fabric = {
     await todo({writeToken: editResponse.write_token});
 
     await Fabric.FinalizeContentObject({libraryId, objectId, writeToken: editResponse.write_token});
+  },
+
+  /* Content Types */
+
+  CreateContentType: async ({name, description, metadata={}, bitcode}) => {
+    return await client.CreateContentType({
+      metadata: {
+        ...metadata,
+        "eluv.name": name,
+        "eluv.description": description
+      },
+      bitcode
+    });
+  },
+
+  ListContentTypes: async () => {
+    return await client.ContentTypes();
   },
 
   /* Files */
@@ -586,7 +603,7 @@ const Fabric = {
     try {
       let objectData = await client.GetObjectByName({name});
 
-      return new ContentObject({contentObjectData: objectData});
+      return objectData;
     } catch(error) {
       if(error.status === 404) {
         return undefined;

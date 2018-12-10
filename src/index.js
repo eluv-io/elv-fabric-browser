@@ -38,7 +38,6 @@ render(
           </div>
         </ScrollToTop>
       </ConnectedRouter>
-      <Debug />
     </div>
   </Provider>,
   document.getElementById("app")

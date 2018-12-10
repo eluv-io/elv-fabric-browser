@@ -128,10 +128,11 @@ form {
     }
 
     .selected-files {
+      box-shadow: $color-gray 2px 2px 5px;
       margin: $spacing-s 0 $spacing-xs;
 
       .selected-file {
-        background: $color-bg-dark;
+        background: $color-bg-light;
         border: 1px solid $color-gray;
         border-bottom: 0;
         display: flex;

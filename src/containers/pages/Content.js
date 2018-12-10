@@ -13,7 +13,11 @@ import {
   DeleteContentLibrary,
   DeleteContentObject,
   DeleteContentVersion,
-  UpdateContentLibraryGroups, ListContentLibraryGroups, GetContentObject, GetContentObjectVersions
+  UpdateContentLibraryGroups,
+  ListContentLibraryGroups,
+  GetContentObject,
+  GetContentObjectVersions,
+  CreateContentType, ListContentTypes
 } from "../../actions/Content";
 import ContentLibraries from "../../components/pages/content/ContentLibraries";
 import ContentLibrary from "../../components/pages/content/ContentLibrary";
@@ -23,6 +27,8 @@ import ContentObjectForm from "../../components/pages/content/ContentObjectForm"
 import ContentObjectUploadForm from "../../components/pages/content/UploadForm";
 import ContentObjectApp from "../../components/pages/content/ContentApp";
 import ContentLibraryGroupsForm from "../../components/pages/content/ContentLibraryGroupsForm";
+import ContentTypeForm from "../../components/pages/content/ContentTypeForm";
+
 import {ListAccessGroups} from "../../actions/AccessGroups";
 import {WrapRequest} from "../../actions/Requests";
 import {SetCurrentAccount} from "../../actions/Accounts";
@@ -56,7 +62,9 @@ const mapDispatchToProps = dispatch =>
       UploadParts,
       DownloadPart,
       ListAccessGroups,
-      ListContentLibraryGroups
+      ListContentLibraryGroups,
+      CreateContentType,
+      ListContentTypes,
     ]
   );
 
@@ -89,6 +97,11 @@ export const ContentObjectFormContainer = connect(
   mapStateToProps,
   mapDispatchToProps
 )(ContentObjectForm);
+
+export const ContentTypeFormContainer = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(ContentTypeForm);
 
 export const ContentObjectUploadFormContainer = connect(
   mapStateToProps,

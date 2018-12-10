@@ -232,7 +232,9 @@ class ContentLibrary extends React.Component {
         <Link to={Path.dirname(this.props.match.url)} className="action secondary" >Back</Link>
         <Link to={Path.join(this.props.match.url, "edit")} className="action" >Edit Content Library</Link>
         { manageGroupsButton }
-        <Link to={Path.join(this.props.match.url, "create")} className="action" >New Content Object</Link>
+        <Link to={Path.join(this.props.match.url, "create")} className="action" >
+          { this.state.isContentSpaceLibrary ? "New Content Type" : "New Content Object" }
+        </Link>
         { this.DeleteContentLibraryButton() }
       </div>
     );
