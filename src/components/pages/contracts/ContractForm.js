@@ -135,10 +135,13 @@ class ContractForm extends React.Component {
   }
 
   PageContent() {
-    // If name changes, make sure to update redirect path to new name
-    const redirectPath = this.state.createForm ?
-      this.props.match.url :
-      this.props.match.url.replace(this.state.contractName, this.state.name);
+    // Keep redirect path synchronized with name changes
+    let redirectPath = Path.dirname(this.props.match.url);
+    if(this.state.createForm) {
+      redirectPath = Path.join(redirectPath, this.state.name);
+    } else {
+      redirectPath = redirectPath.replace(this.state.contractName, this.state.name);
+    }
 
     return (
       <RequestForm
@@ -146,7 +149,7 @@ class ContractForm extends React.Component {
         requestId={this.state.submitRequestId}
         legend={"Save contract"}
         formContent={this.ContractForm()}
-        redirectPath={Path.dirname(redirectPath)}
+        redirectPath={redirectPath}
         cancelPath={Path.dirname(this.props.match.url)}
         OnSubmit={this.HandleSubmit}
       />

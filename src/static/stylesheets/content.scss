@@ -10,6 +10,14 @@
   }
 }
 
+.object-image,
+.image-preview {
+  img {
+    border: 1px solid $color-gray;
+    box-shadow: $color-gray 5px 5px 8px;
+  }
+}
+
 .object-video,
 .dash-video {
   margin: $spacing-s 0;

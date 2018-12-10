@@ -87,7 +87,7 @@ class ContentLibraryForm extends React.Component {
       this.setState({
         submitRequestId: this.props.WrapRequest({
           todo: async () => {
-            await this.props.CreateContentLibrary({
+            const libraryId = await this.props.CreateContentLibrary({
               owner: this.props.currentAccountAddress,
               name: this.state.name,
               description: this.state.description,
@@ -95,6 +95,8 @@ class ContentLibraryForm extends React.Component {
               privateMetadata: this.state.privateMetadata,
               image: this.state.imageSelection
             });
+
+            this.setState({libraryId});
           }
         })
       });
@@ -180,13 +182,20 @@ class ContentLibraryForm extends React.Component {
   PageContent() {
     const legend = this.state.createForm ? "Create content library" : "Edit content library";
 
+    let redirectPath = Path.dirname(this.props.match.url);
+    if(this.state.createForm) {
+      // On creation, libraryId won't exist until submission
+      redirectPath = this.state.libraryId ?
+        Path.join(Path.dirname(this.props.match.url), this.state.libraryId) : Path.dirname(this.props.match.url);
+    }
+
     return (
       <RequestForm
         requests={this.props.requests}
         requestId={this.state.submitRequestId}
         legend={legend}
         formContent={this.FormContent()}
-        redirectPath={Path.dirname(this.props.match.url)}
+        redirectPath={redirectPath}
         cancelPath={Path.dirname(this.props.match.url)}
         OnSubmit={this.HandleSubmit}
       />
