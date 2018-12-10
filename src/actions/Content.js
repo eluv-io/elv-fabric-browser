@@ -61,6 +61,8 @@ export const CreateContentLibrary = ({name, description, publicMetadata, private
       message: "Successfully created content library '" + name + "'",
       redirect: true
     }));
+
+    return libraryId;
   };
 };
 
@@ -188,7 +190,7 @@ export const CreateContentObject = ({libraryId, name, description, type, metadat
     metadata["eluv.name"] = name;
     metadata["eluv.description"] = description;
 
-    await Fabric.CreateAndFinalizeContentObject({
+    const objectInfo = await Fabric.CreateAndFinalizeContentObject({
       libraryId,
       type,
       metadata,
@@ -198,6 +200,8 @@ export const CreateContentObject = ({libraryId, name, description, type, metadat
       message: "Successfully created content object",
       redirect: true
     }));
+
+    return objectInfo.id;
   };
 };
 
@@ -259,7 +263,7 @@ export const UpdateContentObject = ({libraryId, objectId, name, description, typ
 
 export const CreateContentType = ({name, description, metadata, bitcode}) => {
   return async (dispatch) => {
-    await Fabric.CreateContentType({
+    const objectId = await Fabric.CreateContentType({
       name,
       description,
       metadata: ParseInputJson(metadata),
@@ -270,6 +274,8 @@ export const CreateContentType = ({name, description, metadata, bitcode}) => {
       message: "Successfully created content type",
       redirect: true
     }));
+
+    return objectId;
   };
 };
 

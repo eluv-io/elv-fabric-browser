@@ -86,14 +86,15 @@ class ContentObjectForm extends React.Component {
       this.setState({
         submitRequestId: this.props.WrapRequest({
           todo: async () => {
-            await this.props.CreateContentObject({
+            const objectId = await this.props.CreateContentObject({
               libraryId: this.state.libraryId,
-              objectId: this.state.objectId,
               name: this.state.name,
               type: this.state.type,
               description: this.state.description,
               metadata: this.state.metadata
             });
+
+            this.setState({objectId});
           }
         })
       });
@@ -158,13 +159,20 @@ class ContentObjectForm extends React.Component {
   PageContent() {
     const legend = this.state.createForm ? "Create content object" : "Update content object";
 
+    let redirectPath = Path.dirname(this.props.match.url);
+    if(this.state.createForm) {
+      // On creation, objectId won't exist until submission
+      redirectPath = this.state.objectId ?
+        Path.join(Path.dirname(this.props.match.url), this.state.objectId) : Path.dirname(this.props.match.url);
+    }
+
     return (
       <RequestForm
         requests={this.props.requests}
         requestId={this.state.submitRequestId}
         legend={legend}
         formContent={this.FormContent()}
-        redirectPath={Path.dirname(this.props.match.url)}
+        redirectPath={redirectPath}
         cancelPath={Path.dirname(this.props.match.url)}
         OnSubmit={this.HandleSubmit}
       />

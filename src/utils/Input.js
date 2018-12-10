@@ -15,7 +15,7 @@ export const InputValue = (event) => {
 // -- Rejects quoted strings which JSON.parse allows (e.g. JSON.parse('"string"')
 export const ParseInputJson = (metadata) => {
   if(typeof metadata === "string") {
-    if(metadata.trim() === "") { return null; }
+    if(metadata.trim() === "") { return {}; }
 
     if(!metadata.trim().startsWith("{")) { throw Error("Invalid JSON"); }
 
@@ -26,7 +26,7 @@ export const ParseInputJson = (metadata) => {
     }
   }
 
-  return metadata;
+  return metadata || {};
 };
 
 // Add to onKeyUp event to validate JSON input while typing
