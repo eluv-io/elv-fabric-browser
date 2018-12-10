@@ -25,6 +25,9 @@ const ActionTypes = {
       get: "GET_OBJECTS",
       versions: "GET_OBJECT_VERSIONS"
     },
+    types: {
+      list: "LIST_TYPES"
+    }
   },
   contracts: {
     list: "LIST_CONTRACTS",

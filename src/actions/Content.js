@@ -1,8 +1,6 @@
 import ActionTypes from "./ActionTypes";
 import Fabric from "../clients/Fabric";
 import { SetNotificationMessage } from "./Notifications";
-import ContentLibrary from "../models/ContentLibrary";
-import ContentObject from "../models/ContentObject";
 import { ParseInputJson } from "../utils/Input";
 
 export const ListContentLibraries = () => {
@@ -75,17 +73,13 @@ export const UpdateContentLibrary = ({
   image
 }) => {
   return async (dispatch) => {
-    const contentLibrary = new ContentLibrary({
-      libraryId,
-      libraryMetadata: ParseInputJson(publicMetadata)
-    });
-
-    contentLibrary.name = name;
-    contentLibrary.description = description;
+    publicMetadata = ParseInputJson(publicMetadata);
+    publicMetadata["eluv.name"] = name;
+    publicMetadata["eluv.description"] = description;
 
     await Fabric.ReplacePublicLibraryMetadata({
       libraryId,
-      metadata: contentLibrary.FullMetadata()
+      metadata: publicMetadata
     });
 
     const libraryObjectId = libraryId.replace("ilib", "iq__");
@@ -190,19 +184,14 @@ export const GetContentObjectVersions = ({libraryId, objectId}) => {
 
 export const CreateContentObject = ({libraryId, name, description, type, metadata}) => {
   return async (dispatch) => {
-    const contentObject = new ContentObject({
-      libraryId,
-      contentObjectData: {meta: ParseInputJson(metadata)}
-    });
-
-    contentObject.name = name;
-    contentObject.description = description;
-    contentObject.type = type;
+    metadata = ParseInputJson(metadata);
+    metadata["eluv.name"] = name;
+    metadata["eluv.description"] = description;
 
     await Fabric.CreateAndFinalizeContentObject({
       libraryId,
       type,
-      metadata: contentObject.FullMetadata()
+      metadata,
     });
 
     dispatch(SetNotificationMessage({
@@ -236,22 +225,23 @@ export const DeleteContentVersion = ({ libraryId, objectId, versionHash }) => {
 
 export const UpdateContentObject = ({libraryId, objectId, name, description, type, metadata}) => {
   return async (dispatch) => {
-    const contentObject = new ContentObject({
+    let contentDraft = await Fabric.EditContentObject({
       libraryId,
-      contentObjectData: {meta: ParseInputJson(metadata)}
+      objectId,
+      options: {
+        type
+      }
     });
 
-    contentObject.name = name;
-    contentObject.description = description;
-    contentObject.type = type;
-
-    let contentDraft = await Fabric.EditContentObject({ libraryId, objectId });
+    metadata = ParseInputJson(metadata);
+    metadata["eluv.name"] = name;
+    metadata["eluv.description"] = description;
 
     await Fabric.ReplaceMetadata({
       libraryId,
       objectId,
       writeToken: contentDraft.write_token,
-      metadata: ParseInputJson(contentObject.FullMetadata())
+      metadata
     });
 
     await Fabric.FinalizeContentObject({
@@ -264,6 +254,31 @@ export const UpdateContentObject = ({libraryId, objectId, name, description, typ
       message: "Successfully updated content object",
       redirect: true
     }));
+  };
+};
+
+export const CreateContentType = ({name, description, metadata, bitcode}) => {
+  return async (dispatch) => {
+    await Fabric.CreateContentType({
+      name,
+      description,
+      metadata: ParseInputJson(metadata),
+      bitcode
+    });
+
+    dispatch(SetNotificationMessage({
+      message: "Successfully created content type",
+      redirect: true
+    }));
+  };
+};
+
+export const ListContentTypes = () => {
+  return async (dispatch) => {
+    dispatch({
+      type: ActionTypes.content.types.list,
+      types: await Fabric.ListContentTypes()
+    });
   };
 };
 

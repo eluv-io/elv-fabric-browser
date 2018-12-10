@@ -59,11 +59,18 @@ const ContentReducer = (state = {}, action) => {
         }
       };
 
+    case ActionTypes.content.types.list:
+      return {
+        ...state,
+        types: action.types
+      };
+
     default:
       return {
         ...state,
         libraries: state.libraries || {},
-        objects: state.objects || {}
+        objects: state.objects || {},
+        types: state.types || {}
       };
   }
 };
