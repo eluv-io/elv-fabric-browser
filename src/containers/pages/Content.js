@@ -28,6 +28,7 @@ import ContentObjectUploadForm from "../../components/pages/content/UploadForm";
 import ContentObjectApp from "../../components/pages/content/ContentApp";
 import ContentLibraryGroupsForm from "../../components/pages/content/ContentLibraryGroupsForm";
 import ContentTypeForm from "../../components/pages/content/ContentTypeForm";
+import ContentObjectReviewForm from "../../components/pages/content/ContentObjectReviewForm";
 
 import {ListAccessGroups} from "../../actions/AccessGroups";
 import {WrapRequest} from "../../actions/Requests";
@@ -97,6 +98,11 @@ export const ContentObjectFormContainer = connect(
   mapStateToProps,
   mapDispatchToProps
 )(ContentObjectForm);
+
+export const ContentObjectReviewFormContainer = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(ContentObjectReviewForm);
 
 export const ContentTypeFormContainer = connect(
   mapStateToProps,

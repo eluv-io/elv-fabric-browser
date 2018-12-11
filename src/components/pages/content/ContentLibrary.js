@@ -91,6 +91,7 @@ class ContentLibrary extends React.Component {
           icon={object.imageUrl || ContentIcon}
           name={object.name}
           isOwner={object.owner.toLowerCase() === this.props.currentAccountAddress.toLowerCase()}
+          infoText={object.status.description}
           description={object.description}
           title={object.name}
         />

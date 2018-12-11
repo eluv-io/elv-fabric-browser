@@ -18,6 +18,7 @@ import {
   ContentObjectAppContainer,
   ContentLibraryGroupsFormContainer,
   ContentTypeFormContainer,
+  ContentObjectReviewFormContainer,
 } from "../containers/pages/Content";
 
 import {
@@ -75,6 +76,8 @@ function Routes(){
         <Route exact path="/content/:libraryId/:objectId/edit" component={ContentObjectFormContainer} />
         <Route exact path="/content-types/:objectId/edit" render={(props) =>
           <ContentTypeFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />} />
+
+        <Route exact path="/content/:libraryId/:objectId/review" component={ContentObjectReviewFormContainer} />
 
         <Route exact path="/content/:libraryId/:objectId/upload" component={ContentObjectUploadFormContainer} />
         <Route exact path="/content-types/:objectId/upload" render={(props) =>

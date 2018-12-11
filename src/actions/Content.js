@@ -184,6 +184,35 @@ export const GetContentObjectVersions = ({libraryId, objectId}) => {
   };
 };
 
+export const GetContentObjectPermissions = async ({libraryId, objectId}) => {
+  return await Fabric.GetContentObjectPermissions({libraryId, objectId});
+};
+
+export const PublishContentObject = async ({objectId}) => {
+  return await Fabric.PublishContentObject({objectId});
+};
+
+export const ReviewContentObject = async ({libraryId, objectId, approve, note}) => {
+  await Fabric.ReviewContentObject({libraryId, objectId, approve, note});
+
+  const currentAccountAddress = await Fabric.CurrentAccountAddress();
+
+  await Fabric.EditAndFinalizeContentObject({
+    libraryId,
+    objectId,
+    todo: async ({writeToken}) => {
+      await Fabric.MergeMetadata({
+        libraryId,
+        writeToken,
+        metadata: {
+          "eluv.reviewer": currentAccountAddress,
+          "eluv.reviewNote": note
+        }
+      });
+    }
+  });
+};
+
 export const CreateContentObject = ({libraryId, name, description, type, metadata}) => {
   return async (dispatch) => {
     metadata = ParseInputJson(metadata);
