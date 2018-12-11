@@ -1,7 +1,7 @@
 import React from "react";
 
 export const LabelledField = ({label, value, wideLabel=false, hidden=false}) => {
-  if(typeof label === "string") {
+  if(typeof label === "string" && label.length > 0) {
     label = label + ":";
   }
 

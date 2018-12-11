@@ -262,7 +262,8 @@ const Fabric = {
         description: latestVersion.meta["eluv.description"],
         imageUrl,
         contractAddress: client.utils.HashToAddress({hash: object.id}),
-        owner: await Fabric.GetContentObjectOwner({objectId: object.id})
+        owner: await Fabric.GetContentObjectOwner({objectId: object.id}),
+        status: await Fabric.GetContentObjectStatus({objectId: object.id})
       };
     }
 
@@ -274,12 +275,6 @@ const Fabric = {
     const metadata = await client.ContentObjectMetadata({libraryId, objectId});
     const imageUrl = await Fabric.GetContentObjectImageUrl({libraryId, objectId});
 
-    // Get the object status unless it is a content type or library object
-    let status;
-    if(libraryId !== Fabric.contentSpaceLibraryId && !Fabric.utils.EqualHash(libraryId, objectId)) {
-      status = await Fabric.GetContentObjectStatus({objectId});
-    }
-
     return {
       ...object,
       meta: metadata,
@@ -287,8 +282,8 @@ const Fabric = {
       description: metadata["eluv.description"],
       imageUrl,
       contractAddress: client.utils.HashToAddress({hash: objectId}),
-      owner: await Fabric.GetContentObjectOwner({objectId: object.id}),
-      status
+      owner: await Fabric.GetContentObjectOwner({objectId}),
+      status: await Fabric.GetContentObjectStatus({objectId})
     };
   },
 
@@ -344,17 +339,6 @@ const Fabric = {
     );
 
     return fullVersions;
-  },
-
-  GetContentObjectStatus: async ({objectId}) => {
-    const result = await Fabric.CallContractMethod({
-      contractAddress: client.utils.HashToAddress({hash: objectId}),
-      abi: BaseContentContract.abi,
-      methodName: "statusDescription",
-      methodArgs: []
-    });
-
-    return Ethers.utils.toUtf8String(result);
   },
 
   /* Object creation / modification */
@@ -502,6 +486,99 @@ const Fabric = {
 
   ListContentTypes: async () => {
     return await client.ContentTypes();
+  },
+
+  /* Contract calls */
+
+  GetContentLibraryPermissions: async ({libraryId}) => {
+    const currentAccountAddress = await client.CurrentAccountAddress();
+
+    const owner = await Fabric.CallContractMethod({
+      contractAddress: client.utils.HashToAddress({hash: libraryId}),
+      abi: BaseLibraryContract.abi,
+      methodName: "owner",
+      methodArgs: []
+    });
+
+    const canContribute = await Fabric.CallContractMethod({
+      contractAddress: client.utils.HashToAddress({hash: libraryId}),
+      abi: BaseLibraryContract.abi,
+      methodName: "canContribute",
+      methodArgs: [currentAccountAddress]
+    });
+
+    const canReview = await Fabric.CallContractMethod({
+      contractAddress: client.utils.HashToAddress({hash: libraryId}),
+      abi: BaseLibraryContract.abi,
+      methodName: "canReview",
+      methodArgs: [currentAccountAddress]
+    });
+
+    return {
+      isOwner: Fabric.FormatAddress(owner) === Fabric.FormatAddress(currentAccountAddress),
+      canContribute,
+      canReview
+    };
+  },
+
+  GetContentObjectPermissions: async ({libraryId, objectId}) => {
+    const currentAccountAddress = await client.CurrentAccountAddress();
+
+    const owner = await Fabric.CallContractMethod({
+      contractAddress: client.utils.HashToAddress({hash: objectId}),
+      abi: BaseContentContract.abi,
+      methodName: "owner",
+      methodArgs: []
+    });
+
+    // Object permissions are granted from the library
+    return {
+      ...(await Fabric.GetContentLibraryPermissions({libraryId})),
+      isOwner: Fabric.FormatAddress(owner) === Fabric.FormatAddress(currentAccountAddress)
+    };
+  },
+
+  GetContentObjectStatus: async ({objectId}) => {
+    const statusCode = await Fabric.CallContractMethod({
+      contractAddress: client.utils.HashToAddress({hash: objectId}),
+      abi: BaseContentContract.abi,
+      methodName: "statusCode",
+      methodArgs: []
+    });
+
+    const statusDescription = await Fabric.CallContractMethod({
+      contractAddress: client.utils.HashToAddress({hash: objectId}),
+      abi: BaseContentContract.abi,
+      methodName: "statusDescription",
+      methodArgs: []
+    });
+
+    return {
+      code: parseInt(statusCode._hex, 16),
+      description: Ethers.utils.toUtf8String(statusDescription)
+    };
+  },
+
+  PublishContentObject: async ({objectId}) => {
+    await client.CallContractMethodAndWait({
+      contractAddress: client.utils.HashToAddress({hash: objectId}),
+      abi: BaseContentContract.abi,
+      methodName: "publish",
+      methodArgs: []
+    });
+  },
+
+  ReviewContentObject: async ({libraryId, objectId, approve, note}) => {
+    await client.CallContractMethodAndWait({
+      contractAddress: client.utils.HashToAddress({hash: libraryId}),
+      abi: BaseLibraryContract.abi,
+      methodName: "approveContent",
+      methodArgs: [
+        client.utils.HashToAddress({hash: objectId}), // Object contract address,
+        approve,
+        note
+      ]
+    });
   },
 
   /* Files */

@@ -17,19 +17,19 @@ class RadioSelect extends React.Component {
 
   RadioOption(option) {
     const optionLabel = option[0];
-    const optionName = option[1];
+    const optionValue = option[1];
 
     return (
-      <div className="radio-option" key={"radio-select-" + this.props.name + "-" + optionName }>
-        <label className="radio-option-label" htmlFor={this.props.name} value={optionName} onClick={this.HandleLabelClick}>
+      <div className="radio-option" key={"radio-select-" + this.props.name + "-" + optionValue }>
+        <label className="radio-option-label" htmlFor={this.props.name} value={optionValue} onClick={this.HandleLabelClick}>
           { optionLabel }
         </label>
         <input
           type="radio"
           name={this.props.name}
-          value={optionName}
+          value={optionValue}
           onChange={this.props.onChange}
-          checked={optionName === this.props.selected}
+          checked={optionValue === this.props.selected}
         />
       </div>
     );

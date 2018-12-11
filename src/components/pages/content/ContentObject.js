@@ -8,6 +8,10 @@ import DashVideo from "../DashVideo";
 import Redirect from "react-router/es/Redirect";
 import Fabric from "../../../clients/Fabric";
 import ClippedText from "../../components/ClippedText";
+import {
+  GetContentObjectPermissions,
+  PublishContentObject
+} from "../../../actions/Content";
 
 class ContentObject extends React.Component {
   constructor(props) {
@@ -30,6 +34,7 @@ class ContentObject extends React.Component {
 
     this.PageContent = this.PageContent.bind(this);
     this.RequestComplete = this.RequestComplete.bind(this);
+    this.SubmitContentObject = this.SubmitContentObject.bind(this);
   }
 
   componentDidMount() {
@@ -51,6 +56,23 @@ class ContentObject extends React.Component {
           });
 
           await this.props.ListContentTypes();
+
+          if(this.state.isNormalObject) {
+            const object = this.props.objects[this.state.objectId];
+
+            // If object not yet published, need information about groups to determine
+            // what actions user can do
+            if(object.status !== 0) {
+              await this.props.ListContentLibraryGroups({libraryId: this.state.libraryId});
+            }
+
+            this.setState({
+              permissions: await GetContentObjectPermissions({
+                libraryId: this.state.libraryId,
+                objectId: this.state.objectId
+              })
+            });
+          }
         }
       })
     });
@@ -78,6 +100,20 @@ class ContentObject extends React.Component {
     } else {
       this.setState({
         object
+      });
+    }
+  }
+
+  SubmitContentObject(confirmationMessage) {
+    if(confirm(confirmationMessage)) {
+      this.setState({
+        requestId: this.props.WrapRequest({
+          todo: async () => {
+            await PublishContentObject({objectId: this.state.objectId});
+
+            this.LoadObject();
+          },
+        })
       });
     }
   }
@@ -335,6 +371,60 @@ class ContentObject extends React.Component {
     return contractInfo;
   }
 
+  // Display object status and review/submit/publish actions
+  ObjectStatus() {
+    if(this.state.isContentType) { return null; }
+
+    const reviewerGroups = this.props.libraries[this.state.libraryId].groups.reviewer;
+    const reviewRequired = reviewerGroups.length > 0;
+
+    let statusAction;
+    if(this.state.object.status.code < 0 && this.state.permissions.isOwner) {
+      const actionText = reviewRequired ? "Submit for Review" : "Publish";
+      const confirmationMessage = reviewRequired ?
+        "Are you sure you want to submit this content object for review?" :
+        "Are you sure you want to publish this content object?";
+
+      statusAction = (
+        <button
+          className="action action-compact action-wide action-inline"
+          onClick={() => { this.SubmitContentObject(confirmationMessage); }}
+        >
+          { actionText }
+        </button>
+      );
+    }
+
+    if(this.state.object.status.code > 0 && this.state.permissions.canReview) {
+      statusAction = (
+        <Link className="action action-compact action-wide action-inline" to={Path.join(this.props.match.url, "review")}>
+          Review Content Object
+        </Link>
+      );
+    }
+
+    if(statusAction) {
+      statusAction = <LabelledField label="" value={<div className="actions-container">{ statusAction } </div>} />;
+    }
+
+    let reviewNote, reviewer;
+    if(this.state.object.meta["eluv.reviewNote"]) {
+      reviewer = <LabelledField label="Reviewer" value={this.state.object.meta["eluv.reviewer"]} />;
+      const note = <ClippedText className="object-description" text={this.state.object.meta["eluv.reviewNote"]} />;
+      reviewNote = <LabelledField
+        label="Review Note" value={note} />;
+    }
+
+    return (
+      <div>
+        <LabelledField label={"Status"} value={this.state.object.status.description} />
+        { statusAction }
+        { reviewer }
+        { reviewNote }
+      </div>
+    );
+  }
+
   ObjectInfo() {
     const latestVersion = this.state.object.versions[0];
     const description = <ClippedText className="object-description" text={this.state.object.description} />;
@@ -347,7 +437,7 @@ class ContentObject extends React.Component {
         <LabelledField label={"Name"} value={this.state.object.name} />
         <LabelledField label={"Type"} value={<span title={this.state.typeHash}>{this.state.typeName}</span>} hidden={this.state.isContentType} />
         <LabelledField label={"Description"} value={description} />
-        <LabelledField label={"Status"} value={this.state.object.status} hidden={this.state.isContentType} />
+        { this.ObjectStatus() }
         <LabelledField label={"Library ID"} value={this.state.libraryId} />
         <LabelledField label={"Object ID"} value={this.state.objectId} />
         <LabelledField label={"Owner"} value={this.state.object.owner} />
@@ -363,22 +453,7 @@ class ContentObject extends React.Component {
     );
   }
 
-  DeleteObjectButton() {
-    // Don't allow deleting of library content object
-    if(this.state.isLibraryObject) { return null; }
-
-    return (
-      <button className="action delete-action" onClick={() => this.DeleteContentObject()}>
-        { this.state.isContentType ? "Delete Content Type" : "Delete Content Object" }
-      </button>
-    );
-  }
-
-  PageContent() {
-    if(this.state.deleted) {
-      return <Redirect push to={Path.dirname(this.props.match.url)} />;
-    }
-
+  Actions() {
     let appLink;
     if(this.state.object.meta && this.state.object.meta.app) {
       appLink = (
@@ -388,22 +463,42 @@ class ContentObject extends React.Component {
       );
     }
 
-    const setContractButton = this.state.isNormalObject ?
-      <Link to={Path.join(this.props.match.url, "deploy")} className="action" >Set Custom Contract</Link>
-      : null;
+    let setContractButton;
+    if(this.state.isNormalObject && this.state.permissions.isOwner) {
+      setContractButton =  <Link to={Path.join(this.props.match.url, "deploy")} className="action">Set Custom Contract</Link>;
+    }
+
+    let deleteObjectButton;
+    if(!this.state.isLibraryObject) {
+      deleteObjectButton = (
+        <button className="action delete-action" onClick={() => this.DeleteContentObject()}>
+          { this.state.isContentType ? "Delete Content Type" : "Delete Content Object" }
+        </button>
+      );
+    }
+
+    return (
+      <div className="actions-container">
+        <Link to={Path.dirname(this.props.match.url)} className="action secondary" >Back</Link>
+        <Link to={Path.join(this.props.match.url, "edit")} className="action" >
+          { this.state.isContentType ? "Edit Content Type" : "Edit Content Object" }
+        </Link>
+        { setContractButton }
+        <Link to={Path.join(this.props.match.url, "upload")} className="action" >Upload Parts</Link>
+        { deleteObjectButton }
+        { appLink }
+      </div>
+    );
+  }
+
+  PageContent() {
+    if(this.state.deleted) {
+      return <Redirect push to={Path.dirname(this.props.match.url)} />;
+    }
 
     return (
       <div className="page-container content-page-container">
-        <div className="actions-container">
-          <Link to={Path.dirname(this.props.match.url)} className="action secondary" >Back</Link>
-          <Link to={Path.join(this.props.match.url, "edit")} className="action" >
-            { this.state.isContentType ? "Edit Content Type" : "Edit Content Object" }
-          </Link>
-          { setContractButton }
-          <Link to={Path.join(this.props.match.url, "upload")} className="action" >Upload Parts</Link>
-          { this.DeleteObjectButton() }
-          { appLink }
-        </div>
+        { this.Actions() }
         <div className="object-display">
           <h3 className="page-header">{ this.state.object.name }</h3>
           { this.ObjectMedia() }
