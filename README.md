@@ -2,19 +2,26 @@
 
 ##### Note: The fabric browser should be run as a contained application of [Eluvio Web Core](https://github.com/eluv-io/elv-web-core)
 
-Quick start:
-- Clone ```elv-fabric-browser```, ```elv-core-js```, ```elv-client-js```
-- In ```elv-client-js```, initialize a new content space:
-```
-node InitContentSpace.js <path-to-qfab-config> <path-to-content-fabric-dir>
-```
-- Copy generated TestConfiguration.json in ```elv-client-js``` to configuration.json in ```elv-core-js``` and ```elv-fabric-browser```
-- Seed the library ```elv-fabric-browser``` uses to store contract information:
-```
-node Seed.js <private-key>
-```
-- npm install + npm run serve ```elv-core-js``` and ```elv-fabric-browser```
-- Open [http://localhost:8082](http://localhost:8082)
+#### Quick start:
+- Clone ```elv-fabric-browser```, ```elv-core-js```, and ```elv-client-js``` projects from github
+- In ```elv-client-js```, initialize a new content space using the initialization script:
+  ```
+  cd elv-client-js
+  node InitContentSpace.js <path-to-qfab-config> <path-to-content-fabric-dir> <private-key>
+  ```
+- Copy the generated TestConfiguration.json from ```elv-client-js``` to configuration.json in ```elv-core-js``` and ```elv-fabric-browser```
+
+  ```
+  cp TestConfiguration.json ../elv-core-js/configuration.json && cp TestConfiguration.json ../elv-fabric-browser/configuration.json
+  ```
+
+- Seed the library ```elv-fabric-browser``` uses to store information:
+  ```
+  cd ../elv-fabric-browser
+  node Seed.js <private-key>
+  ```
+- Run ```npm install && npm run serve``` in ```elv-core-js``` and ```elv-fabric-browser``` in separate terminal tabs
+- Open [http://localhost:8082](http://localhost:8082) in your browser
 
 
 #### Running with NPM
