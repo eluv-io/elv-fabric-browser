@@ -10,16 +10,17 @@ import BaseContentContract from "elv-client-js/src/contracts/BaseContent";
 import BaseContentTypeContract from "elv-client-js/src/contracts/BaseContentType";
 import Fabric from "../../../../clients/Fabric";
 
-class ContentContract extends React.Component {
+class DeployedContract extends React.Component {
   constructor(props) {
     super(props);
 
     const libraryId = this.props.libraryId || this.props.match.params.libraryId;
-    const objectId = this.props.match.params.objectId;
 
     this.state = {
       libraryId,
-      objectId,
+      objectId: this.props.match.params.objectId,
+      contractAddress: this.props.match.params.contractAddress,
+      isContentObjectContract: (!!this.props.match.params.objectId),
       visibleMethods: {},
       isCustom: this.props.location.pathname.endsWith("custom-contract"),
       isContentType: Fabric.utils.EqualHash(Fabric.contentSpaceId, libraryId)
@@ -31,64 +32,84 @@ class ContentContract extends React.Component {
   }
 
   componentDidMount() {
-    this.setState({
-      loadRequestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.GetContentObject({
-            libraryId: this.state.libraryId,
-            objectId: this.state.objectId
-          });
+    if(this.state.isContentObjectContract) {
+      this.setState({
+        loadRequestId: this.props.WrapRequest({
+          todo: async () => {
+            await this.props.GetContentObject({
+              libraryId: this.state.libraryId,
+              objectId: this.state.objectId
+            });
 
-          // Determine contract address in order to query for balance
-          const object = this.props.content.objects[this.state.objectId];
-          const contractAddress = this.state.isCustom ? object.meta.customContract.address : object.contractAddress;
+            // Determine contract address in order to query for balance
+            const object = this.props.content.objects[this.state.objectId];
+            const contractAddress = this.state.isCustom ? object.meta.customContract.address : object.contractAddress;
 
-          this.setState({
-            contract: { address: contractAddress }
-          });
+            this.setState({
+              contract: {address: contractAddress}
+            });
 
-          await this.props.GetContractBalance({
-            contractAddress
-          });
-        }
-      })
-    });
+            await this.props.GetContractBalance({
+              contractAddress
+            });
+          }
+        })
+      });
+    } else {
+      this.setState({
+        loadRequestId: this.props.WrapRequest({
+          todo: async () => {
+            await this.props.ListDeployedContracts();
+
+            await this.props.GetContractBalance({
+              contractAddress: this.state.contractAddress
+            });
+          }
+        })
+      });
+    }
   }
 
   RequestComplete() {
-    const object = this.props.content.objects[this.state.objectId];
-    const contractState = this.props.deployedContracts[this.state.contract.address];
+    if(this.state.isContentObjectContract) {
+      const object = this.props.content.objects[this.state.objectId];
+      const contractState = this.props.deployedContracts[this.state.contract.address];
 
-    if(this.state.isCustom) {
-      this.setState({
-        contract: {
-          name: object.meta.customContract.name,
-          description: object.meta.customContract.description,
-          address: object.meta.customContract.address,
-          abi: object.meta.customContract.abi,
-          balance: contractState.balance
-        },
-        object
-      });
+      if (this.state.isCustom) {
+        this.setState({
+          contract: {
+            name: object.meta.customContract.name,
+            description: object.meta.customContract.description,
+            address: object.meta.customContract.address,
+            abi: object.meta.customContract.abi,
+            balance: contractState.balance
+          },
+          object
+        });
+      } else {
+        const contractType = this.state.isContentType ? "Base Content Type Contract" : "Base Content Contract";
+        const contractAbi = this.state.isContentType ? BaseContentTypeContract.abi : BaseContentContract.abi;
+
+        this.setState({
+          contract: {
+            name: contractType,
+            description: contractType,
+            address: Fabric.utils.HashToAddress({hash: this.state.objectId}),
+            abi: contractAbi,
+            balance: contractState.balance
+          },
+          object
+        });
+      }
     } else {
-      const contractType = this.state.isContentType ? "Base Content Type Contract" : "Base Content Contract";
-      const contractAbi = this.state.isContentType ? BaseContentTypeContract.abi : BaseContentContract.abi;
-
       this.setState({
-        contract: {
-          name: contractType,
-          description: contractType,
-          address: Fabric.utils.HashToAddress({hash: this.state.objectId}),
-          abi: contractAbi,
-          balance: contractState.balance
-        },
-        object
+        contract: this.props.deployedContracts[this.state.contractAddress]
       });
     }
   }
 
   LoadEvents() {
-    if(this.state.isCustom) {
+    if(!this.state.isContentObjectContract || this.state.isCustom) {
       this.setState({
         eventsRequestId: this.props.GetContractEvents({
           objectId: this.state.objectId,
@@ -103,7 +124,6 @@ class ContentContract extends React.Component {
         })
       });
     }
-
   }
 
   ToggleElement(methodName) {
@@ -213,17 +233,25 @@ class ContentContract extends React.Component {
     const constantMethods = contractMethods.filter(element => element.constant);
     const dynamicMethods = contractMethods.filter(element => !element.constant);
 
+    let backPath = Path.dirname(this.props.match.url);
+    if(!this.state.isContentObjectContract) {
+      backPath = Path.dirname(backPath);
+    }
+
     return (
       <div className="page-container contracts-page-container">
         <div className="actions-container">
-          <Link to={Path.dirname(this.props.match.url)} className="action secondary" >Back</Link>
+          <Link to={backPath} className="action secondary" >Back</Link>
           <Link to={Path.join(this.props.match.url, "funds")} className="action" >Transfer Funds</Link>
         </div>
         <div className="object-display">
-          <h3 className="page-header">{ this.state.object.name }</h3>
+          <h3 className="page-header">
+            { this.state.isContentObjectContract ? this.state.object.name : "Deployed Contract" }
+          </h3>
           <h3>{ this.state.contract.name }</h3>
           <div className="label-box">
             <h3>Contract Info</h3>
+            <LabelledField label="Name" value={this.state.contract.name} />
             <LabelledField label="Description" value={description} />
             <LabelledField label="Contract Address" value={this.state.contract.address} />
             <LabelledField label="Balance" value={this.state.contract.balance} />
@@ -259,4 +287,4 @@ class ContentContract extends React.Component {
   }
 }
 
-export default ContentContract;
+export default DeployedContract;

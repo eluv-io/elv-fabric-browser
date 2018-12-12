@@ -7,13 +7,16 @@ import RequestPage from "../../RequestPage";
 import RadioSelect from "../../../components/RadioSelect";
 import BaseContentContract from "elv-client-js/src/contracts/BaseContent";
 
-class ContentContractFundsForm extends React.Component {
+class DeployedContractFundsForm extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
       libraryId: this.props.libraryId || this.props.match.params.libraryId,
       objectId: this.props.match.params.objectId,
+      contractAddress: this.props.match.params.contractAddress,
+      // If object ID exists in route, this form is for deploying a custom content object contract
+      isContentObjectContract: (!!this.props.match.params.objectId),
       direction: "deposit",
       amount: 0,
       isCustom: this.props.location.pathname.includes("custom-contract")
@@ -27,42 +30,60 @@ class ContentContractFundsForm extends React.Component {
   }
 
   componentDidMount() {
-    this.setState({
-      loadRequestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.GetContentObject({
-            libraryId: this.state.libraryId,
-            objectId: this.state.objectId
-          });
-        }
-      })
-    });
-  }
-
-  RequestComplete() {
-    const object = this.props.content.objects[this.state.objectId];
-
-    if(!object) { return null; }
-
-    if(this.state.isCustom) {
+    if(this.state.isContentObjectContract) {
       this.setState({
-        contract: {
-          name: object.meta.customContract.name,
-          description: object.meta.customContract.description,
-          address: object.meta.customContract.address,
-          abi: object.meta.customContract.abi
-        },
-        object
+        loadRequestId: this.props.WrapRequest({
+          todo: async () => {
+            await this.props.GetContentObject({
+              libraryId: this.state.libraryId,
+              objectId: this.state.objectId
+            });
+          }
+        })
       });
     } else {
       this.setState({
-        contract: {
-          name: "Base Content Contract",
-          description: "Base Content Contract",
-          address: Fabric.utils.HashToAddress({hash: this.state.objectId}),
-          abi: BaseContentContract.abi
-        },
-        object
+        loadRequestId: this.props.WrapRequest({
+          todo: async () => {
+            await this.props.ListDeployedContracts();
+          }
+        })
+      });
+    }
+  }
+
+  RequestComplete() {
+    if(this.state.isContentObjectContract) {
+      const object = this.props.content.objects[this.state.objectId];
+
+      if (!object) {
+        return null;
+      }
+
+      if (this.state.isCustom) {
+        this.setState({
+          contract: {
+            name: object.meta.customContract.name,
+            description: object.meta.customContract.description,
+            address: object.meta.customContract.address,
+            abi: object.meta.customContract.abi
+          },
+          object
+        });
+      } else {
+        this.setState({
+          contract: {
+            name: "Base Content Contract",
+            description: "Base Content Contract",
+            address: Fabric.utils.HashToAddress({hash: this.state.objectId}),
+            abi: BaseContentContract.abi
+          },
+          object
+        });
+      }
+    } else {
+      this.setState({
+        contract: this.props.deployedContracts[this.state.contractAddress]
       });
     }
   }
@@ -132,7 +153,9 @@ class ContentContractFundsForm extends React.Component {
         <div className="actions-container">
           <Link className="action secondary" to={Path.dirname(this.props.match.url)}>Back</Link>
         </div>
-        <h3 className="page-header">{ this.state.object.name + (this.state.isCustom ? " - Custom Contract" : "")}</h3>
+        <h3 className="page-header">
+          { this.state.isContentObjectContract ? this.state.object.name : "Deployed Contract" }
+        </h3>
         <RequestForm
           requests={this.props.requests}
           requestId={this.state.submitRequestId}
@@ -159,4 +182,4 @@ class ContentContractFundsForm extends React.Component {
   }
 }
 
-export default ContentContractFundsForm;
+export default DeployedContractFundsForm;

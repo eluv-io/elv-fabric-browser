@@ -10,16 +10,18 @@ const Ethers = require("ethers");
 import BaseContentContract from "elv-client-js/src/contracts/BaseContent";
 import BaseContentTypeContract from "elv-client-js/src/contracts/BaseContentType";
 
-class ContentContractMethodForm extends React.Component {
+class DeployedContractMethodForm extends React.Component {
   constructor(props) {
     super(props);
 
     const libraryId = this.props.libraryId || this.props.match.params.libraryId;
-    const objectId = this.props.match.params.objectId;
 
     this.state = {
       libraryId,
-      objectId,
+      objectId: this.props.match.params.objectId,
+      contractAddress: this.props.match.params.contractAddress,
+      // If object ID exists in route, this form is for deploying a custom content object contract
+      isContentObjectContract: (!!this.props.match.params.objectId),
       method: this.props.match.params.method,
       visibleMethods: {},
       isCustom: this.props.location.pathname.includes("custom-contract"),
@@ -36,16 +38,61 @@ class ContentContractMethodForm extends React.Component {
   }
 
   componentDidMount() {
-    this.setState({
-      loadRequestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.GetContentObject({
-            libraryId: this.state.libraryId,
-            objectId: this.state.objectId
-          });
-        }
-      })
-    });
+    if(this.state.isContentObjectContract) {
+      this.setState({
+        loadRequestId: this.props.WrapRequest({
+          todo: async () => {
+            await this.props.GetContentObject({
+              libraryId: this.state.libraryId,
+              objectId: this.state.objectId
+            });
+          }
+        })
+      });
+    } else {
+      this.setState({
+        loadRequestId: this.props.WrapRequest({
+          todo: async () => {
+            await this.props.ListDeployedContracts();
+          }
+        })
+      });
+    }
+  }
+
+  RequestComplete() {
+    if(this.state.isContentObjectContract) {
+      const object = this.props.content.objects[this.state.objectId];
+
+      if (this.state.isCustom) {
+        this.setState({
+          contract: {
+            name: object.meta.customContract.name,
+            description: object.meta.customContract.description,
+            address: object.meta.customContract.address,
+            abi: object.meta.customContract.abi
+          },
+          object
+        }, this.SetMethodInterface);
+      } else {
+        const contractType = this.state.isContentType ? "Base Content Type Contract" : "Base Content Contract";
+        const contractAbi = this.state.isContentType ? BaseContentTypeContract.abi : BaseContentContract.abi;
+
+        this.setState({
+          contract: {
+            name: contractType,
+            description: contractType,
+            address: Fabric.utils.HashToAddress({hash: this.state.objectId}),
+            abi: contractAbi
+          },
+          object
+        }, this.SetMethodInterface);
+      }
+    } else {
+      this.setState({
+        contract: this.props.deployedContracts[this.state.contractAddress]
+      }, this.SetMethodInterface);
+    }
   }
 
   SetMethodInterface() {
@@ -66,35 +113,6 @@ class ContentContractMethodForm extends React.Component {
       methodInterface,
       inputs: inputState
     });
-  }
-
-  RequestComplete() {
-    const object = this.props.content.objects[this.state.objectId];
-
-    if(this.state.isCustom) {
-      this.setState({
-        contract: {
-          name: object.meta.customContract.name,
-          description: object.meta.customContract.description,
-          address: object.meta.customContract.address,
-          abi: object.meta.customContract.abi
-        },
-        object
-      }, this.SetMethodInterface);
-    } else {
-      const contractType = this.state.isContentType ? "Base Content Type Contract" : "Base Content Contract";
-      const contractAbi = this.state.isContentType ? BaseContentTypeContract.abi : BaseContentContract.abi;
-
-      this.setState({
-        contract: {
-          name: contractType,
-          description: contractType,
-          address: Fabric.utils.HashToAddress({hash: this.state.objectId}),
-          abi: contractAbi
-        },
-        object
-      }, this.SetMethodInterface);
-    }
   }
 
   HandleInputChange(event) {
@@ -210,7 +228,9 @@ class ContentContractMethodForm extends React.Component {
         <div className="actions-container">
           <Link className="action secondary" to={backPath}>Back</Link>
         </div>
-        <h3 className="page-header">{ this.state.object.name}</h3>
+        <h3 className="page-header">
+          { this.state.isContentObjectContract ? this.state.object.name : "Deployed Contract" }
+        </h3>
         <div className="label-box">
           <LabelledField label="Contract" value={this.state.contract.name} />
           <LabelledField label="Method" value={this.state.method} />
@@ -243,4 +263,4 @@ class ContentContractMethodForm extends React.Component {
   }
 }
 
-export default ContentContractMethodForm;
+export default DeployedContractMethodForm;

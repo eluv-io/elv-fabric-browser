@@ -11,7 +11,9 @@ class Contracts extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {};
+    this.state = {
+      viewDeployed: false
+    };
 
     this.PageContent = this.PageContent.bind(this);
   }
@@ -21,31 +23,61 @@ class Contracts extends React.Component {
       requestId: this.props.WrapRequest({
         todo: async () => {
           await this.props.ListContracts();
+          await this.props.ListDeployedContracts();
         }
       })
     });
   }
 
-  Contracts() {
-    const contracts = this.props.contracts;
+  ToggleView() {
     return (
-      Object.keys(contracts).map(contractName => {
-        const contract = contracts[contractName];
+      <div className="actions-container">
+        <button
+          className={
+            "action action-compact action-wide action-inline " +
+            (this.state.viewDeployed ? "secondary" : "tertiary")
+          }
+          onClick={() => { this.setState({viewDeployed: false}); }}
+        >
+          Saved Contracts
+        </button>
+        <button
+          className={
+            "action action-compact action-wide action-inline " +
+            (this.state.viewDeployed ? "tertiary" : "secondary")
+          }
+          onClick={() => { this.setState({viewDeployed: true}); }}
+        >
+          Deployed Contracts
+        </button>
+      </div>
+    );
+  }
+
+  SavedContracts() {
+    const contracts = this.state.viewDeployed ? this.props.deployedContracts : this.props.contracts;
+    return (
+      Object.keys(contracts).map(contractId => {
+        const contract = contracts[contractId];
         let eventCount = Object.values(contract.abi).filter(element => element.type === "event").length;
         eventCount = eventCount === 1 ? eventCount + " event" : eventCount + " events";
 
         let methodCount = Object.values(contract.abi).filter(element => element.type === "function").length;
         methodCount = methodCount === 1 ? methodCount + " method" : methodCount + " methods";
 
+        const link = this.state.viewDeployed ?
+          Path.join("/contracts", "deployed", contractId) :
+          Path.join("/contracts", contractId);
+
         return (
-          <div className="contracts" key={"contract-" + contractName}>
+          <div className="contracts" key={"contract-" + contractId}>
             <LibraryCard
               icon={ContractIcon}
-              link={Path.join("/contracts", contractName)}
-              name={contractName}
+              link={link}
+              name={contract.name}
               infoText={`${eventCount}, ${methodCount}`}
               description={contract.description}
-              title={"Contract " + contractName}/>
+              title={"Contract " + contract.name}/>
           </div>
         );
       })
@@ -57,9 +89,11 @@ class Contracts extends React.Component {
       <div className="page-container contents-page-container">
         <div className="actions-container">
           <Link to="/contracts/compile" className="action" >New Contract</Link>
+          <Link to="/contracts/deploy" className="action" >Deploy Contract</Link>
         </div>
         <h3 className="page-header">Contracts</h3>
-        { this.Contracts() }
+        { this.ToggleView() }
+        { this.SavedContracts() }
       </div>
     );
   }

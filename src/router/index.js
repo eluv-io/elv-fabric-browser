@@ -26,10 +26,10 @@ import {
   ContractContainer,
   ContractFormContainer,
   ContractsContainer,
-  DeployContentContractFormContainer,
-  ContentContractContainer,
-  ContentContractMethodFormContainer,
-  ContentContractFundsFormContainer
+  DeployContractFormContainer,
+  DeployedContractContainer,
+  DeployedContractMethodFormContainer,
+  DeployedContractFundsFormContainer
 } from "../containers/pages/Contracts";
 import Fabric from "../clients/Fabric";
 import ErrorHandler from "./ErrorHandler";
@@ -87,40 +87,44 @@ function Routes(){
         <Route exact path="/content-types/:objectId/app" render={(props) =>
           <ContentObjectAppContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />} />
 
-        <Route exact path="/content/:libraryId/:objectId/deploy" component={DeployContentContractFormContainer} />
+        <Route exact path="/content/:libraryId/:objectId/deploy" component={DeployContractFormContainer} />
         <Route exact path="/content-types/:objectId/deploy" render={(props) =>
           <DeployContentContractFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />} />
 
         /* Base content contract */
-        <Route exact path="/content/:libraryId/:objectId/contract" component={ContentContractContainer} />
+        <Route exact path="/content/:libraryId/:objectId/contract" component={DeployedContractContainer} />
         <Route exact path="/content-types/:objectId/contract" render={(props) =>
-          <ContentContractContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />} />
+          <DeployedContractContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />} />
 
-        <Route exact path="/content/:libraryId/:objectId/contract/funds" component={ContentContractFundsFormContainer} />
+        <Route exact path="/content/:libraryId/:objectId/contract/funds" component={DeployedContractFundsFormContainer} />
         <Route exact path="/content-types/:objectId/contract/funds" render={(props) =>
-          <ContentContractFundsFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />} />
+          <DeployedContractFundsFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />} />
 
-        <Route exact path="/content/:libraryId/:objectId/contract/call/:method" component={ContentContractMethodFormContainer} />
+        <Route exact path="/content/:libraryId/:objectId/contract/call/:method" component={DeployedContractMethodFormContainer} />
         <Route exact path="/content-types/:objectId/contract/call/:method" render={(props) =>
-          <ContentContractMethodFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />} />
+          <DeployedContractMethodFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />} />
 
         /* Custom content contract */
-        <Route exact path="/content/:libraryId/:objectId/custom-contract" component={ContentContractContainer} />
+        <Route exact path="/content/:libraryId/:objectId/custom-contract" component={DeployedContractContainer} />
         <Route exact path="/content-types/:objectId/custom-contract" render={(props) =>
-          <ContentContractContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />} />
+          <DeployedContractContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />} />
 
-        <Route exact path="/content/:libraryId/:objectId/custom-contract/funds" component={ContentContractFundsFormContainer} />
+        <Route exact path="/content/:libraryId/:objectId/custom-contract/funds" component={DeployedContractFundsFormContainer} />
         <Route exact path="/content-types/:objectId/custom-contract/funds" render={(props) =>
-          <ContentContractFundsFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />} />
+          <DeployedContractFundsFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />} />
 
-        <Route exact path="/content/:libraryId/:objectId/custom-contract/call/:method" component={ContentContractMethodFormContainer} />
+        <Route exact path="/content/:libraryId/:objectId/custom-contract/call/:method" component={DeployedContractMethodFormContainer} />
         <Route exact path="/content-types/:objectId/custom-contract/call/:method" render={(props) =>
-          <ContentContractMethodFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />} />
+          <DeployedContractMethodFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />} />
 
         
         <Route exact path="/contracts" component={ContractsContainer} />
         <Route exact path="/contracts/compile" component={CompileContractFormContainer} />
         <Route exact path="/contracts/save" component={ContractFormContainer} />
+        <Route exact path="/contracts/deploy" component={DeployContractFormContainer} />
+        <Route exact path="/contracts/deployed/:contractAddress" component={DeployedContractContainer} />
+        <Route exact path="/contracts/deployed/:contractAddress/call/:method" component={DeployedContractMethodFormContainer} />
+        <Route exact path="/contracts/deployed/:contractAddress/funds" component={DeployedContractFundsFormContainer} />
         <Route exact path="/contracts/:contractName" component={ContractContainer} />
         <Route exact path="/contracts/:contractName/edit" component={ContractFormContainer} />
       </Switch>
