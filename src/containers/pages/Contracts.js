@@ -9,19 +9,24 @@ import {
   CallContractMethod,
   GetContractEvents,
   SendFunds,
-  WithdrawContractFunds, GetContractBalance
+  WithdrawContractFunds,
+  GetContractBalance,
+  DeployContract,
+  ListDeployedContracts,
+  RemoveDeployedContract
 } from "../../actions/Contracts";
 import CompileContractForm from "../../components/pages/contracts/CompileContractForm";
-import DeployContractForm from "../../components/pages/contracts/DeployContractForm";
-import { SetErrorMessage } from "../../actions/Notifications";
 import ContractForm from "../../components/pages/contracts/ContractForm";
 import Contracts from "../../components/pages/contracts/Contracts";
 import Contract from "../../components/pages/contracts/Contract";
-import ContentContract from "../../components/pages/content/contracts/ContentContract";
-import ContentContractMethodForm from "../../components/pages/content/contracts/ContentContractMethodForm";
-import { GetContentObject } from "../../actions/Content";
-import ContentContractFundsForm from "../../components/pages/content/contracts/ContentContractFundsForm";
+import DeployContractForm from "../../components/pages/contracts/DeployContractForm";
+
 import { WrapRequest } from "../../actions/Requests";
+import { GetContentObject } from "../../actions/Content";
+import { SetErrorMessage } from "../../actions/Notifications";
+import DeployedContract from "../../components/pages/contracts/deployed/DeployedContract";
+import DeployedContractMethodForm from "../../components/pages/contracts/deployed/DeployedContractMethodForm";
+import DeployedContractFundsForm from "../../components/pages/contracts/deployed/DeployedContractFundsForm";
 
 const mapStateToProps = (state) => ({
   requests: state.requests,
@@ -35,9 +40,12 @@ const mapDispatchToProps = dispatch =>
     [
       WrapRequest,
       ListContracts,
+      ListDeployedContracts,
       RemoveContract,
+      RemoveDeployedContract,
       CompileContracts,
       SaveContract,
+      DeployContract,
       DeployContentContract,
       SetErrorMessage,
       GetContentObject,
@@ -69,23 +77,22 @@ export const ContractFormContainer = connect(
   mapDispatchToProps
 )(ContractForm);
 
-export const DeployContentContractFormContainer = connect(
+export const DeployContractFormContainer = connect(
   mapStateToProps,
   mapDispatchToProps
 )(DeployContractForm);
 
-export const ContentContractContainer = connect(
+export const DeployedContractContainer = connect(
   mapStateToProps,
   mapDispatchToProps
-)(ContentContract);
+)(DeployedContract);
 
-export const ContentContractFundsFormContainer = connect(
+export const DeployedContractMethodFormContainer = connect(
   mapStateToProps,
   mapDispatchToProps
-)(ContentContractFundsForm);
+)(DeployedContractMethodForm);
 
-export const ContentContractMethodFormContainer = connect(
+export const DeployedContractFundsFormContainer = connect(
   mapStateToProps,
   mapDispatchToProps
-)(ContentContractMethodForm);
-
+)(DeployedContractFundsForm);

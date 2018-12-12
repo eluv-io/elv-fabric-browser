@@ -14,12 +14,32 @@ export const ListContracts = () => {
   };
 };
 
+export const ListDeployedContracts = () => {
+  return async (dispatch) => {
+    dispatch({
+      type: ActionTypes.contracts.deployed.list,
+      contracts: await Fabric.FabricBrowser.DeployedContracts()
+    });
+  };
+};
+
 export const RemoveContract = ({name}) => {
   return async (dispatch) => {
     await Fabric.FabricBrowser.RemoveContract({name});
 
     dispatch(SetNotificationMessage({
-      message: "Contract successfully deleted",
+      message: "Successfully removed contract",
+      redirect: true
+    }));
+  };
+};
+
+export const RemoveDeployedContract = ({name}) => {
+  return async (dispatch) => {
+    await Fabric.FabricBrowser.RemoveDeployedContract({name});
+
+    dispatch(SetNotificationMessage({
+      message: "Successfully removed contract",
       redirect: true
     }));
   };
@@ -92,9 +112,53 @@ export const SaveContract = ({name, oldContractName, description, abi, bytecode}
     }
 
     dispatch(SetNotificationMessage({
-      message: "Contract successfully saved",
+      message: "Successfully saved contract",
       redirect: true
     }));
+  };
+};
+
+export const DeployContract = ({
+  contractName,
+  contractDescription,
+  abi,
+  bytecode,
+  inputs
+}) => {
+  return async (dispatch) => {
+    const owner = await Fabric.CurrentAccountAddress();
+
+    let constructorArgs = [];
+    if(inputs.length > 0) {
+      constructorArgs = await Fabric.FormatContractArguments({
+        abi,
+        methodName: "constructor",
+        args: inputs
+      });
+    }
+
+    const contractInfo = await Fabric.DeployContract({
+      abi,
+      bytecode,
+      constructorArgs
+    });
+
+    await Fabric.FabricBrowser.AddDeployedContract({
+      name: contractName,
+      description: contractDescription,
+      address: contractInfo.contractAddress,
+      abi,
+      bytecode,
+      inputs,
+      owner
+    });
+
+    dispatch(SetNotificationMessage({
+      message: "Successfully deployed custom contract",
+      redirect: true
+    }));
+
+    return contractInfo.contractAddress;
   };
 };
 
@@ -154,13 +218,8 @@ export const DeployContentContract = ({
       writeToken: editResponse.write_token
     });
 
-    dispatch({
-      type: ActionTypes.contracts.deploy,
-      contractInfo
-    });
-
     dispatch(SetNotificationMessage({
-      message: "Contract successfully deployed",
+      message: "Successfully deployed custom contract",
       redirect: true
     }));
   };
@@ -177,7 +236,7 @@ export const GetContractEvents = ({objectId, contractAddress, abi}) => {
     }
 
     dispatch({
-      type: ActionTypes.contracts.events,
+      type: ActionTypes.contracts.deployed.events,
       contractAddress,
       events: events.reverse()
     });
@@ -191,6 +250,8 @@ export const CallContractMethod = ({
   methodArgs
 }) => {
   return async (dispatch) => {
+    const method = Object.values(abi).find(entry => entry.type === "function" && entry.name === methodName);
+
     if(methodArgs.length > 0) {
       methodArgs = await Fabric.FormatContractArguments({
         abi,
@@ -207,15 +268,15 @@ export const CallContractMethod = ({
     });
 
     dispatch({
-      type: ActionTypes.contracts.call,
+      type: ActionTypes.contracts.deployed.call,
       contractAddress,
       methodName,
       methodResults
     });
 
     dispatch(SetNotificationMessage({
-      message: "Method successfully called",
-      redirect: true
+      message: `Successfully called method "${methodName}"`,
+      redirect: !method.constant
     }));
   };
 };
@@ -225,7 +286,7 @@ export const GetContractBalance = ({contractAddress})=> {
     const balance = await Fabric.GetBalance({address: contractAddress});
 
     dispatch({
-      type: ActionTypes.contracts.balance,
+      type: ActionTypes.contracts.deployed.balance,
       contractAddress,
       balance
     });

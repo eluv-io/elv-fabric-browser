@@ -32,10 +32,12 @@ const ActionTypes = {
   contracts: {
     list: "LIST_CONTRACTS",
     compile: "COMPILE_CONTRACTS",
-    deploy: "DEPLOY_CONTRACTS",
-    balance: "GET_CONTRACT_BALANCE",
-    events: "GET_CONTRACT_EVENTS",
-    call: "CALL_CONTRACT_METHOD",
+    deployed: {
+      list: "LIST_DEPLOYED_CONTRACTS",
+      balance: "GET_CONTRACT_BALANCE",
+      events: "GET_CONTRACT_EVENTS",
+      call: "CALL_CONTRACT_METHOD",
+    },
     error: {
       compile: "ERROR_CONTRACT_COMPILATION"
     }
