@@ -11,13 +11,18 @@ class DeployContractForm extends React.Component {
     this.state = {
       libraryId: this.props.libraryId || this.props.match.params.libraryId,
       objectId: this.props.match.params.objectId,
+      name: "",
+      description: "",
+      // If object ID exists in route, this form is for deploying a custom content object contract
+      isContentObjectContract: !!(this.props.match.params.objectId),
       selectedContract: "",
       loadRequestId: undefined,
       submitRequestId: undefined
     };
 
     this.PageContent = this.PageContent.bind(this);
-    this.HandleContractsLoaded = this.HandleContractsLoaded.bind(this);
+    this.RequestComplete = this.RequestComplete.bind(this);
+    this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleContractChange = this.HandleContractChange.bind(this);
     this.HandleConstructorInputChange = this.HandleConstructorInputChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
@@ -35,7 +40,7 @@ class DeployContractForm extends React.Component {
   }
 
   // Initialize selected contract to be the first contract in the list
-  HandleContractsLoaded() {
+  RequestComplete() {
     const firstContract = Object.keys(this.props.contracts)[0];
 
     this.setState({
@@ -44,6 +49,12 @@ class DeployContractForm extends React.Component {
     });
 
     this.HandleContractChange({target: { value: firstContract}});
+  }
+
+  HandleInputChange(event) {
+    this.setState({
+      [event.target.name]: event.target.value
+    });
   }
 
   // When selected contract is changed, find the constructor description in the ABI
@@ -93,21 +104,42 @@ class DeployContractForm extends React.Component {
 
   HandleSubmit() {
     const contract = this.state.contracts[this.state.selectedContract];
-    this.setState({
-      submitRequestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.DeployContentContract({
-            libraryId: this.state.libraryId,
-            objectId: this.state.objectId,
-            contractName: this.state.selectedContract,
-            contractDescription: contract.description,
-            abi: contract.abi,
-            bytecode: contract.bytecode,
-            inputs: this.ConstructorInput()
-          });
-        }
-      })
-    });
+
+    if(this.state.isContentObjectContract) {
+      // Deploy custom content object contract
+      this.setState({
+        submitRequestId: this.props.WrapRequest({
+          todo: async () => {
+            await this.props.DeployContentContract({
+              libraryId: this.state.libraryId,
+              objectId: this.state.objectId,
+              contractName: this.state.selectedContract,
+              contractDescription: contract.description,
+              abi: contract.abi,
+              bytecode: contract.bytecode,
+              inputs: this.ConstructorInput()
+            });
+          }
+        })
+      });
+    } else {
+      // Deploy generic contract
+      this.setState({
+        submitRequestId: this.props.WrapRequest({
+          todo: async () => {
+            const contractAddress = await this.props.DeployContract({
+              contractName: this.state.name,
+              contractDescription: this.state.description,
+              abi: contract.abi,
+              bytecode: contract.bytecode,
+              inputs: this.ConstructorInput()
+            });
+
+            this.setState({contractAddress});
+          }
+        })
+      });
+    }
   }
 
   // Automatically generated fields for constructor inputs based on ABI description
@@ -139,15 +171,35 @@ class DeployContractForm extends React.Component {
     );
   }
 
+  // Name and description when deploying arbitrary (non-content-object) contracts
+  DeployedContractOptions() {
+    if(this.state.isContentObjectContract) { return null; }
+
+    return (
+      <div className="contracts-form-data">
+        <div className="labelled-input">
+          <label className="label" htmlFor="name">Name</label>
+          <input name="name" value={this.state.name} onChange={this.HandleInputChange} />
+        </div>
+        <div className="labelled-input">
+          <label className="textarea-label" htmlFor="description">Description</label>
+          <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
+        </div>
+        { this.ConstructorForm() }
+      </div>
+    );
+  }
+
   ContractFileForm() {
     return (
       <div className="contracts-form-data">
+        { this.DeployedContractOptions() }
         <div className="labelled-input">
           <label className="label" htmlFor="selectedContract">Contract</label>
           { this.AvailableContracts() }
         </div>
         <div className="labelled-input">
-          <label className="label text-label" htmlFor="selectedContractDescription">Description</label>
+          <label className="label text-label" htmlFor="selectedContractDescription" />
           <div className="form-text">{this.state.contracts[this.state.selectedContract].description}</div>
         </div>
         { this.ConstructorForm() }
@@ -168,14 +220,22 @@ class DeployContractForm extends React.Component {
         </div>
       );
     }
+    const legend = this.state.isContentObjectContract ?
+      "Set Custom Contract" : "Deploy Custom Contract";
+
+    let redirectPath = Path.dirname(this.props.match.url);
+    if(this.state.contractAddress) {
+      // Contract address won't exist until submission
+      redirectPath = Path.join(redirectPath, "deployed", this.state.contractAddress);
+    }
 
     return (
       <RequestForm
         requests={this.props.requests}
         requestId={this.state.submitRequestId}
-        legend={"Set custom contract"}
+        legend={legend}
         formContent={this.ContractFileForm()}
-        redirectPath={Path.dirname(this.props.match.url)}
+        redirectPath={redirectPath}
         cancelPath={Path.dirname(this.props.match.url)}
         OnSubmit={this.HandleSubmit}
       />
@@ -189,7 +249,7 @@ class DeployContractForm extends React.Component {
         requestId={this.state.loadRequestId}
         requests={this.props.requests}
         pageContent={this.PageContent}
-        OnRequestComplete={this.HandleContractsLoaded}
+        OnRequestComplete={this.RequestComplete}
       />
     );
   }

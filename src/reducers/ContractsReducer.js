@@ -24,18 +24,14 @@ const ContractsReducer = (state = {}, action) => {
         errors: action.errors
       };
 
-    case ActionTypes.contracts.deploy:
+    case ActionTypes.contracts.deployed.list:
       return {
         ...state,
-        deployedContracts: {
-          ...state.deployedContracts,
-          [action.contractInfo.address]: action.contractInfo
-        }
+        deployedContracts: action.contracts
       };
 
-    case ActionTypes.contracts.balance:
+    case ActionTypes.contracts.deployed.balance:
       contractState = state.deployedContracts[action.contractAddress] || {};
-
       return {
         ...state,
         deployedContracts: {
@@ -47,7 +43,7 @@ const ContractsReducer = (state = {}, action) => {
         }
       };
 
-    case ActionTypes.contracts.events:
+    case ActionTypes.contracts.deployed.events:
       contractState = state.deployedContracts[action.contractAddress] || {};
 
       return {
@@ -61,7 +57,7 @@ const ContractsReducer = (state = {}, action) => {
         }
       };
 
-    case ActionTypes.contracts.call:
+    case ActionTypes.contracts.deployed.call:
       contractState = state.deployedContracts[action.contractAddress] || {};
 
       return {

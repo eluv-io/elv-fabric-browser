@@ -736,17 +736,17 @@ const Fabric = {
       }
     },
 
-    async Entries({type}) {
+    async Entries({type, subtree=""}) {
       const info = await Fabric.FabricBrowser.Info();
 
       return (await Fabric.GetContentObjectMetadata({
         libraryId: info.libraryId,
         objectId: info[type]
-      }))[type] || {};
+      }))[subtree || type] || {};
     },
 
     // Add entry by appending to object metadata
-    async AddEntry({type, name, metadata={}}) {
+    async AddEntry({type, subtree="", name, metadata={}}) {
       const info = await Fabric.FabricBrowser.Info();
 
       await Fabric.EditAndFinalizeContentObject({
@@ -757,7 +757,7 @@ const Fabric = {
             libraryId: info.libraryId,
             objectId: info[type],
             writeToken,
-            metadataSubtree: Path.join(type, name),
+            metadataSubtree: Path.join(subtree || type, name),
             metadata
           });
         }
@@ -765,7 +765,7 @@ const Fabric = {
     },
 
     // Remove entry by info deleting from object metadata
-    async RemoveEntry({type, name}) {
+    async RemoveEntry({type, subtree="", name}) {
       const info = await Fabric.FabricBrowser.Info();
 
       await Fabric.EditAndFinalizeContentObject({
@@ -775,7 +775,7 @@ const Fabric = {
           await Fabric.DeleteMetadata({
             libraryId: info.libraryId,
             writeToken,
-            metadataSubtree: Path.join(type, name),
+            metadataSubtree: Path.join(subtree || type, name),
           });
         }
       });
@@ -825,11 +825,16 @@ const Fabric = {
       return await Fabric.FabricBrowser.Entries({type: "contracts"});
     },
 
+    async DeployedContracts() {
+      return await Fabric.FabricBrowser.Entries({type: "contracts", subtree: "deployed"});
+    },
+
     async AddContract({name, description, abi, bytecode}) {
       await Fabric.FabricBrowser.AddEntry({
         type: "contracts",
         name,
         metadata: {
+          name,
           description,
           abi,
           bytecode
@@ -839,6 +844,30 @@ const Fabric = {
 
     async RemoveContract({name}) {
       await Fabric.FabricBrowser.RemoveEntry({type: "contracts", name});
+    },
+
+    async AddDeployedContract({name, description, address, abi, bytecode, owner}) {
+      await Fabric.FabricBrowser.AddEntry({
+        type: "contracts",
+        subtree: "deployed",
+        name: address,
+        metadata: {
+          name,
+          description,
+          address,
+          abi,
+          bytecode,
+          owner
+        }
+      });
+    },
+
+    async RemoveDeployedContract({name}) {
+      await Fabric.FabricBrowser.RemoveEntry({
+        type: "contracts",
+        subtree: "deployed",
+        name
+      });
     }
   }
 };
