@@ -48,7 +48,8 @@ const SeedObject = async ({label, name, fabricBrowserInfo, libraryId}) => {
         options: {
           meta: {
             "eluv.name": label,
-            contracts: {}
+            contracts: {},
+            deployedContracts: {}
           }
         }
       });
