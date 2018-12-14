@@ -30,13 +30,15 @@ class AccessGroups extends React.Component {
     const accessGroups = this.props.accessGroups;
     return (
       Object.values(accessGroups).map(accessGroup => {
+        const isOwner = accessGroup.owner.toLowerCase() === this.props.currentAccountAddress.toLowerCase();
+
         return (
-          <div className="accessGroups" key={"accessGroup-" + accessGroup.name}>
+          <div className="accessGroups" key={"accessGroup-" + accessGroup.address}>
             <LibraryCard
               icon={AccessGroupIcon}
-              link={Path.join("/access-groups", accessGroup.name)}
+              link={Path.join("/access-groups", accessGroup.address)}
               name={accessGroup.name}
-              isOwner={accessGroup.owner.toLowerCase() === this.props.currentAccountAddress.toLowerCase()}
+              isOwner={isOwner}
               infoText={"info text here"}
               description={accessGroup.description}
               title={"Access Group " + accessGroup.name}/>

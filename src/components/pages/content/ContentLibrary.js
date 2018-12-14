@@ -82,6 +82,7 @@ class ContentLibrary extends React.Component {
 
     for(const objectId of this.state.library.objects.sort()) {
       const object = this.props.objects[objectId];
+      const infoText = this.state.isContentSpaceLibrary ? "" : object.status.description;
 
       objectElements.push(
         <LibraryCard
@@ -91,7 +92,7 @@ class ContentLibrary extends React.Component {
           icon={object.imageUrl || ContentIcon}
           name={object.name}
           isOwner={object.owner.toLowerCase() === this.props.currentAccountAddress.toLowerCase()}
-          infoText={object.status.description}
+          infoText={infoText}
           description={object.description}
           title={object.name}
         />
@@ -204,6 +205,7 @@ class ContentLibrary extends React.Component {
 
   LibraryInfo() {
     const description = <ClippedText className="object-description" text={this.state.library.description} />;
+    const libraryObjectPath = Path.join(this.props.match.url, this.state.library.libraryObjectId);
 
     return (
       <div className="object-info label-box">
@@ -212,7 +214,22 @@ class ContentLibrary extends React.Component {
         <LabelledField label={"Library ID"} value={this.state.libraryId} />
         <LabelledField label={"Owner"} value={this.state.library.owner} />
         <LabelledField label={"Description"} value={description} />
-        <LabelledField label={"Contract Address"} value={this.state.library.contractAddress} />
+        <LabelledField
+          label={"Library Object"}
+          value={
+            <Link className="inline-link" to={libraryObjectPath}>
+              {this.state.library.libraryObjectId}
+            </Link>
+          }
+        />
+        <LabelledField
+          label={"Contract Address"}
+          value={
+            <Link className="inline-link" to={Path.join(libraryObjectPath, "contract")}>
+              {this.state.library.contractAddress}
+            </Link>
+          }
+        />
         <LabelledField label={"Content Objects"} value={this.state.library.objects.length} />
         { this.LibraryMetadata() }
         { this.LibraryGroups() }
