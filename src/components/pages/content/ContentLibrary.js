@@ -91,7 +91,7 @@ class ContentLibrary extends React.Component {
           link={Path.join(this.props.match.url, object.id)}
           icon={object.imageUrl || ContentIcon}
           name={object.name}
-          isOwner={object.owner.toLowerCase() === this.props.currentAccountAddress.toLowerCase()}
+          isOwner={object.isOwner}
           infoText={infoText}
           description={object.description}
           title={object.name}
@@ -238,10 +238,8 @@ class ContentLibrary extends React.Component {
   }
 
   Actions() {
-    const isOwner = this.state.library.owner.toLowerCase() === this.props.currentAccountAddress.toLowerCase();
-
     let manageGroupsButton;
-    if(isOwner && !this.state.isContentSpaceLibrary) {
+    if(this.state.library.isOwner && !this.state.isContentSpaceLibrary) {
       manageGroupsButton = <Link to={Path.join(this.props.match.url, "groups")} className="action" >Manage Groups</Link>;
     }
 

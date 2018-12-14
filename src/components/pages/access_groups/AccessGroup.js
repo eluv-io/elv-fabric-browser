@@ -6,7 +6,6 @@ import RequestPage from "../RequestPage";
 import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
 import Redirect from "react-router/es/Redirect";
-import Fabric from "../../../clients/Fabric";
 import {EqualAddress} from "../../../utils/Helpers";
 
 class AccessGroup extends React.Component {
@@ -74,18 +73,17 @@ class AccessGroup extends React.Component {
 
   Actions() {
     const isManager = Object.values(this.state.accessGroup.members)
-      .some(member => member.address.toLowerCase() === this.props.currentAccountAddress.toLowerCase() && member.manager);
-    const isOwner = EqualAddress(this.state.accessGroup.owner, this.props.currentAccountAddress);
+      .some(member => EqualAddress(member.address, this.props.currentAccountAddress) && member.manager);
 
     let editButton;
     let deleteButton;
-    if(isOwner) {
+    if(this.state.accessGroup.isOwner) {
       editButton = <Link to={Path.join(this.props.match.url, "edit")} className="action" >Edit Access Group</Link>;
       deleteButton = <button className="action delete-action" onClick={this.DeleteAccessGroup}>Delete Access Group</button>;
     }
 
     let manageButton;
-    if(isManager || isOwner) {
+    if(isManager || this.state.accessGroup.isOwner) {
       manageButton = <Link to={Path.join(this.props.match.url, "members")} className="action" >Manage Members</Link>;
     }
 

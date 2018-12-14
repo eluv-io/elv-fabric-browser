@@ -17,7 +17,7 @@ export const Wait = async (ms) => {
 };
 
 export const FormatAddress = (address) => {
-  if(!address) { return ""; }
+  if(!address || typeof address !== "string") { return ""; }
 
   if(!address.startsWith("0x")) { address = "0x" + address; }
   return address.toLowerCase();
