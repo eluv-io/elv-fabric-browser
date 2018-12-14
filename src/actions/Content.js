@@ -32,6 +32,9 @@ export const GetContentLibrary = ({libraryId}) => {
 
 export const ListContentLibraryGroups = ({libraryId}) => {
   return async (dispatch) => {
+    // Content space does not have groups
+    if(libraryId === Fabric.contentSpaceLibraryId) { return; }
+
     const groups = await Fabric.GetContentLibraryGroups({libraryId});
 
     dispatch({

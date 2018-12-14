@@ -123,7 +123,8 @@ const Fabric = {
       imageUrl,
       objects: objectIds,
       owner,
-      isOwner: EqualAddress(owner, currentAccountAddress)
+      isOwner: EqualAddress(owner, currentAccountAddress),
+      isContentSpaceLibrary: libraryId === Fabric.contentSpaceLibraryId
     };
   },
 
@@ -267,6 +268,8 @@ const Fabric = {
 
       const owner = await Fabric.GetContentObjectOwner({objectId: object.id});
       const currentAccountAddress = await Fabric.CurrentAccountAddress();
+      const isContentLibraryObject = client.utils.EqualHash(libraryId, object.id);
+      const isContentType = libraryId === Fabric.contentSpaceLibraryId && !isContentLibraryObject;
 
       objects[object.id] = {
         // Pull latest version info up to top level
@@ -278,7 +281,10 @@ const Fabric = {
         contractAddress: client.utils.HashToAddress({hash: object.id}),
         owner,
         isOwner: await EqualAddress(owner, currentAccountAddress),
-        status
+        status,
+        isContentLibraryObject,
+        isContentType,
+        isNormalObject: !isContentLibraryObject && !isContentType
       };
     }
 
@@ -290,12 +296,14 @@ const Fabric = {
     const metadata = await client.ContentObjectMetadata({libraryId, objectId});
     const imageUrl = await Fabric.GetContentObjectImageUrl({libraryId, objectId});
 
-    // TODO - Put type in library + object instead of requiring components to figure it out
     // Retrieve status if normal object
     let status;
     if(libraryId !== Fabric.contentSpaceLibraryId && !client.utils.EqualHash(libraryId, objectId)) {
       status =await Fabric.GetContentObjectStatus({objectId});
     }
+
+    const owner = await Fabric.GetContentObjectOwner({objectId});
+    const isContentLibraryObject = client.utils.EqualHash(libraryId, objectId);
 
     return {
       ...object,
@@ -304,8 +312,11 @@ const Fabric = {
       description: metadata["eluv.description"],
       imageUrl,
       contractAddress: FormatAddress(client.utils.HashToAddress({hash: objectId})),
-      owner: await Fabric.GetContentObjectOwner({objectId}),
-      status
+      owner,
+      isOwner: EqualAddress(owner, Fabric.CurrentAccountAddress()),
+      status,
+      isContentLibraryObject,
+      isContentType: libraryId === Fabric.contentSpaceLibraryId && !isContentLibraryObject
     };
   },
 

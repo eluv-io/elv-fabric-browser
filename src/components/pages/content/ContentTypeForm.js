@@ -51,7 +51,7 @@ class ContentTypeForm extends React.Component {
     let object = this.props.objects[this.state.objectId];
 
     this.setState({
-      isLibraryObject: object.isLibraryObject,
+      isContentLibraryObject: object.isContentLibraryObject,
       name: object.name,
       description: object.description,
       metadata: JSON.stringify(object.meta, null, 2),
@@ -122,7 +122,7 @@ class ContentTypeForm extends React.Component {
       <div className="form-content">
         <div className="labelled-input">
           <label className="label" htmlFor="name">Name</label>
-          <input name="name" value={this.state.name} onChange={this.HandleInputChange} readOnly={this.state.isLibraryObject} />
+          <input name="name" value={this.state.name} onChange={this.HandleInputChange} readOnly={this.state.isContentLibraryObject} />
         </div>
         { this.BitcodeSelection() }
         <div className="labelled-input">

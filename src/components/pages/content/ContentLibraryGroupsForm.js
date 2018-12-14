@@ -27,7 +27,6 @@ class ContentLibraryGroupsForm extends React.Component {
     this.setState({
       loadRequestId: this.props.WrapRequest({
         todo: async () => {
-          await this.props.SetCurrentAccount();
           await this.props.ListAccessGroups();
           await this.props.GetContentLibrary({libraryId: this.state.libraryId});
           await this.props.ListContentLibraryGroups({libraryId: this.state.libraryId});
