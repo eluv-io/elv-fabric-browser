@@ -61,7 +61,7 @@ class ContentLibraries extends React.Component {
           icon={library.imageUrl || LibraryIcon}
           previews={this.LibraryPreviewImages(library)}
           name={library.name}
-          isOwner={library.owner.toLowerCase() === this.props.currentAccountAddress.toLowerCase()}
+          isOwner={library.isOwner}
           infoText={library.objects.length + " Content Objects"}
           description={library.description}
         />

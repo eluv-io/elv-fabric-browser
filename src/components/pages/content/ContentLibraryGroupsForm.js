@@ -64,7 +64,6 @@ class ContentLibraryGroupsForm extends React.Component {
     this.setState({
       library,
       groups: libraryGroups,
-      isOwner: this.props.currentAccountAddress.toLowerCase() === library.owner.toLowerCase(),
       originalGroups: library.groups
     });
   }

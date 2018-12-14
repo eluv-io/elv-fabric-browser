@@ -12,6 +12,7 @@ import {
   GetContentObjectPermissions,
   PublishContentObject
 } from "../../../actions/Content";
+import {FormatAddress} from "../../../utils/Helpers";
 
 class ContentObject extends React.Component {
   constructor(props) {
@@ -360,7 +361,8 @@ class ContentObject extends React.Component {
     );
 
     if(this.state.object.meta.customContract) {
-      const customContractAddress = this.state.object.meta.customContract.address.toLowerCase();
+      const customContractAddress = FormatAddress(this.state.object.meta.customContract.address);
+
       contractInfo.push(
         <LabelledField
           key={"contract-" + customContractAddress}
@@ -379,7 +381,7 @@ class ContentObject extends React.Component {
     const reviewRequired = reviewerGroups.length > 0;
 
     let statusAction;
-    if(this.state.object.status.code < 0 && this.state.permissions.isOwner) {
+    if(this.state.object.status.code < 0 && this.state.object.isOwner) {
       const actionText = reviewRequired ? "Submit for Review" : "Publish";
       const confirmationMessage = reviewRequired ?
         "Are you sure you want to submit this content object for review?" :
@@ -464,7 +466,7 @@ class ContentObject extends React.Component {
     }
 
     let setContractButton;
-    if(this.state.isNormalObject && this.state.permissions.isOwner) {
+    if(this.state.isNormalObject && this.state.object.isOwner) {
       setContractButton =  <Link to={Path.join(this.props.match.url, "deploy")} className="action">Set Custom Contract</Link>;
     }
 
