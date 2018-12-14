@@ -45,8 +45,15 @@ export default (Component) => {
       let todo = async () => {};
 
       switch (this.state.contract.type) {
+        case ContractTypes.library:
+          todo = async () => {
+            await this.props.GetContentLibrary({libraryId: this.state.libraryId});
+          };
+          break;
+
         case ContractTypes.object:
         case ContractTypes.customObject:
+        case ContractTypes.contentType:
           todo = async () => {
             await this.props.GetContentObject({
               libraryId: this.state.libraryId,
@@ -54,6 +61,7 @@ export default (Component) => {
             });
           };
           break;
+
         case ContractTypes.unknown:
           todo = async () => {
             await this.props.ListDeployedContracts();
@@ -67,12 +75,23 @@ export default (Component) => {
     }
 
     RequestComplete() {
+      let library;
       let object;
       let deployedContract;
 
       // Determine how to extract any missing contract info from loaded resources
       switch (this.state.contract.type) {
+        case ContractTypes.library:
+          library = this.props.content.libraries[this.state.libraryId];
+          this.setState({
+            contract: {
+              ...this.state.contract,
+              name: library.name
+            }
+          });
+          break;
         case ContractTypes.object:
+        case ContractTypes.contentType:
           object = this.props.content.objects[this.state.objectId];
           this.setState({
             contract: {

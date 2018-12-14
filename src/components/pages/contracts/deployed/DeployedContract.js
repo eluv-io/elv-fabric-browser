@@ -6,6 +6,8 @@ import ClippedText from "../../../components/ClippedText";
 import PropTypes from "prop-types";
 import DeployedContractWrapper from "./DeployedContractWrapper";
 import {ContractTypes} from "../../../../utils/Contracts";
+import RequestPage from "../../RequestPage";
+import Redirect from "react-router/es/Redirect";
 
 class DeployedContract extends React.Component {
   constructor(props) {
@@ -16,6 +18,7 @@ class DeployedContract extends React.Component {
     };
 
     this.LoadEvents = this.LoadEvents.bind(this);
+    this.PageContent = this.PageContent.bind(this);
   }
 
   LoadEvents() {
@@ -25,6 +28,32 @@ class DeployedContract extends React.Component {
         abi: this.props.contract.abi
       })
     });
+  }
+
+  // Allow removal (aka stop watching) deployed custom contract
+  DeleteButton() {
+    if(this.props.contract.type !== ContractTypes.unknown) { return null; }
+
+    return (
+      <button
+        className="action delete-action"
+        onClick={async () => {
+          if(confirm("Are you sure you want to stop watching this contract?")) {
+            this.setState({
+              deleteRequestId: this.props.WrapRequest({
+                todo: async () => {
+                  await this.props.RemoveDeployedContract({address: this.props.contract.address});
+
+                  this.setState({deleted: true});
+                }
+              })
+            });
+          }
+        }}
+      >
+        Remove Contract
+      </button>
+    );
   }
 
   ToggleElement(methodName) {
@@ -124,7 +153,7 @@ class DeployedContract extends React.Component {
     ];
   }
 
-  render() {
+  PageContent() {
     const description = <ClippedText className="object-description" text={this.props.contract.description} />;
 
     const contractElements = Object.values(this.props.contract.abi);
@@ -135,8 +164,8 @@ class DeployedContract extends React.Component {
     const dynamicMethods = contractMethods.filter(element => !element.constant);
 
     let backPath = Path.dirname(this.props.match.url);
-    // Library contract is on library object - go back 2 to get back to library
-    if([ContractTypes.contentSpace, ContractTypes.library].includes(this.props.contract.type)) {
+    // Some routes require going back one path, others two
+    if([ContractTypes.contentSpace, ContractTypes.library, ContractTypes.unknown].includes(this.props.contract.type)) {
       backPath = Path.dirname(backPath);
     }
 
@@ -145,6 +174,7 @@ class DeployedContract extends React.Component {
         <div className="actions-container">
           <Link to={backPath} className="action secondary" >Back</Link>
           <Link to={Path.join(this.props.match.url, "funds")} className="action" >Transfer Funds</Link>
+          { this.DeleteButton() }
         </div>
         <div className="object-display">
           <h3 className="page-header">
@@ -175,6 +205,25 @@ class DeployedContract extends React.Component {
         </div>
       </div>
     );
+  }
+
+  render() {
+    if(this.state.deleted) {
+      return <Redirect push to={Path.dirname(Path.dirname(this.props.match.url))} />;
+    }
+
+    // Show loading indicator when deleting
+    if(this.state.deleteRequestId) {
+      return (
+        <RequestPage
+          requests={this.props.requests}
+          requestId={this.state.deleteRequestId}
+          pageContent={this.PageContent}
+        />
+      );
+    } else {
+      return this.PageContent();
+    }
   }
 }
 
