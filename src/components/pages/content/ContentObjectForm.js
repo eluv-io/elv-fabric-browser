@@ -57,6 +57,10 @@ class ContentObjectForm extends React.Component {
       return [typeName, type.hash];
     }).sort();
 
+    types.unshift(
+      ["[none]", ""]
+    );
+
     this.setState({
       types,
       type: types[0][1]

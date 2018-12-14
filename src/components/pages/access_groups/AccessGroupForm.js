@@ -7,14 +7,16 @@ class AccessGroupForm extends React.Component {
   constructor(props) {
     super(props);
 
+    const contractAddress = this.props.match.params.contractAddress;
+
     this.state = {
       name: "",
       description: "",
       members: {},
       submitRequestId: undefined,
       loadRequestId: undefined,
-      createForm: this.props.location.pathname.endsWith("create"),
-      accessGroupName: this.props.match.params.accessGroupName
+      createForm: (!contractAddress),
+      contractAddress
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -36,9 +38,9 @@ class AccessGroupForm extends React.Component {
   }
 
   RequestComplete() {
-    const accessGroup = this.props.accessGroups[this.state.accessGroupName];
+    const accessGroup = this.props.accessGroups[this.state.contractAddress];
+
     this.setState({
-      accessGroup,
       name: accessGroup.name,
       description: accessGroup.description,
       address: accessGroup.address,
@@ -56,13 +58,14 @@ class AccessGroupForm extends React.Component {
     this.setState({
       submitRequestId: this.props.WrapRequest({
         todo: async () => {
-          await this.props.SaveAccessGroup({
+          const contractAddress = await this.props.SaveAccessGroup({
             name: this.state.name,
             description: this.state.description,
             address: this.state.address,
-            members: this.state.members,
-            originalName: this.state.accessGroupName
+            members: this.state.members
           });
+
+          this.setState({contractAddress});
         }
       })
     });
@@ -84,12 +87,11 @@ class AccessGroupForm extends React.Component {
   }
 
   PageContent() {
-    // Keep redirect path synchronized with name changes
     let redirectPath = Path.dirname(this.props.match.url);
     if(this.state.createForm) {
-      redirectPath = Path.join(redirectPath, this.state.name);
-    } else {
-      redirectPath = redirectPath.replace(this.state.accessGroupName, this.state.name);
+      // On creation, contract address won't exist until submission
+      redirectPath = this.state.contractAddress ?
+        Path.join(Path.dirname(this.props.match.url), this.state.contractAddress) : Path.dirname(this.props.match.url);
     }
 
     return (

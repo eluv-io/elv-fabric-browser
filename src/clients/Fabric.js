@@ -4,9 +4,9 @@ import Path from "path";
 
 import BaseLibraryContract from "elv-client-js/src/contracts/BaseLibrary";
 import BaseContentContract from "elv-client-js/src/contracts/BaseContent";
+import {Bytes32ToUtf8, EqualAddress, FormatAddress} from "../utils/Helpers";
 
 const Configuration = require("../../configuration.json");
-const Ethers = require("ethers");
 
 let client;
 
@@ -45,40 +45,35 @@ const Fabric = {
     return await client.CreateAccessGroup();
   },
 
-  DeleteAccessGroup: async ({contractAddress}) => {
-    return await client.DeleteAccessGroup({contractAddress});
-  },
-
-  FormatAddress: (address) => {
-    if(!address.startsWith("0x")) { address = "0x" + address; }
-    return address.toLowerCase();
+  DeleteAccessGroup: async ({address}) => {
+    return await client.DeleteAccessGroup({contractAddress: address});
   },
 
   async AddAccessGroupMember({contractAddress, memberAddress}) {
     return await client.AddAccessGroupMember({
       contractAddress,
-      memberAddress: Fabric.FormatAddress(memberAddress)
+      memberAddress: FormatAddress(memberAddress)
     });
   },
 
   async RemoveAccessGroupMember({contractAddress, memberAddress}) {
     return await client.RemoveAccessGroupMember({
       contractAddress,
-      memberAddress: Fabric.FormatAddress(memberAddress)
+      memberAddress: FormatAddress(memberAddress)
     });
   },
 
   async AddAccessGroupManager({contractAddress, memberAddress}) {
     return await client.AddAccessGroupManager({
       contractAddress,
-      memberAddress: Fabric.FormatAddress(memberAddress)
+      memberAddress: FormatAddress(memberAddress)
     });
   },
 
   async RemoveAccessGroupManager({contractAddress, memberAddress}) {
     return await client.RemoveAccessGroupManager({
       contractAddress,
-      memberAddress: Fabric.FormatAddress(memberAddress)
+      memberAddress: FormatAddress(memberAddress)
     });
   },
 
@@ -115,6 +110,8 @@ const Fabric = {
       libraryId,
       name: libraryInfo.meta["eluv.name"],
       description: libraryInfo.meta["eluv.description"],
+      contractAddress: client.utils.HashToAddress({hash: libraryId}),
+      libraryObjectId: libraryId.replace("ilib", "iq__"),
       privateMeta,
       imageUrl,
       objects: objectIds,
@@ -204,7 +201,7 @@ const Fabric = {
         contractAddress: client.utils.HashToAddress({hash: libraryId}),
         abi: BaseLibraryContract.abi,
         methodName: "add" + groupType.capitalize() + "Group",
-        methodArgs: [Fabric.FormatAddress(address)]
+        methodArgs: [FormatAddress(address)]
       });
 
       await client.ExtractEventFromLogs({
@@ -223,7 +220,7 @@ const Fabric = {
         contractAddress: client.utils.HashToAddress({hash: libraryId}),
         abi: BaseLibraryContract.abi,
         methodName: "remove" + groupType.capitalize() + "Group",
-        methodArgs: [Fabric.FormatAddress(address)]
+        methodArgs: [FormatAddress(address)]
       });
 
       await client.ExtractEventFromLogs({
@@ -254,6 +251,12 @@ const Fabric = {
         metadata: object.versions[0].meta
       });
 
+      // Retrieve status if normal object
+      let status;
+      if(libraryId !== Fabric.contentSpaceLibraryId && !client.utils.EqualHash(libraryId, object.id)) {
+        status = await Fabric.GetContentObjectStatus({objectId: object.id});
+      }
+
       objects[object.id] = {
         // Pull latest version info up to top level
         ...latestVersion,
@@ -263,7 +266,7 @@ const Fabric = {
         imageUrl,
         contractAddress: client.utils.HashToAddress({hash: object.id}),
         owner: await Fabric.GetContentObjectOwner({objectId: object.id}),
-        status: await Fabric.GetContentObjectStatus({objectId: object.id})
+        status
       };
     }
 
@@ -275,6 +278,13 @@ const Fabric = {
     const metadata = await client.ContentObjectMetadata({libraryId, objectId});
     const imageUrl = await Fabric.GetContentObjectImageUrl({libraryId, objectId});
 
+    // TODO - Put type in library + object instead of requiring components to figure it out
+    // Retrieve status if normal object
+    let status;
+    if(libraryId !== Fabric.contentSpaceLibraryId && !client.utils.EqualHash(libraryId, objectId)) {
+      status =await Fabric.GetContentObjectStatus({objectId});
+    }
+
     return {
       ...object,
       meta: metadata,
@@ -283,7 +293,7 @@ const Fabric = {
       imageUrl,
       contractAddress: client.utils.HashToAddress({hash: objectId}),
       owner: await Fabric.GetContentObjectOwner({objectId}),
-      status: await Fabric.GetContentObjectStatus({objectId})
+      status
     };
   },
 
@@ -515,7 +525,7 @@ const Fabric = {
     });
 
     return {
-      isOwner: Fabric.FormatAddress(owner) === Fabric.FormatAddress(currentAccountAddress),
+      isOwner: EqualAddress(owner, currentAccountAddress),
       canContribute,
       canReview
     };
@@ -534,7 +544,7 @@ const Fabric = {
     // Object permissions are granted from the library
     return {
       ...(await Fabric.GetContentLibraryPermissions({libraryId})),
-      isOwner: Fabric.FormatAddress(owner) === Fabric.FormatAddress(currentAccountAddress)
+      isOwner: EqualAddress(owner, currentAccountAddress)
     };
   },
 
@@ -555,7 +565,7 @@ const Fabric = {
 
     return {
       code: parseInt(statusCode._hex, 16),
-      description: Ethers.utils.toUtf8String(statusDescription)
+      description: Bytes32ToUtf8(statusDescription)
     };
   },
 
@@ -644,10 +654,6 @@ const Fabric = {
       customContractAddress,
       overrides
     });
-  },
-
-  ContentObjectContractEvents: ({objectId}) => {
-    return client.ContentObjectContractEvents({objectId});
   },
 
   ContractEvents: ({contractAddress, abi}) => {
@@ -784,30 +790,16 @@ const Fabric = {
     /* Access Groups */
 
     async AccessGroups() {
-      let accessGroups = await Fabric.FabricBrowser.Entries({type: "accessGroups"});
-
-      // Inject owner address into access groups
-      await Promise.all(Object.values(accessGroups).map(async accessGroup => {
-        const owner = await Fabric.FabricBrowser.GetAccessGroupOwner({contractAddress: accessGroup.address});
-        accessGroups[accessGroup.name].owner = owner;
-      }));
-
-      return accessGroups;
-    },
-
-    async GetAccessGroupOwner({name, contractAddress}) {
-      if(!contractAddress) {
-        contractAddress = Fabric.FabricBrowser.AccessGroups()[name].address;
-      }
-      return await client.AccessGroupOwner({contractAddress});
+      return await Fabric.FabricBrowser.Entries({type: "accessGroups"});
     },
 
     async AddAccessGroup({name, description, address, members={}}) {
       await Fabric.FabricBrowser.AddEntry({
         type: "accessGroups",
-        name,
+        name: address,
         metadata: {
           name,
+          owner: await Fabric.CurrentAccountAddress(),
           description,
           address,
           members
@@ -815,8 +807,8 @@ const Fabric = {
       });
     },
 
-    async RemoveAccessGroup({name}) {
-      await Fabric.FabricBrowser.RemoveEntry({type: "accessGroups", name});
+    async RemoveAccessGroup({address}) {
+      await Fabric.FabricBrowser.RemoveEntry({type: "accessGroups", name: address});
     },
 
     /* Contracts */

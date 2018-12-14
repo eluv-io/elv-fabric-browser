@@ -42,9 +42,12 @@ function Routes(){
 
         <Route exact path="/access-groups" component={AccessGroupsContainer} />
         <Route exact path="/access-groups/create" component={AccessGroupFormContainer} />
-        <Route exact path="/access-groups/:accessGroupName" component={AccessGroupContainer} />
-        <Route exact path="/access-groups/:accessGroupName/edit" component={AccessGroupFormContainer} />
-        <Route exact path="/access-groups/:accessGroupName/members" component={AccessGroupMembersFormContainer} />
+        <Route exact path="/access-groups/:contractAddress" component={AccessGroupContainer} />
+        <Route exact path="/access-groups/:contractAddress/edit" component={AccessGroupFormContainer} />
+        <Route exact path="/access-groups/:contractAddress/members" component={AccessGroupMembersFormContainer} />
+        <Route exact path="/access-groups/:contractAddress/contract" component={DeployedContractContainer} />
+        <Route exact path="/access-groups/:contractAddress/contract/call/:method" component={DeployedContractMethodFormContainer} />
+        <Route exact path="/access-groups/:contractAddress/contract/funds" component={DeployedContractFundsFormContainer} />
 
         <Route exact path="/content" component={ContentLibrariesContainer} />
         <Route exact path="/content/create" component={ContentLibraryFormContainer} />

@@ -62,7 +62,7 @@ class ContentObject extends React.Component {
 
             // If object not yet published, need information about groups to determine
             // what actions user can do
-            if(object.status !== 0) {
+            if(this.state.isNormalObject && object.status !== 0) {
               await this.props.ListContentLibraryGroups({libraryId: this.state.libraryId});
             }
 
@@ -373,7 +373,7 @@ class ContentObject extends React.Component {
 
   // Display object status and review/submit/publish actions
   ObjectStatus() {
-    if(this.state.isContentType) { return null; }
+    if(!this.state.isNormalObject) { return null; }
 
     const reviewerGroups = this.props.libraries[this.state.libraryId].groups.reviewer;
     const reviewRequired = reviewerGroups.length > 0;

@@ -1,129 +1,29 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import Path from "path";
-
-import RequestPage from "../../RequestPage";
 import {LabelledField} from "../../../components/LabelledField";
 import ClippedText from "../../../components/ClippedText";
-
-import BaseContentContract from "elv-client-js/src/contracts/BaseContent";
-import BaseContentTypeContract from "elv-client-js/src/contracts/BaseContentType";
-import Fabric from "../../../../clients/Fabric";
+import PropTypes from "prop-types";
+import DeployedContractWrapper from "./DeployedContractWrapper";
 
 class DeployedContract extends React.Component {
   constructor(props) {
     super(props);
 
-    const libraryId = this.props.libraryId || this.props.match.params.libraryId;
-
     this.state = {
-      libraryId,
-      objectId: this.props.match.params.objectId,
-      contractAddress: this.props.match.params.contractAddress,
-      isContentObjectContract: (!!this.props.match.params.objectId),
-      visibleMethods: {},
-      isCustom: this.props.location.pathname.endsWith("custom-contract"),
-      isContentType: Fabric.utils.EqualHash(Fabric.contentSpaceId, libraryId)
+      visibleMethods: {}
     };
 
-    this.PageContent = this.PageContent.bind(this);
-    this.RequestComplete = this.RequestComplete.bind(this);
     this.LoadEvents = this.LoadEvents.bind(this);
   }
 
-  componentDidMount() {
-    if(this.state.isContentObjectContract) {
-      this.setState({
-        loadRequestId: this.props.WrapRequest({
-          todo: async () => {
-            await this.props.GetContentObject({
-              libraryId: this.state.libraryId,
-              objectId: this.state.objectId
-            });
-
-            // Determine contract address in order to query for balance
-            const object = this.props.content.objects[this.state.objectId];
-            const contractAddress = this.state.isCustom ? object.meta.customContract.address : object.contractAddress;
-
-            this.setState({
-              contract: {address: contractAddress}
-            });
-
-            await this.props.GetContractBalance({
-              contractAddress
-            });
-          }
-        })
-      });
-    } else {
-      this.setState({
-        loadRequestId: this.props.WrapRequest({
-          todo: async () => {
-            await this.props.ListDeployedContracts();
-
-            await this.props.GetContractBalance({
-              contractAddress: this.state.contractAddress
-            });
-          }
-        })
-      });
-    }
-  }
-
-  RequestComplete() {
-    if(this.state.isContentObjectContract) {
-      const object = this.props.content.objects[this.state.objectId];
-      const contractState = this.props.deployedContracts[this.state.contract.address];
-
-      if (this.state.isCustom) {
-        this.setState({
-          contract: {
-            name: object.meta.customContract.name,
-            description: object.meta.customContract.description,
-            address: object.meta.customContract.address,
-            abi: object.meta.customContract.abi,
-            balance: contractState.balance
-          },
-          object
-        });
-      } else {
-        const contractType = this.state.isContentType ? "Base Content Type Contract" : "Base Content Contract";
-        const contractAbi = this.state.isContentType ? BaseContentTypeContract.abi : BaseContentContract.abi;
-
-        this.setState({
-          contract: {
-            name: contractType,
-            description: contractType,
-            address: Fabric.utils.HashToAddress({hash: this.state.objectId}),
-            abi: contractAbi,
-            balance: contractState.balance
-          },
-          object
-        });
-      }
-    } else {
-      this.setState({
-        contract: this.props.deployedContracts[this.state.contractAddress]
-      });
-    }
-  }
-
   LoadEvents() {
-    if(!this.state.isContentObjectContract || this.state.isCustom) {
-      this.setState({
-        eventsRequestId: this.props.GetContractEvents({
-          objectId: this.state.objectId,
-          contractAddress: this.state.contract.address,
-          abi: this.state.contract.abi
-        })
-      });
-    } else {
-      this.setState({
-        eventsRequestId: this.props.GetContractEvents({
-          objectId: this.state.objectId
-        })
-      });
-    }
+    this.setState({
+      eventsRequestId: this.props.GetContractEvents({
+        contractAddress: this.props.contract.address,
+        abi: this.props.contract.abi
+      })
+    });
   }
 
   ToggleElement(methodName) {
@@ -192,7 +92,7 @@ class DeployedContract extends React.Component {
   }
 
   ContractEvents() {
-    const contractState = this.props.deployedContracts[this.state.contract.address];
+    const contractState = this.props.deployedContracts[this.props.contract.address];
 
     if(!contractState || !contractState.events) { return null; }
 
@@ -204,10 +104,10 @@ class DeployedContract extends React.Component {
   }
 
   AbiInfo() {
-    if(!this.state.contract.abi) { return null; }
+    if(!this.props.contract.abi) { return null; }
 
     const abiDisplayInfo = this.state.visibleMethods["__abi"] ?
-      <pre key="abi-content">{JSON.stringify(this.state.contract.abi, null, 2)}</pre> : null;
+      <pre key="abi-content">{JSON.stringify(this.props.contract.abi, null, 2)}</pre> : null;
 
     return [
       <LabelledField
@@ -223,10 +123,10 @@ class DeployedContract extends React.Component {
     ];
   }
 
-  PageContent() {
-    const description = <ClippedText className="object-description" text={this.state.contract.description} />;
+  render() {
+    const description = <ClippedText className="object-description" text={this.props.contract.description} />;
 
-    const contractElements = Object.values(this.state.contract.abi);
+    const contractElements = Object.values(this.props.contract.abi);
     const contractConstructor = contractElements.filter(element => element.type === "constructor");
     const contractEvents = contractElements.filter(element => element.type === "event");
     const contractMethods = contractElements.filter(element => element.type === "function");
@@ -246,15 +146,15 @@ class DeployedContract extends React.Component {
         </div>
         <div className="object-display">
           <h3 className="page-header">
-            { this.state.isContentObjectContract ? this.state.object.name : "Deployed Contract" }
+            { this.props.contract.description }
           </h3>
-          <h3>{ this.state.contract.name }</h3>
+          <h3>{ this.props.contract.name }</h3>
           <div className="label-box">
             <h3>Contract Info</h3>
-            <LabelledField label="Name" value={this.state.contract.name} />
+            <LabelledField label="Name" value={this.props.contract.name} />
             <LabelledField label="Description" value={description} />
-            <LabelledField label="Contract Address" value={this.state.contract.address} />
-            <LabelledField label="Balance" value={this.state.contract.balance} />
+            <LabelledField label="Contract Address" value={this.props.contract.address} />
+            <LabelledField label="Balance" value={this.props.contract.balance} />
             { this.AbiInfo() }
             <h3>Events</h3>
             <div className="actions-container">
@@ -274,17 +174,10 @@ class DeployedContract extends React.Component {
       </div>
     );
   }
-
-  render() {
-    return (
-      <RequestPage
-        requestId={this.state.loadRequestId}
-        requests={this.props.requests}
-        pageContent={this.PageContent}
-        OnRequestComplete={this.RequestComplete}
-      />
-    );
-  }
 }
 
-export default DeployedContract;
+DeployedContract.propTypes = {
+  contract: PropTypes.object.isRequired
+};
+
+export default DeployedContractWrapper(DeployedContract);
