@@ -3,8 +3,7 @@ import RequestForm from "../../forms/RequestForm";
 import RequestPage from "../RequestPage";
 import Path from "path";
 import Id from "../../../utils/Id";
-import Fabric from "../../../clients/Fabric";
-import {FormatAddress} from "../../../utils/Helpers";
+import { FormatAddress } from "../../../utils/Helpers";
 
 class AccessGroupMembersForm extends React.Component {
   constructor(props) {
@@ -48,11 +47,8 @@ class AccessGroupMembersForm extends React.Component {
       };
     });
 
-    const isOwner = Fabric.EqualAddress(this.props.currentAccountAddress, accessGroup.owner.toLowerCase());
-
     this.setState({
       accessGroup,
-      isOwner,
       name: accessGroup.name,
       description: accessGroup.description,
       address: accessGroup.address,
@@ -135,7 +131,7 @@ class AccessGroupMembersForm extends React.Component {
       );
 
       // Disallow non-owners from modifying managers
-      const disabled = !this.state.isOwner && member.manager;
+      const disabled = !this.state.accessGroup.isOwner && member.manager;
 
       return (
         <div key={"member-" + memberId}>
@@ -149,7 +145,7 @@ class AccessGroupMembersForm extends React.Component {
           </div>
           <div className="labelled-input labelled-checkbox-input">
             <label className="label" htmlFor="manager">Manager</label>
-            <input disabled={!this.state.isOwner} name="manager" type="checkbox" value={member.manager} checked={member.manager} onChange={this.HandleInputChange(memberId)} />
+            <input disabled={!this.state.accessGroup.isOwner} name="manager" type="checkbox" value={member.manager} checked={member.manager} onChange={this.HandleInputChange(memberId)} />
           </div>
           <div className="labelled-input">
             <label className="label" htmlFor="removeMember"></label>
