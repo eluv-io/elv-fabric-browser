@@ -4,7 +4,6 @@ import { JsonTextArea } from "../../../utils/Input";
 import RequestPage from "../RequestPage";
 import Path from "path";
 import BrowseWidget from "../../components/BrowseWidget";
-import Fabric from "../../../clients/Fabric";
 
 class ContentLibraryForm extends React.Component {
   constructor(props) {
@@ -21,7 +20,6 @@ class ContentLibraryForm extends React.Component {
       imageSelection: "",
       libraryId,
       createForm: this.props.location.pathname.endsWith("create"),
-      isContentSpaceLibrary: Fabric.utils.EqualHash(Fabric.contentSpaceId, libraryId)
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -50,14 +48,15 @@ class ContentLibraryForm extends React.Component {
   // Set loaded content object
   RequestComplete() {
     const library = this.props.libraries[this.state.libraryId];
+
     if(library) {
       this.setState({
-        isContentSpaceLibrary: library.isContentSpaceLibrary,
         name: library.name,
         description: library.description,
         publicMetadata: JSON.stringify(library.meta, null, 2),
         privateMetadata: JSON.stringify(library.privateMeta, null, 2),
-        imagePreviewUrl: library.imageUrl
+        imagePreviewUrl: library.imageUrl,
+        isContentSpaceLibrary: library.isContentSpaceLibrary
       });
     }
   }
@@ -88,7 +87,6 @@ class ContentLibraryForm extends React.Component {
         submitRequestId: this.props.WrapRequest({
           todo: async () => {
             const libraryId = await this.props.CreateContentLibrary({
-              owner: this.props.currentAccountAddress,
               name: this.state.name,
               description: this.state.description,
               publicMetadata: this.state.publicMetadata,

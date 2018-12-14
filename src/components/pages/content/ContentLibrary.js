@@ -6,7 +6,6 @@ import ContentIcon from "../../../static/icons/content.svg";
 import RequestPage from "../RequestPage";
 import { LabelledField } from "../../components/LabelledField";
 import Redirect from "react-router/es/Redirect";
-import Fabric from "../../../clients/Fabric";
 import ClippedText from "../../components/ClippedText";
 
 class ContentLibrary extends React.Component {
@@ -18,7 +17,6 @@ class ContentLibrary extends React.Component {
     this.state = {
       libraryId,
       visibleItems: {},
-      isContentSpaceLibrary: Fabric.utils.EqualHash(Fabric.contentSpaceId, libraryId)
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -29,13 +27,9 @@ class ContentLibrary extends React.Component {
     this.setState({
       requestId: this.props.WrapRequest({
         todo: async () => {
-          await this.props.SetCurrentAccount();
           await this.props.GetContentLibrary({libraryId: this.state.libraryId});
           await this.props.ListContentObjects({libraryId: this.state.libraryId});
-
-          if(!this.state.isContentSpaceLibrary) {
-            await this.props.ListContentLibraryGroups({libraryId: this.state.libraryId});
-          }
+          await this.props.ListContentLibraryGroups({libraryId: this.state.libraryId});
         }
       })
     });
@@ -68,7 +62,7 @@ class ContentLibrary extends React.Component {
 
   DeleteContentLibraryButton() {
     // Don't allow deletion of special content space library
-    if(this.state.isContentSpaceLibrary) { return null; }
+    if(this.state.library.isContentSpaceLibrary) { return null; }
 
     return (
       <button className="action delete-action" onClick={() => this.DeleteContentLibrary()}>
@@ -82,7 +76,7 @@ class ContentLibrary extends React.Component {
 
     for(const objectId of this.state.library.objects.sort()) {
       const object = this.props.objects[objectId];
-      const infoText = this.state.isContentSpaceLibrary ? "" : object.status.description;
+      const infoText = this.state.library.isContentSpaceLibrary ? "" : object.status.description;
 
       objectElements.push(
         <LibraryCard
@@ -129,7 +123,7 @@ class ContentLibrary extends React.Component {
   }
 
   LibraryGroups() {
-    if(this.state.isContentSpaceLibrary) { return null; }
+    if(this.state.library.isContentSpaceLibrary) { return null; }
 
     // Return if no groups exist
     if(!Object.values(this.state.library.groups).some(groups => groups.length > 0)) { return null; }
@@ -239,7 +233,7 @@ class ContentLibrary extends React.Component {
 
   Actions() {
     let manageGroupsButton;
-    if(this.state.library.isOwner && !this.state.isContentSpaceLibrary) {
+    if(this.state.library.isOwner && !this.state.library.isContentSpaceLibrary) {
       manageGroupsButton = <Link to={Path.join(this.props.match.url, "groups")} className="action" >Manage Groups</Link>;
     }
 
@@ -249,7 +243,7 @@ class ContentLibrary extends React.Component {
         <Link to={Path.join(this.props.match.url, "edit")} className="action" >Edit Content Library</Link>
         { manageGroupsButton }
         <Link to={Path.join(this.props.match.url, "create")} className="action" >
-          { this.state.isContentSpaceLibrary ? "New Content Type" : "New Content Object" }
+          { this.state.library.isContentSpaceLibrary ? "New Content Type" : "New Content Object" }
         </Link>
         { this.DeleteContentLibraryButton() }
       </div>

@@ -78,7 +78,6 @@ export default (Component) => {
             contract: {
               ...this.state.contract,
               name: object.name,
-              description: object.description,
             }
           });
           break;

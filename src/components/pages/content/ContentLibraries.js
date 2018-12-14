@@ -19,7 +19,6 @@ class ContentLibraries extends React.Component {
     this.setState({
       requestId: this.props.WrapRequest({
         todo: async () => {
-          await this.props.SetCurrentAccount();
           await this.props.ListContentLibraries();
           await Promise.all(
             Object.keys(this.props.libraries).map(async libraryId => {
