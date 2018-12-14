@@ -28,7 +28,6 @@ class AccessGroupMembersForm extends React.Component {
     this.setState({
       loadRequestId: this.props.WrapRequest({
         todo: async () => {
-          await this.props.SetCurrentAccount();
           await this.props.ListAccessGroups();
         }
       })

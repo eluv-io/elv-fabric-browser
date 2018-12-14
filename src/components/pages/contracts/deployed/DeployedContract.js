@@ -5,6 +5,7 @@ import {LabelledField} from "../../../components/LabelledField";
 import ClippedText from "../../../components/ClippedText";
 import PropTypes from "prop-types";
 import DeployedContractWrapper from "./DeployedContractWrapper";
+import {ContractTypes} from "../../../../utils/Contracts";
 
 class DeployedContract extends React.Component {
   constructor(props) {
@@ -134,7 +135,8 @@ class DeployedContract extends React.Component {
     const dynamicMethods = contractMethods.filter(element => !element.constant);
 
     let backPath = Path.dirname(this.props.match.url);
-    if(!this.state.isContentObjectContract) {
+    // Library contract is on library object - go back 2 to get back to library
+    if([ContractTypes.contentSpace, ContractTypes.library].includes(this.props.contract.type)) {
       backPath = Path.dirname(backPath);
     }
 
@@ -146,9 +148,9 @@ class DeployedContract extends React.Component {
         </div>
         <div className="object-display">
           <h3 className="page-header">
-            { this.props.contract.description }
+            { this.props.contract.name }
           </h3>
-          <h3>{ this.props.contract.name }</h3>
+          <h3>{ this.props.contract.description }</h3>
           <div className="label-box">
             <h3>Contract Info</h3>
             <LabelledField label="Name" value={this.props.contract.name} />

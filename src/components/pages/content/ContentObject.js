@@ -6,7 +6,6 @@ import PrettyBytes from "pretty-bytes";
 import { LabelledField } from "../../components/LabelledField";
 import DashVideo from "../DashVideo";
 import Redirect from "react-router/es/Redirect";
-import Fabric from "../../../clients/Fabric";
 import ClippedText from "../../components/ClippedText";
 import {
   GetContentObjectPermissions,
@@ -20,17 +19,12 @@ class ContentObject extends React.Component {
 
     const libraryId = this.props.libraryId || this.props.match.params.libraryId;
     const objectId = this.props.match.params.objectId;
-    const isContentType = this.props.match.url.startsWith("/content-types");
-    const isLibraryObject = Fabric.utils.EqualHash(libraryId, objectId);
 
     this.state = {
       libraryId,
       objectId,
       visibleVersions: {},
       appRef: React.createRef(),
-      isContentType,
-      isLibraryObject,
-      isNormalObject: !isContentType && !isLibraryObject
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -58,12 +52,12 @@ class ContentObject extends React.Component {
 
           await this.props.ListContentTypes();
 
-          if(this.state.isNormalObject) {
-            const object = this.props.objects[this.state.objectId];
+          const object = this.props.objects[this.state.objectId];
 
+          if(object.isNormalObject) {
             // If object not yet published, need information about groups to determine
             // what actions user can do
-            if(this.state.isNormalObject && object.status !== 0) {
+            if(object.status !== 0) {
               await this.props.ListContentLibraryGroups({libraryId: this.state.libraryId});
             }
 
@@ -73,6 +67,8 @@ class ContentObject extends React.Component {
                 objectId: this.state.objectId
               })
             });
+          } else if(object.isContentLibraryObject) {
+            await this.props.GetContentLibrary({libraryId: this.state.libraryId});
           }
         }
       })
@@ -91,7 +87,7 @@ class ContentObject extends React.Component {
 
     // Determine the name of the content type
     const object = this.props.objects[this.state.objectId];
-    if(this.state.isNormalObject && object.type) {
+    if(object.isNormalObject && object.type) {
       const type = this.props.types[object.type];
       this.setState({
         object,
@@ -345,8 +341,6 @@ class ContentObject extends React.Component {
   }
 
   ContractInfo() {
-    if(this.state.object.isLibraryObject){ return null; }
-
     let contractInfo = [];
     contractInfo.push(
       <LabelledField
@@ -360,7 +354,7 @@ class ContentObject extends React.Component {
 
     );
 
-    if(this.state.object.meta.customContract) {
+    if(!this.state.object.isContentLibraryObject && this.state.object.meta.customContract) {
       const customContractAddress = FormatAddress(this.state.object.meta.customContract.address);
 
       contractInfo.push(
@@ -375,7 +369,7 @@ class ContentObject extends React.Component {
 
   // Display object status and review/submit/publish actions
   ObjectStatus() {
-    if(!this.state.isNormalObject) { return null; }
+    if(!this.state.object.isNormalObject) { return null; }
 
     const reviewerGroups = this.props.libraries[this.state.libraryId].groups.reviewer;
     const reviewRequired = reviewerGroups.length > 0;
@@ -430,14 +424,14 @@ class ContentObject extends React.Component {
   ObjectInfo() {
     const latestVersion = this.state.object.versions[0];
     const description = <ClippedText className="object-description" text={this.state.object.description} />;
-    const header = this.state.isContentType ? "Content Type Info" : "Content Object Info";
+    const header = this.state.object.isContentType ? "Content Type Info" : "Content Object Info";
 
     return (
       <div className="object-info label-box">
         <h3>{ header }</h3>
 
         <LabelledField label={"Name"} value={this.state.object.name} />
-        <LabelledField label={"Type"} value={<span title={this.state.typeHash}>{this.state.typeName}</span>} hidden={this.state.isContentType} />
+        <LabelledField label={"Type"} value={<span title={this.state.typeHash}>{this.state.typeName}</span>} hidden={this.state.object.isContentType} />
         <LabelledField label={"Description"} value={description} />
         { this.ObjectStatus() }
         <LabelledField label={"Library ID"} value={this.state.libraryId} />
@@ -466,15 +460,15 @@ class ContentObject extends React.Component {
     }
 
     let setContractButton;
-    if(this.state.isNormalObject && this.state.object.isOwner) {
+    if(this.state.object.isNormalObject && this.state.object.isOwner) {
       setContractButton =  <Link to={Path.join(this.props.match.url, "deploy")} className="action">Set Custom Contract</Link>;
     }
 
     let deleteObjectButton;
-    if(!this.state.isLibraryObject) {
+    if(!this.state.object.isContentLibraryObject) {
       deleteObjectButton = (
         <button className="action delete-action" onClick={() => this.DeleteContentObject()}>
-          { this.state.isContentType ? "Delete Content Type" : "Delete Content Object" }
+          { this.state.object.isContentType ? "Delete Content Type" : "Delete Content Object" }
         </button>
       );
     }
@@ -483,7 +477,7 @@ class ContentObject extends React.Component {
       <div className="actions-container">
         <Link to={Path.dirname(this.props.match.url)} className="action secondary" >Back</Link>
         <Link to={Path.join(this.props.match.url, "edit")} className="action" >
-          { this.state.isContentType ? "Edit Content Type" : "Edit Content Object" }
+          { this.state.object.isContentType ? "Edit Content Type" : "Edit Content Object" }
         </Link>
         { setContractButton }
         <Link to={Path.join(this.props.match.url, "upload")} className="action" >Upload Parts</Link>
@@ -498,11 +492,16 @@ class ContentObject extends React.Component {
       return <Redirect push to={Path.dirname(this.props.match.url)} />;
     }
 
+    const header = this.state.object.isContentLibraryObject ?
+      this.props.libraries[this.state.libraryId].name + " - Library Object" :
+      this.state.object.name;
+
+
     return (
       <div className="page-container content-page-container">
         { this.Actions() }
         <div className="object-display">
-          <h3 className="page-header">{ this.state.object.name }</h3>
+          <h3 className="page-header">{ header }</h3>
           { this.ObjectMedia() }
           { this.ObjectInfo() }
         </div>

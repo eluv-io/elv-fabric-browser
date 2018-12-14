@@ -32,7 +32,6 @@ import ContentObjectReviewForm from "../../components/pages/content/ContentObjec
 
 import {ListAccessGroups} from "../../actions/AccessGroups";
 import {WrapRequest} from "../../actions/Requests";
-import {SetCurrentAccount} from "../../actions/Accounts";
 
 const mapStateToProps = (state) => ({
   requests: state.requests,
@@ -46,7 +45,6 @@ const mapDispatchToProps = dispatch =>
     dispatch,
     [
       WrapRequest,
-      SetCurrentAccount,
       ListContentLibraries,
       GetContentLibrary,
       UpdateContentLibrary,
