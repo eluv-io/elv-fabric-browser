@@ -123,7 +123,7 @@ class ContractForm extends React.Component {
       <div className="contracts-form-data">
         <div className="labelled-input">
           <label className="label" htmlFor="name">Name</label>
-          <input name="name" value={this.state.name} onChange={this.HandleInputChange} />
+          <input name="name" required={true} value={this.state.name} onChange={this.HandleInputChange} />
         </div>
         { this.ContractSelection() }
         <div className="labelled-input">

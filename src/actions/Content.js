@@ -2,6 +2,7 @@ import ActionTypes from "./ActionTypes";
 import Fabric from "../clients/Fabric";
 import { SetNotificationMessage } from "./Notifications";
 import { ParseInputJson } from "../utils/Input";
+import {FormatAddress} from "../utils/Helpers";
 
 export const ListContentLibraries = () => {
   return async (dispatch) => {
@@ -126,8 +127,8 @@ export const DeleteContentLibrary = ({ libraryId }) => {
 export const UpdateContentLibraryGroups = ({libraryId, groups, originalGroups}) => {
   return async (dispatch) => {
     for(const groupType of Object.keys(groups)) {
-      const oldGroupAddresses = originalGroups[groupType].map(group => Fabric.FormatAddress(group.address));
-      const newGroupAddresses = groups[groupType].map(group => Fabric.FormatAddress(group.address));
+      const oldGroupAddresses = originalGroups[groupType].map(group => FormatAddress(group.address));
+      const newGroupAddresses = groups[groupType].map(group => FormatAddress(group.address));
 
       // Remove groups in original groups but not in new groups
       const toRemove = oldGroupAddresses.filter(address => !newGroupAddresses.includes(address));

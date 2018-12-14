@@ -4,6 +4,7 @@ import RequestPage from "../RequestPage";
 import Path from "path";
 import Id from "../../../utils/Id";
 import Fabric from "../../../clients/Fabric";
+import {FormatAddress} from "../../../utils/Helpers";
 
 class AccessGroupMembersForm extends React.Component {
   constructor(props) {
@@ -14,7 +15,7 @@ class AccessGroupMembersForm extends React.Component {
       description: "",
       submitRequestId: undefined,
       loadRequestId: undefined,
-      accessGroupName: this.props.match.params.accessGroupName
+      contractAddress: this.props.match.params.contractAddress
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -36,7 +37,7 @@ class AccessGroupMembersForm extends React.Component {
   }
 
   RequestComplete() {
-    const accessGroup = this.props.accessGroups[this.state.accessGroupName];
+    const accessGroup = this.props.accessGroups[this.state.contractAddress];
 
     let members = {};
     Object.values(accessGroup.members).map(member => {
@@ -47,9 +48,11 @@ class AccessGroupMembersForm extends React.Component {
       };
     });
 
+    const isOwner = Fabric.EqualAddress(this.props.currentAccountAddress, accessGroup.owner.toLowerCase());
+
     this.setState({
       accessGroup,
-      isOwner: this.props.currentAccountAddress.toLowerCase() === accessGroup.owner.toLowerCase(),
+      isOwner,
       name: accessGroup.name,
       description: accessGroup.description,
       address: accessGroup.address,
@@ -78,7 +81,7 @@ class AccessGroupMembersForm extends React.Component {
     Object.values(this.state.members).map(member => {
       members[member.name] = {
         name: member.name,
-        address: Fabric.FormatAddress(member.address),
+        address: FormatAddress(member.address),
         manager: member.manager
       };
     });
@@ -87,7 +90,7 @@ class AccessGroupMembersForm extends React.Component {
       submitRequestId: this.props.WrapRequest({
         todo: async () => {
           await this.props.UpdateAccessGroupMembers({
-            name: this.state.name,
+            address: this.state.contractAddress,
             members: members,
             originalMembers: this.state.originalMembers
           });

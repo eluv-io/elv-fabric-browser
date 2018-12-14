@@ -225,15 +225,9 @@ export const DeployContentContract = ({
   };
 };
 
-export const GetContractEvents = ({objectId, contractAddress, abi}) => {
+export const GetContractEvents = ({contractAddress, abi}) => {
   return async (dispatch) => {
-    let events;
-    if(objectId && !contractAddress) {
-      contractAddress = Fabric.utils.HashToAddress({hash: objectId});
-      events = await Fabric.ContentObjectContractEvents({objectId});
-    } else {
-      events = await Fabric.ContractEvents({contractAddress, abi});
-    }
+    const events = await Fabric.ContractEvents({contractAddress, abi});
 
     dispatch({
       type: ActionTypes.contracts.deployed.events,
@@ -290,6 +284,8 @@ export const GetContractBalance = ({contractAddress})=> {
       contractAddress,
       balance
     });
+
+    return balance;
   };
 };
 

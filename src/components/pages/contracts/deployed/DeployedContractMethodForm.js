@@ -1,35 +1,22 @@
 import React from "react";
 import RequestForm from "../../../forms/RequestForm";
-import RequestPage from "../../RequestPage";
 import Path from "path";
-import Fabric from "../../../../clients/Fabric";
 import {LabelledField} from "../../../components/LabelledField";
 import Link from "react-router-dom/es/Link";
-const Ethers = require("ethers");
 
-import BaseContentContract from "elv-client-js/src/contracts/BaseContent";
-import BaseContentTypeContract from "elv-client-js/src/contracts/BaseContentType";
+import DeployedContractWrapper from "./DeployedContractWrapper";
+import PropTypes from "prop-types";
+import {Bytes32ToUtf8} from "../../../../utils/Helpers";
 
 class DeployedContractMethodForm extends React.Component {
   constructor(props) {
     super(props);
 
-    const libraryId = this.props.libraryId || this.props.match.params.libraryId;
-
     this.state = {
-      libraryId,
-      objectId: this.props.match.params.objectId,
-      contractAddress: this.props.match.params.contractAddress,
-      // If object ID exists in route, this form is for deploying a custom content object contract
-      isContentObjectContract: (!!this.props.match.params.objectId),
       method: this.props.match.params.method,
       visibleMethods: {},
-      isCustom: this.props.location.pathname.includes("custom-contract"),
-      isContentType: Fabric.utils.EqualHash(Fabric.contentSpaceId, libraryId)
     };
 
-    this.PageContent = this.PageContent.bind(this);
-    this.RequestComplete = this.RequestComplete.bind(this);
     this.SetMethodInterface = this.SetMethodInterface.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
@@ -38,65 +25,11 @@ class DeployedContractMethodForm extends React.Component {
   }
 
   componentDidMount() {
-    if(this.state.isContentObjectContract) {
-      this.setState({
-        loadRequestId: this.props.WrapRequest({
-          todo: async () => {
-            await this.props.GetContentObject({
-              libraryId: this.state.libraryId,
-              objectId: this.state.objectId
-            });
-          }
-        })
-      });
-    } else {
-      this.setState({
-        loadRequestId: this.props.WrapRequest({
-          todo: async () => {
-            await this.props.ListDeployedContracts();
-          }
-        })
-      });
-    }
-  }
-
-  RequestComplete() {
-    if(this.state.isContentObjectContract) {
-      const object = this.props.content.objects[this.state.objectId];
-
-      if (this.state.isCustom) {
-        this.setState({
-          contract: {
-            name: object.meta.customContract.name,
-            description: object.meta.customContract.description,
-            address: object.meta.customContract.address,
-            abi: object.meta.customContract.abi
-          },
-          object
-        }, this.SetMethodInterface);
-      } else {
-        const contractType = this.state.isContentType ? "Base Content Type Contract" : "Base Content Contract";
-        const contractAbi = this.state.isContentType ? BaseContentTypeContract.abi : BaseContentContract.abi;
-
-        this.setState({
-          contract: {
-            name: contractType,
-            description: contractType,
-            address: Fabric.utils.HashToAddress({hash: this.state.objectId}),
-            abi: contractAbi
-          },
-          object
-        }, this.SetMethodInterface);
-      }
-    } else {
-      this.setState({
-        contract: this.props.deployedContracts[this.state.contractAddress]
-      }, this.SetMethodInterface);
-    }
+    this.SetMethodInterface();
   }
 
   SetMethodInterface() {
-    let methodInterface = this.state.contract.abi.find(element =>
+    let methodInterface = this.props.contract.abi.find(element =>
       element.name === this.state.method && element.type === "function"
     );
 
@@ -131,8 +64,8 @@ class DeployedContractMethodForm extends React.Component {
       submitRequestId: this.props.WrapRequest({
         todo: async () => {
           await this.props.CallContractMethod({
-            contractAddress: this.state.contract.address,
-            abi: this.state.contract.abi,
+            contractAddress: this.props.contract.address,
+            abi: this.props.contract.abi,
             methodName: this.state.method,
             methodArgs
           });
@@ -150,7 +83,7 @@ class DeployedContractMethodForm extends React.Component {
   HandleComplete() {
     if(this.state.methodInterface.constant) {
       const outputInterface = this.state.methodInterface.outputs;
-      const contractState = this.props.deployedContracts[this.state.contract.address];
+      const contractState = this.props.deployedContracts[this.props.contract.address];
 
       // Ensure results are set
       if(!contractState || !contractState.methodResults || !contractState.methodResults[this.state.method]) {
@@ -167,7 +100,7 @@ class DeployedContractMethodForm extends React.Component {
         if(result._hex) {
           result = `${parseInt(result._hex, 16)} (${result._hex})`;
         } else if(outputInterface[index].type === "bytes32") {
-          result = Ethers.utils.toUtf8String(result);
+          result = Bytes32ToUtf8(result);
         }
 
         return [outputInterface[index].name || `Output ${index}`, result];
@@ -215,7 +148,7 @@ class DeployedContractMethodForm extends React.Component {
     );
   }
 
-  PageContent() {
+  render() {
     // Method Interface may not be set immediately - ensure it is set before rendering
     if(!this.state.methodInterface) { return null; }
 
@@ -229,10 +162,10 @@ class DeployedContractMethodForm extends React.Component {
           <Link className="action secondary" to={backPath}>Back</Link>
         </div>
         <h3 className="page-header">
-          { this.state.isContentObjectContract ? this.state.object.name : "Deployed Contract" }
+          { this.props.contract.description }
         </h3>
         <div className="label-box">
-          <LabelledField label="Contract" value={this.state.contract.name} />
+          <LabelledField label="Contract" value={this.props.contract.name} />
           <LabelledField label="Method" value={this.state.method} />
         </div>
         <RequestForm
@@ -250,17 +183,10 @@ class DeployedContractMethodForm extends React.Component {
       </div>
     );
   }
-
-  render() {
-    return (
-      <RequestPage
-        requests={this.props.requests}
-        requestId={this.state.loadRequestId}
-        pageContent={this.PageContent}
-        OnRequestComplete={this.RequestComplete}
-      />
-    );
-  }
 }
 
-export default DeployedContractMethodForm;
+DeployedContractMethodForm.propTypes = {
+  contract: PropTypes.object.isRequired
+};
+
+export default DeployedContractWrapper(DeployedContractMethodForm);
