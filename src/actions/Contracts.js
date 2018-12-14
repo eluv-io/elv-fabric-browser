@@ -4,6 +4,8 @@ import { SetNotificationMessage } from "./Notifications";
 
 // TODO: Get this thing to work like a normal module
 import "browser-solc";
+import { FormatAddress } from "../utils/Helpers";
+import { ParseInputJson } from "../utils/Input";
 
 export const ListContracts = () => {
   return async (dispatch) => {
@@ -34,9 +36,9 @@ export const RemoveContract = ({name}) => {
   };
 };
 
-export const RemoveDeployedContract = ({name}) => {
+export const RemoveDeployedContract = ({address}) => {
   return async (dispatch) => {
-    await Fabric.FabricBrowser.RemoveDeployedContract({name});
+    await Fabric.FabricBrowser.RemoveDeployedContract({address});
 
     dispatch(SetNotificationMessage({
       message: "Successfully removed contract",
@@ -118,6 +120,34 @@ export const SaveContract = ({name, oldContractName, description, abi, bytecode}
   };
 };
 
+export const WatchContract = ({name, address, description, abi}) => {
+  return async (dispatch) => {
+    address = FormatAddress(address);
+    abi = ParseInputJson(abi);
+    const owner = await Fabric.CurrentAccountAddress();
+
+    try {
+      // Try to get balance of contract to check existence of entity at given address
+      await Fabric.GetBalance({address});
+    } catch(e) {
+      throw Error("Unable to connect to contract at " + address);
+    }
+
+    await Fabric.FabricBrowser.AddDeployedContract({
+      name,
+      description,
+      address,
+      abi,
+      owner
+    });
+
+    dispatch(SetNotificationMessage({
+      message: "Successfully added watched contract",
+      redirect: true
+    }));
+  };
+};
+
 export const DeployContract = ({
   contractName,
   contractDescription,
@@ -158,7 +188,7 @@ export const DeployContract = ({
       redirect: true
     }));
 
-    return contractInfo.contractAddress;
+    return FormatAddress(contractInfo.contractAddress);
   };
 };
 
@@ -222,6 +252,8 @@ export const DeployContentContract = ({
       message: "Successfully deployed custom contract",
       redirect: true
     }));
+
+    return FormatAddress(contractInfo.contractAddress);
   };
 };
 

@@ -3,10 +3,13 @@ import Path from "path";
 import RequestForm from "../../forms/RequestForm";
 import RequestPage from "../RequestPage";
 import Link from "react-router-dom/es/Link";
+import { FormatAddress } from "../../../utils/Helpers";
 
 class DeployContractForm extends React.Component {
   constructor(props) {
     super(props);
+
+    const selectedContractParam = this.props.match.params.contractName;
 
     this.state = {
       libraryId: this.props.libraryId || this.props.match.params.libraryId,
@@ -15,7 +18,8 @@ class DeployContractForm extends React.Component {
       description: "",
       // If object ID exists in route, this form is for deploying a custom content object contract
       isContentObjectContract: !!(this.props.match.params.objectId),
-      selectedContract: "",
+      selectedContract: selectedContractParam,
+      selectedContractParam,
       loadRequestId: undefined,
       submitRequestId: undefined
     };
@@ -39,16 +43,14 @@ class DeployContractForm extends React.Component {
     });
   }
 
-  // Initialize selected contract to be the first contract in the list
   RequestComplete() {
-    const firstContract = Object.keys(this.props.contracts)[0];
+    // Initialize selected contract to be the first contract in the list if not present
+    const contract = this.state.selectedContract || Object.keys(this.props.contracts)[0];
 
     this.setState({
       contracts: this.props.contracts,
-      selectedContract: firstContract
-    });
-
-    this.HandleContractChange({target: { value: firstContract}});
+      selectedContract: contract
+    }, () => this.HandleContractChange({target: { value: contract }}));
   }
 
   HandleInputChange(event) {
@@ -165,14 +167,19 @@ class DeployContractForm extends React.Component {
     });
 
     return (
-      <select name="selectedContract" onChange={this.HandleContractChange}>
+      <select
+        name="selectedContract"
+        onChange={this.HandleContractChange}
+        value={this.state.selectedContract}
+        disabled={this.state.selectedContractParam}
+      >
         { options }
       </select>
     );
   }
 
   // Name and description when deploying arbitrary (non-content-object) contracts
-  DeployedContractOptions() {
+  ContractInfoFields() {
     if(this.state.isContentObjectContract) { return null; }
 
     return (
@@ -185,7 +192,6 @@ class DeployContractForm extends React.Component {
           <label className="textarea-label" htmlFor="description">Description</label>
           <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
         </div>
-        { this.ConstructorForm() }
       </div>
     );
   }
@@ -193,7 +199,7 @@ class DeployContractForm extends React.Component {
   ContractFileForm() {
     return (
       <div className="contracts-form-data">
-        { this.DeployedContractOptions() }
+        { this.ContractInfoFields() }
         <div className="labelled-input">
           <label className="label" htmlFor="selectedContract">Contract</label>
           { this.AvailableContracts() }
@@ -224,9 +230,13 @@ class DeployContractForm extends React.Component {
       "Set Custom Contract" : "Deploy Custom Contract";
 
     let redirectPath = Path.dirname(this.props.match.url);
+
+    // Go back one extra path if deploying specific contract
+    if(this.state.selectedContractParam) { redirectPath = Path.dirname(redirectPath); }
+
     if(this.state.contractAddress) {
       // Contract address won't exist until submission
-      redirectPath = Path.join(redirectPath, "deployed", this.state.contractAddress);
+      redirectPath = Path.join(redirectPath, "deployed", FormatAddress(this.state.contractAddress));
     }
 
     return (

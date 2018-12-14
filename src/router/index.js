@@ -29,7 +29,8 @@ import {
   DeployContractFormContainer,
   DeployedContractContainer,
   DeployedContractMethodFormContainer,
-  DeployedContractFundsFormContainer
+  DeployedContractFundsFormContainer,
+  WatchContractFormContainer
 } from "../containers/pages/Contracts";
 import Fabric from "../clients/Fabric";
 import ErrorHandler from "./ErrorHandler";
@@ -124,12 +125,14 @@ function Routes(){
         <Route exact path="/contracts" component={ContractsContainer} />
         <Route exact path="/contracts/compile" component={CompileContractFormContainer} />
         <Route exact path="/contracts/save" component={ContractFormContainer} />
+        <Route exact path="/contracts/watch" component={WatchContractFormContainer} />
         <Route exact path="/contracts/deploy" component={DeployContractFormContainer} />
         <Route exact path="/contracts/deployed/:contractAddress" component={DeployedContractContainer} />
         <Route exact path="/contracts/deployed/:contractAddress/call/:method" component={DeployedContractMethodFormContainer} />
         <Route exact path="/contracts/deployed/:contractAddress/funds" component={DeployedContractFundsFormContainer} />
         <Route exact path="/contracts/:contractName" component={ContractContainer} />
         <Route exact path="/contracts/:contractName/edit" component={ContractFormContainer} />
+        <Route exact path="/contracts/:contractName/deploy" component={DeployContractFormContainer} />
       </Switch>
     </div>
   );

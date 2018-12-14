@@ -12,7 +12,7 @@ class Contracts extends React.Component {
     super(props);
 
     this.state = {
-      viewDeployed: false
+      viewDeployed: true
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -35,20 +35,20 @@ class Contracts extends React.Component {
         <button
           className={
             "action action-compact action-wide action-inline " +
+            (this.state.viewDeployed ? "tertiary" : "secondary")
+          }
+          onClick={() => { this.setState({viewDeployed: true}); }}
+        >
+          Watched Contracts
+        </button>
+        <button
+          className={
+            "action action-compact action-wide action-inline " +
             (this.state.viewDeployed ? "secondary" : "tertiary")
           }
           onClick={() => { this.setState({viewDeployed: false}); }}
         >
           Saved Contracts
-        </button>
-        <button
-          className={
-            "action action-compact action-wide action-inline " +
-            (this.state.viewDeployed ? "tertiary" : "secondary")
-          }
-          onClick={() => { this.setState({viewDeployed: true}); }}
-        >
-          Deployed Contracts
         </button>
       </div>
     );
@@ -90,6 +90,7 @@ class Contracts extends React.Component {
         <div className="actions-container">
           <Link to="/contracts/compile" className="action" >New Contract</Link>
           <Link to="/contracts/deploy" className="action" >Deploy Contract</Link>
+          <Link to="/contracts/watch" className="action" >Watch Contract</Link>
         </div>
         <h3 className="page-header">Contracts</h3>
         { this.ToggleView() }

@@ -17,7 +17,7 @@ if(window.self === window.top) {
   let signer = wallet.AddAccount({
     accountName: "Alice",
     //privateKey: "04832aec82a6572d9a5782c4af9d7d88b0eb89116349ee484e96b97daeab5ca6"
-    privateKey: "1307df44f8f5033ec86434a7965234015da85261df149ed498cb29907df38d72"
+    privateKey: "0xbf092a5c94988e2f7a1d00d0db309fc492fe38ddb57fc6d102d777373389c5e6"
   });
   client.SetSigner({signer});
 } else {
@@ -267,7 +267,6 @@ const Fabric = {
       }
 
       const owner = await Fabric.GetContentObjectOwner({objectId: object.id});
-      const currentAccountAddress = await Fabric.CurrentAccountAddress();
       const isContentLibraryObject = client.utils.EqualHash(libraryId, object.id);
       const isContentType = libraryId === Fabric.contentSpaceLibraryId && !isContentLibraryObject;
 
@@ -280,7 +279,7 @@ const Fabric = {
         imageUrl,
         contractAddress: client.utils.HashToAddress({hash: object.id}),
         owner,
-        isOwner: await EqualAddress(owner, currentAccountAddress),
+        isOwner: EqualAddress(owner, await Fabric.CurrentAccountAddress()),
         status,
         isContentLibraryObject,
         isContentType,
@@ -304,6 +303,7 @@ const Fabric = {
 
     const owner = await Fabric.GetContentObjectOwner({objectId});
     const isContentLibraryObject = client.utils.EqualHash(libraryId, objectId);
+    const isContentType = libraryId === Fabric.contentSpaceLibraryId && !isContentLibraryObject;
 
     return {
       ...object,
@@ -313,10 +313,11 @@ const Fabric = {
       imageUrl,
       contractAddress: FormatAddress(client.utils.HashToAddress({hash: objectId})),
       owner,
-      isOwner: EqualAddress(owner, Fabric.CurrentAccountAddress()),
+      isOwner: EqualAddress(owner, await Fabric.CurrentAccountAddress()),
       status,
       isContentLibraryObject,
-      isContentType: libraryId === Fabric.contentSpaceLibraryId && !isContentLibraryObject
+      isContentType,
+      isNormalObject: !isContentLibraryObject && !isContentType
     };
   },
 
@@ -331,7 +332,7 @@ const Fabric = {
   },
 
   GetContentObjectOwner: async ({objectId}) => {
-    return await client.ContentObjectOwner({objectId});
+    return FormatAddress(await client.ContentObjectOwner({objectId}));
   },
 
   GetContentObjectMetadata: async ({libraryId, objectId, versionHash}) => {
@@ -869,11 +870,11 @@ const Fabric = {
       });
     },
 
-    async RemoveDeployedContract({name}) {
+    async RemoveDeployedContract({address}) {
       await Fabric.FabricBrowser.RemoveEntry({
         type: "contracts",
         subtree: "deployed",
-        name
+        name: address
       });
     }
   }

@@ -15,9 +15,11 @@ export const InputValue = (event) => {
 // -- Rejects quoted strings which JSON.parse allows (e.g. JSON.parse('"string"')
 export const ParseInputJson = (metadata) => {
   if(typeof metadata === "string") {
-    if(metadata.trim() === "") { return {}; }
+    metadata = metadata.trim();
 
-    if(!metadata.trim().startsWith("{")) { throw Error("Invalid JSON"); }
+    if(metadata === "") { return {}; }
+
+    if(!metadata.startsWith("{") && !metadata.startsWith("[")) { throw Error("Invalid JSON"); }
 
     try {
       return JSON.parse(metadata);
