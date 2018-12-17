@@ -12,6 +12,7 @@ import {
   PublishContentObject
 } from "../../../actions/Content";
 import {FormatAddress} from "../../../utils/Helpers";
+import {PageHeader} from "../../components/Page";
 
 class ContentObject extends React.Component {
   constructor(props) {
@@ -40,6 +41,8 @@ class ContentObject extends React.Component {
     this.setState({
       requestId: this.props.WrapRequest({
         todo: async () => {
+          await this.props.GetContentLibrary({libraryId: this.state.libraryId});
+
           await this.props.GetContentObject({
             libraryId: this.state.libraryId,
             objectId: this.state.objectId
@@ -67,8 +70,6 @@ class ContentObject extends React.Component {
                 objectId: this.state.objectId
               })
             });
-          } else if(object.isContentLibraryObject) {
-            await this.props.GetContentLibrary({libraryId: this.state.libraryId});
           }
         }
       })
@@ -81,6 +82,9 @@ class ContentObject extends React.Component {
         deleted: true
       });
     } else if(this.state.deletingVersion) {
+      this.setState({
+        deletingVersion: false
+      });
       // Version deleted - reload object
       this.LoadObject();
     }
@@ -90,15 +94,15 @@ class ContentObject extends React.Component {
     if(object.isNormalObject && object.type) {
       const type = this.props.types[object.type];
       this.setState({
-        object,
         typeHash: type.hash,
         typeName: (type.meta && type.meta["eluv.name"]) ? type.meta["eluv.name"] : type.hash
       });
-    } else {
-      this.setState({
-        object
-      });
     }
+
+    this.setState({
+      library: this.props.libraries[this.state.libraryId],
+      object
+    });
   }
 
   SubmitContentObject(confirmationMessage) {
@@ -371,7 +375,7 @@ class ContentObject extends React.Component {
   ObjectStatus() {
     if(!this.state.object.isNormalObject) { return null; }
 
-    const reviewerGroups = this.props.libraries[this.state.libraryId].groups.reviewer;
+    const reviewerGroups = this.state.library.groups.reviewer;
     const reviewRequired = reviewerGroups.length > 0;
 
     let statusAction;
@@ -493,15 +497,14 @@ class ContentObject extends React.Component {
     }
 
     const header = this.state.object.isContentLibraryObject ?
-      this.props.libraries[this.state.libraryId].name + " - Library Object" :
-      this.state.object.name;
-
+      this.state.library.name + " > Library Object" :
+      this.state.library.name + " > " + this.state.object.name;
 
     return (
       <div className="page-container content-page-container">
         { this.Actions() }
         <div className="object-display">
-          <h3 className="page-header">{ header }</h3>
+          <PageHeader header={header} />
           { this.ObjectMedia() }
           { this.ObjectInfo() }
         </div>

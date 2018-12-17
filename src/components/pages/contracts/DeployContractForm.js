@@ -4,6 +4,7 @@ import RequestForm from "../../forms/RequestForm";
 import RequestPage from "../RequestPage";
 import Link from "react-router-dom/es/Link";
 import { FormatAddress } from "../../../utils/Helpers";
+import {PageHeader} from "../../components/Page";
 
 class DeployContractForm extends React.Component {
   constructor(props) {
@@ -44,11 +45,12 @@ class DeployContractForm extends React.Component {
   }
 
   RequestComplete() {
+    if(Object.keys(this.props.contracts).length === 0) { return; }
+
     // Initialize selected contract to be the first contract in the list if not present
     const contract = this.state.selectedContract || Object.keys(this.props.contracts)[0];
 
     this.setState({
-      contracts: this.props.contracts,
       selectedContract: contract
     }, () => this.HandleContractChange({target: { value: contract }}));
   }
@@ -62,10 +64,10 @@ class DeployContractForm extends React.Component {
   // When selected contract is changed, find the constructor description in the ABI
   // and reset the constructor input state
   HandleContractChange(event) {
-    if(!this.state.contracts) { return null; }
+    if(!this.props.contracts) { return null; }
 
     const contractName = event.target.value;
-    const contractAbi = this.state.contracts[contractName].abi;
+    const contractAbi = this.props.contracts[contractName].abi;
 
     const constructor = contractAbi.find((method) => {
       return method.type === "constructor";
@@ -105,7 +107,7 @@ class DeployContractForm extends React.Component {
   }
 
   HandleSubmit() {
-    const contract = this.state.contracts[this.state.selectedContract];
+    const contract = this.props.contracts[this.state.selectedContract];
 
     if(this.state.isContentObjectContract) {
       // Deploy custom content object contract
@@ -162,7 +164,7 @@ class DeployContractForm extends React.Component {
   }
 
   AvailableContracts() {
-    const options = Object.keys(this.state.contracts).map(contractName => {
+    const options = Object.keys(this.props.contracts).map(contractName => {
       return <option key={contractName} value={contractName}>{contractName}</option>;
     });
 
@@ -206,7 +208,7 @@ class DeployContractForm extends React.Component {
         </div>
         <div className="labelled-input">
           <label className="label text-label" htmlFor="selectedContractDescription" />
-          <div className="form-text">{this.state.contracts[this.state.selectedContract].description}</div>
+          <div className="form-text">{this.props.contracts[this.state.selectedContract].description}</div>
         </div>
         { this.ConstructorForm() }
       </div>
@@ -214,15 +216,13 @@ class DeployContractForm extends React.Component {
   }
 
   PageContent() {
-    if(Object.keys(this.state.contracts).length === 0){
+    if(Object.keys(this.props.contracts).length === 0){
       return (
         <div className="page-container">
           <div className="actions-container">
             <Link className="action secondary" to={Path.dirname(this.props.match.url)}>Back</Link>
           </div>
-          <h3 className="page-header">
-            No custom contracts available
-          </h3>
+          <PageHeader header="No custom contracts available" />
         </div>
       );
     }

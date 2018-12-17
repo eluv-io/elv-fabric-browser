@@ -7,6 +7,7 @@ import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
 import Redirect from "react-router/es/Redirect";
 import {EqualAddress} from "../../../utils/Helpers";
+import {PageHeader} from "../../components/Page";
 
 class AccessGroup extends React.Component {
   constructor(props) {
@@ -108,7 +109,7 @@ class AccessGroup extends React.Component {
       <div className="page-container access-group-page-container">
         { this.Actions() }
         <div className="object-display">
-          <h3 className="page-header">{ this.state.accessGroup.name }</h3>
+          <PageHeader header={this.state.accessGroup.name} />
           <div className="label-box">
             <LabelledField label="Description" value={description} />
             <LabelledField label="Owner" value={this.state.accessGroup.owner} />

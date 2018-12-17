@@ -7,6 +7,7 @@
 - In ```elv-client-js```, initialize a new content space using the initialization script:
   ```
   cd elv-client-js
+  npm install
   node InitContentSpace.js <path-to-qfab-config> <path-to-content-fabric-dir> <private-key>
   ```
 - Copy the generated TestConfiguration.json from ```elv-client-js``` to configuration.json in ```elv-core-js``` and ```elv-fabric-browser```
@@ -18,6 +19,7 @@
 - Seed the library ```elv-fabric-browser``` uses to store information:
   ```
   cd ../elv-fabric-browser
+  npm install
   node Seed.js <private-key>
   ```
 - Run ```npm install && npm run serve``` in ```elv-core-js``` and ```elv-fabric-browser``` in separate terminal tabs

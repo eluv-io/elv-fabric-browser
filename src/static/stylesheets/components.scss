@@ -3,6 +3,7 @@
 .clipped-text {
   cursor: pointer;
   position: relative;
+  width: 100%;
 
   &.hide {
     overflow: hidden;
@@ -11,6 +12,16 @@
   &.show {
     // sass-lint:disable no-important
     max-height: 100% !important;
+  }
+
+  .text {
+    background: rgba(255, 255, 255, 0);
+    border: 0;
+    font-family: inherit;
+    height: 100%;
+    overflow: hidden;
+    padding: 0;
+    width: 100%;
   }
 
   .cover {

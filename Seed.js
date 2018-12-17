@@ -1,6 +1,7 @@
 // Create initial library + content objects needed to store fabric browser info
 
 const { ElvClient } = require("elv-client-js/ElvClient-node-min");
+const BaseContentContract = require("elv-client-js/src/contracts/BaseContent.js");
 
 const client = ElvClient.FromConfiguration({configuration: require("./configuration")});
 
@@ -58,6 +59,13 @@ const SeedObject = async ({label, name, fabricBrowserInfo, libraryId}) => {
         libraryId,
         objectId: createResponse.id,
         writeToken: createResponse.write_token
+      });
+
+      await client.CallContractMethodAndWait({
+        contractAddress: client.utils.HashToAddress({hash: finalizeResponse.id}),
+        abi: BaseContentContract.abi,
+        methodName: "publish",
+        methodArgs: []
       });
 
       return finalizeResponse.id;

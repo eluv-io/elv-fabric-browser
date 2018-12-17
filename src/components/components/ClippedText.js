@@ -27,7 +27,9 @@ class ClippedText extends React.Component {
 
     return (
       <div className={displayClass + this.props.className} title={showText}>
-        {this.props.text}
+        <pre className="text">
+          {this.props.text}
+        </pre>
         <div className={coverClass} onClick={this.ToggleVisibility}></div>
       </div>
     );

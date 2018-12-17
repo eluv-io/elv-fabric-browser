@@ -6,6 +6,7 @@ import RequestPage from "../RequestPage";
 import { LibraryCard } from "../../components/DisplayCards";
 
 import ContractIcon from "../../../static/icons/contracts.svg";
+import {PageHeader} from "../../components/Page";
 
 class Contracts extends React.Component {
   constructor(props) {
@@ -92,7 +93,7 @@ class Contracts extends React.Component {
           <Link to="/contracts/deploy" className="action" >Deploy Contract</Link>
           <Link to="/contracts/watch" className="action" >Watch Contract</Link>
         </div>
-        <h3 className="page-header">Contracts</h3>
+        <PageHeader header="Contracts" />
         { this.ToggleView() }
         { this.SavedContracts() }
       </div>

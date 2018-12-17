@@ -69,6 +69,11 @@ form {
         padding: 0 10px;
       }
 
+      &[type="checkbox"] {
+        font-size: 12px;
+        width: 100%;
+      }
+
       &:read-only {
         background: $color-lightergray;
         color: $color-darkgray;

@@ -12,7 +12,7 @@ export default (Component) => {
       const libraryId = this.props.libraryId || this.props.match.params.libraryId;
       const objectId = this.props.match.params.objectId;
       const isAccessGroup = this.props.location.pathname.startsWith("/access-groups");
-      const isCustomContentObjectContract = this.props.location.pathname.endsWith("custom-contract");
+      const isCustomContentObjectContract = this.props.location.pathname.includes("custom-contract");
       const contractAddressParam = this.props.match.params.contractAddress;
 
       const {type, description, abi, contractAddress} = DetermineContractInterface({
@@ -90,13 +90,14 @@ export default (Component) => {
             }
           });
           break;
+
         case ContractTypes.object:
         case ContractTypes.contentType:
           object = this.props.content.objects[this.state.objectId];
           this.setState({
             contract: {
               ...this.state.contract,
-              name: object.name,
+              name: "Base Content Contract - " + object.name,
             }
           });
           break;
@@ -105,7 +106,7 @@ export default (Component) => {
           object = this.props.content.objects[this.state.objectId];
           this.setState({
             contract: {
-              name: object.meta.customContract.name,
+              name: "Custom Contract - " + object.name,
               description: object.meta.customContract.description,
               address: object.meta.customContract.address,
               abi: object.meta.customContract.abi,
