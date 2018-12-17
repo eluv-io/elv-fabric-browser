@@ -90,7 +90,12 @@ const Fabric = {
     let contentLibraries = {};
     await Promise.all(
       libraryIds.map(async libraryId => {
-        contentLibraries[libraryId] = await Fabric.GetContentLibrary({libraryId});
+        try {
+          contentLibraries[libraryId] = await Fabric.GetContentLibrary({libraryId});
+        } catch(error) {
+          console.error("Failed to get content library:");
+          console.error(error);
+        }
       })
     );
 
