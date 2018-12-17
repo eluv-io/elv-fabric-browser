@@ -18,17 +18,46 @@ class DeployedContract extends React.Component {
       visibleMethods: {}
     };
 
-    this.LoadEvents = this.LoadEvents.bind(this);
+    this.ToggleWatch = this.ToggleWatch.bind(this);
     this.PageContent = this.PageContent.bind(this);
   }
 
-  LoadEvents() {
+  // Ensure watching stops when component unmounts
+  componentWillUnmount() {
+    this.StopWatchingContract();
+  }
+
+  // Periodically query for contract events
+  WatchContract() {
     this.setState({
-      eventsRequestId: this.props.GetContractEvents({
-        contractAddress: this.props.contract.address,
-        abi: this.props.contract.abi
-      })
+      watcher: setTimeout(() => {
+        this.WatchContract();
+      }, 2000)
     });
+
+    this.setState({eventsLoading: true});
+
+    this.props.GetContractEvents({
+      contractAddress: this.props.contract.address,
+      abi: this.props.contract.abi
+    }).then(() => {
+      this.setState({eventsLoading: false});
+    });
+  }
+
+  StopWatchingContract() {
+    if(this.state.watcher) {
+      clearTimeout(this.state.watcher);
+      this.setState({watcher: undefined});
+    }
+  }
+
+  ToggleWatch() {
+    if(this.state.watcher) {
+      this.StopWatchingContract();
+    } else {
+      this.WatchContract();
+    }
   }
 
   // Allow removal (aka stop watching) deployed custom contract
@@ -123,6 +152,8 @@ class DeployedContract extends React.Component {
   }
 
   ContractEvents() {
+    if(!this.state.watcher) { return null; }
+
     const contractState = this.props.deployedContracts[this.props.contract.address];
 
     if(!contractState || !contractState.events) { return null; }
@@ -188,7 +219,9 @@ class DeployedContract extends React.Component {
             { this.AbiInfo() }
             <h3>Events</h3>
             <div className="actions-container">
-              <button className="action" onClick={this.LoadEvents}>Load Events</button>
+              <button className="action" onClick={this.ToggleWatch}>
+                { this.state.watcher ? "Stop Watching Contract" : "Watch Contract" }
+              </button>
             </div>
             { this.ContractEvents() }
             <h3>Contract Constructor</h3>
