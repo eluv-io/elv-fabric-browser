@@ -6,6 +6,7 @@ import { LibraryCard } from "../../components/DisplayCards";
 import RequestPage from "../RequestPage";
 
 import LibraryIcon from "../../../static/icons/content.svg";
+import {PageHeader} from "../../components/Page";
 
 class ContentLibraries extends React.Component {
   constructor(props) {
@@ -78,7 +79,7 @@ class ContentLibraries extends React.Component {
         <div className="actions-container">
           <Link to={Path.join(path, "create")} className="action" >New Library</Link>
         </div>
-        <h3 className="page-header">Content Libraries</h3>
+        <PageHeader header="Content Libraries" />
         { this.ContentLibraries(path) }
       </div>
     );

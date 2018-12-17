@@ -15,7 +15,13 @@ export const ContractTypes = {
   unknown: "unknown"
 };
 
-export const DetermineContractInterface = ({libraryId, objectId, isAccessGroup, isCustomContract, contractAddressParam}) => {
+export const DetermineContractInterface = ({
+  libraryId,
+  objectId,
+  isAccessGroup,
+  isCustomContentObjectContract,
+  contractAddressParam
+}) => {
   const isContentSpaceLibrary = libraryId === Fabric.contentSpaceLibraryId;
   const isContentLibraryObject = objectId && (Fabric.utils.EqualHash(libraryId, objectId));
 
@@ -60,7 +66,7 @@ export const DetermineContractInterface = ({libraryId, objectId, isAccessGroup, 
   }
 
   if(objectId) {
-    if(isCustomContract) {
+    if(isCustomContentObjectContract) {
       // Custom content object contract
       return {
         type: ContractTypes.customObject,

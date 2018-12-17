@@ -7,6 +7,7 @@ import RequestPage from "../RequestPage";
 import { LabelledField } from "../../components/LabelledField";
 import Redirect from "react-router/es/Redirect";
 import ClippedText from "../../components/ClippedText";
+import {PageHeader} from "../../components/Page";
 
 class ContentLibrary extends React.Component {
   constructor(props) {
@@ -259,7 +260,7 @@ class ContentLibrary extends React.Component {
       <div className="page-container contents-page-container">
         { this.Actions() }
         <div className="object-display">
-          <h3 className="page-header">{ this.state.library.name }</h3>
+          <PageHeader header={this.state.library.name} />
           { this.LibraryInfo() }
           { this.ContentObjects() }
         </div>
