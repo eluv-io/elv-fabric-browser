@@ -6,6 +6,7 @@ import RequestPage from "../RequestPage";
 import { LibraryCard } from "../../components/DisplayCards";
 
 import AccessGroupIcon from "../../../static/icons/groups.svg";
+import {PageHeader} from "../../components/Page";
 
 class AccessGroups extends React.Component {
   constructor(props) {
@@ -51,7 +52,7 @@ class AccessGroups extends React.Component {
         <div className="actions-container">
           <Link to="/access-groups/create" className="action" >New Access Group</Link>
         </div>
-        <h3 className="page-header">Access Groups</h3>
+        <PageHeader header="Access Groups" />
         { this.AccessGroups() }
       </div>
     );

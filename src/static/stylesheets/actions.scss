@@ -80,6 +80,12 @@
       }
     }
 
+    // Buttons with borders have text aligned too low
+    &.tertiary,
+    &.delete-action {
+      line-height: 1.2;
+    }
+
     &.action-compact {
       font-size: 12px;
       height: auto;

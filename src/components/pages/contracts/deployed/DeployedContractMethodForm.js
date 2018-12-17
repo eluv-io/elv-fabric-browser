@@ -7,6 +7,7 @@ import Link from "react-router-dom/es/Link";
 import DeployedContractWrapper from "./DeployedContractWrapper";
 import PropTypes from "prop-types";
 import {Bytes32ToUtf8} from "../../../../utils/Helpers";
+import {PageHeader} from "../../../components/Page";
 
 class DeployedContractMethodForm extends React.Component {
   constructor(props) {
@@ -113,24 +114,36 @@ class DeployedContractMethodForm extends React.Component {
   }
 
   ContractMethodForm() {
-    return this.state.methodInterface.inputs.map(input => {
+    const formInputs = this.state.methodInterface.inputs.map(input => {
       const type = input.type;
       const inputType = type === "bool" ? "checkbox" : "text";
 
       return (
-        <div className="labelled-input" key={"input-" + input.name}>
-          <label htmlFor={input.name}>{input.name}</label>
-          <input
-            name={input.name}
-            value={this.state.inputs[input.name]}
-            type={inputType}
-            placeholder={type}
-            maxLength={256}
-            onChange={this.HandleInputChange}
-          />
+        <div className="form-content">
+          <div className="labelled-input" key={"input-" + input.name}>
+            <label htmlFor={input.name}>{input.name}</label>
+            <input
+              name={input.name}
+              value={this.state.inputs[input.name]}
+              type={inputType}
+              placeholder={type}
+              maxLength={256}
+              onChange={this.HandleInputChange}
+            />
+          </div>
         </div>
       );
     });
+
+    return (
+      <div className="form-contents">
+        <div className="labelled-input">
+          <label>Method</label>
+          <div className="form-text">{this.state.method}</div>
+        </div>
+        { formInputs }
+      </div>
+    );
   }
 
   MethodResults() {
@@ -161,13 +174,7 @@ class DeployedContractMethodForm extends React.Component {
         <div className="actions-container">
           <Link className="action secondary" to={backPath}>Back</Link>
         </div>
-        <h3 className="page-header">
-          { this.props.contract.description }
-        </h3>
-        <div className="label-box">
-          <LabelledField label="Contract" value={this.props.contract.name} />
-          <LabelledField label="Method" value={this.state.method} />
-        </div>
+        <PageHeader header={this.props.contract.name} subHeader={this.props.contract.description} />
         <RequestForm
           requests={this.props.requests}
           requestId={this.state.submitRequestId}

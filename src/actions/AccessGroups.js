@@ -1,6 +1,7 @@
 import ActionTypes from "./ActionTypes";
 import Fabric from "../clients/Fabric";
 import {SetNotificationMessage} from "./Notifications";
+import { FormatAddress } from "../utils/Helpers";
 
 export const ListAccessGroups = () => {
   return async (dispatch) => {
@@ -33,7 +34,7 @@ export const SaveAccessGroup = ({address, name, description, members}) => {
       }));
     }
 
-    return address;
+    return FormatAddress(address);
   };
 };
 

@@ -5,6 +5,7 @@ import RequestForm from "../../../forms/RequestForm";
 import RadioSelect from "../../../components/RadioSelect";
 import DeployedContractWrapper from "./DeployedContractWrapper";
 import PropTypes from "prop-types";
+import { PageHeader } from "../../../components/Page";
 
 class DeployedContractFundsForm extends React.Component {
   constructor(props) {
@@ -85,9 +86,7 @@ class DeployedContractFundsForm extends React.Component {
         <div className="actions-container">
           <Link className="action secondary" to={Path.dirname(this.props.match.url)}>Back</Link>
         </div>
-        <h3 className="page-header">
-          { this.props.contract.description }
-        </h3>
+        <PageHeader header={this.props.contract.name} subHeader={this.props.contract.description} />
         <RequestForm
           requests={this.props.requests}
           requestId={this.state.submitRequestId}

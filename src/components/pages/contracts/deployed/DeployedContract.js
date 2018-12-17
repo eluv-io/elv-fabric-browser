@@ -8,6 +8,7 @@ import DeployedContractWrapper from "./DeployedContractWrapper";
 import {ContractTypes} from "../../../../utils/Contracts";
 import RequestPage from "../../RequestPage";
 import Redirect from "react-router/es/Redirect";
+import {PageHeader} from "../../../components/Page";
 
 class DeployedContract extends React.Component {
   constructor(props) {
@@ -177,10 +178,7 @@ class DeployedContract extends React.Component {
           { this.DeleteButton() }
         </div>
         <div className="object-display">
-          <h3 className="page-header">
-            { this.props.contract.name }
-          </h3>
-          <h3>{ this.props.contract.description }</h3>
+          <PageHeader header={this.props.contract.name} subHeader={this.props.contract.description} />
           <div className="label-box">
             <h3>Contract Info</h3>
             <LabelledField label="Name" value={this.props.contract.name} />

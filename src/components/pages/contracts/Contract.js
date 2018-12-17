@@ -6,6 +6,7 @@ import RequestPage from "../RequestPage";
 import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
 import Redirect from "react-router/es/Redirect";
+import {PageHeader} from "../../components/Page";
 
 class Contract extends React.Component {
   constructor(props) {
@@ -118,7 +119,7 @@ class Contract extends React.Component {
           <button className="action delete-action" onClick={() => this.DeleteContract(this.state.contractName)}>Delete Contract</button>
         </div>
         <div className="object-display">
-          <h3 className="page-header">{ this.state.contractName }</h3>
+          <PageHeader header={this.state.contractName} />
           <div className="label-box">
             <h3>Contract Info</h3>
             <LabelledField label="Description" value={description} />
@@ -128,12 +129,12 @@ class Contract extends React.Component {
             { bytecodeDisplayInfo }
             <h3>Contract Constructor</h3>
             { this.ContractInfo(contractConstructor) }
-            <h3>Contract Events</h3>
-            { this.ContractInfo(contractEvents) }
             <h3>Constant Methods</h3>
             { this.ContractInfo(constantMethods) }
             <h3>Dynamic Methods</h3>
             { this.ContractInfo(dynamicMethods) }
+            <h3>Contract Events</h3>
+            { this.ContractInfo(contractEvents) }
           </div>
         </div>
       </div>
