@@ -31,9 +31,7 @@ ThreeCard.propTypes = {
   title: PropTypes.string
 };
 
-export const SmallCard = ({className, link, name, description, title, onDelete}) => {
-  const handleDelete = (event) => { event.stopPropagation() ; onDelete(); };
-
+export const SmallCard = ({className, link, name, description, title}) => {
   return (
     <div className={"display-card small-card" + (className || "")} title={title} >
       <div className="card-header">
@@ -52,7 +50,6 @@ SmallCard.propTypes = {
   name: PropTypes.string.isRequired,
   description: PropTypes.string,
   title: PropTypes.string,
-  onDelete: PropTypes.func
 };
 
 export class LibraryCard extends React.Component {

@@ -9,6 +9,7 @@ import {Bytes32ToUtf8, EqualAddress, FormatAddress} from "../utils/Helpers";
 const Configuration = require("../../configuration.json");
 
 let client;
+let isFrameClient = false;
 
 if(window.self === window.top) {
   client = ElvClient.FromConfiguration({configuration: Configuration});
@@ -26,15 +27,30 @@ if(window.self === window.top) {
     target: window.parent,
     timeout: 15
   });
+
+  isFrameClient = true;
 }
 
 const Fabric = {
   /* Utils */
   // TODO: Get the content space ID in the frameclient from parent
+  isFrameClient,
   contentSpaceId: Configuration.fabric.contentSpaceId,
   contentSpaceLibraryId: Configuration.fabric.contentSpaceId.replace("ispc", "ilib"),
   utils: client.utils,
   currentAccountAddress: undefined,
+
+  async GetFramePath() {
+    if(Fabric.isFrameClient) {
+      return await client.GetFramePath();
+    }
+  },
+
+  async SetFramePath({path}) {
+    if(Fabric.isFrameClient) {
+      await client.SetFramePath({path});
+    }
+  },
 
   CurrentAccountAddress: async () => {
     if(!Fabric.currentAccountAddress) {
@@ -353,8 +369,8 @@ const Fabric = {
     await Promise.all(
       versions.map(async (version, index) => {
         const metadata = await Fabric.GetContentObjectMetadata({libraryId, objectId, versionHash: version.hash});
-        const verification = await Fabric.VerifyContentObject({libraryId, objectId, partHash: version.hash});
-        const parts = (await Fabric.ListParts({ libraryId, objectId, versionHash: version.hash })).parts;
+        const verification = await Fabric.VerifyContentObject({libraryId, objectId, versionHash: version.hash});
+        const parts = (await Fabric.ListParts({libraryId, objectId, versionHash: version.hash})).parts;
 
         const partsWithProofs = await Promise.all(
           parts.map(async part => {
@@ -717,9 +733,9 @@ const Fabric = {
   VerifyContentObject: ({
     libraryId,
     objectId,
-    partHash
+    versionHash
   }) => {
-    return client.VerifyContentObject({libraryId, objectId, partHash});
+    return client.VerifyContentObject({libraryId, objectId, versionHash});
   },
 
   Proofs: ({libraryId, objectId, versionHash, partHash}) => {

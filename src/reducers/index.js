@@ -1,4 +1,3 @@
-import { connectRouter } from "connected-react-router";
 import { combineReducers } from "redux";
 
 import AccountsReducer from "./AccountsReducer";
@@ -7,6 +6,7 @@ import ContractsReducer from "./ContractsReducer";
 import NotificationsReducer from "./NotificationsReducer";
 import RequestsReducer from "./RequestsReducer";
 import AccessGroupsReducer from "./AccessGroupsReducer";
+import CreateRoutingReducer from "./RoutingReducer";
 
 // Collect all dispatched actions
 const DebugReducer = (state = {}, action) => {
@@ -22,12 +22,14 @@ const DebugReducer = (state = {}, action) => {
   };
 };
 
-export default (history) => combineReducers({
-  router: connectRouter(history),
-  accessGroups: AccessGroupsReducer,
-  accounts: AccountsReducer,
-  content: ContentReducer,
-  contracts: ContractsReducer,
-  notifications: NotificationsReducer,
-  requests: RequestsReducer
-});
+export default (history) => {
+  return combineReducers({
+    router: CreateRoutingReducer(history),
+    accessGroups: AccessGroupsReducer,
+    accounts: AccountsReducer,
+    content: ContentReducer,
+    contracts: ContractsReducer,
+    notifications: NotificationsReducer,
+    requests: RequestsReducer
+  });
+};
