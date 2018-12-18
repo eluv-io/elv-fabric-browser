@@ -1,11 +1,4 @@
 const ActionTypes = {
-  requests: {
-    status: {
-      submitted: "REQUEST_SUBMITTED",
-      completed: "REQUEST_COMPLETED",
-      error: "REQUEST_ERROR"
-    }
-  },
   accessGroups: {
     list: "LIST_ACCESS_GROUPS",
   },
@@ -46,6 +39,16 @@ const ActionTypes = {
     error: "SET_ERROR_MESSAGE",
     notification: "SET_NOTIFICATION_MESSAGE",
     clear: "CLEAR_NOTIFICATIONS"
+  },
+  requests: {
+    status: {
+      submitted: "REQUEST_SUBMITTED",
+      completed: "REQUEST_COMPLETED",
+      error: "REQUEST_ERROR"
+    }
+  },
+  routes: {
+    synchronize: "START_ROUTE_SYNCHRONIZATION"
   }
 };
 
