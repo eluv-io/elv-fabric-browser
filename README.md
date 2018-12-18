@@ -1,6 +1,6 @@
 ## Running the Fabric Browser
 
-##### Note: The fabric browser should be run as a contained application of [Eluvio Web Core](https://github.com/eluv-io/elv-web-core)
+##### Note: The fabric browser should be run as a contained application of [Eluvio Core JS](https://github.com/eluv-io/elv-core-js)
 
 #### Quick start:
 - Clone ```elv-fabric-browser```, ```elv-core-js```, and ```elv-client-js``` projects from github
