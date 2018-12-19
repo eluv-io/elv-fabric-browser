@@ -79,7 +79,7 @@ class AccessGroup extends React.Component {
     let editButton;
     let deleteButton;
     if(this.state.accessGroup.isOwner) {
-      editButton = <Link to={Path.join(this.props.match.url, "edit")} className="action" >Edit Access Group</Link>;
+      editButton = <Link to={Path.join(this.props.match.url, "edit")} className="action" >Manage Access Group</Link>;
       deleteButton = <button className="action delete-action" onClick={this.DeleteAccessGroup}>Delete Access Group</button>;
     }
 

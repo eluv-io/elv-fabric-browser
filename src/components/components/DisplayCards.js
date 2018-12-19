@@ -54,8 +54,6 @@ SmallCard.propTypes = {
 
 export class LibraryCard extends React.Component {
   render() {
-    let previews = this.props.previews || [];
-
     const ownerIcon = this.props.isOwner ? <ImageIcon className="header-icon" title={"Owner"} icon={OwnerIcon} /> : null;
 
     return (
@@ -74,16 +72,6 @@ export class LibraryCard extends React.Component {
             {this.props.infoText}
           </div>
           <ClippedText text={this.props.description} className="description" />
-          <div className="preview-container">
-            {(previews.slice(0, 6).map(({name, image}, index) => {
-              let key = "image-preview-" + this.props.libraryId + "-" + index;
-              return (
-                <div className="preview" key={key}>
-                  <ImageIcon title={name} className="content-preview card-icon" icon={image} />
-                </div>
-              );
-            }))}
-          </div>
         </div>
       </div>
     );
@@ -94,7 +82,6 @@ LibraryCard.propTypes = {
   libraryId: PropTypes.string,
   link: PropTypes.string,
   icon: PropTypes.string,
-  previews: PropTypes.array,
   name: PropTypes.string.isRequired,
   isOwner: PropTypes.bool,
   infoText: PropTypes.string,

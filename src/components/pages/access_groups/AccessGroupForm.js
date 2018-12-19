@@ -98,7 +98,7 @@ class AccessGroupForm extends React.Component {
       <RequestForm
         requests={this.props.requests}
         requestId={this.state.submitRequestId}
-        legend={this.state.createForm ? "Create Access Group" : "Edit Access Group"}
+        legend={this.state.createForm ? "Create Access Group" : "Manage Access Group"}
         formContent={this.AccessGroupForm()}
         redirectPath={redirectPath}
         cancelPath={Path.dirname(this.props.match.url)}

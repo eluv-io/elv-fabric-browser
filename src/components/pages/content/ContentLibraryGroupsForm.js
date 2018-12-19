@@ -53,6 +53,7 @@ class ContentLibraryGroupsForm extends React.Component {
 
         libraryGroup[Id.next()] = {
           ...group,
+          addressSelection: groupExists ? group.address : "",
           hideAddress: groupExists
         };
       });
@@ -93,7 +94,13 @@ class ContentLibraryGroupsForm extends React.Component {
   HandleSubmit() {
     let libraryGroups = {};
     Object.keys(this.state.groups).map(groupType => {
-      libraryGroups[groupType] = Object.values(this.state.groups[groupType]);
+      libraryGroups[groupType] = Object.values(this.state.groups[groupType]).map(groupInfo => {
+        // Address is either selected address or inputted address
+        groupInfo.address = groupInfo.addressSelection || groupInfo.address;
+        delete groupInfo.addressSelection;
+
+        return groupInfo;
+      });
     });
 
     this.setState({
@@ -156,8 +163,8 @@ class ContentLibraryGroupsForm extends React.Component {
 
     return (
       <select
-        name="address"
-        value={this.state.groups[groupType][groupId].address}
+        name="addressSelection"
+        value={this.state.groups[groupType][groupId].addressSelection}
         onChange={this.HandleInputChange(groupType, groupId)}
       >
         { options }
