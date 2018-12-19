@@ -481,7 +481,7 @@ class ContentObject extends React.Component {
       <div className="actions-container">
         <Link to={Path.dirname(this.props.match.url)} className="action secondary" >Back</Link>
         <Link to={Path.join(this.props.match.url, "edit")} className="action" >
-          { this.state.object.isContentType ? "Edit Content Type" : "Edit Content Object" }
+          { this.state.object.isContentType ? "Manage Content Type" : "Manage Content Object" }
         </Link>
         { setContractButton }
         <Link to={Path.join(this.props.match.url, "upload")} className="action" >Upload Parts</Link>

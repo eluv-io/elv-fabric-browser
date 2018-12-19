@@ -143,7 +143,7 @@ class ContentTypeForm extends React.Component {
   }
 
   PageContent() {
-    const legend = this.state.createForm ? "Create content type" : "Edit content type";
+    const legend = this.state.createForm ? "Create content type" : "Manage content type";
 
     let redirectPath = Path.dirname(this.props.match.url);
     if(this.state.createForm) {
