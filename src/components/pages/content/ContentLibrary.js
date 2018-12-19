@@ -31,6 +31,7 @@ class ContentLibrary extends React.Component {
           await this.props.GetContentLibrary({libraryId: this.state.libraryId});
           await this.props.ListContentObjects({libraryId: this.state.libraryId});
           await this.props.ListContentLibraryGroups({libraryId: this.state.libraryId});
+          await this.props.ListAccessGroups();
         }
       })
     });
@@ -146,10 +147,21 @@ class ContentLibrary extends React.Component {
                 <h4>{groupType.capitalize()}</h4>
                 {
                   groups.map(group => {
+                    const accessGroupLink = Path.join("/access-groups", group.address);
+
+                    let header = <h4>Unknown Group</h4>;
+                    if(this.props.accessGroups.accessGroups[group.address]) {
+                      // Known group - Provide link to group page
+                      header = <h4><Link className="inline-link" to={accessGroupLink}>{group.name}</Link></h4>;
+                    }
+
                     return (
                       <div className="group-info indented" key={"library-group-" + groupType + "-" + group.address}>
-                        <h4>{group.name || "Unknown Group"}</h4>
-                        <LabelledField label="Address" value={group.address}/>
+                        { header }
+                        <LabelledField
+                          label="Address"
+                          value={<Link className="inline-link" to={Path.join(accessGroupLink, "contract")}>{group.address}</Link>}
+                        />
                       </div>
                     );
                   })
@@ -241,10 +253,10 @@ class ContentLibrary extends React.Component {
     return (
       <div className="actions-container">
         <Link to={Path.dirname(this.props.match.url)} className="action secondary" >Back</Link>
-        <Link to={Path.join(this.props.match.url, "edit")} className="action" >Edit Content Library</Link>
+        <Link to={Path.join(this.props.match.url, "edit")} className="action" >Manage Content Library</Link>
         { manageGroupsButton }
         <Link to={Path.join(this.props.match.url, "create")} className="action" >
-          { this.state.library.isContentSpaceLibrary ? "New Content Type" : "New Content Object" }
+          { this.state.library.isContentSpaceLibrary ? "New Content Type" : "Contribute" }
         </Link>
         { this.DeleteContentLibraryButton() }
       </div>

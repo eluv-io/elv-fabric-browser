@@ -33,7 +33,8 @@ import WatchContractForm from "../../components/pages/contracts/WatchContractFor
 const mapStateToProps = (state) => ({
   requests: state.requests,
   ...state.contracts,
-  content: state.content
+  content: state.content,
+  accessGroups: state.accessGroups
 });
 
 const mapDispatchToProps = dispatch =>

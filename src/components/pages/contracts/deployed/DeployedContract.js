@@ -199,6 +199,9 @@ class DeployedContract extends React.Component {
     // Some routes require going back one path, others two
     if([ContractTypes.contentSpace, ContractTypes.library, ContractTypes.unknown].includes(this.props.contract.type)) {
       backPath = Path.dirname(backPath);
+    } else if(this.props.contract.type === ContractTypes.accessGroup && !this.props.accessGroups.accessGroups[this.props.contract.address]) {
+      // Access group contract, but access group is unknown. Skip access group details page
+      backPath = Path.dirname(backPath);
     }
 
     return (

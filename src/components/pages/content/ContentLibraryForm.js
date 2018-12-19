@@ -178,7 +178,7 @@ class ContentLibraryForm extends React.Component {
   }
 
   PageContent() {
-    const legend = this.state.createForm ? "Create content library" : "Edit content library";
+    const legend = this.state.createForm ? "Create content library" : "Manage content library";
 
     let redirectPath = Path.dirname(this.props.match.url);
     if(this.state.createForm) {

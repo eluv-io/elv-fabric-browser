@@ -21,30 +21,9 @@ class ContentLibraries extends React.Component {
       requestId: this.props.WrapRequest({
         todo: async () => {
           await this.props.ListContentLibraries();
-          await Promise.all(
-            Object.keys(this.props.libraries).map(async libraryId => {
-              await this.props.ListContentObjects({libraryId});
-            })
-          );
         }
       })
     });
-  }
-
-  LibraryPreviewImages(library) {
-    let previews = [];
-
-    for(const objectId of library.objects) {
-      const object = this.props.objects[objectId];
-      if(object.imageUrl) {
-        previews.push({
-          name: object.name,
-          image: object.imageUrl
-        });
-      }
-    }
-
-    return previews;
   }
 
   ContentLibraries(path) {
@@ -59,7 +38,6 @@ class ContentLibraries extends React.Component {
           libraryId={libraryId}
           link={Path.join(path, libraryId)}
           icon={library.imageUrl || LibraryIcon}
-          previews={this.LibraryPreviewImages(library)}
           name={library.name}
           isOwner={library.isOwner}
           infoText={library.objects.length + " Content Objects"}

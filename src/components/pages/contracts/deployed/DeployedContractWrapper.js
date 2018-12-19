@@ -62,6 +62,11 @@ export default (Component) => {
           };
           break;
 
+        case ContractTypes.accessGroup:
+          todo = async () => {
+            await this.ListAccessGroups();
+          };
+
         case ContractTypes.unknown:
           todo = async () => {
             await this.props.ListDeployedContracts();
@@ -141,7 +146,7 @@ export default (Component) => {
 
     // After everything has resolved, render the component with the contract info
     PageContent() {
-      return <Component contract={this.state.contract} {...this.props} />;
+      return <Component {...this.props} {...this.state} />;
     }
 
     render() {
