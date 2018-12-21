@@ -46,9 +46,14 @@ class Form extends React.Component {
       );
     }
 
+    let cancelButton;
+    if(this.props.OnCancel || this.props.cancelPath) {
+      cancelButton = <a className="action secondary" onClick={this.HandleCancel}>{this.props.cancelText || "Cancel"}</a>;
+    }
+
     return (
       <div className="actions-container">
-        <a className="action secondary" onClick={this.HandleCancel}>{this.props.cancelText || "Cancel"}</a>
+        { cancelButton }
         <input className="action" type="submit" value={this.props.submitText || "Submit"} />
       </div>
     );

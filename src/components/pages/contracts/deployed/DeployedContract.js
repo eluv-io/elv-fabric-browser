@@ -9,55 +9,25 @@ import {ContractTypes} from "../../../../utils/Contracts";
 import RequestPage from "../../RequestPage";
 import Redirect from "react-router/es/Redirect";
 import {PageHeader} from "../../../components/Page";
+import DeployedContractMethodForm from "./DeployedContractMethodForm";
 
 class DeployedContract extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      visibleMethods: {}
+      visibleMethods: {},
+      method: "",
     };
 
-    this.ToggleWatch = this.ToggleWatch.bind(this);
     this.PageContent = this.PageContent.bind(this);
+    this.HandleInputChange = this.HandleInputChange.bind(this);
   }
 
-  // Ensure watching stops when component unmounts
-  componentWillUnmount() {
-    this.StopWatchingContract();
-  }
-
-  // Periodically query for contract events
-  WatchContract() {
+  HandleInputChange(event) {
     this.setState({
-      watcher: setTimeout(() => {
-        this.WatchContract();
-      }, 2000)
+      [event.target.name]: event.target.value
     });
-
-    this.setState({eventsLoading: true});
-
-    this.props.GetContractEvents({
-      contractAddress: this.props.contract.address,
-      abi: this.props.contract.abi
-    }).then(() => {
-      this.setState({eventsLoading: false});
-    });
-  }
-
-  StopWatchingContract() {
-    if(this.state.watcher) {
-      clearTimeout(this.state.watcher);
-      this.setState({watcher: undefined});
-    }
-  }
-
-  ToggleWatch() {
-    if(this.state.watcher) {
-      this.StopWatchingContract();
-    } else {
-      this.WatchContract();
-    }
   }
 
   // Allow removal (aka stop watching) deployed custom contract
@@ -151,20 +121,6 @@ class DeployedContract extends React.Component {
     });
   }
 
-  ContractEvents() {
-    if(!this.state.watcher) { return null; }
-
-    const contractState = this.props.deployedContracts[this.props.contract.address];
-
-    if(!contractState || !contractState.events) { return null; }
-
-    return(
-      <pre className="event-log">
-        { JSON.stringify(contractState.events, null, 2) }
-      </pre>
-    );
-  }
-
   AbiInfo() {
     if(!this.props.contract.abi) { return null; }
 
@@ -188,13 +144,6 @@ class DeployedContract extends React.Component {
   PageContent() {
     const description = <ClippedText className="object-description" text={this.props.contract.description} />;
 
-    const contractElements = Object.values(this.props.contract.abi);
-    const contractConstructor = contractElements.filter(element => element.type === "constructor");
-    const contractEvents = contractElements.filter(element => element.type === "event");
-    const contractMethods = contractElements.filter(element => element.type === "function");
-    const constantMethods = contractMethods.filter(element => element.constant);
-    const dynamicMethods = contractMethods.filter(element => !element.constant);
-
     let backPath = Path.dirname(this.props.match.url);
     // Some routes require going back one path, others two
     if([ContractTypes.contentSpace, ContractTypes.library, ContractTypes.unknown].includes(this.props.contract.type)) {
@@ -204,11 +153,13 @@ class DeployedContract extends React.Component {
       backPath = Path.dirname(backPath);
     }
 
+    const balance =`φ${Math.round(this.props.contract.balance * 1000) / 1000}`;
     return (
       <div className="page-container contracts-page-container">
         <div className="actions-container">
           <Link to={backPath} className="action secondary" >Back</Link>
           <Link to={Path.join(this.props.match.url, "funds")} className="action" >Transfer Funds</Link>
+          <Link to={Path.join(this.props.match.url, "logs")} className="action" >Contract Logs</Link>
           { this.DeleteButton() }
         </div>
         <div className="object-display">
@@ -218,23 +169,10 @@ class DeployedContract extends React.Component {
             <LabelledField label="Name" value={this.props.contract.name} />
             <LabelledField label="Description" value={description} />
             <LabelledField label="Contract Address" value={this.props.contract.address} />
-            <LabelledField label="Balance" value={this.props.contract.balance} />
+            <LabelledField label="Balance" value={balance} />
             { this.AbiInfo() }
-            <h3>Events</h3>
-            <div className="actions-container">
-              <button className="action" onClick={this.ToggleWatch}>
-                { this.state.watcher ? "Stop Watching Contract" : "Watch Contract" }
-              </button>
-            </div>
-            { this.ContractEvents() }
-            <h3>Contract Constructor</h3>
-            { this.ContractInfo(contractConstructor) }
-            <h3>Constant Methods</h3>
-            { this.ContractInfo(constantMethods) }
-            <h3>Dynamic Methods</h3>
-            { this.ContractInfo(dynamicMethods) }
-            <h3>Contract Events</h3>
-            { this.ContractInfo(contractEvents) }
+            <h3>Contract Methods</h3>
+            <DeployedContractMethodForm {...this.props} />
           </div>
         </div>
       </div>

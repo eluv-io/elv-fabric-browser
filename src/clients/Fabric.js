@@ -666,12 +666,12 @@ const Fabric = {
     return client.DeployContract({abi, bytecode, constructorArgs});
   },
 
-  CallContractMethod: ({contractAddress, abi, methodName, methodArgs}) => {
-    return client.CallContractMethod({contractAddress, abi, methodName, methodArgs});
+  CallContractMethod: ({contractAddress, abi, methodName, methodArgs, value}) => {
+    return client.CallContractMethod({contractAddress, abi, methodName, methodArgs, value});
   },
 
-  CallContractMethodAndWait: ({contractAddress, abi, methodName, methodArgs}) => {
-    return client.CallContractMethodAndWait({contractAddress, abi, methodName, methodArgs});
+  CallContractMethodAndWait: ({contractAddress, abi, methodName, methodArgs, value}) => {
+    return client.CallContractMethodAndWait({contractAddress, abi, methodName, methodArgs, value});
   },
 
   SetCustomContentContract: ({objectId, customContractAddress, overrides={}}) => {
@@ -682,8 +682,12 @@ const Fabric = {
     });
   },
 
-  ContractEvents: ({contractAddress, abi}) => {
-    return client.ContractEvents({contractAddress, abi});
+  ContractEvent: ({abi, transactionHash}) => {
+    return client.ContractEvent({abi, transactionHash});
+  },
+
+  ContractEvents: ({contractAddress, abi, fromBlock, toBlock}) => {
+    return client.ContractEvents({contractAddress, abi, fromBlock, toBlock});
   },
 
   WithdrawContractFunds: ({contractAddress, abi, ether}) => {

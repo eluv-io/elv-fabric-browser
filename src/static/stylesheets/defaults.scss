@@ -27,6 +27,12 @@ h3 {
   font-size: 20px;
   font-weight: normal;
   margin: 0;
+
+  &.header-with-loader {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+  }
 }
 
 h4 {
@@ -70,4 +76,8 @@ pre {
 // sass-lint:disable no-important
 .hidden {
   display: none !important;
+}
+
+.bold {
+  font-weight: bold;
 }

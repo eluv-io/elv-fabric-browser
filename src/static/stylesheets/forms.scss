@@ -8,7 +8,7 @@ form {
   display: inline-block;
 
   fieldset {
-    border-color: $color-white;
+    border: 1px solid $color-gray;
     padding: 30px 50px 20px;
     width: 450px;
   }
@@ -66,10 +66,6 @@ form {
       font-size: 16px;
       height: 1.8em;
       padding: 0 $spacing-xxs;
-
-      &[type="text"] {
-        padding: 0 10px;
-      }
 
       &[type="checkbox"] {
         font-size: 12px;
