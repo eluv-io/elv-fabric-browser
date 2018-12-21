@@ -1,40 +1,35 @@
 import React from "react";
 import RequestForm from "../../../forms/RequestForm";
-import Path from "path";
 import {LabelledField} from "../../../components/LabelledField";
-import Link from "react-router-dom/es/Link";
 
-import DeployedContractWrapper from "./DeployedContractWrapper";
 import PropTypes from "prop-types";
 import {Bytes32ToUtf8} from "../../../../utils/Helpers";
-import {PageHeader} from "../../../components/Page";
+import TransactionCard from "../../../components/TransactionCard";
 
 class DeployedContractMethodForm extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      method: this.props.match.params.method,
-      visibleMethods: {},
+      contractMethods: this.props.contract.abi.filter(element => element.type === "function")
     };
 
     this.SetMethodInterface = this.SetMethodInterface.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
+    this.HandleMethodChange = this.HandleMethodChange.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleError = this.HandleError.bind(this);
     this.HandleComplete = this.HandleComplete.bind(this);
   }
 
-  componentDidMount() {
-    this.SetMethodInterface();
-  }
+  SetMethodInterface(methodName) {
+    let methodInterface = this.state.contractMethods.find(method => method.name === methodName);
 
-  SetMethodInterface() {
-    let methodInterface = this.props.contract.abi.find(element =>
-      element.name === this.state.method && element.type === "function"
-    );
+    if(!methodInterface) { return; }
 
-    let inputState = {};
+    let inputState = {
+      "__funds": 0
+    };
     methodInterface.inputs = methodInterface.inputs.map((input, index) => {
       // Give arguments a default name if they don't have one;
       if(!input.name) { input.name =  "Argument " + index; }
@@ -49,6 +44,16 @@ class DeployedContractMethodForm extends React.Component {
     });
   }
 
+  HandleMethodChange(event) {
+    this.setState({
+      method: event.target.value,
+      methodResults: undefined,
+      transactionResults: undefined
+    });
+
+    this.SetMethodInterface(event.target.value);
+  }
+
   HandleInputChange(event) {
     this.setState({
       inputs: {
@@ -59,7 +64,15 @@ class DeployedContractMethodForm extends React.Component {
   }
 
   HandleSubmit() {
-    const methodArgs = Object.values(this.state.inputs);
+    if(!this.state.method) { return; }
+
+    // Determine funds and remove from inputs, if present
+    let inputs = { ...this.state.inputs };
+
+    const funds = inputs.__funds || 0;
+    delete inputs.__funds;
+
+    const methodArgs = Object.values(inputs);
 
     this.setState({
       submitRequestId: this.props.WrapRequest({
@@ -68,7 +81,8 @@ class DeployedContractMethodForm extends React.Component {
             contractAddress: this.props.contract.address,
             abi: this.props.contract.abi,
             methodName: this.state.method,
-            methodArgs
+            methodArgs,
+            value: funds
           });
         }
       })
@@ -82,14 +96,16 @@ class DeployedContractMethodForm extends React.Component {
   }
 
   HandleComplete() {
-    if(this.state.methodInterface.constant) {
-      const outputInterface = this.state.methodInterface.outputs;
-      const contractState = this.props.deployedContracts[this.props.contract.address];
+    const contractState = this.props.deployedContracts[this.props.contract.address];
 
-      // Ensure results are set
-      if(!contractState || !contractState.methodResults || !contractState.methodResults[this.state.method]) {
-        return;
-      }
+    // Ensure results are set
+    if(!contractState || !contractState.methodResults || !contractState.methodResults[this.state.method]) {
+      return;
+    }
+
+    if(this.state.methodInterface.constant) {
+      // Constant method called - format output with names from interface (if available)
+      const outputInterface = this.state.methodInterface.outputs;
 
       let results = contractState.methodResults[this.state.method];
 
@@ -110,16 +126,60 @@ class DeployedContractMethodForm extends React.Component {
       this.setState({
         methodResults: displayResults
       });
+    } else {
+      // Transaction - display event info
+      let results = contractState.methodResults[this.state.method];
+      if(!Array.isArray(results)) { results = [results]; }
+
+      this.setState({
+        transactionResults: results
+      });
     }
   }
 
-  ContractMethodForm() {
-    const formInputs = this.state.methodInterface.inputs.map(input => {
-      const type = input.type;
-      const inputType = type === "bool" ? "checkbox" : "text";
+  ContractMethodSelection() {
+    // Collect and sort methods
+    const constantMethods = this.state.contractMethods.filter(element => element.constant).sort((a, b) => a.name > b.name);
+    const transactions = this.state.contractMethods.filter(element => !element.constant).sort((a, b) => a.name > b.name);
 
-      return (
-        <div className="form-content">
+    // Create lists of options
+    let constantOptions = constantMethods.map(method => {
+      return <option key={"method-option-" + method.name} value={method.name}>{method.name}</option>;
+    });
+
+    let transactionOptions = transactions.map(method => {
+      return <option key={"method-option-" + method.name} value={method.name}>{method.name}</option>;
+    });
+
+    // Add preceding labels
+    constantOptions.unshift(
+      <option disabled={true} key="method-option-constant-label">CONSTANTS</option>
+    );
+
+    transactionOptions.unshift(
+      <option disabled={true} key="method-option-transaction-label">TRANSACTIONS</option>
+    );
+
+    // Collect into single list and add initial "unselected" option
+    const allOptions = [<option key="method-option-select-prompt" value="">[Select a Method]</option>]
+      .concat(constantOptions.concat(transactionOptions));
+
+    return (
+      <select name="method" value={this.state.method} onChange={this.HandleMethodChange}>
+        { allOptions }
+      </select>
+    );
+  }
+
+  ContractMethodForm() {
+    let formInputs, methodType, fundsInput;
+
+    if(this.state.methodInterface) {
+      formInputs = this.state.methodInterface.inputs.map(input => {
+        const type = input.type;
+        const inputType = type === "bool" ? "checkbox" : "text";
+
+        return (
           <div className="labelled-input" key={"input-" + input.name}>
             <label htmlFor={input.name}>{input.name}</label>
             <input
@@ -131,57 +191,69 @@ class DeployedContractMethodForm extends React.Component {
               onChange={this.HandleInputChange}
             />
           </div>
+        );
+      });
+
+      methodType = (
+        <div className="labelled-input">
+          <label>Type</label>
+          <div className="form-text">{this.state.methodInterface.constant ? "Constant" : "Transaction"}</div>
         </div>
       );
-    });
+
+      if(this.state.methodInterface.payable) {
+        fundsInput = (
+          <div className="labelled-input">
+            <label htmlFor="__funds">Funds</label>
+            <input type="number" step={0.0000000001} name="__funds" value={this.state.inputs["__funds"]} onChange={this.HandleInputChange} />
+          </div>
+        );
+      }
+    }
 
     return (
       <div className="form-contents">
         <div className="labelled-input">
           <label>Method</label>
-          <div className="form-text">{this.state.method}</div>
+          <div className="form-text">{this.ContractMethodSelection()}</div>
         </div>
+        { methodType }
+        { fundsInput }
         { formInputs }
       </div>
     );
   }
 
   MethodResults() {
-    if(!this.state.methodResults) { return null; }
+    if(this.state.methodResults) {
+      const results = this.state.methodResults.map(result => {
+        return <LabelledField key={"result-" + result[0]} label={result[0]} value={result[1]}/>;
+      });
 
-    const results = this.state.methodResults.map(result => {
-      return <LabelledField key={"result-" + result[0]} label={result[0]} value={result[1]}/>;
-    });
-
-    return (
-      <div className="label-box">
-        <h3>Results: </h3>
-        { results }
-      </div>
-    );
+      return (
+        <div className="label-box">
+          <h3>Result: </h3>
+          { results }
+        </div>
+      );
+    } else if(this.state.transactionResults) {
+      return (
+        <div className="label-box">
+          <h3>Result: </h3>
+          <TransactionCard events={this.state.transactionResults} />
+        </div>
+      );
+    }
   }
 
   render() {
-    // Method Interface may not be set immediately - ensure it is set before rendering
-    if(!this.state.methodInterface) { return null; }
-
-    // Don't redirect after calling constant method
-    const backPath = Path.dirname(Path.dirname(this.props.match.url));
-    const redirectPath = this.state.methodInterface.constant ? undefined : backPath;
-
     return (
-      <div className="page-container">
-        <div className="actions-container">
-          <Link className="action secondary" to={backPath}>Back</Link>
-        </div>
-        <PageHeader header={this.props.contract.name} subHeader={this.props.contract.description} />
+      <div className="contract-method-form">
         <RequestForm
           requests={this.props.requests}
           requestId={this.state.submitRequestId}
           legend="Call Contract Method"
           formContent={this.ContractMethodForm()}
-          redirectPath={redirectPath}
-          cancelPath={backPath}
           OnSubmit={this.HandleSubmit}
           OnComplete={this.HandleComplete}
           OnError={this.HandleError}
@@ -196,4 +268,4 @@ DeployedContractMethodForm.propTypes = {
   contract: PropTypes.object.isRequired
 };
 
-export default DeployedContractWrapper(DeployedContractMethodForm);
+export default DeployedContractMethodForm;

@@ -1,9 +1,8 @@
 import React from "react";
-import "../../static/stylesheets/animations/ball-pulse.scss";
 
 export const BallPulse = () => {
   return (
-    <div className="la-ball-pulse" style={{color: "inherit"}}>
+    <div className="animated-icon la-ball-pulse" style={{color: "inherit"}}>
       <div/>
       <div/>
       <div/>
@@ -11,3 +10,22 @@ export const BallPulse = () => {
   );
 };
 
+export const BallCircus = () => {
+  return (
+    <div className="animated-icon la-ball-circus la-dark">
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+  );
+};
+
+export const BallClipRotate = () => {
+  return (
+    <div className="animated-icon la-ball-clip-rotate la-dark">
+      <div></div>
+    </div>
+  );
+};

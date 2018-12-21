@@ -52,7 +52,10 @@ const ContractsReducer = (state = {}, action) => {
           ...state.deployedContracts,
           [action.contractAddress]: {
             ...contractState,
-            events: action.events
+            events: {
+              ...(contractState.events || {}),
+              ...action.blocks
+            }
           }
         }
       };
