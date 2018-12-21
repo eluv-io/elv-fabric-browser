@@ -29,6 +29,8 @@ import DeployedContract from "../../components/pages/contracts/deployed/Deployed
 import DeployedContractMethodForm from "../../components/pages/contracts/deployed/DeployedContractMethodForm";
 import DeployedContractFundsForm from "../../components/pages/contracts/deployed/DeployedContractFundsForm";
 import WatchContractForm from "../../components/pages/contracts/WatchContractForm";
+import DeployedContractEvents from "../../components/pages/contracts/deployed/DeployedContractEvents";
+import {ListAccessGroups} from "../../actions/AccessGroups";
 
 const mapStateToProps = (state) => ({
   requests: state.requests,
@@ -58,7 +60,8 @@ const mapDispatchToProps = dispatch =>
       SendFunds,
       WithdrawContractFunds,
       GetContractBalance,
-      WatchContract
+      WatchContract,
+      ListAccessGroups
     ]
   );
 
@@ -96,6 +99,11 @@ export const DeployedContractContainer = connect(
   mapStateToProps,
   mapDispatchToProps
 )(DeployedContract);
+
+export const DeployedContractEventsContainer = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(DeployedContractEvents);
 
 export const DeployedContractMethodFormContainer = connect(
   mapStateToProps,

@@ -30,7 +30,8 @@ import {
   DeployedContractContainer,
   DeployedContractMethodFormContainer,
   DeployedContractFundsFormContainer,
-  WatchContractFormContainer
+  WatchContractFormContainer,
+  DeployedContractEventsContainer
 } from "../containers/pages/Contracts";
 import Fabric from "../clients/Fabric";
 import ErrorHandler from "./ErrorHandler";
@@ -93,6 +94,8 @@ class Router extends React.Component {
           <Route exact path="/access-groups/:contractAddress/edit" component={AccessGroupFormContainer}/>
           <Route exact path="/access-groups/:contractAddress/members" component={AccessGroupMembersFormContainer}/>
           <Route exact path="/access-groups/:contractAddress/contract" component={DeployedContractContainer}/>
+          <Route exact path="/access-groups/:contractAddress/contract/logs"
+            component={DeployedContractEventsContainer}/>
           <Route exact path="/access-groups/:contractAddress/contract/call/:method"
             component={DeployedContractMethodFormContainer}/>
           <Route exact path="/access-groups/:contractAddress/contract/funds"
@@ -148,6 +151,11 @@ class Router extends React.Component {
           <Route exact path="/content-types/:objectId/contract" render={(props) =>
             <DeployedContractContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
 
+          <Route exact path="/content/:libraryId/:objectId/contract/logs"
+            component={DeployedContractEventsContainer}/>
+          <Route exact path="/content-types/:objectId/contract/logs" render={(props) =>
+            <DeployedContractEventsContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
+
           <Route exact path="/content/:libraryId/:objectId/contract/funds"
             component={DeployedContractFundsFormContainer}/>
           <Route exact path="/content-types/:objectId/contract/funds" render={(props) =>
@@ -163,6 +171,11 @@ class Router extends React.Component {
           <Route exact path="/content-types/:objectId/custom-contract" render={(props) =>
             <DeployedContractContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
 
+          <Route exact path="/content/:libraryId/:objectId/custom-contract/logs"
+            component={DeployedContractEventsContainer}/>
+          <Route exact path="/content-types/:objectId/custom-contract/logs" render={(props) =>
+            <DeployedContractEventsContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
+
           <Route exact path="/content/:libraryId/:objectId/custom-contract/funds"
             component={DeployedContractFundsFormContainer}/>
           <Route exact path="/content-types/:objectId/custom-contract/funds" render={(props) =>
@@ -173,13 +186,14 @@ class Router extends React.Component {
           <Route exact path="/content-types/:objectId/custom-contract/call/:method" render={(props) =>
             <DeployedContractMethodFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
 
-
           <Route exact path="/contracts" component={ContractsContainer}/>
           <Route exact path="/contracts/compile" component={CompileContractFormContainer}/>
           <Route exact path="/contracts/save" component={ContractFormContainer}/>
           <Route exact path="/contracts/watch" component={WatchContractFormContainer}/>
           <Route exact path="/contracts/deploy" component={DeployContractFormContainer}/>
           <Route exact path="/contracts/deployed/:contractAddress" component={DeployedContractContainer}/>
+          <Route exact path="/contracts/deployed/:contractAddress/logs"
+            component={DeployedContractEventsContainer}/>
           <Route exact path="/contracts/deployed/:contractAddress/call/:method"
             component={DeployedContractMethodFormContainer}/>
           <Route exact path="/contracts/deployed/:contractAddress/funds"

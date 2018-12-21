@@ -257,14 +257,24 @@ export const DeployContentContract = ({
   };
 };
 
-export const GetContractEvents = ({contractAddress, abi}) => {
+export const GetContractEvents = ({contractAddress, abi, fromBlock=0, toBlock}) => {
   return async (dispatch) => {
-    const events = await Fabric.ContractEvents({contractAddress, abi});
+    const events = await Fabric.ContractEvents({contractAddress, abi, fromBlock, toBlock});
+
+    // Group events by block
+    const blocks = {};
+    events.map(event => {
+      if(blocks[event.blockNumber]) {
+        blocks[event.blockNumber].unshift(event);
+      } else {
+        blocks[event.blockNumber] = [event];
+      }
+    });
 
     dispatch({
       type: ActionTypes.contracts.deployed.events,
       contractAddress,
-      events: events.reverse()
+      blocks
     });
   };
 };
@@ -273,7 +283,8 @@ export const CallContractMethod = ({
   contractAddress,
   abi,
   methodName,
-  methodArgs
+  methodArgs,
+  value=0
 }) => {
   return async (dispatch) => {
     const method = Object.values(abi).find(entry => entry.type === "function" && entry.name === methodName);
@@ -286,12 +297,37 @@ export const CallContractMethod = ({
       });
     }
 
-    const methodResults = await Fabric.CallContractMethod({
-      contractAddress,
-      abi,
-      methodName,
-      methodArgs
-    });
+    let methodResults;
+    if(method.constant) {
+      methodResults = await Fabric.CallContractMethod({
+        contractAddress,
+        abi,
+        methodName,
+        methodArgs,
+        value
+      });
+    } else {
+      const transactionInfo = await Fabric.CallContractMethodAndWait({
+        contractAddress,
+        abi,
+        methodName,
+        methodArgs,
+        value
+      });
+
+      methodResults = await Fabric.ContractEvents({
+        contractAddress,
+        abi,
+        fromBlock: transactionInfo.blockNumber,
+        toBlock: transactionInfo.blockNumber
+      });
+
+      if(methodResults.length === 0){
+        throw Error("Transaction failed");
+      }
+
+      methodResults.reverse();
+    }
 
     dispatch({
       type: ActionTypes.contracts.deployed.call,
@@ -326,7 +362,7 @@ export const SendFunds = ({sender, recipient, ether}) => {
     await Fabric.SendFunds({sender, recipient, ether});
 
     dispatch(SetNotificationMessage({
-      message: "Successfully sent " + ether + " Eluvio Bux to " + recipient,
+      message: "Successfully sent φ" + ether + " to " + recipient,
       redirect: true
     }));
   };
@@ -337,7 +373,7 @@ export const WithdrawContractFunds = ({contractAddress, abi, ether}) => {
     await Fabric.WithdrawContractFunds({contractAddress, abi, ether});
 
     dispatch(SetNotificationMessage({
-      message: "Successfully withdrew " + ether + " Eluvio Bux from contract",
+      message: "Successfully withdrew φ" + ether + " from contract",
       redirect: true
     }));
   };

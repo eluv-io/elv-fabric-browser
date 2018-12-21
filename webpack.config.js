@@ -2,6 +2,8 @@ const webpack = require("webpack");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const path = require("path");
 const autoprefixer = require("autoprefixer");
+const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
+
 
 module.exports = {
   entry: "./src/index.js",
