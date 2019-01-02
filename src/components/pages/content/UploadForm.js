@@ -9,7 +9,8 @@ class ContentObjectUploadForm extends React.Component {
 
     this.state = {
       libraryId: this.props.libraryId || this.props.match.params.libraryId,
-      objectId: this.props.match.params.objectId
+      objectId: this.props.match.params.objectId,
+      encrypt: true
     };
 
     this.FormContent = this.FormContent.bind(this);
@@ -19,7 +20,7 @@ class ContentObjectUploadForm extends React.Component {
 
   HandleFileSelect(event) {
     this.setState({
-      files: event.target.files
+      files: event.target.files,
     });
   }
 
@@ -30,7 +31,8 @@ class ContentObjectUploadForm extends React.Component {
           await this.props.UploadParts({
             libraryId: this.state.libraryId,
             objectId: this.state.objectId,
-            files: this.state.files
+            files: this.state.files,
+            encrypt: this.state.encrypt
           });
         }
       })
@@ -38,7 +40,21 @@ class ContentObjectUploadForm extends React.Component {
   }
 
   FormContent() {
-    return <BrowseWidget label="Files" onChange={this.HandleFileSelect} required={true} multiple={true}/>;
+    return (
+      <div className="upload-form">
+        <BrowseWidget label="Files" onChange={this.HandleFileSelect} required={true} multiple={true}/>
+        <div className="labelled-input">
+          <label htmlFor="encrypt">Encrypt Parts</label>
+          <input
+            type="checkbox"
+            name="encrypt"
+            value={this.state.encrypt}
+            checked={this.state.encrypt}
+            onChange={() => { this.setState({encrypt: !this.state.encrypt}); }}
+          />
+        </div>
+      </div>
+    );
   }
 
   render() {
