@@ -29,19 +29,17 @@
   margin-bottom: $spacing-xs;
   padding: $spacing-s;
 
-  .inputs {
-    .input {
-      align-items: baseline;
-      display: flex;
+  .input {
+    align-items: baseline;
+    display: flex;
 
-      label {
-        width: 175px;
-      }
+    label {
+      width: 175px;
+    }
 
-      .value {
-        //font-family: monospace;
-        font-size: 12px;
-      }
+    .value {
+      //font-family: monospace;
+      font-size: 12px;
     }
   }
 }

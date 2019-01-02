@@ -25,7 +25,7 @@ if(window.self === window.top) {
   // Contained in IFrame
   client = new FrameClient({
     target: window.parent,
-    timeout: 15
+    timeout: 30
   });
 
   isFrameClient = true;
@@ -645,12 +645,12 @@ const Fabric = {
     return client.ContentParts({libraryId, objectId, versionHash});
   },
 
-  DownloadPart: ({libraryId, objectId ,versionHash, partHash, format}) => {
-    return client.DownloadPart({ libraryId, objectId, versionHash, partHash, format});
+  DownloadPart: ({libraryId, objectId ,versionHash, partHash}) => {
+    return client.DownloadPart({ libraryId, objectId, versionHash, partHash});
   },
 
-  UploadPart: ({libraryId, objectId, writeToken, data}) => {
-    return client.UploadPart({libraryId, objectId, writeToken, data});
+  UploadPart: ({libraryId, objectId, writeToken, data, encrypted=true}) => {
+    return client.UploadPart({libraryId, objectId, writeToken, data, encrypted});
   },
 
   FabricUrl: ({libraryId, objectId, versionHash, partHash}) => {

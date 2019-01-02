@@ -188,6 +188,37 @@ class ContentObject extends React.Component {
     );
   }
 
+  PublishButton() {
+    if(!this.state.object.isNormalObject) { return null; }
+
+    const reviewerGroups = this.state.library.groups.reviewer;
+    const reviewRequired = reviewerGroups.length > 0;
+
+    if(this.state.object.status.code < 0 && this.state.object.isOwner) {
+      const actionText = reviewRequired ? "Submit for Review" : "Publish";
+      const confirmationMessage = reviewRequired ?
+        "Are you sure you want to submit this content object for review?" :
+        "Are you sure you want to publish this content object?";
+
+      return (
+        <button
+          className="action"
+          onClick={() => { this.SubmitContentObject(confirmationMessage); }}
+        >
+          { actionText }
+        </button>
+      );
+    }
+
+    if(this.state.object.status.code > 0 && this.state.permissions.canReview) {
+      return (
+        <Link className="action" to={Path.join(this.props.match.url, "review")}>
+          Review
+        </Link>
+      );
+    }
+  }
+
   VersionSize(version) {
     return PrettyBytes(version.parts.reduce((a, part) => a + part.size, 0));
   }
@@ -375,38 +406,6 @@ class ContentObject extends React.Component {
   ObjectStatus() {
     if(!this.state.object.isNormalObject) { return null; }
 
-    const reviewerGroups = this.state.library.groups.reviewer;
-    const reviewRequired = reviewerGroups.length > 0;
-
-    let statusAction;
-    if(this.state.object.status.code < 0 && this.state.object.isOwner) {
-      const actionText = reviewRequired ? "Submit for Review" : "Publish";
-      const confirmationMessage = reviewRequired ?
-        "Are you sure you want to submit this content object for review?" :
-        "Are you sure you want to publish this content object?";
-
-      statusAction = (
-        <button
-          className="action action-compact action-wide action-inline"
-          onClick={() => { this.SubmitContentObject(confirmationMessage); }}
-        >
-          { actionText }
-        </button>
-      );
-    }
-
-    if(this.state.object.status.code > 0 && this.state.permissions.canReview) {
-      statusAction = (
-        <Link className="action action-compact action-wide action-inline" to={Path.join(this.props.match.url, "review")}>
-          Review Content Object
-        </Link>
-      );
-    }
-
-    if(statusAction) {
-      statusAction = <LabelledField label="" value={<div className="actions-container">{ statusAction } </div>} />;
-    }
-
     let reviewNote, reviewer;
     if(this.state.object.meta["eluv.reviewNote"]) {
       reviewer = <LabelledField label="Reviewer" value={this.state.object.meta["eluv.reviewer"]} />;
@@ -418,7 +417,6 @@ class ContentObject extends React.Component {
     return (
       <div>
         <LabelledField label={"Status"} value={this.state.object.status.description} />
-        { statusAction }
         { reviewer }
         { reviewNote }
       </div>
@@ -472,7 +470,7 @@ class ContentObject extends React.Component {
     if(!this.state.object.isContentLibraryObject) {
       deleteObjectButton = (
         <button className="action delete-action" onClick={() => this.DeleteContentObject()}>
-          { this.state.object.isContentType ? "Delete Content Type" : "Delete Content Object" }
+          Delete
         </button>
       );
     }
@@ -480,9 +478,8 @@ class ContentObject extends React.Component {
     return (
       <div className="actions-container">
         <Link to={Path.dirname(this.props.match.url)} className="action secondary" >Back</Link>
-        <Link to={Path.join(this.props.match.url, "edit")} className="action" >
-          { this.state.object.isContentType ? "Manage Content Type" : "Manage Content Object" }
-        </Link>
+        <Link to={Path.join(this.props.match.url, "edit")} className="action" >Manage</Link>
+        { this.PublishButton() }
         { setContractButton }
         <Link to={Path.join(this.props.match.url, "upload")} className="action" >Upload Parts</Link>
         { deleteObjectButton }
