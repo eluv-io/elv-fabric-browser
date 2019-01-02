@@ -321,7 +321,7 @@ export const ListContentTypes = () => {
   };
 };
 
-export const UploadParts = ({libraryId, objectId, files}) => {
+export const UploadParts = ({libraryId, objectId, files, encrypt}) => {
   return async (dispatch) => {
     let contentDraft = await Fabric.EditContentObject({ libraryId, objectId });
 
@@ -332,7 +332,8 @@ export const UploadParts = ({libraryId, objectId, files}) => {
         libraryId,
         objectId,
         writeToken: contentDraft.write_token,
-        data
+        data,
+        encrypted: encrypt
       });
     }
 
@@ -353,7 +354,7 @@ export const UploadParts = ({libraryId, objectId, files}) => {
 
 export const DownloadPart = ({libraryId, objectId, versionHash, partHash, callback}) => {
   return async (dispatch) => {
-    let blob = await Fabric.DownloadPart({ libraryId, objectId, versionHash, partHash, format: "blob" });
+    let blob = await Fabric.DownloadPart({libraryId, objectId, versionHash, partHash});
     let url = window.URL.createObjectURL(blob);
 
     callback(url);
