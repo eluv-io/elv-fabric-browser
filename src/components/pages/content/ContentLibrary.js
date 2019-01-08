@@ -78,6 +78,9 @@ class ContentLibrary extends React.Component {
 
     for(const objectId of this.state.library.objects.sort()) {
       const object = this.props.objects[objectId];
+
+      if(!object) { continue; }
+
       const infoText = this.state.library.isContentSpaceLibrary ? "" : object.status.description;
 
       objectElements.push(

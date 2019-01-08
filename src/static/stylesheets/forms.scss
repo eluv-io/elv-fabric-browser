@@ -28,7 +28,6 @@ form {
 
   .labelled-input {
     display: flex;
-    justify-content: space-between;
     padding: 5px 0;
 
     &.labelled-checkbox-input {
@@ -119,6 +118,12 @@ form {
     }
   }
 
+  .subsection {
+    border: 1px solid $color-lightergray;
+    margin: 0 0 $spacing-xs 0;
+    padding: $spacing-xs $spacing-s;
+  }
+
   .browse-widget {
     display: flex;
     flex-direction: column;
@@ -141,6 +146,17 @@ form {
         display: flex;
         justify-content: space-between;
         padding: $spacing-xxs $spacing-xs;
+
+        .filename {
+          @include ellipsis;
+          max-width: 225px;
+          overflow: hidden;
+        }
+
+        .file-size {
+          min-width: 75px;
+          text-align: right;
+        }
 
         &:last-child {
           border-bottom: 1px solid $color-gray;

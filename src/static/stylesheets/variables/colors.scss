@@ -11,8 +11,6 @@ $color-palered: #955;
 $color-mediumred: #a33;
 $color-red: #f33;
 
-$color-action-secondary: #ccc;
-
 $color-text-white: #fff;
 $color-text-light: #6c6c6c;
 $color-text-dark: #222;
@@ -35,3 +33,8 @@ $color-shadow-gray: rgba(161, 161, 161, 0.5);
 $color-gradient-lightblue: linear-gradient(to right, $color-lightblue, $color-lighterblue);
 $color-gradient-mediumblue: linear-gradient(to right, $color-mediumblue, $color-lightblue);
 $color-gradient-darkblue: linear-gradient(to right, $color-darkblue, $color-mediumblue);
+
+$color-action-primary: $color-mediumblue;
+$color-action-secondary: $color-gray;
+$color-action-tertiary: $color-white;
+$color-action-delete: $color-mediumred;

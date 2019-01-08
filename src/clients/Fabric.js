@@ -271,41 +271,47 @@ const Fabric = {
 
     let objects = {};
     for (const object of libraryObjects) {
-      // Skip library content object
-      if (Fabric.utils.EqualHash(libraryId, object.id)) { continue; }
+      try {
+        // Skip library content object
+        if (Fabric.utils.EqualHash(libraryId, object.id)) {
+          continue;
+        }
 
-      const latestVersion = object.versions[0];
-      const imageUrl = await Fabric.GetContentObjectImageUrl({
-        libraryId,
-        objectId: object.id,
-        metadata: object.versions[0].meta
-      });
+        const latestVersion = object.versions[0];
+        const imageUrl = await Fabric.GetContentObjectImageUrl({
+          libraryId,
+          objectId: object.id,
+          metadata: object.versions[0].meta
+        });
 
-      // Retrieve status if normal object
-      let status;
-      if(libraryId !== Fabric.contentSpaceLibraryId && !client.utils.EqualHash(libraryId, object.id)) {
-        status = await Fabric.GetContentObjectStatus({objectId: object.id});
+        // Retrieve status if normal object
+        let status;
+        if (libraryId !== Fabric.contentSpaceLibraryId && !client.utils.EqualHash(libraryId, object.id)) {
+          status = await Fabric.GetContentObjectStatus({objectId: object.id});
+        }
+
+        const owner = await Fabric.GetContentObjectOwner({objectId: object.id});
+        const isContentLibraryObject = client.utils.EqualHash(libraryId, object.id);
+        const isContentType = libraryId === Fabric.contentSpaceLibraryId && !isContentLibraryObject;
+
+        objects[object.id] = {
+          // Pull latest version info up to top level
+          ...latestVersion,
+          ...object,
+          name: latestVersion.meta["eluv.name"] || latestVersion.meta["name"],
+          description: latestVersion.meta["eluv.description"],
+          imageUrl,
+          contractAddress: client.utils.HashToAddress({hash: object.id}),
+          owner,
+          isOwner: EqualAddress(owner, await Fabric.CurrentAccountAddress()),
+          status,
+          isContentLibraryObject,
+          isContentType,
+          isNormalObject: !isContentLibraryObject && !isContentType
+        };
+      } catch(error) {
+        console.error(error);
       }
-
-      const owner = await Fabric.GetContentObjectOwner({objectId: object.id});
-      const isContentLibraryObject = client.utils.EqualHash(libraryId, object.id);
-      const isContentType = libraryId === Fabric.contentSpaceLibraryId && !isContentLibraryObject;
-
-      objects[object.id] = {
-        // Pull latest version info up to top level
-        ...latestVersion,
-        ...object,
-        name: latestVersion.meta["eluv.name"],
-        description: latestVersion.meta["eluv.description"],
-        imageUrl,
-        contractAddress: client.utils.HashToAddress({hash: object.id}),
-        owner,
-        isOwner: EqualAddress(owner, await Fabric.CurrentAccountAddress()),
-        status,
-        isContentLibraryObject,
-        isContentType,
-        isNormalObject: !isContentLibraryObject && !isContentType
-      };
     }
 
     return objects;
@@ -329,7 +335,7 @@ const Fabric = {
     return {
       ...object,
       meta: metadata,
-      name: metadata["eluv.name"],
+      name: metadata["eluv.name"] || metadata["name"],
       description: metadata["eluv.description"],
       imageUrl,
       contractAddress: FormatAddress(client.utils.HashToAddress({hash: objectId})),
@@ -438,7 +444,7 @@ const Fabric = {
     libraryId,
     objectId,
     writeToken,
-    metadataSubtree,
+    metadataSubtree="/",
     metadata
   }) => {
     await client.MergeMetadata({
@@ -454,7 +460,7 @@ const Fabric = {
     libraryId,
     objectId,
     writeToken,
-    metadataSubtree,
+    metadataSubtree="/",
     metadata
   }) => {
     await client.ReplaceMetadata({
@@ -470,7 +476,7 @@ const Fabric = {
     libraryId,
     objectId,
     writeToken,
-    metadataSubtree
+    metadataSubtree="/"
   }) => {
     await client.DeleteMetadata({
       libraryId,
@@ -497,13 +503,18 @@ const Fabric = {
   CreateAndFinalizeContentObject: async ({
     libraryId,
     type,
-    metadata={}
+    metadata={},
+    todo
   }) => {
     let createResponse = await Fabric.CreateContentObject({
       libraryId,
       type,
       metadata
     });
+
+    if(todo) {
+      await todo({writeToken: createResponse.write_token});
+    }
 
     return (
       await Fabric.FinalizeContentObject({
