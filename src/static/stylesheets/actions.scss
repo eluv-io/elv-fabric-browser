@@ -36,31 +36,39 @@
   }
 
   .action {
-    background: $color-mediumblue;
-    border: 0;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    background: $color-action-primary;
+    border: 1px solid $color-action-primary;
+    box-shadow: $color-mediumgray 2px 2px 1px;
     color: $color-text-white;
     cursor: pointer;
+    font-family: Lato, sans-serif;
     font-size: 14px;
     height: 2.25em;
     justify-content: center;
+    line-height: 1;
     min-width: 100px;
     padding: $spacing-xs $spacing-s;
 
     &:hover {
       background: $color-lightblue;
+      border: 1px solid $color-lightblue
     }
 
     &.secondary {
       background: $color-action-secondary;
+      border: 1px solid $color-action-secondary;
       color: $color-text-dark;
 
       &:hover {
         background: $color-lightgray;
+        border: 1px solid $color-lightgray;
       }
     }
 
     &.tertiary {
-      background: $color-bg-white;
+      background: $color-action-tertiary;
       border: 1px solid $color-action-secondary;
       color: $color-text-dark;
 
@@ -69,13 +77,18 @@
       }
     }
 
+    &.required {
+      box-shadow: $color-red 0 0 7px;
+      outline: 1px solid $color-red;
+    }
+
     &.delete-action {
       background: $color-bg-white;
-      border: 1px solid $color-mediumred;
-      color: $color-mediumred;
+      border: 1px solid $color-action-delete;
+      color: $color-action-delete;
 
       &:hover {
-        background: $color-mediumred;
+        background: $color-action-delete;
         color: $color-text-white;
       }
     }

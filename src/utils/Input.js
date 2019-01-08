@@ -75,7 +75,7 @@ export const JsonTextArea = ({name, value, onChange, UpdateValue, className}) =>
 
 JsonTextArea.propTypes = {
   name: PropTypes.string.isRequired,
-  value: PropTypes.string.isRequired,
+  value: PropTypes.string,
   onChange: PropTypes.func.isRequired,
   UpdateValue: PropTypes.func.isRequired,
   className: PropTypes.string

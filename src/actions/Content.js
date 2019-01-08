@@ -325,7 +325,7 @@ export const UploadParts = ({libraryId, objectId, files, encrypt}) => {
   return async (dispatch) => {
     let contentDraft = await Fabric.EditContentObject({ libraryId, objectId });
 
-    for(const file of files) {
+    await Promise.all(Array.from(files).map(async file => {
       const data = await new Response(file).blob();
 
       await Fabric.UploadPart({
@@ -335,7 +335,7 @@ export const UploadParts = ({libraryId, objectId, files, encrypt}) => {
         data,
         encrypted: encrypt
       });
-    }
+    }));
 
     await Fabric.FinalizeContentObject({
       libraryId,
@@ -358,5 +358,109 @@ export const DownloadPart = ({libraryId, objectId, versionHash, partHash, callba
     let url = window.URL.createObjectURL(blob);
 
     callback(url);
+  };
+};
+
+const CollectMetadata = ({schema, fields}) => {
+  let metadata = {};
+
+  schema.main.map(async fieldName => {
+    const fieldSchema = schema.fields[fieldName];
+    const fieldValue = fields[fieldName];
+
+    switch(fieldSchema.type) {
+      case "file":
+        break;
+
+      case "json":
+        metadata[fieldName] = ParseInputJson(fieldValue);
+        break;
+
+      default:
+        metadata[fieldName] = fieldValue;
+    }
+  });
+
+  return metadata;
+};
+
+const CollectFiles = async ({libraryId, writeToken, schema, fields}) => {
+  const fileFields = schema.main.filter(fieldName => schema.fields[fieldName].type === "file");
+  let fileMetadata = {};
+
+  if (fileFields.length > 0) {
+    for (const fieldName of fileFields) {
+      let partResponses = [];
+      for (const file of Array.from(fields[fieldName])) {
+        const data = await new Response(file).blob();
+
+        partResponses.push(
+          await Fabric.UploadPart({
+            libraryId,
+            writeToken,
+            data,
+            encrypted: !!(schema.fields[fieldName].encrypt)
+          })
+        );
+      }
+
+      if (schema.fields[fieldName].multiple) {
+        fileMetadata[fieldName] = partResponses.map(partResponse => partResponse.part.hash);
+      } else {
+        fileMetadata[fieldName] = partResponses.length > 0 ? partResponses[0].part.hash : "";
+      }
+    }
+  }
+
+  return fileMetadata;
+};
+
+export const CreateFromContentTypeSchema = ({libraryId, type, metadata, schema, fields}) => {
+  return async (dispatch) => {
+    await Fabric.CreateAndFinalizeContentObject({
+      libraryId,
+      type,
+      todo: async ({writeToken}) => {
+        await Fabric.ReplaceMetadata({
+          libraryId,
+          writeToken,
+          metadata: {
+            ...ParseInputJson(metadata),
+            ...(CollectMetadata({schema, fields})),
+            ...(await CollectFiles({libraryId, writeToken, schema, fields}))
+          }
+        });
+      }
+    });
+
+    dispatch(SetNotificationMessage({
+      message: "Successfully created content",
+      redirect: true
+    }));
+  };
+};
+
+export const UpdateFromContentTypeSchema = ({libraryId, objectId, metadata, schema, fields}) => {
+  return async (dispatch) => {
+    await Fabric.EditAndFinalizeContentObject({
+      libraryId,
+      objectId,
+      todo: async ({writeToken}) => {
+        await Fabric.ReplaceMetadata({
+          libraryId,
+          writeToken,
+          metadata: {
+            ...ParseInputJson(metadata),
+            ...(CollectMetadata({schema, fields})),
+            ...(await CollectFiles({libraryId, writeToken, schema, fields}))
+          }
+        });
+      }
+    });
+
+    dispatch(SetNotificationMessage({
+      message: "Successfully updated content",
+      redirect: true
+    }));
   };
 };

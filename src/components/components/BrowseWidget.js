@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import PrettyBytes from "pretty-bytes";
 
@@ -32,8 +32,8 @@ class BrowseWidget extends React.Component {
 
     const selectedFiles = this.state.files.map(file =>
       <div className="selected-file" key={file.name}>
-        <span>{file.name}</span>
-        <span>{PrettyBytes(file.size)}</span>
+        <span className="filename">{file.name}</span>
+        <span className="file-size">{PrettyBytes(file.size)}</span>
       </div>
     );
 
@@ -45,13 +45,19 @@ class BrowseWidget extends React.Component {
   }
 
   render() {
+    const invalid = this.props.required && this.state.browseButtonRef.current && !this.state.browseButtonRef.current.checkValidity();
+
     const inputName = "browse-" + this.props.label;
     return (
       <div className="labelled-input">
         <label className="textarea-label" htmlFor={inputName}>{ this.props.label }</label>
         <div className="browse-widget">
           <div className="actions-container">
-            <button className="action action-compact action-full-width" type="button" onClick={() => {this.state.browseButtonRef.current.click();}}>
+            <button
+              className={`action action-compact action-full-width ${invalid ? "required" : ""}`}
+              type="button"
+              onClick={() => {this.state.browseButtonRef.current.click();}}
+            >
               Browse
             </button>
             <input

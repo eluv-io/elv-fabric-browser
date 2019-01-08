@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import connect from "react-redux/es/connect/connect";
 import Thunk from "../utils/Thunk";
 
