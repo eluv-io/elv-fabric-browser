@@ -17,21 +17,23 @@ import {
   ListContentLibraryGroups,
   GetContentObject,
   GetContentObjectVersions,
-  CreateContentType, ListContentTypes
+  CreateContentType,
+  ListContentTypes,
+  CreateFromContentTypeSchema,
+  UpdateFromContentTypeSchema
 } from "../../actions/Content";
 import ContentLibraries from "../../components/pages/content/ContentLibraries";
 import ContentLibrary from "../../components/pages/content/ContentLibrary";
 import ContentObject from "../../components/pages/content/ContentObject";
 import ContentLibraryForm from "../../components/pages/content/ContentLibraryForm";
-import ContentObjectForm from "../../components/pages/content/ContentObjectForm";
 import ContentObjectUploadForm from "../../components/pages/content/UploadForm";
 import ContentObjectApp from "../../components/pages/content/ContentApp";
 import ContentLibraryGroupsForm from "../../components/pages/content/ContentLibraryGroupsForm";
 import ContentTypeForm from "../../components/pages/content/ContentTypeForm";
 import ContentObjectReviewForm from "../../components/pages/content/ContentObjectReviewForm";
-
 import {ListAccessGroups} from "../../actions/AccessGroups";
 import {WrapRequest} from "../../actions/Requests";
+import ContentTypeFormBuilder from "../../components/pages/content/ContentTypeFormBuilder";
 
 const mapStateToProps = (state) => ({
   requests: state.requests,
@@ -64,6 +66,8 @@ const mapDispatchToProps = dispatch =>
       ListContentLibraryGroups,
       CreateContentType,
       ListContentTypes,
+      CreateFromContentTypeSchema,
+      UpdateFromContentTypeSchema
     ]
   );
 
@@ -92,10 +96,10 @@ export const ContentObjectContainer = connect(
   mapDispatchToProps
 )(ContentObject);
 
-export const ContentObjectFormContainer = connect(
+export const ContentTypeFormBuilderContainer = connect(
   mapStateToProps,
   mapDispatchToProps
-)(ContentObjectForm);
+)(ContentTypeFormBuilder);
 
 export const ContentObjectReviewFormContainer = connect(
   mapStateToProps,

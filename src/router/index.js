@@ -13,12 +13,11 @@ import {
   ContentLibraryFormContainer,
   ContentLibraryContainer,
   ContentObjectContainer,
-  ContentObjectFormContainer,
   ContentObjectUploadFormContainer,
   ContentObjectAppContainer,
   ContentLibraryGroupsFormContainer,
-  ContentTypeFormContainer,
   ContentObjectReviewFormContainer,
+  ContentTypeFormBuilderContainer,
 } from "../containers/pages/Content";
 
 import {
@@ -120,17 +119,17 @@ class Router extends React.Component {
           <Route exact path="/content-types/groups" render={(props) =>
             <ContentLibraryGroupsFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
 
-          <Route exact path="/content/:libraryId/create" component={ContentObjectFormContainer}/>
+          <Route exact path="/content/:libraryId/create" component={ContentTypeFormBuilderContainer}/>
           <Route exact path="/content-types/create" render={(props) =>
-            <ContentTypeFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
+            <ContentTypeFormBuilderContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
 
           <Route exact path="/content/:libraryId/:objectId" component={ContentObjectContainer}/>
           <Route exact path="/content-types/:objectId" render={(props) =>
             <ContentObjectContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
 
-          <Route exact path="/content/:libraryId/:objectId/edit" component={ContentObjectFormContainer}/>
+          <Route exact path="/content/:libraryId/:objectId/edit" component={ContentTypeFormBuilderContainer}/>
           <Route exact path="/content-types/:objectId/edit" render={(props) =>
-            <ContentTypeFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
+            <ContentTypeFormBuilderContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
 
           <Route exact path="/content/:libraryId/:objectId/review" component={ContentObjectReviewFormContainer}/>
 
