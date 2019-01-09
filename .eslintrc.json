@@ -17,6 +17,7 @@
     "react"
   ],
   "rules": {
+    "no-case-declarations": "off",
     "no-undef": "off",
     "no-useless-escape": "off",
     "indent": [
