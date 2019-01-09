@@ -3,6 +3,7 @@ import Fabric from "../clients/Fabric";
 import { SetNotificationMessage } from "./Notifications";
 import { ParseInputJson } from "../utils/Input";
 import {FormatAddress} from "../utils/Helpers";
+import {ToList} from "../utils/TypeSchema";
 
 export const ListContentLibraries = () => {
   return async (dispatch) => {
@@ -361,58 +362,60 @@ export const DownloadPart = ({libraryId, objectId, versionHash, partHash, callba
   };
 };
 
-const CollectMetadata = ({schema, fields}) => {
+const CollectMetadata = async ({libraryId, writeToken, schema, fields}) => {
   let metadata = {};
 
-  schema.main.map(async fieldName => {
-    const fieldSchema = schema.fields[fieldName];
-    const fieldValue = fields[fieldName];
-
-    switch(fieldSchema.type) {
+  for(const entry of schema) {
+    switch(entry.type) {
+      case "label":
+        break;
       case "file":
+        const files = Array.from(fields[entry.key]);
+        let partResponses = [];
+
+        for (const file of files) {
+          const data = await new Response(file).blob();
+
+          partResponses.push(
+            await Fabric.UploadPart({
+              libraryId,
+              writeToken,
+              data,
+              encrypted: !!(entry.encrypted)
+            })
+          );
+        }
+
+        if (entry.multiple) {
+          metadata[entry.key] = partResponses.map(partResponse => partResponse.part.hash);
+        } else {
+          metadata[entry.key] = partResponses.length > 0 ? partResponses[0].part.hash : "";
+        }
+
         break;
 
       case "json":
-        metadata[fieldName] = ParseInputJson(fieldValue);
+        metadata[entry.key] = ParseInputJson(fields[entry.key]);
+        break;
+
+      case "list":
+        metadata[entry.key] = ToList(fields[entry.key]);
+        break;
+      case "object":
+        metadata[entry.key] = await CollectMetadata({
+          libraryId,
+          writeToken,
+          schema: entry.fields,
+          fields: fields[entry.key]
+        });
         break;
 
       default:
-        metadata[fieldName] = fieldValue;
-    }
-  });
-
-  return metadata;
-};
-
-const CollectFiles = async ({libraryId, writeToken, schema, fields}) => {
-  const fileFields = schema.main.filter(fieldName => schema.fields[fieldName].type === "file");
-  let fileMetadata = {};
-
-  if (fileFields.length > 0) {
-    for (const fieldName of fileFields) {
-      let partResponses = [];
-      for (const file of Array.from(fields[fieldName])) {
-        const data = await new Response(file).blob();
-
-        partResponses.push(
-          await Fabric.UploadPart({
-            libraryId,
-            writeToken,
-            data,
-            encrypted: !!(schema.fields[fieldName].encrypt)
-          })
-        );
-      }
-
-      if (schema.fields[fieldName].multiple) {
-        fileMetadata[fieldName] = partResponses.map(partResponse => partResponse.part.hash);
-      } else {
-        fileMetadata[fieldName] = partResponses.length > 0 ? partResponses[0].part.hash : "";
-      }
+        metadata[entry.key] = fields[entry.key];
     }
   }
 
-  return fileMetadata;
+  return metadata;
 };
 
 export const CreateFromContentTypeSchema = ({libraryId, type, metadata, schema, fields}) => {
@@ -426,8 +429,7 @@ export const CreateFromContentTypeSchema = ({libraryId, type, metadata, schema, 
           writeToken,
           metadata: {
             ...ParseInputJson(metadata),
-            ...(CollectMetadata({schema, fields})),
-            ...(await CollectFiles({libraryId, writeToken, schema, fields}))
+            ...(await CollectMetadata({libraryId, writeToken, schema, fields})),
           }
         });
       }
@@ -451,8 +453,7 @@ export const UpdateFromContentTypeSchema = ({libraryId, objectId, metadata, sche
           writeToken,
           metadata: {
             ...ParseInputJson(metadata),
-            ...(CollectMetadata({schema, fields})),
-            ...(await CollectFiles({libraryId, writeToken, schema, fields}))
+            ...(await CollectMetadata({libraryId, writeToken, schema, fields}))
           }
         });
       }

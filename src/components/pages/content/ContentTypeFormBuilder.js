@@ -4,29 +4,93 @@ import BrowseWidget from "../../components/BrowseWidget";
 import {JsonTextArea} from "../../../utils/Input";
 import RequestPage from "../RequestPage";
 import Path from "path";
-import {GetFieldInfo, InitializeSchema, SetValue} from "../../../utils/TypeSchema";
+import {InitializeSchema, GetValue, SetValue, RemoveValue} from "../../../utils/TypeSchema";
+import RadioSelect from "../../components/RadioSelect";
+import Id from "../../../utils/Id";
+import InlineSVG from "svg-inline-react";
+import TrashIcon from "../../../static/icons/trash.svg";
 
-const defaultSchema = {
-  "options": {
-    "allowCustomMetadata": true,
+const defaultSchema = [
+  {
+    "key": "eluv.name",
+    "label": "Name",
+    "type": "string",
+    "required": true
   },
-  "main": [
-    "eluv.name",
-    "eluv.description"
-  ],
-  "fields": {
-    "eluv.name": {
-      "label": "Name",
-      "type": "string",
-      "required": true
-    },
-    "eluv.description": {
-      "label": "Description",
-      "type": "text",
-      "required": false
-    }
+  {
+    "key": "eluv.description",
+    "label": "Description",
+    "type": "text",
+    "required": false
   }
-};
+];
+
+const defaultSchema2 = [
+  {
+    "key": "metadata",
+    "type": "object",
+    "fields": [
+      {
+        "key": "title",
+        "type": "string"
+      },
+      {
+        "key": "synopsis",
+        "type": "text"
+      },
+      {
+        "key": "cast and crew",
+        "type": "string"
+      }
+    ]
+  },
+  {
+    "key": "blog_post",
+    "type": "text"
+  },
+  {
+    "key": "facebook",
+    "type": "object",
+    "fields": [
+      {
+        "key": "proxy.1min",
+        "type": "file"
+      },
+      {
+        "key": "text",
+        "type": "object",
+        "fields": [
+          {
+            "key": "1",
+            "type": "string"
+          },
+          {
+            "key": "2",
+            "type": "string"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "youtube",
+    "type": "object",
+    "fields": [
+      {
+        "key": "title",
+        "type": "string"
+      },
+      {
+        "key": "description",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "key": "tags",
+    "type": "text"
+  }
+];
 
 // Build a form from a JSON schema
 class ContentTypeFormBuilder extends React.Component {
@@ -47,6 +111,7 @@ class ContentTypeFormBuilder extends React.Component {
     this.HandleFieldChange = this.HandleFieldChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
     this.HandleTypeChange = this.HandleTypeChange.bind(this);
+    this.RemoveElement = this.RemoveElement.bind(this);
   }
 
   // Load existing content object on edit
@@ -90,7 +155,8 @@ class ContentTypeFormBuilder extends React.Component {
       types[type.hash] = {
         name: typeName,
         hash: type.hash,
-        schema: type.meta && type.meta["eluv.schema"]
+        schema: type.meta && type.meta["eluv.schema"],
+        allowCustomMetadata: type.meta && type.meta["eluv.allowCustomMetadata"]
       };
     });
 
@@ -106,14 +172,17 @@ class ContentTypeFormBuilder extends React.Component {
   }
 
   SwitchSchema(types, type) {
-    const schema = type && types[type].schema || defaultSchema;
+    const typeOptions = type && types[type] || {};
+    const schema = typeOptions.schema || defaultSchema;
+    const allowCustomMetadata = typeOptions.schema ? typeOptions.allowCustomMetadata : true;
     const data = this.state.createForm ? undefined : this.props.objects[this.state.objectId].meta;
 
     const initialFields = InitializeSchema({schema, initialData: data});
 
     this.setState({
       fields: initialFields,
-      schema: schema
+      schema: schema,
+      allowCustomMetadata
     });
   }
 
@@ -132,15 +201,30 @@ class ContentTypeFormBuilder extends React.Component {
     }, () => this.SwitchSchema(this.state.types, type));
   }
 
-  HandleFieldChange(name, type, event, subtree=[]) {
-    const value = type === "file" ? event.target.files : event.target.value;
+  HandleFieldChange(event, entry, subtree=[]) {
+    let value = event.target.value;
+    if(entry.type === "file") {
+      value = event.target.files;
+    } else if(entry.type === "boolean") {
+      value = event.target.checked;
+    }
 
     this.setState({
       fields: SetValue({
         data: this.state.fields,
         subtree,
-        attr: name,
+        attr: entry.key,
         value
+      })
+    });
+  }
+
+  RemoveElement(subtree, attr) {
+    this.setState({
+      fields: RemoveValue({
+        data: this.state.fields,
+        subtree,
+        attr
       })
     });
   }
@@ -192,32 +276,21 @@ class ContentTypeFormBuilder extends React.Component {
     );
   }
 
-  BuildField(name, subtree=[], options={}) {
-    const fieldInfo = GetFieldInfo({
-      schema: this.state.schema,
-      data: this.state.fields,
-      subtree,
-      attr: name
-    });
+  BuildField(entry, subtree=[]) {
+    const onChange = (event) => this.HandleFieldChange(event, entry, subtree);
 
-    const value = fieldInfo.value;
-    const type = fieldInfo.type;
-    const label = options.label || fieldInfo.label || name;
-    const key = options.key || `input-${subtree.join("-")}${name}`;
-
-    const fieldOptions = {name, required: fieldInfo.required};
-
-    const onChange = (event) => this.HandleFieldChange(name, type, event, subtree);
+    const key = `field-${subtree.join("-")}-${entry.key}`;
+    const value = GetValue({data: this.state.fields, subtree, attr: entry.key});
+    const label = entry.label || entry.key;
+    const fieldOptions = {
+      name: entry.key,
+      required: entry.required
+    };
 
     let field;
-    switch(type) {
-      case "json":
-        field = <JsonTextArea
-          UpdateValue={formattedMetadata => this.HandleFieldChange(name, type, {target: {value: formattedMetadata}}, subtree) }
-          onChange={onChange}
-          name={name}
-          value={value}
-        />;
+    switch(entry.type) {
+      case "label":
+        field = <div className="form-text">{entry.text}</div>;
         break;
       case "string":
         field = <input {...fieldOptions} value={value} onChange={onChange} />;
@@ -231,38 +304,91 @@ class ContentTypeFormBuilder extends React.Component {
       case "number":
         field = <input {...fieldOptions} value={value} type="number" step={0.000000001} onChange={onChange} />;
         break;
-      case "file":
-        const required = fieldInfo.required && this.state.createForm;
-        return <BrowseWidget key={key} label={label} onChange={onChange} multiple={fieldInfo.multiple} required={required} />;
-      case "list":
+      case "boolean":
+        field = <input {...fieldOptions} checked={value} type="checkbox" onChange={onChange} />;
         break;
       case "choice":
+        return <RadioSelect
+          key={key}
+          name={entry.key}
+          label={label}
+          required={entry.required}
+          selected={value}
+          options={entry.options}
+          onChange={onChange}
+        />;
+      case "json":
+        field = <JsonTextArea
+          UpdateValue={formattedMetadata => this.HandleFieldChange({target: {value: formattedMetadata}}, entry, subtree) }
+          onChange={onChange}
+          name={entry.key}
+          value={value}
+        />;
         break;
-      case "object":
+      case "file":
+        const required = entry.required && this.state.createForm;
+        return <BrowseWidget key={key} label={label} onChange={onChange} multiple={entry.multiple} required={required} />;
+      case "list":
+        const elements = Object.keys(value).map(index => {
+          const element = {
+            key: index,
+            type: "list-element"
+          };
+          return this.BuildField(element, subtree.concat(entry.key));
+        });
         field = (
-          <div className="subsection">
-            { this.BuildType(fieldInfo.fields, subtree.concat([name])) }
+          <div className="full-width">
+            <div className="actions-container compact left">
+              <button
+                type="button"
+                className="action action-compact action-full-width"
+                onClick={() => this.HandleFieldChange({target: {value: ""}}, {key: Id.next()}, subtree.concat(entry.key))}
+              >
+                Add Element
+              </button>
+            </div>
+            <div className="list">
+              {elements}
+            </div>
           </div>
         );
         break;
-      default:
-        return this.BuildField(type, subtree, {key, label});
+      case "list-element":
+        return (
+          <div key={key} className="list-item">
+            <input {...fieldOptions} value={value} onChange={onChange} />
+            <InlineSVG
+              className="icon icon-clickable dark"
+              type="button"
+              src={TrashIcon}
+              title="Remove Element"
+              onClick={() => this.RemoveElement(subtree, entry.key)}
+            />
+          </div>
+        );
+      case "object":
+        field = (
+          <div className="subsection">
+            { this.BuildType(entry.fields, subtree.concat([entry.key])) }
+          </div>
+        );
     }
 
     return (
       <div className="labelled-input" key={key}>
-        <label className={["text", "json", "object"].includes(type) ? "textarea-label" : "label"} htmlFor={name}>{label}</label>
+        <label className={["label", "list", "text", "json", "object"].includes(entry.type) ? "textarea-label" : "label"} htmlFor={name}>{label}</label>
         { field }
       </div>
     );
   }
 
-  BuildType(fields, subtree=[]) {
-    return fields.map(fieldName => this.BuildField(fieldName, subtree));
+  BuildType(schema, subtree=[]) {
+    return schema.map(entry => this.BuildField(entry, subtree));
   }
 
   MetadataField() {
-    if(!(this.state.schema.options && this.state.schema.options.allowCustomMetadata)) { return null; }
+    if(!this.state.allowCustomMetadata) { return null; }
+
     return (
       <div className="labelled-input">
         <label className="textarea-label">Metadata</label>
@@ -292,7 +418,7 @@ class ContentTypeFormBuilder extends React.Component {
     const formContent = (
       <div>
         { this.TypeField() }
-        { this.BuildType(this.state.schema.main) }
+        { this.BuildType(this.state.schema) }
         { this.MetadataField() }
       </div>
     );

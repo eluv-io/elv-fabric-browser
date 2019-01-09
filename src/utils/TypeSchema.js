@@ -1,101 +1,99 @@
+import Id from "./Id";
 import {SafeTraverse} from "./Helpers";
 
 // Helper methods for dealing with custom content type forms
 
 export const BasicTypes = [
+  "label",
   "string",
   "text",
   "integer",
   "number",
   "json",
-  "file",
-  "list",
+  "boolean",
   "choice",
-  "object"
+  "list",
+  "object",
+  "file"
 ];
 
-// Initialize the data structure of the schema, filling with initial data if present
-export const InitializeSchema = ({schema, initialData={}}) => {
+export const FromList = (list) => {
+  let struct = {};
+  list.forEach(element => {
+    struct[Id.next()] = element;
+  });
+  return struct;
+};
+
+export const ToList = (struct) => {
+  return Object.keys(struct).map(index => parseInt(index)).sort().map(index => struct[index]);
+};
+
+// Initialize the data structure based on the schema, populating with any initial data
+export const InitializeSchema = ({schema, initialData}) => {
+  initialData = initialData || {};
+
   let data = {};
+  schema.forEach(entry => {
+    if(!BasicTypes.includes(entry.type)) { throw Error("Unknown type: " + entry.type); }
 
-  const Initialize = (name, fieldSchema, subtree=[]) => {
-    if(!fieldSchema) {
-      throw Error("Unknown type: " + name);
+    switch(entry.type) {
+      case "object":
+        data[entry.key] = InitializeSchema({schema: entry.fields, initialData: initialData[entry.key]});
+        break;
+      case "json":
+        data[entry.key] = JSON.stringify(initialData[entry.key], null, 2);
+        break;
+      case "list":
+        data[entry.key] = FromList(initialData[entry.key] || []);
+        break;
+      default:
+        data[entry.key] = initialData[entry.key];
+
+        // Specifically test for undefined instead of falsy - 'false' is a valid value
+        if(data[entry.key] === undefined) {
+          data[entry.key] = entry.type === "boolean" ? false : "";
+        }
     }
-
-    if(fieldSchema.type === "object") {
-      let result = {};
-      fieldSchema.fields.forEach(fieldName => {
-        result[fieldName] = Initialize(fieldName, schema.fields[fieldName], subtree.concat(name));
-      });
-      return result;
-    } else if(BasicTypes.includes(fieldSchema.type)) {
-      return SafeTraverse(initialData, subtree.concat(name)) || "";
-    } else {
-      return Initialize(name, schema.fields[fieldSchema.type], subtree);
-    }
-  };
-
-  schema.main.forEach(fieldName => {
-    data[fieldName] = Initialize(fieldName, schema.fields[fieldName]);
   });
 
   return data;
 };
 
-// Get information about the specified field
-// -- Traverse reference types down to their basic type
-// -- Get the schema of the field as combination of all reference types,
-//    with top-level schemas overriding reference schemas
-// -- Get the value of the attribute
-export const GetFieldInfo = ({schema, data={}, subtree=[], attr}) => {
-  const fieldSchema = GetSchema({schema, attr});
-  const value = GetValue({data, subtree, attr});
-
-  return {
-    ...fieldSchema,
-    value
-  };
+// Extract a specific value from the data
+export const GetValue = ({data={}, subtree=[], attr}) => {
+  return SafeTraverse(data, subtree.concat(attr));
 };
 
-export const GetSchema = ({schema, attr}) => {
-  const fieldSchema = schema.fields[attr];
+export const RemoveValue = ({data, subtree=[], attr}) => {
+  let newData = {
+    ...data
+  };
 
-  if(!fieldSchema) { throw Error("Unknown type: " + attr); }
+  if(subtree.length === 0) {
+    delete newData[attr];
+  } else {
+    // Changing nested data - traverse data by reference to get
+    // to proper nesting level
+    let pointer = newData;
+    subtree.forEach(key => {
+      if(!pointer[key]) { return; }
+      pointer = pointer[key];
+    });
 
-  const type = fieldSchema.type;
-
-  if(BasicTypes.includes(type)) {
-    // Basic type
-    return fieldSchema;
-  } else if(schema.fields[type]) {
-    // Reference type
-    // Return union of this field's schema with the reference type's schema, giving this one priority
-    return {
-      ...GetSchema({schema, attr: type}),
-      ...fieldSchema
-    };
+    delete pointer[attr];
   }
 
-  // Unknown type
-  throw Error(`Invalid type for "${attr}": "${type}"`);
+  return newData;
 };
 
-export const GetValue = ({data={}, subtree=[], attr}) => {
-  // Determine value of field
-  subtree.forEach(key => {
-    data = data[key] || {};
-  });
-
-  return data[attr];
-};
-
+// Set a specific value in the data
 export const SetValue = ({data, subtree=[], attr, value}) => {
   let newData = {
     ...data
   };
 
-  if(subtree.length == 0) {
+  if(subtree.length === 0) {
     newData[attr] = value;
   } else {
     // Changing nested data - traverse data by reference to get
