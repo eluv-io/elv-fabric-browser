@@ -51,6 +51,11 @@
     min-width: 100px;
     padding: $spacing-xs $spacing-s;
 
+    &:focus {
+      box-shadow: $color-lightblue 0 0 5px;
+      outline: $color-mediumblue;
+    }
+
     &:hover {
       background: $color-lightblue;
       border: 1px solid $color-lightblue

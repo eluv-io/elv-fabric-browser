@@ -45,31 +45,29 @@ class BrowseWidget extends React.Component {
   }
 
   render() {
-    const invalid = this.props.required && this.state.browseButtonRef.current && !this.state.browseButtonRef.current.checkValidity();
-
     const inputName = "browse-" + this.props.label;
     return (
       <div className="labelled-input">
         <label className="textarea-label" htmlFor={inputName}>{ this.props.label }</label>
         <div className="browse-widget">
           <div className="actions-container">
-            <button
-              className={`action action-compact action-full-width ${invalid ? "required" : ""}`}
-              type="button"
-              onClick={() => {this.state.browseButtonRef.current.click();}}
-            >
-              Browse
-            </button>
             <input
+              className="browse-button"
               ref={this.state.browseButtonRef}
               name={inputName}
               type="file"
               required={this.props.required}
               multiple={this.props.multiple}
               accept={this.props.accept}
-              hidden
               onChange={this.HandleChange}
             />
+            <button
+              className="action action-compact action-full-width"
+              type="button"
+              onClick={() => {this.state.browseButtonRef.current.click();}}
+            >
+              Browse
+            </button>
           </div>
           { this.FileSelections() }
         </div>
