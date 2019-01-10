@@ -89,7 +89,7 @@ class ContentLibrary extends React.Component {
           libraryId={object.objectId}
           link={Path.join(this.props.match.url, object.id)}
           icon={object.imageUrl || ContentIcon}
-          name={object.name}
+          name={object.name || "Content Object " + object.id}
           isOwner={object.isOwner}
           infoText={infoText}
           description={object.description}

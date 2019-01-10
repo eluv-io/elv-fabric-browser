@@ -9,6 +9,8 @@ import RadioSelect from "../../components/RadioSelect";
 import Id from "../../../utils/Id";
 import InlineSVG from "svg-inline-react";
 import TrashIcon from "../../../static/icons/trash.svg";
+import {DownloadFromUrl} from "../../../utils/Files";
+import Fabric from "../../../clients/Fabric";
 
 const defaultSchema = [
   {
@@ -22,73 +24,6 @@ const defaultSchema = [
     "label": "Description",
     "type": "text",
     "required": false
-  }
-];
-
-const defaultSchema2 = [
-  {
-    "key": "metadata",
-    "type": "object",
-    "fields": [
-      {
-        "key": "title",
-        "type": "string"
-      },
-      {
-        "key": "synopsis",
-        "type": "text"
-      },
-      {
-        "key": "cast and crew",
-        "type": "string"
-      }
-    ]
-  },
-  {
-    "key": "blog_post",
-    "type": "text"
-  },
-  {
-    "key": "facebook",
-    "type": "object",
-    "fields": [
-      {
-        "key": "proxy.1min",
-        "type": "file"
-      },
-      {
-        "key": "text",
-        "type": "object",
-        "fields": [
-          {
-            "key": "1",
-            "type": "string"
-          },
-          {
-            "key": "2",
-            "type": "string"
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "key": "youtube",
-    "type": "object",
-    "fields": [
-      {
-        "key": "title",
-        "type": "string"
-      },
-      {
-        "key": "description",
-        "type": "text"
-      }
-    ]
-  },
-  {
-    "key": "tags",
-    "type": "text"
   }
 ];
 
@@ -154,7 +89,9 @@ class ContentTypeFormBuilder extends React.Component {
       const typeName = (type.meta && type.meta["eluv.name"]) || type.hash;
       types[type.hash] = {
         name: typeName,
-        hash: type.hash,
+        objectId: type.id,
+        versionHash: type.hash,
+        meta: type.meta,
         schema: type.meta && type.meta["eluv.schema"],
         allowCustomMetadata: type.meta && type.meta["eluv.allowCustomMetadata"]
       };
@@ -262,8 +199,8 @@ class ContentTypeFormBuilder extends React.Component {
   TypeField() {
     if(!this.state.createForm) { return; }
 
-    const options = Object.values(this.state.types).map(({name, hash}) => {
-      return <option key={"type-" + hash} name="type" value={hash}>{ name }</option>;
+    const options = Object.values(this.state.types).map(({name, versionHash}) => {
+      return <option key={"type-" + versionHash} name="type" value={versionHash}>{ name }</option>;
     });
 
     return (
@@ -282,30 +219,59 @@ class ContentTypeFormBuilder extends React.Component {
     const key = `field-${subtree.join("-")}-${entry.key}`;
     const value = GetValue({data: this.state.fields, subtree, attr: entry.key});
     const label = entry.label || entry.key;
-    const fieldOptions = {
-      name: entry.key,
-      required: entry.required
-    };
 
     let field;
     switch(entry.type) {
       case "label":
         field = <div className="form-text">{entry.text}</div>;
         break;
+      case "attachedFile":
+        field = (
+          <div className="actions-container compact full-width">
+            <button
+              className="action action-compact secondary action-full-width"
+              type="button"
+              onClick={
+                async () => {
+                  const type = this.state.types[this.state.type];
+                  const fileInfo = type.meta[entry.key];
+                  if(fileInfo) {
+                    await this.props.DownloadPart({
+                      libraryId: Fabric.contentSpaceLibraryId,
+                      objectId: type.objectId,
+                      versionHash: type.versionHash,
+                      partHash: fileInfo.hash,
+                      callback: async (url) => {
+                        await DownloadFromUrl(url, fileInfo.filename || label);
+                      }
+                    });
+                  }
+                }
+              }
+            >
+              Download
+            </button>
+          </div>
+        );
+        break;
       case "string":
-        field = <input {...fieldOptions} value={value} onChange={onChange} />;
+        field = <input name={entry.key} required={entry.required} value={value} onChange={onChange} />;
         break;
       case "text":
-        field = <textarea {...fieldOptions} value={value} onChange={onChange} />;
+        field = <textarea name={entry.key} required={entry.required} value={value} onChange={onChange} />;
         break;
       case "integer":
-        field = <input {...fieldOptions} value={value} type="number" step={1} onChange={onChange} />;
+        field = <input name={entry.key} required={entry.required} value={value} type="number" step={1} onChange={onChange} />;
         break;
       case "number":
-        field = <input {...fieldOptions} value={value} type="number" step={0.000000001} onChange={onChange} />;
+        field = <input name={entry.key} required={entry.required} value={value} type="number" step={0.000000000001} onChange={onChange} />;
         break;
       case "boolean":
-        field = <input {...fieldOptions} checked={value} type="checkbox" onChange={onChange} />;
+        field = (
+          <div className="checkbox-container">
+            <input name={entry.key} required={entry.required} checked={value} type="checkbox" onChange={onChange} />
+          </div>
+        );
         break;
       case "choice":
         return <RadioSelect
@@ -327,7 +293,7 @@ class ContentTypeFormBuilder extends React.Component {
         break;
       case "file":
         const required = entry.required && this.state.createForm;
-        return <BrowseWidget key={key} label={label} onChange={onChange} multiple={entry.multiple} required={required} />;
+        return <BrowseWidget key={key} accept={entry.accept} label={label} onChange={onChange} multiple={entry.multiple} required={required} />;
       case "list":
         const elements = Object.keys(value).map(index => {
           const element = {
@@ -356,7 +322,7 @@ class ContentTypeFormBuilder extends React.Component {
       case "list-element":
         return (
           <div key={key} className="list-item">
-            <input {...fieldOptions} value={value} onChange={onChange} />
+            <input name={entry.key} required={entry.required} value={value} onChange={onChange} />
             <InlineSVG
               className="icon icon-clickable dark"
               type="button"
@@ -367,11 +333,17 @@ class ContentTypeFormBuilder extends React.Component {
           </div>
         );
       case "object":
-        field = (
-          <div className="subsection">
-            { this.BuildType(entry.fields, subtree.concat([entry.key])) }
-          </div>
-        );
+        const fields = this.BuildType(entry.fields, subtree.concat([entry.key]));
+        if(entry.flattenDisplay) {
+          // Show fields at top level instead of nested in object's label
+          return fields;
+        } else {
+          field = (
+            <div className="subsection">
+              {fields}
+            </div>
+          );
+        }
     }
 
     return (

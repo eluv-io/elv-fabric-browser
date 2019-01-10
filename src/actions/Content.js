@@ -358,7 +358,7 @@ export const DownloadPart = ({libraryId, objectId, versionHash, partHash, callba
     let blob = await Fabric.DownloadPart({libraryId, objectId, versionHash, partHash});
     let url = window.URL.createObjectURL(blob);
 
-    callback(url);
+    await callback(url);
   };
 };
 
@@ -370,6 +370,13 @@ const CollectMetadata = async ({libraryId, writeToken, schema, fields}) => {
       case "label":
         break;
       case "file":
+        // Freshly uploaded files will be a FileList
+        // previously uploaded files will either be a string or a list of strings
+        if(Array.isArray(fields[entry.key]) || typeof fields[entry.key] === "string") {
+          metadata[entry.key] = fields[entry.key];
+          break;
+        }
+
         const files = Array.from(fields[entry.key]);
         let partResponses = [];
 
