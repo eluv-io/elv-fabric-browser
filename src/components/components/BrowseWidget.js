@@ -46,6 +46,8 @@ class BrowseWidget extends React.Component {
 
   render() {
     const inputName = "browse-" + this.props.label;
+    const accept = Array.isArray(this.props.accept) ? this.props.accept.join(", ") : this.props.accept;
+
     return (
       <div className="labelled-input">
         <label className="textarea-label" htmlFor={inputName}>{ this.props.label }</label>
@@ -58,7 +60,7 @@ class BrowseWidget extends React.Component {
               type="file"
               required={this.props.required}
               multiple={this.props.multiple}
-              accept={this.props.accept}
+              accept={accept}
               onChange={this.HandleChange}
             />
             <button
@@ -81,7 +83,10 @@ BrowseWidget.propTypes = {
   onChange: PropTypes.func.isRequired,
   required: PropTypes.bool,
   multiple: PropTypes.bool,
-  accept: PropTypes.string
+  accept: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.arrayOf(PropTypes.string)
+  ])
 };
 
 export default BrowseWidget;

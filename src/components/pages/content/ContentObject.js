@@ -13,6 +13,7 @@ import {
 } from "../../../actions/Content";
 import {FormatAddress} from "../../../utils/Helpers";
 import {PageHeader} from "../../components/Page";
+import {DownloadFromUrl} from "../../../utils/Files";
 
 class ContentObject extends React.Component {
   constructor(props) {
@@ -240,20 +241,6 @@ class ContentObject extends React.Component {
     );
   }
 
-  async Download(url, filename) {
-    let element = document.createElement("a");
-    element.href = url;
-    element.download = filename;
-
-    element.style.display = "none";
-    document.body.appendChild(element);
-
-    element.click();
-
-    document.body.removeChild(element);
-    window.URL.revokeObjectURL(url);
-  }
-
   ObjectMedia() {
     let image;
     let video;
@@ -300,8 +287,8 @@ class ContentObject extends React.Component {
                 objectId: this.state.objectId,
                 versionHash: version.hash,
                 partHash: part.hash,
-                callback: (url) => {
-                  this.Download(url, part.hash);
+                callback: async (url) => {
+                  await DownloadFromUrl(url, part.hash);
                 }
               });
             }}
