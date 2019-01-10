@@ -1,3 +1,57 @@
+/* Type Schema Grammar:
+
+  Schema: [ Entry ]
+  Entry: { Key, Type, { Options } }
+  Key: string
+  Type:
+    "label" |
+    "string" |
+    "text" |
+    "integer" |
+    "number" |
+    "json" |
+    "boolean" |
+    "choice" |
+    "list" |
+    "object" |
+    "file" |
+    "attachedFile"
+
+  Options:
+  *:
+    - label: string
+      - The label for this field. If not set, the key will be used as the label
+    - required: boolean
+      - Whether or not this field is required. Validation will be performed on the form
+         using the html5 "required" attribute
+  "label":
+    - text: string
+      - The text to be displayed in the label
+  "object":
+    - fields: Schema
+      - The schema of the object
+    - flattenDisplay: boolean
+      - If true, the fields will not be wrapped in a subsection in the form with the object 		   label -- the fields will appear as if they were not contained in an object.
+  "choice":
+    - options: [ [label, value], ...]
+      - List of options to choose from
+  "file":
+    - multiple: boolean
+      - If specified, will allow uploading of multiple files. Otherwise, only a single file will
+         be allowed
+    - accept: mime-type-string | [ mime-type-string ]
+      - Limits the allowed filetypes to be upload to the specified mime-types
+
+  attachedFiles are parts uploaded to the content type. The top level content type metadata
+  must have the following:
+  [key]: { "hash": <partHash>, "filename": <filename> }
+
+  Schema are specified in the "eluv.schema" tag in the content type metadata.
+
+  Custom metadata manipulation can be allowed by setting "eluv.allowCustomMetadata" in the content type metadata
+
+ */
+
 import Id from "./Id";
 import {SafeTraverse} from "./Helpers";
 
@@ -14,7 +68,8 @@ export const BasicTypes = [
   "choice",
   "list",
   "object",
-  "file"
+  "file",
+  "attachedFile"
 ];
 
 export const FromList = (list) => {
