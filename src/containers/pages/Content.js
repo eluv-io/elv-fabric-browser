@@ -33,7 +33,7 @@ import ContentTypeForm from "../../components/pages/content/ContentTypeForm";
 import ContentObjectReviewForm from "../../components/pages/content/ContentObjectReviewForm";
 import {ListAccessGroups} from "../../actions/AccessGroups";
 import {WrapRequest} from "../../actions/Requests";
-import ContentTypeFormBuilder from "../../components/pages/content/ContentTypeFormBuilder";
+import ContentObjectForm from "../../components/pages/content/ContentObjectForm";
 
 const mapStateToProps = (state) => ({
   requests: state.requests,
@@ -96,10 +96,10 @@ export const ContentObjectContainer = connect(
   mapDispatchToProps
 )(ContentObject);
 
-export const ContentTypeFormBuilderContainer = connect(
+export const ContentObjectFormContainer = connect(
   mapStateToProps,
   mapDispatchToProps
-)(ContentTypeFormBuilder);
+)(ContentObjectForm);
 
 export const ContentObjectReviewFormContainer = connect(
   mapStateToProps,

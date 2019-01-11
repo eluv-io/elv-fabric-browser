@@ -26,6 +26,9 @@ module.exports = {
       configuration: path.join(__dirname, "configuration.json")
     }
   },
+  node: {
+    fs: "empty"
+  },
   mode: "development",
   devtool: "source-map",
   plugins: [
