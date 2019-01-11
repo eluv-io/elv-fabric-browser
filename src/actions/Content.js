@@ -313,11 +313,11 @@ export const CreateContentType = ({name, description, metadata, bitcode}) => {
   };
 };
 
-export const ListContentTypes = () => {
+export const ListContentTypes = ({latestOnly=true}) => {
   return async (dispatch) => {
     dispatch({
       type: ActionTypes.content.types.list,
-      types: await Fabric.ListContentTypes()
+      types: await Fabric.ListContentTypes({latestOnly})
     });
   };
 };
@@ -355,7 +355,7 @@ export const UploadParts = ({libraryId, objectId, files, encrypt}) => {
 
 export const DownloadPart = ({libraryId, objectId, versionHash, partHash, callback}) => {
   return async (dispatch) => {
-    let blob = await Fabric.DownloadPart({libraryId, objectId, versionHash, partHash});
+    let blob = await Fabric.DownloadPart({libraryId, objectId, versionHash, partHash, encrypted:false});
     let url = window.URL.createObjectURL(blob);
 
     await callback(url);

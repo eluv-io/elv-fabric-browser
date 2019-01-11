@@ -550,8 +550,8 @@ const Fabric = {
     });
   },
 
-  ListContentTypes: async () => {
-    return await client.ContentTypes();
+  ListContentTypes: async ({latestOnly=true}) => {
+    return await client.ContentTypes({latestOnly});
   },
 
   /* Contract calls */
@@ -656,8 +656,8 @@ const Fabric = {
     return client.ContentParts({libraryId, objectId, versionHash});
   },
 
-  DownloadPart: ({libraryId, objectId ,versionHash, partHash}) => {
-    return client.DownloadPart({ libraryId, objectId, versionHash, partHash});
+  DownloadPart: ({libraryId, objectId ,versionHash, partHash, encrypted}) => {
+    return client.DownloadPart({ libraryId, objectId, versionHash, partHash, encrypted});
   },
 
   UploadPart: ({libraryId, objectId, writeToken, data, encrypted=true}) => {

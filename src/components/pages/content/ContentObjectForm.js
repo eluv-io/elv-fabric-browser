@@ -28,7 +28,7 @@ const defaultSchema = [
 ];
 
 // Build a form from a JSON schema
-class ContentTypeFormBuilder extends React.Component {
+class ContentObjectForm extends React.Component {
   constructor(props) {
     super(props);
 
@@ -55,7 +55,7 @@ class ContentTypeFormBuilder extends React.Component {
       this.setState({
         loadRequestId: this.props.WrapRequest({
           todo: async () => {
-            await this.props.ListContentTypes();
+            await this.props.ListContentTypes({});
           }
         })
       });
@@ -68,7 +68,7 @@ class ContentTypeFormBuilder extends React.Component {
               objectId: this.state.objectId,
             });
 
-            await this.props.ListContentTypes();
+            await this.props.ListContentTypes({latestOnly: false});
           }
         })
       });
@@ -418,4 +418,4 @@ class ContentTypeFormBuilder extends React.Component {
   }
 }
 
-export default ContentTypeFormBuilder;
+export default ContentObjectForm;
