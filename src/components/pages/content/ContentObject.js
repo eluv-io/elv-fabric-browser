@@ -54,7 +54,7 @@ class ContentObject extends React.Component {
             objectId: this.state.objectId
           });
 
-          await this.props.ListContentTypes();
+          await this.props.ListContentTypes({latestOnly: false});
 
           const object = this.props.objects[this.state.objectId];
 
