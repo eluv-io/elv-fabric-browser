@@ -20,7 +20,9 @@ import {
   CreateContentType,
   ListContentTypes,
   CreateFromContentTypeSchema,
-  UpdateFromContentTypeSchema
+  UpdateFromContentTypeSchema,
+  DownloadFile,
+  UploadFiles
 } from "../../actions/Content";
 import ContentLibraries from "../../components/pages/content/ContentLibraries";
 import ContentLibrary from "../../components/pages/content/ContentLibrary";
@@ -67,7 +69,9 @@ const mapDispatchToProps = dispatch =>
       CreateContentType,
       ListContentTypes,
       CreateFromContentTypeSchema,
-      UpdateFromContentTypeSchema
+      UpdateFromContentTypeSchema,
+      DownloadFile,
+      UploadFiles
     ]
   );
 

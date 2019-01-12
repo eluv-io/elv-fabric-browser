@@ -1,3 +1,5 @@
+import Path from "path";
+
 export const DownloadFromUrl = async (url, filename) => {
   let element = document.createElement("a");
   element.href = url;
@@ -10,4 +12,19 @@ export const DownloadFromUrl = async (url, filename) => {
 
   document.body.removeChild(element);
   window.URL.revokeObjectURL(url);
+};
+
+// Convert a FileList to file info for UploadFiles
+export const FileInfo = async (path, fileList, noData=false) => {
+  return await Promise.all(
+    Array.from(fileList).map(async file => {
+      const data = noData ? undefined : await new Response(file).blob();
+      return {
+        path: Path.join(path, file.webkitRelativePath || file.name),
+        type: "file",
+        size: file.size,
+        data
+      };
+    })
+  );
 };

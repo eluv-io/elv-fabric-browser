@@ -20,9 +20,9 @@ class RadioSelect extends React.Component {
   }
 
   // Set name and value for label click event
-  HandleLabelClick(event) {
+  HandleLabelClick(event, value) {
     event.target.name = this.props.name;
-    event.target.value = event.target.attributes.value.value;
+    event.target.value = event.target.value || value;
     this.props.onChange(event);
   }
 
@@ -30,32 +30,47 @@ class RadioSelect extends React.Component {
     const optionLabel = option[0];
     const optionValue = option[1];
 
-    return (
-      <div className="radio-option" key={"radio-select-" + this.props.name + "-" + optionValue }>
-        <label className="radio-option-label" htmlFor={this.props.name} onClick={this.HandleLabelClick}>
-          { optionLabel }
-        </label>
-        <input
-          ref={index === 0 ? this.state.firstOptionRef : undefined}
-          type="radio"
-          name={this.props.name}
-          value={optionValue}
-          onChange={(event) => {
-            // Inject original value into event - radio buttons turn everything to strings
-            event = {...event, target: {...event.target, value: optionValue}};
-            this.props.onChange(event);
-          }}
-          checked={optionValue === this.props.selected}
-        />
-      </div>
-    );
+    const label =
+      <label className="radio-option-label" htmlFor={this.props.name} onClick={(event) => this.HandleLabelClick(event, optionValue)}>
+        { optionLabel }
+      </label>;
+
+    const input =
+      <input
+        ref={index === 0 ? this.state.firstOptionRef : undefined}
+        type="radio"
+        name={this.props.name}
+        value={optionValue}
+        onChange={(event) => {
+          // Inject original value into event - radio buttons turn everything to strings
+          event = {...event, target: {...event.target, value: optionValue}};
+          this.props.onChange(event);
+        }}
+        checked={optionValue === this.props.selected}
+      />;
+
+    if(this.props.inline) {
+      return (
+        <div className="radio-option inline" key={"radio-select-" + this.props.name + "-" + optionValue }>
+          {input}
+          {label}
+        </div>
+      );
+    } else {
+      return (
+        <div className="radio-option" key={"radio-select-" + this.props.name + "-" + optionValue }>
+          { label }
+          { input }
+        </div>
+      );
+    }
   }
 
   render() {
     return (
       <div className="labelled-input">
         <label className="radio-label" htmlFor={this.props.name}>{this.props.label}</label>
-        <div className="radio-options">
+        <div className={`radio-options ${this.props.inline ? "inline": ""}`}>
           { this.props.options.map((option, index) => this.RadioOption(option, index)) }
         </div>
       </div>
@@ -73,6 +88,7 @@ const allowedOptionTypes = PropTypes.oneOfType([
 RadioSelect.propTypes = {
   name: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
+  inline: PropTypes.bool,
   options: PropTypes.arrayOf(
     PropTypes.arrayOf(
       allowedOptionTypes

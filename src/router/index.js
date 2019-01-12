@@ -81,6 +81,9 @@ class Router extends React.Component {
       && this.state.redirectPath
       && this.state.redirectPath !== this.props.router.location.pathname) {
       return <Redirect to={this.state.redirectPath} />;
+    } else if(!this.state.pathSynchronized) {
+      // Don't render until path is synchronized
+      return null;
     }
 
     return (
