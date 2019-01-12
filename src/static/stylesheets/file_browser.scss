@@ -1,0 +1,83 @@
+@import "variables/colors";
+@import "variables/spacing";
+@import "variables/mixins";
+
+.upload-widget {
+  padding: $spacing-s;
+}
+
+.browse-widget-files {
+  @include ellipsis;
+
+  font-size: 14px;
+
+  table {
+    tbody {
+      tr {
+        td {
+          &.item-path {
+            max-width: 150px;
+          }
+        }
+      }
+    }
+  }
+}
+
+.browse-widget-files,
+.file-browser {
+  border: 1px solid $color-lightgray;
+  margin: $spacing-s 0;
+  min-height: 200px;
+  padding-top: $spacing-s 0;
+  width: 100%;
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+
+    th {
+      padding: $spacing-xs;
+      text-align: left;
+
+      &.type-header,
+      &.actions-header {
+        width: 20px;
+      }
+
+      &.size-header {
+        width: 5em;
+      }
+
+      .icon {
+        height: 20px;
+        margin: 0;
+        padding: 0;
+        width: 20px;
+      }
+    }
+
+    tbody {
+      tr {
+        border-top: 1px solid $color-lightergray;
+        margin: 0 $spacing-s;
+
+        &.directory {
+          cursor: pointer;
+        }
+
+        td {
+          @include ellipsis;
+          padding: $spacing-xs 0 $spacing-xs $spacing-xs;
+        }
+
+        .icon {
+          height: 20px;
+          margin: 0;
+          padding: 0;
+          width: 20px;
+        }
+      }
+    }
+  }
+}

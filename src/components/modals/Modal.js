@@ -18,7 +18,8 @@ class Modal extends React.Component {
     document.addEventListener("keyup", this.HandleEscapeKey);
 
     // Automatically focus on first input of modal
-    document.querySelector(".modal-content input").focus();
+    const firstInput = document.querySelector(".modal-content input");
+    if(firstInput) { firstInput.focus(); }
   }
 
   componentWillUnmount() {
