@@ -4,6 +4,8 @@ import { SetNotificationMessage } from "./Notifications";
 import { ParseInputJson } from "../utils/Input";
 import {FormatAddress} from "../utils/Helpers";
 import {ToList} from "../utils/TypeSchema";
+import {DownloadFromUrl, FileInfo} from "../utils/Files";
+import Path from "path";
 
 export const ListContentLibraries = () => {
   return async (dispatch) => {
@@ -359,6 +361,33 @@ export const DownloadPart = ({libraryId, objectId, versionHash, partHash, callba
     let url = window.URL.createObjectURL(blob);
 
     await callback(url);
+  };
+};
+
+export const UploadFiles = ({libraryId, objectId, path, fileList}) => {
+  return async (dispatch) => {
+    await Fabric.EditAndFinalizeContentObject({
+      libraryId,
+      objectId,
+      todo: async ({writeToken}) => {
+        const fileInfo = await FileInfo(path, fileList);
+
+        await Fabric.UploadFiles({libraryId, objectId, writeToken, fileInfo});
+      }
+    });
+
+    dispatch(SetNotificationMessage({
+      message: "Successfully uploaded files"
+    }));
+  };
+};
+
+export const DownloadFile = ({libraryId, objectId, versionHash, filePath}) => {
+  return async (dispatch) => {
+    let blob = await Fabric.DownloadFile({libraryId, objectId, versionHash, filePath});
+    let url = window.URL.createObjectURL(blob);
+
+    await DownloadFromUrl(url, Path.basename(filePath));
   };
 };
 

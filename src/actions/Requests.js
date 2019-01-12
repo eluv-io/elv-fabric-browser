@@ -4,13 +4,14 @@ import Id from "../utils/Id";
 
 // Wrap actions with requests to keep request state updated automatically
 // Returns a unique ID corresponding to the request state
-export const WrapRequest = ({todo}) => {
+export const WrapRequest = ({todo, modal=false}) => {
   return (dispatch) => {
     let requestId = Id.next();
 
     Request({
       requestId,
       dispatch,
+      modal,
       todo
     });
 

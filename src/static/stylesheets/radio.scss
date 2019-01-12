@@ -1,8 +1,25 @@
+@import "variables/spacing";
+
 .radio-options {
   width: 100%;
 
+  &.inline {
+    display: flex;
+    justify-content: space-between;
+  }
+
   .radio-option {
     display: flex;
+
+    &.inline {
+      input {
+        margin-right: $spacing-xs;
+      }
+
+      label {
+        min-width: 0;
+      }
+    }
 
     label,
     input {

@@ -14,6 +14,7 @@ import {
 import {FormatAddress} from "../../../utils/Helpers";
 import {PageHeader} from "../../components/Page";
 import {DownloadFromUrl} from "../../../utils/Files";
+import FileBrowser from "../../components/FileBrowser";
 
 class ContentObject extends React.Component {
   constructor(props) {
@@ -29,6 +30,7 @@ class ContentObject extends React.Component {
       appRef: React.createRef(),
     };
 
+    this.LoadObject = this.LoadObject.bind(this);
     this.PageContent = this.PageContent.bind(this);
     this.RequestComplete = this.RequestComplete.bind(this);
     this.SubmitContentObject = this.SubmitContentObject.bind(this);
@@ -309,6 +311,39 @@ class ContentObject extends React.Component {
     }));
   }
 
+  ObjectFiles() {
+    const downloadMethod = async (filePath) => {
+      await this.props.DownloadFile({
+        libraryId: this.state.libraryId,
+        objectId: this.state.objectId,
+        filePath
+      });
+    };
+
+    const uploadMethod = async (path, fileList) => {
+      await this.props.UploadFiles({
+        libraryId: this.state.libraryId,
+        objectId: this.state.objectId,
+        path,
+        fileList
+      });
+    };
+
+    return(
+      <div className="object-files">
+        <h3>Files</h3>
+        <FileBrowser
+          requests={this.props.requests}
+          files={this.state.object.meta.files || {}}
+          Reload={this.LoadObject}
+          Upload={uploadMethod}
+          Download={downloadMethod}
+          WrapRequest={this.props.WrapRequest}
+        />
+      </div>
+    );
+  }
+
   ObjectVersion(version, versionNumber, latestVersion=false) {
     const visible = latestVersion || this.state.visibleVersions[version.hash];
 
@@ -430,6 +465,8 @@ class ContentObject extends React.Component {
         <LabelledField label={"Versions"} value={this.state.object.versions.length} />
         <LabelledField label={"Parts"} value={latestVersion.parts.length} />
         <LabelledField label={"Total size"} value={this.VersionSize(latestVersion)} />
+
+        { this.ObjectFiles() }
 
         { this.ObjectVersion(this.state.object.versions[0], this.state.object.versions.length, true) }
 

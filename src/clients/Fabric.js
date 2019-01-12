@@ -646,8 +646,12 @@ const Fabric = {
     return client.FinalizeUploadJobs({libraryId, objectId, writeToken});
   },
 
-  DownloadFiles: ({libraryId, objectId, writeToken, filePath}) => {
-    return client.DownloadFiles({libraryId, objectId, writeToken, filePath});
+  UploadFiles: ({libraryId, objectId, writeToken, fileInfo}) => {
+    return client.UploadFiles({libraryId, objectId, writeToken, fileInfo});
+  },
+
+  DownloadFile: ({libraryId, objectId, versionHash, filePath}) => {
+    return client.DownloadFile({libraryId, objectId, versionHash, filePath});
   },
 
   /* Parts */
