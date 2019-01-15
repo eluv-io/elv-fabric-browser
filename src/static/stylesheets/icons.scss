@@ -13,14 +13,28 @@
   }
 }
 
-.icon-clickable {
+.icon-button {
+  background-color: transparent;
+  border: 0;
   cursor: pointer;
+  padding: 0;
+
+  .icon {
+    height: auto;
+    margin: 0;
+    padding: 0;
+    width: auto;
+  }
 
   &:hover {
-    opacity: 0.8;
+    .icon {
+      opacity: 0.8;
+    }
   }
 
   &:active {
-    opacity: 0.9;
+    .icon {
+      opacity: 0.9;
+    }
   }
 }

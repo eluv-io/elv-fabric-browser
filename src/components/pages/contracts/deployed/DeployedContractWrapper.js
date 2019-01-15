@@ -40,6 +40,7 @@ export default (Component) => {
       this.RequestComplete = this.RequestComplete.bind(this);
     }
 
+    /* eslint-disable no-fallthrough */
     componentDidMount() {
       // Determine what needs to be loaded based on contract type
       let todo = async () => {};
@@ -78,6 +79,7 @@ export default (Component) => {
         loadRequestId: this.props.WrapRequest({todo})
       });
     }
+    /* eslint-enable no-fallthrough */
 
     RequestComplete() {
       let library;

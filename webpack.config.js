@@ -13,6 +13,7 @@ module.exports = {
     filename: "index.js",
   },
   devServer: {
+    disableHostCheck: true,
     inline: true,
     port: 8080,
     headers: {

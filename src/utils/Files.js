@@ -20,7 +20,7 @@ export const FileInfo = async (path, fileList, noData=false) => {
     Array.from(fileList).map(async file => {
       const data = noData ? undefined : await new Response(file).blob();
       return {
-        path: Path.join(path, file.webkitRelativePath || file.name),
+        path: Path.join(path, file.webkitRelativePath || file.name).replace(/^\/+/g, ""),
         type: "file",
         size: file.size,
         data

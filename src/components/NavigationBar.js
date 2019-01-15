@@ -1,11 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import InlineSVG from "svg-inline-react";
 
 import ContentIcon from "../static/icons/content.svg";
 import GroupsIcon from "../static/icons/groups.svg";
 import ContentTypeIcon from "../static/icons/content_types.svg";
 import ContractsIcon from "../static/icons/contracts.svg";
+import {Icon} from "./components/Icons";
 
 class NavigationBar extends React.Component {
   static Links() {
@@ -41,7 +41,7 @@ class NavigationBar extends React.Component {
       <div key={"navbar-link-" + linkInfo.link} className="navbar-link-container">
         <Link to={"/" + linkInfo.link} className={"navbar-link " + (active ? "active" : "")}>
           <span className="navbar-link-span">
-            <InlineSVG className="icon navbar-link-icon" src={linkInfo.icon} />
+            <Icon className="navbar-link-icon" src={linkInfo.icon} />
             <div className="navbar-link-text">
               {linkInfo.text}
             </div>
@@ -54,11 +54,11 @@ class NavigationBar extends React.Component {
   render() {
     return (
       <div className="navbar-container">
-        <div className="navbar-links-container">
+        <nav className="navbar-links-container" role="navigation">
           {NavigationBar.Links().map((linkInfo) => {
             return ( this.NavLink({linkInfo: linkInfo}) );
           })}
-        </div>
+        </nav>
       </div>
     );
   }
