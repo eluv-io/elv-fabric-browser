@@ -41,10 +41,9 @@
          be allowed
     - accept: mime-type-string | [ mime-type-string ]
       - Limits the allowed filetypes to be upload to the specified mime-types
-
-  attachedFiles are parts uploaded to the content type. The top level content type metadata
-  must have the following:
-  [key]: { "hash": <partHash>, "filename": <filename> }
+  "attachedFile":
+    - hash: string
+      - The hash of the content type part corresponding to the attached file
 
   Schema are specified in the "eluv.schema" tag in the content type metadata.
 

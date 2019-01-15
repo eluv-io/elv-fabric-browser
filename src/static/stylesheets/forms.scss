@@ -126,7 +126,7 @@ form {
       margin-bottom: 5px;
       position: relative;
 
-      .icon {
+      .icon-button {
         height: 20px;
         margin: 0;
         padding: 0;
@@ -154,7 +154,7 @@ form {
 
   .subsection {
     border: 1px solid $color-lightergray;
-    margin: 0 0 $spacing-xs 0;
+    margin: 0 0 $spacing-xs;
     min-width: 350px;
     padding: $spacing-xs $spacing-s;
     width: 100%;

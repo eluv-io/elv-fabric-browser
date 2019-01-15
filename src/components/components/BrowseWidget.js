@@ -4,8 +4,8 @@ import PrettyBytes from "pretty-bytes";
 import DirectoryIcon from "../../static/icons/directory.svg";
 import FileIcon from "../../static/icons/file.svg";
 import {FileInfo} from "../../utils/Files";
-import InlineSVG from "svg-inline-react";
 import Path from "path";
+import {Icon} from "./Icons";
 
 // A styled browse widget for forms
 class BrowseWidget extends React.Component {
@@ -34,8 +34,7 @@ class BrowseWidget extends React.Component {
         let dirname = "";
         const files = {};
         fileInfo.forEach(file => {
-          const path = file.path.replace(/^\/+/g, "");
-          const parts = path.split(Path.sep);
+          const parts = file.path.split(Path.sep);
 
           if(!dirname) { dirname = parts[0]; }
 
@@ -70,7 +69,7 @@ class BrowseWidget extends React.Component {
     return (
       <tr className="item-icon" key={item.path}>
         <td>
-          <InlineSVG className="icon dark" src={item.type === "directory" ? DirectoryIcon : FileIcon} />
+          <Icon src={item.type === "directory" ? DirectoryIcon : FileIcon} />
         </td>
         <td className="item-path">
           { item.path }
@@ -79,6 +78,25 @@ class BrowseWidget extends React.Component {
           { PrettyBytes(item.size || 0) }
         </td>
       </tr>
+    );
+  }
+
+  // Sort items - directory first, then case-insensitive alphabetical order
+  SortedItems() {
+    return (
+      this.state.fileInfo
+        .sort((item1, item2) => {
+          if(item1.type !== item2.type) {
+            if(item1.type === "directory") {
+              return -1;
+            } else {
+              return 1;
+            }
+          } else {
+            return item1.path.toLowerCase() > item2.path.toLowerCase();
+          }
+        })
+        .map(file => this.ItemRow(file))
     );
   }
 
@@ -96,21 +114,7 @@ class BrowseWidget extends React.Component {
             </tr>
           </thead>
           <tbody>
-            {
-              this.state.fileInfo
-                .sort((item1, item2) => {
-                  if(item1.type !== item2.type) {
-                    if(item1.type === "directory") {
-                      return -1;
-                    } else {
-                      return 1;
-                    }
-                  } else {
-                    return item1.path.toLowerCase() > item2.path.toLowerCase();
-                  }
-                })
-                .map(file => this.ItemRow(file))
-            }
+            { this.SortedItems() }
           </tbody>
         </table>
       </div>

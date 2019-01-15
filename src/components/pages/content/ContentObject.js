@@ -226,13 +226,14 @@ class ContentObject extends React.Component {
     return PrettyBytes(version.parts.reduce((a, part) => a + part.size, 0));
   }
 
-  FormattedData(label, id, value) {
+  ToggleSection(label, id, value, format=true) {
     const visible = this.state.visibleVersions[id];
 
     let content;
-
     if(visible) {
-      content = <pre className="content-object-data">{JSON.stringify(value, null, 2)}</pre>;
+      if(format) {
+        content = <pre className="content-object-data">{JSON.stringify(value, null, 2)}</pre>;
+      } else { content = value; }
     }
 
     return (
@@ -278,7 +279,7 @@ class ContentObject extends React.Component {
   ObjectParts(version) {
     if(!version.parts || version.parts.length === 0) { return null; }
 
-    return (version.parts.map((part, partNumber) => {
+    const parts = (version.parts.map((part, partNumber) => {
       const downloadButton = (
         <div className="actions-container">
           <button
@@ -302,13 +303,19 @@ class ContentObject extends React.Component {
 
       return (
         <div key={part.hash + "-" + partNumber} className="part-info">
-          <LabelledField label={<h4>Parts</h4>} />
-          <LabelledField label={"Part hash"} value={part.hash} />
+          <LabelledField label={"Hash"} value={part.hash} />
           <LabelledField label={"Size"} value={PrettyBytes(part.size)} />
           <LabelledField label={"Download"} value={downloadButton} />
         </div>
       );
     }));
+
+    return (
+      <div>
+        <h3>Parts</h3>
+        { parts }
+      </div>
+    );
   }
 
   ObjectFiles() {
@@ -370,9 +377,9 @@ class ContentObject extends React.Component {
           <LabelledField label={"Hash"} value={version.hash} />
           <LabelledField label={"Parts"} value={version.parts.length} />
           <LabelledField label={"Total size"} value={this.VersionSize(version)} />
-          { this.FormattedData("Metadata", "metadata-" + versionNumber, version.meta) }
-          { this.FormattedData("Verification", "verification-" + versionNumber, version.verification) }
-          { this.ObjectParts(version) }
+          { this.ToggleSection("Metadata", "metadata-" + versionNumber, version.meta) }
+          { this.ToggleSection("Verification", "verification-" + versionNumber, version.verification) }
+          { this.ToggleSection("Parts", "parts-" + versionNumber, this.ObjectParts(version), false) }
 
           <br/>
 
@@ -466,8 +473,6 @@ class ContentObject extends React.Component {
         <LabelledField label={"Parts"} value={latestVersion.parts.length} />
         <LabelledField label={"Total size"} value={this.VersionSize(latestVersion)} />
 
-        { this.ObjectFiles() }
-
         { this.ObjectVersion(this.state.object.versions[0], this.state.object.versions.length, true) }
 
         { this.PreviousVersions() }
@@ -527,6 +532,7 @@ class ContentObject extends React.Component {
         <div className="object-display">
           <PageHeader header={header} />
           { this.ObjectMedia() }
+          { this.ObjectFiles() }
           { this.ObjectInfo() }
         </div>
       </div>

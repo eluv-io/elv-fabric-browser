@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import PrettyBytes from "pretty-bytes";
 import Path from "path";
 import { SafeTraverse } from "../../utils/Helpers";
-import InlineSVG from "svg-inline-react";
 
 import DirectoryIcon from "../../static/icons/directory.svg";
 import FileIcon from "../../static/icons/file.svg";
@@ -12,6 +11,7 @@ import UploadIcon from "../../static/icons/upload.svg";
 import BackIcon from "../../static/icons/directory_back.svg";
 import Modal from "../modals/Modal";
 import UploadWidget from "./UploadWidget";
+import {Icon, IconButton} from "./Icons";
 
 class FileBrowser extends React.Component {
   constructor(props) {
@@ -37,34 +37,32 @@ class FileBrowser extends React.Component {
   }
 
   File(name, info) {
-    const download = () => this.props.Download(Path.join(this.state.path, name));
     return (
       <tr key={`entry-${this.state.path}-${name}`}>
         <td className="item-icon">
-          <InlineSVG className="icon dark" src={FileIcon} />
+          <Icon src={FileIcon} title="file" />
         </td>
         <td>{ name }</td>
         <td>{ PrettyBytes(info.size || 0) }</td>
         <td>
-          <InlineSVG
-            className="icon dark icon-clickable"
-            title={"Download " + name}
+          <IconButton
             src={DownloadIcon}
-            onClick={download}
+            title={"Download " + {name}}
+            onClick={() => this.props.Download(Path.join(this.state.path, name))}
           />
         </td>
       </tr>
     );
   }
 
-  Directory(name, info) {
+  Directory(name) {
     const changeDirectory = () => this.ChangeDirectory(Path.join(this.state.path, name));
     return (
-      <tr key={`entry-${this.state.path}-${name}`} className="directory" onClick={changeDirectory}>
+      <tr key={`entry-${this.state.path}-${name}`} className="clickable" onClick={changeDirectory} onKeyPress={changeDirectory}>
         <td className="item-icon">
-          <InlineSVG className="icon dark" src={DirectoryIcon} />
+          <Icon src={DirectoryIcon} title="directory" />
         </td>
-        <td>{ name }</td>
+        <td tabIndex="0">{ name }</td>
         <td />
         <td />
       </tr>
@@ -83,13 +81,19 @@ class FileBrowser extends React.Component {
         };
       });
 
-    const directories = items.filter(item => item.info.type === "directory");
-    const files = items.filter(item => item.info.type !== "directory");
-
-    // Display directories before files
+    // Sort items - directory first, then case-insensitive alphabetical order
     return (
-      directories.map(directory => this.Directory(directory.name, directory.info))
-        .concat(files.map(file => this.File(file.name, file.info)))
+      items.sort((item1, item2) => {
+        if(item1.info.type !== item2.info.type) {
+          if(item1.info.type === "directory") {
+            return -1;
+          } else {
+            return 1;
+          }
+        } else {
+          return item1.name.toLowerCase() > item2.name.toLowerCase();
+        }
+      }).map(item => item.info.type === "directory" ? this.Directory(item.name): this.File(item.name, item.info))
     );
   }
 
@@ -125,8 +129,7 @@ class FileBrowser extends React.Component {
     let backButton;
     if(this.state.path && this.state.path !== Path.dirname(this.state.path)) {
       backButton = (
-        <InlineSVG
-          className="icon icon-clickable dark"
+        <IconButton
           src={BackIcon}
           title={"Back"}
           onClick={() => this.ChangeDirectory(Path.dirname(this.state.path))}
@@ -144,8 +147,7 @@ class FileBrowser extends React.Component {
               <th>{this.state.displayPath}</th>
               <th className="size-header" />
               <th className="actions-header">
-                <InlineSVG
-                  className="icon icon-clickable dark"
+                <IconButton
                   src={UploadIcon}
                   title={"Upload"}
                   onClick={() => this.setState({showUpload: true})}

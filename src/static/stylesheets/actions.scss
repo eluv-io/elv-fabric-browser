@@ -2,6 +2,18 @@
 @import "variables/spacing";
 @import "variables/colors";
 
+.clickable {
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.7;
+  }
+
+  &:active {
+    opacity: 0.9;
+  }
+}
+
 .actions-container {
   display: flex;
 
@@ -35,12 +47,13 @@
     min-width: 100px;
   }
 
+  // sass-lint:disable no-vendor-prefixes
   .action {
     -moz-appearance: none;
     -webkit-appearance: none;
     background: $color-action-primary;
     border: 1px solid $color-action-primary;
-    box-shadow: $color-mediumgray 2px 2px 1px;
+    box-shadow: $color-lightgray 3px 3px 3px;
     color: $color-text-white;
     cursor: pointer;
     font-family: Lato, sans-serif;
@@ -58,7 +71,7 @@
 
     &:hover {
       background: $color-lightblue;
-      border: 1px solid $color-lightblue
+      border: 1px solid $color-lightblue;
     }
 
     &.secondary {
