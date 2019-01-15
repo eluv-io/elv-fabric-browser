@@ -12,3 +12,15 @@ export const ImageIcon = ({ className, title, icon }) => {
     );
   }
 };
+
+export const Icon = ({src, title, className=""}) => {
+  return <InlineSVG className={"icon dark " + className} title={title} src={src} />;
+};
+
+export const IconButton = ({src, title, onClick}) => {
+  return (
+    <button className="icon-button" type="button" role="button" title={title} onClick={onClick}>
+      <InlineSVG className="icon dark clickable" src={src} />
+    </button>
+  );
+};

@@ -397,6 +397,7 @@ const CollectMetadata = async ({libraryId, writeToken, schema, fields}) => {
   for(const entry of schema) {
     switch(entry.type) {
       case "label":
+      case "attachedFile":
         break;
       case "file":
         // Freshly uploaded files will be a FileList

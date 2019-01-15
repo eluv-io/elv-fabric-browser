@@ -2,82 +2,79 @@
 @import "variables/spacing";
 @import "variables/mixins";
 
-.upload-widget {
-  padding: $spacing-s;
+
+table {
+  border-collapse: collapse;
+  width: 100%;
 }
 
-.browse-widget-files {
-  @include ellipsis;
+th {
+  padding: $spacing-xs;
+  text-align: left;
+}
 
-  font-size: 14px;
+tr {
+  border-top: 1px solid $color-lightergray;
+  margin: 0 $spacing-s;
 
-  table {
-    tbody {
-      tr {
-        td {
-          &.item-path {
-            max-width: 150px;
-          }
-        }
-      }
+  td {
+    @include ellipsis;
+    padding: $spacing-xs 0 $spacing-xs $spacing-xs;
+
+    &.item-path {
+      max-width: 150px;
     }
   }
+}
+
+.upload-widget {
+  padding: $spacing-s;
 }
 
 .browse-widget-files,
 .file-browser {
   border: 1px solid $color-lightgray;
   margin: $spacing-s 0;
-  min-height: 200px;
+  max-height: 450px;
+  overflow-y: auto;
   padding-top: $spacing-s 0;
   width: 100%;
 
-  table {
-    border-collapse: collapse;
-    width: 100%;
 
-    th {
-      padding: $spacing-xs;
-      text-align: left;
+  th {
+    &.type-header,
+    &.actions-header {
+      width: 20px;
+    }
 
-      &.type-header,
-      &.actions-header {
-        width: 20px;
-      }
+    &.size-header {
+      width: 5em;
+    }
 
-      &.size-header {
-        width: 5em;
-      }
+    .icon {
+      height: 20px;
+      margin: 0;
+      padding: 0;
+      width: 20px;
+    }
+  }
 
-      .icon {
-        height: 20px;
-        margin: 0;
-        padding: 0;
-        width: 20px;
+  tr {
+    &.directory {
+      cursor: pointer;
+    }
+
+    td {
+      .item-path {
+        max-width: 150px;
       }
     }
 
-    tbody {
-      tr {
-        border-top: 1px solid $color-lightergray;
-        margin: 0 $spacing-s;
-
-        &.directory {
-          cursor: pointer;
-        }
-
-        td {
-          @include ellipsis;
-          padding: $spacing-xs 0 $spacing-xs $spacing-xs;
-        }
-
-        .icon {
-          height: 20px;
-          margin: 0;
-          padding: 0;
-          width: 20px;
-        }
-      }
+    .icon {
+      height: 20px;
+      margin: 0;
+      padding: 0;
+      width: 20px;
     }
   }
 }

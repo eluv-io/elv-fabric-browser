@@ -7,10 +7,10 @@ import Path from "path";
 import {InitializeSchema, GetValue, SetValue, RemoveValue} from "../../../utils/TypeSchema";
 import RadioSelect from "../../components/RadioSelect";
 import Id from "../../../utils/Id";
-import InlineSVG from "svg-inline-react";
 import TrashIcon from "../../../static/icons/trash.svg";
 import {DownloadFromUrl} from "../../../utils/Files";
 import Fabric from "../../../clients/Fabric";
+import {IconButton} from "../../components/Icons";
 
 const defaultSchema = [
   {
@@ -218,7 +218,9 @@ class ContentObjectForm extends React.Component {
 
     const key = `field-${subtree.join("-")}-${entry.key}`;
     const value = GetValue({data: this.state.fields, subtree, attr: entry.key});
-    const label = entry.label || entry.key;
+
+    // Compare with undefined to allow blank labels
+    const label = entry.label !== undefined ? entry.label : entry.key;
 
     let field;
     switch(entry.type) {
@@ -234,15 +236,14 @@ class ContentObjectForm extends React.Component {
               onClick={
                 async () => {
                   const type = this.state.types[this.state.type];
-                  const fileInfo = type.meta[entry.key];
-                  if(fileInfo) {
+                  if(entry.hash) {
                     await this.props.DownloadPart({
                       libraryId: Fabric.contentSpaceLibraryId,
                       objectId: type.objectId,
                       versionHash: type.versionHash,
-                      partHash: fileInfo.hash,
+                      partHash: entry.hash,
                       callback: async (url) => {
-                        await DownloadFromUrl(url, fileInfo.filename || label);
+                        await DownloadFromUrl(url, label);
                       }
                     });
                   }
@@ -323,9 +324,7 @@ class ContentObjectForm extends React.Component {
         return (
           <div key={key} className="list-item">
             <input name={entry.key} required={entry.required} value={value} onChange={onChange} />
-            <InlineSVG
-              className="icon icon-clickable dark"
-              type="button"
+            <IconButton
               src={TrashIcon}
               title="Remove Element"
               onClick={() => this.RemoveElement(subtree, entry.key)}
