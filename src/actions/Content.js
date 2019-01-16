@@ -391,6 +391,12 @@ export const DownloadFile = ({libraryId, objectId, versionHash, filePath}) => {
   };
 };
 
+export const FileUrl = ({libraryId, objectId, versionHash, filePath}) => {
+  return async (dispatch) => {
+    return await Fabric.FileUrl({libraryId, objectId, versionHash, filePath});
+  };
+};
+
 const CollectMetadata = async ({libraryId, writeToken, schema, fields}) => {
   let metadata = {};
 

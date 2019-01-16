@@ -15,6 +15,8 @@ import {FormatAddress} from "../../../utils/Helpers";
 import {PageHeader} from "../../components/Page";
 import {DownloadFromUrl} from "../../../utils/Files";
 import FileBrowser from "../../components/FileBrowser";
+import AppFrame from "../../components/AppFrame";
+import Fabric from "../../../clients/Fabric";
 
 class ContentObject extends React.Component {
   constructor(props) {
@@ -59,6 +61,20 @@ class ContentObject extends React.Component {
           await this.props.ListContentTypes({latestOnly: false});
 
           const object = this.props.objects[this.state.objectId];
+          const type = this.props.types[object.type];
+
+          let displayAppUrl;
+          if(type && type.meta["eluv.displayApp"]) {
+            displayAppUrl = await this.props.FileUrl({
+              libraryId: Fabric.contentSpaceLibraryId,
+              objectId: type.id,
+              filePath: type.meta["eluv.displayApp"]
+            });
+
+            this.setState({
+              displayAppUrl
+            });
+          }
 
           if(object.isNormalObject) {
             // If object not yet published, need information about groups to determine
@@ -517,6 +533,28 @@ class ContentObject extends React.Component {
     );
   }
 
+  AppFrame() {
+    if(!this.state.displayAppUrl) { return null; }
+
+    const queryParams = {
+      contentSpaceId: Fabric.contentSpaceId,
+      libraryId: this.state.libraryId,
+      objectId: this.state.objectId,
+      type: this.props.objects[this.state.objectId].type,
+      action: "display"
+    };
+
+    return (
+      <AppFrame
+        className="display-frame"
+        appUrl={this.state.displayAppUrl}
+        queryParams={queryParams}
+        onComplete={this.LoadObject}
+        onCancel={() => this.setState({deleted: true})}
+      />
+    );
+  }
+
   PageContent() {
     if(this.state.deleted) {
       return <Redirect push to={Path.dirname(this.props.match.url)} />;
@@ -531,6 +569,7 @@ class ContentObject extends React.Component {
         { this.Actions() }
         <div className="object-display">
           <PageHeader header={header} />
+          { this.AppFrame() }
           { this.ObjectMedia() }
           { this.ObjectFiles() }
           { this.ObjectInfo() }

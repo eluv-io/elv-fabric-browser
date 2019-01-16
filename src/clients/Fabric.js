@@ -1,4 +1,4 @@
-import { FrameClient } from "elv-client-js/ElvFrameClient-min";
+import { FrameClient } from "elv-client-js/src/FrameClient";
 import { ElvClient } from "elv-client-js/src/ElvClient";
 import Path from "path";
 
@@ -49,6 +49,14 @@ const Fabric = {
   async SetFramePath({path}) {
     if(Fabric.isFrameClient) {
       await client.SetFramePath({path});
+    }
+  },
+
+  async ExecuteFrameRequest({event}) {
+    if(isFrameClient) {
+      return await client.PassRequest({request: event.data});
+    } else {
+      return await client.CallFromFrameMessage(event.data);
     }
   },
 
@@ -551,7 +559,31 @@ const Fabric = {
   },
 
   ListContentTypes: async ({latestOnly=true}) => {
-    return await client.ContentTypes({latestOnly});
+    let contentTypes = await client.ContentTypes({latestOnly});
+
+    // Inject app URLs, if present
+    for(const typeHash of Object.keys(contentTypes)) {
+      const type = contentTypes[typeHash];
+      if(type.meta["eluv.displayApp"]) {
+        contentTypes[typeHash].displayAppUrl = await Fabric.FileUrl({
+          libraryId: Fabric.contentSpaceLibraryId,
+          objectId: type.id,
+          versionHash: typeHash,
+          filePath: type.meta["eluv.displayApp"]
+        });
+      }
+
+      if(type.meta["eluv.manageApp"]) {
+        contentTypes[typeHash].manageAppUrl = await Fabric.FileUrl({
+          libraryId: Fabric.contentSpaceLibraryId,
+          objectId: type.id,
+          versionHash: typeHash,
+          filePath: type.meta["eluv.manageApp"]
+        });
+      }
+    }
+
+    return contentTypes;
   },
 
   /* Contract calls */
@@ -652,6 +684,10 @@ const Fabric = {
 
   DownloadFile: ({libraryId, objectId, versionHash, filePath}) => {
     return client.DownloadFile({libraryId, objectId, versionHash, filePath});
+  },
+
+  FileUrl: ({libraryId, objectId, versionHash, filePath}) => {
+    return client.FileUrl({libraryId, objectId, versionHash, filePath});
   },
 
   /* Parts */

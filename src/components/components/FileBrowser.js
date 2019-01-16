@@ -37,17 +37,18 @@ class FileBrowser extends React.Component {
   }
 
   File(name, info) {
+    const size = PrettyBytes(info.size || 0);
     return (
       <tr key={`entry-${this.state.path}-${name}`}>
         <td className="item-icon">
-          <Icon src={FileIcon} title="file" />
+          <Icon src={FileIcon} title="File" />
         </td>
-        <td>{ name }</td>
-        <td>{ PrettyBytes(info.size || 0) }</td>
+        <td title={name} tabIndex="0">{ name }</td>
+        <td title={size} tabIndex="0">{ size }</td>
         <td>
           <IconButton
             src={DownloadIcon}
-            title={"Download " + {name}}
+            title={"Download " + name}
             onClick={() => this.props.Download(Path.join(this.state.path, name))}
           />
         </td>
@@ -60,7 +61,7 @@ class FileBrowser extends React.Component {
     return (
       <tr key={`entry-${this.state.path}-${name}`} className="clickable" onClick={changeDirectory} onKeyPress={changeDirectory}>
         <td className="item-icon">
-          <Icon src={DirectoryIcon} title="directory" />
+          <Icon src={DirectoryIcon} title="Directory" />
         </td>
         <td tabIndex="0">{ name }</td>
         <td />
@@ -144,12 +145,12 @@ class FileBrowser extends React.Component {
           <thead>
             <tr>
               <th className="type-header">{backButton}</th>
-              <th>{this.state.displayPath}</th>
+              <th title={"Current Directory: " + this.state.displayPath} tabIndex="0">{this.state.displayPath}</th>
               <th className="size-header" />
               <th className="actions-header">
                 <IconButton
                   src={UploadIcon}
-                  title={"Upload"}
+                  title={"Upload to " + this.state.displayPath}
                   onClick={() => this.setState({showUpload: true})}
                 />
               </th>

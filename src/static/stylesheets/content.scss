@@ -50,19 +50,19 @@
   margin: 20px 0;
 }
 
-iframe {
+.app-frame {
   border: 1px solid $color-lightergray;
   display: block;
-  padding: 10px;
+  height: 50vh;
+  width: 100%;
 
-  &.content-app {
-    height: 100vw;
-    width: 70vw;
+  &.form-frame {
+
   }
 
-  &.fullscreen-app {
-    height: 100%;
-    width: 100%;
+  &.display-frame {
+    margin-bottom: $spacing-m;
+    min-height: 80vh;
   }
 }
 
