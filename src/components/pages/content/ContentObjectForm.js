@@ -11,6 +11,8 @@ import TrashIcon from "../../../static/icons/trash.svg";
 import {DownloadFromUrl} from "../../../utils/Files";
 import Fabric from "../../../clients/Fabric";
 import {IconButton} from "../../components/Icons";
+import AppFrame from "../../components/AppFrame";
+import Redirect from "react-router/es/Redirect";
 
 const defaultSchema = [
   {
@@ -47,6 +49,7 @@ class ContentObjectForm extends React.Component {
     this.HandleSubmit = this.HandleSubmit.bind(this);
     this.HandleTypeChange = this.HandleTypeChange.bind(this);
     this.RemoveElement = this.RemoveElement.bind(this);
+    this.FrameCompleted = this.FrameCompleted.bind(this);
   }
 
   // Load existing content object on edit
@@ -85,19 +88,18 @@ class ContentObjectForm extends React.Component {
       }
     };
 
+    const type = object ? object.type : "";
+
     Object.values(this.props.types).forEach(type => {
       const typeName = (type.meta && type.meta["eluv.name"]) || type.hash;
+
       types[type.hash] = {
+        ...type,
         name: typeName,
-        objectId: type.id,
-        versionHash: type.hash,
-        meta: type.meta,
         schema: type.meta && type.meta["eluv.schema"],
-        allowCustomMetadata: type.meta && type.meta["eluv.allowCustomMetadata"]
+        allowCustomMetadata: type.meta && type.meta["eluv.allowCustomMetadata"],
       };
     });
-
-    const type = object ? object.type : "";
 
     this.setState({
       types,
@@ -105,11 +107,20 @@ class ContentObjectForm extends React.Component {
       metadata: object ? JSON.stringify(object.meta, null, 2) : ""
     });
 
-    this.SwitchSchema(types, type);
+    this.SwitchType(types, type);
   }
 
-  SwitchSchema(types, type) {
+  SwitchType(types, type) {
     const typeOptions = type && types[type] || {};
+
+    if(typeOptions.manageAppUrl) {
+      this.setState({
+        manageAppUrl: typeOptions.manageAppUrl
+      });
+
+      return;
+    }
+
     const schema = typeOptions.schema || defaultSchema;
     const allowCustomMetadata = typeOptions.schema ? typeOptions.allowCustomMetadata : true;
     const data = this.state.createForm ? undefined : this.props.objects[this.state.objectId].meta;
@@ -119,7 +130,8 @@ class ContentObjectForm extends React.Component {
     this.setState({
       fields: initialFields,
       schema: schema,
-      allowCustomMetadata
+      allowCustomMetadata,
+      manageAppUrl: undefined
     });
   }
 
@@ -135,7 +147,7 @@ class ContentObjectForm extends React.Component {
 
     this.setState({
       type,
-    }, () => this.SwitchSchema(this.state.types, type));
+    }, () => this.SwitchType(this.state.types, type));
   }
 
   HandleFieldChange(event, entry, subtree=[]) {
@@ -199,8 +211,8 @@ class ContentObjectForm extends React.Component {
   TypeField() {
     if(!this.state.createForm) { return; }
 
-    const options = Object.values(this.state.types).map(({name, versionHash}) => {
-      return <option key={"type-" + versionHash} name="type" value={versionHash}>{ name }</option>;
+    const options = Object.values(this.state.types).map(({name, hash}) => {
+      return <option key={"type-" + hash} name="type" value={hash}>{ name }</option>;
     });
 
     return (
@@ -239,8 +251,8 @@ class ContentObjectForm extends React.Component {
                   if(entry.hash) {
                     await this.props.DownloadPart({
                       libraryId: Fabric.contentSpaceLibraryId,
-                      objectId: type.objectId,
-                      versionHash: type.versionHash,
+                      objectId: type.id,
+                      versionHash: type.hash,
                       partHash: entry.hash,
                       callback: async (url) => {
                         await DownloadFromUrl(url, label);
@@ -373,24 +385,45 @@ class ContentObjectForm extends React.Component {
     );
   }
 
-  PageContent() {
-    if(!this.state.schema) { return null; }
+  FrameCompleted() {
+    this.setState({completed: true});
+  }
 
-    const legend = this.state.createForm ? "Contribute content" : "Manage content";
+  AppFrame(legend) {
+    const queryParams = {
+      contentSpaceId: Fabric.contentSpaceId,
+      libraryId: this.state.libraryId,
+      objectId: this.state.objectId,
+      type: this.state.type,
+      action: "manage"
+    };
 
-    let redirectPath = Path.dirname(this.props.match.url);
-    if(this.state.createForm) {
-      // On creation, objectId won't exist until submission
-      redirectPath = this.state.objectId ?
-        Path.join(Path.dirname(this.props.match.url), this.state.objectId) : Path.dirname(this.props.match.url);
-    }
-    const cancelPath = Path.dirname(this.props.match.url);
+    return (
+      <form>
+        <fieldset>
+          <legend>{legend}</legend>
+          { this.TypeField() }
+          <AppFrame
+            appUrl={this.state.manageAppUrl}
+            queryParams={queryParams}
+            onComplete={this.FrameCompleted}
+            onCancel={this.FrameCompleted}
+            className="form-frame"
+          />
+          <div className="actions-container">
+            <button className="action secondary" onClick={this.FrameCompleted}>Cancel</button>
+          </div>
+        </fieldset>
+      </form>
+    );
+  }
 
+  FormContent(legend, redirectPath, cancelPath) {
     const formContent = (
       <div>
-        { this.TypeField() }
-        { this.BuildType(this.state.schema) }
-        { this.MetadataField() }
+        {this.TypeField()}
+        {this.BuildType(this.state.schema)}
+        {this.MetadataField()}
       </div>
     );
 
@@ -403,6 +436,30 @@ class ContentObjectForm extends React.Component {
       cancelPath={cancelPath}
       OnSubmit={this.HandleSubmit}
     />;
+  }
+
+  PageContent() {
+    if(!this.state.schema && !this.state.manageAppUrl) { return null; }
+
+    const legend = this.state.createForm ? "Contribute content" : "Manage content";
+
+    let redirectPath = Path.dirname(this.props.match.url);
+    if(this.state.createForm) {
+      // On creation, objectId won't exist until submission
+      redirectPath = this.state.objectId ?
+        Path.join(Path.dirname(this.props.match.url), this.state.objectId) : Path.dirname(this.props.match.url);
+    }
+    const cancelPath = Path.dirname(this.props.match.url);
+
+    if(this.state.completed) {
+      return <Redirect push to={redirectPath} />;
+    }
+
+    if(this.state.manageAppUrl) {
+      return this.AppFrame(legend);
+    } else {
+      return this.FormContent(legend, redirectPath, cancelPath);
+    }
   }
 
   render() {

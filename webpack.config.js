@@ -3,7 +3,8 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 const path = require("path");
 const autoprefixer = require("autoprefixer");
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
-
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const HtmlWebpackInlineSourcePlugin = require("html-webpack-inline-source-plugin");
 
 module.exports = {
   entry: "./src/index.js",
@@ -33,10 +34,19 @@ module.exports = {
   mode: "development",
   devtool: "source-map",
   plugins: [
-    new CopyWebpackPlugin(['./src/index.html']),
+    //new CopyWebpackPlugin(['./src/index.html']),
     new webpack.optimize.LimitChunkCountPlugin({
       maxChunks: 1,
-    })
+    }),
+    new HtmlWebpackPlugin({
+      title: "Eluvio Fabric Browser",
+      template: path.join(__dirname, "src", "index.html"),
+      inject: "body",
+      cache: false,
+      filename: "index.html",
+      inlineSource: ".(js|css)$"
+    }),
+    new HtmlWebpackInlineSourcePlugin()
   ],
   module: {
     rules: [

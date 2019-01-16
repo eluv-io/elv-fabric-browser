@@ -109,7 +109,7 @@ class ContentTypeForm extends React.Component {
     return (
       <BrowseWidget
         label="Bitcode"
-        required={true}
+        required={false}
         multiple={false}
         accept=".bc"
         onChange={this.HandleBitcodeChange}

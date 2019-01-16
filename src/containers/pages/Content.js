@@ -22,7 +22,8 @@ import {
   CreateFromContentTypeSchema,
   UpdateFromContentTypeSchema,
   DownloadFile,
-  UploadFiles
+  UploadFiles,
+  FileUrl
 } from "../../actions/Content";
 import ContentLibraries from "../../components/pages/content/ContentLibraries";
 import ContentLibrary from "../../components/pages/content/ContentLibrary";
@@ -71,7 +72,8 @@ const mapDispatchToProps = dispatch =>
       CreateFromContentTypeSchema,
       UpdateFromContentTypeSchema,
       DownloadFile,
-      UploadFiles
+      UploadFiles,
+      FileUrl
     ]
   );
 
