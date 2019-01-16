@@ -1,5 +1,6 @@
 @import "variables/colors";
 @import "variables/spacing";
+@import "variables/mixins";
 
 html,
 body {
@@ -71,6 +72,30 @@ pre {
   padding: 10px;
   white-space: pre-wrap;
   word-wrap: break-word;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th {
+  padding: $spacing-xs;
+  text-align: left;
+}
+
+tr {
+  border-top: 1px solid $color-lightergray;
+  margin: 0 $spacing-s;
+
+  td {
+    @include ellipsis;
+    padding: $spacing-xs 0 $spacing-xs $spacing-xs;
+
+    &.item-path {
+      max-width: 150px;
+    }
+  }
 }
 
 // sass-lint:disable no-important
