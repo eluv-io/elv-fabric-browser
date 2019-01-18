@@ -129,6 +129,8 @@ const signer = wallet.AddAccount({
 
 client.SetSigner({signer});
 
+client.DeleteName({name: "elv-fabric-browser"});
+
 Seed().then(async () => {
   console.log(await client.GetByName({name: "elv-fabric-browser"}));
 });

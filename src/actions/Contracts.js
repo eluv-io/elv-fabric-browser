@@ -153,7 +153,8 @@ export const DeployContract = ({
   contractDescription,
   abi,
   bytecode,
-  inputs
+  inputs,
+  funds
 }) => {
   return async (dispatch) => {
     const owner = await Fabric.CurrentAccountAddress();
@@ -172,6 +173,14 @@ export const DeployContract = ({
       bytecode,
       constructorArgs
     });
+
+    if(funds) {
+      await Fabric.SendFunds({
+        sender: Fabric.CurrentAccountAddress(),
+        recipient: contractInfo.contractAddress,
+        ether: funds
+      });
+    }
 
     await Fabric.FabricBrowser.AddDeployedContract({
       name: contractName,
@@ -199,7 +208,8 @@ export const DeployContentContract = ({
   contractDescription,
   abi,
   bytecode,
-  inputs
+  inputs,
+  funds
 }) => {
   return async (dispatch) => {
     let constructorArgs = [];
@@ -222,6 +232,16 @@ export const DeployContentContract = ({
       customContractAddress: contractInfo.contractAddress,
       overrides: { gasLimit: 60000000, gasPrice: 1000000 },
     });
+
+    if(funds) {
+      if(funds) {
+        await Fabric.SendFunds({
+          sender: Fabric.CurrentAccountAddress(),
+          recipient: contractInfo.contractAddress,
+          ether: funds
+        });
+      }
+    }
 
     // Custom contract successfully deployed and set - update metadata
     const editResponse = await Fabric.EditContentObject({

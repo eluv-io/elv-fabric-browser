@@ -4,6 +4,9 @@ import RequestPage from "../RequestPage";
 import RequestForm from "../../forms/RequestForm";
 import {ReviewContentObject} from "../../../actions/Content";
 import RadioSelect from "../../components/RadioSelect";
+import AppFrame from "../../components/AppFrame";
+import Fabric from "../../../clients/Fabric";
+import Redirect from "react-router/es/Redirect";
 
 class ContentObjectReviewForm extends React.Component {
   constructor(props) {
@@ -21,6 +24,7 @@ class ContentObjectReviewForm extends React.Component {
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
     this.RequestComplete = this.RequestComplete.bind(this);
+    this.FrameCompleted = this.FrameCompleted.bind(this);
   }
 
   // Load existing content object on edit
@@ -38,8 +42,11 @@ class ContentObjectReviewForm extends React.Component {
   }
 
   RequestComplete() {
+    const object = this.props.objects[this.state.objectId];
+    const reviewAppUrl = object.typeInfo && object.typeInfo.reviewAppUrl;
     this.setState({
-      object: this.props.objects[this.state.objectId]
+      object,
+      reviewAppUrl
     });
   }
 
@@ -82,18 +89,62 @@ class ContentObjectReviewForm extends React.Component {
     );
   }
 
-  PageContent() {
+  FrameCompleted() {
+    this.setState({completed: true});
+  }
+
+  ReviewAppFrame(legend) {
+    const queryParams = {
+      contentSpaceId: Fabric.contentSpaceId,
+      libraryId: this.state.libraryId,
+      objectId: this.state.objectId,
+      type: this.state.type,
+      action: "review"
+    };
+
     return (
-      <RequestForm
-        requests={this.props.requests}
-        requestId={this.state.submitRequestId}
-        legend={`Review "${this.state.object.name}"`}
-        formContent={this.FormContent()}
-        redirectPath={Path.dirname(this.props.match.url)}
-        cancelPath={Path.dirname(this.props.match.url)}
-        OnSubmit={this.HandleSubmit}
-      />
+      <form>
+        <fieldset>
+          <legend>{legend}</legend>
+          <AppFrame
+            appUrl={this.state.reviewAppUrl}
+            queryParams={queryParams}
+            onComplete={this.FrameCompleted}
+            onCancel={this.FrameCompleted}
+          />
+          <div className="actions-container">
+            <button className="action secondary" onClick={this.FrameCompleted}>Cancel</button>
+          </div>
+        </fieldset>
+      </form>
     );
+  }
+
+  PageContent() {
+    if(!this.state.object) { return null; }
+
+    if(this.state.completed) {
+      return <Redirect push to={Path.dirname(this.props.match.url)} />;
+    }
+
+    const legend = `Review "${this.state.object.name}"`;
+
+
+    if(this.state.reviewAppUrl) {
+      return this.ReviewAppFrame(legend);
+    } else {
+      return (
+        <RequestForm
+          requests={this.props.requests}
+          requestId={this.state.submitRequestId}
+          legend={legend}
+          formContent={this.FormContent()}
+          redirectPath={Path.dirname(this.props.match.url)}
+          cancelPath={Path.dirname(this.props.match.url)}
+          OnSubmit={this.HandleSubmit}
+        />
+      );
+    }
   }
 
   render() {

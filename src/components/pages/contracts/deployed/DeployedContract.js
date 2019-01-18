@@ -153,7 +153,7 @@ class DeployedContract extends React.Component {
       backPath = Path.dirname(backPath);
     }
 
-    const balance =`φ${Math.round(this.props.contract.balance * 1000) / 1000}`;
+    const balance =`φ${Math.round((this.props.contract.balance || 0) * 1000) / 1000}`;
     return (
       <div className="page-container contracts-page-container">
         <div className="actions-container">

@@ -166,7 +166,6 @@ class AppFrame extends React.Component {
     // Ignore unrelated messages
     if(!event || !event.data || event.data.type !== "ElvFrameRequest") { return; }
 
-    console.log(JSON.stringify(event.data, null, 2));
     if(!event.data.operation) {
       return this.Respond(event, await Fabric.ExecuteFrameRequest({event}));
     } else {

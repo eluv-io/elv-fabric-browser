@@ -55,10 +55,11 @@ class DeployedContractMethodForm extends React.Component {
   }
 
   HandleInputChange(event) {
+    const value = event.target.type === "checkbox" ? event.target.checked : event.target.value;
     this.setState({
       inputs: {
         ...this.state.inputs,
-        [event.target.name]: event.target.value
+        [event.target.name]: value
       }
     });
   }

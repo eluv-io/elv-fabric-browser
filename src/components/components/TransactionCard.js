@@ -2,10 +2,8 @@ import React from "react";
 import PropTypes from "prop-types";
 
 class TransactionCard extends React.Component {
-  constructor(props) {
-    super(props);
-
-    const events = props.events.map(event => {
+  FilteredEvents() {
+    const events = this.props.events.map(event => {
       // Filter out numbered arguments and format hex inputs to decimal
       const inputs = Object.entries(event.values)
         .filter(([key]) => key !== "length" && parseInt(key).toString() !== key)
@@ -25,11 +23,7 @@ class TransactionCard extends React.Component {
       };
     });
 
-    this.state = {
-      events,
-      blockNumber: events[0].event.blockNumber,
-      transactionHash: events[0].event.transactionHash
-    };
+    return events;
   }
 
   Inputs(inputs) {
@@ -44,7 +38,7 @@ class TransactionCard extends React.Component {
   }
 
   Events() {
-    return this.state.events.map(event => {
+    return this.FilteredEvents().map(event => {
       return (
         <div className="event" key={"event-" + JSON.stringify(event).toHash()} title={JSON.stringify(event.event, null, 2)}>
           <div className="header">
@@ -60,10 +54,10 @@ class TransactionCard extends React.Component {
 
   render() {
     return (
-      <div className="transaction" title={JSON.stringify(this.state.event, null, 2)}>
+      <div className="transaction">
         <div className="header">
-          <div className="title">{"Block " + this.state.blockNumber}</div>
-          <div className="info">{this.state.transactionHash}</div>
+          <div className="title">{"Block " + this.props.events[0].blockNumber}</div>
+          <div className="info">{this.props.events[0].transactionHash}</div>
         </div>
         <div className="events">
           { this.Events() }

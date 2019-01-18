@@ -9,7 +9,7 @@ class RadioSelect extends React.Component {
       firstOptionRef: React.createRef()
     };
 
-    this.HandleLabelClick = this.HandleLabelClick.bind(this);
+    this.HandleClick = this.HandleClick.bind(this);
   }
 
   componentDidMount() {
@@ -20,7 +20,7 @@ class RadioSelect extends React.Component {
   }
 
   // Set name and value for label click event
-  HandleLabelClick(event, value) {
+  HandleClick(event, value) {
     event.target.name = this.props.name;
     event.target.value = event.target.value || value;
     this.props.onChange(event);
@@ -31,7 +31,7 @@ class RadioSelect extends React.Component {
     const optionValue = option[1];
 
     const label =
-      <label className="radio-option-label" htmlFor={this.props.name} onClick={(event) => this.HandleLabelClick(event, optionValue)}>
+      <label className="radio-option-label" htmlFor={this.props.name} onClick={(event) => this.HandleClick(event, optionValue)}>
         { optionLabel }
       </label>;
 
@@ -41,11 +41,7 @@ class RadioSelect extends React.Component {
         type="radio"
         name={this.props.name}
         value={optionValue}
-        onChange={(event) => {
-          // Inject original value into event - radio buttons turn everything to strings
-          event = {...event, target: {...event.target, value: optionValue}};
-          this.props.onChange(event);
-        }}
+        onChange={(event) => this.HandleClick(event, optionValue)}
         checked={optionValue === this.props.selected}
       />;
 

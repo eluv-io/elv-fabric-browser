@@ -62,7 +62,6 @@ const ContractsReducer = (state = {}, action) => {
 
     case ActionTypes.contracts.deployed.call:
       contractState = state.deployedContracts[action.contractAddress] || {};
-
       return {
         ...state,
         deployedContracts: {
