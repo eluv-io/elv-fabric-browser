@@ -128,7 +128,7 @@ const Fabric = {
 
   GetContentLibrary: async ({libraryId}) => {
     const libraryInfo = await client.ContentLibrary({libraryId});
-    const objectIds = (await client.ContentObjects({libraryId})).contents.map(object => object.id)
+    const objectIds = (await client.ContentObjects({libraryId})).map(object => object.id)
       .filter(objectId => !Fabric.utils.EqualHash(libraryId, objectId));
     const imageUrl = await Fabric.GetContentObjectImageUrl({
       libraryId,
@@ -140,11 +140,11 @@ const Fabric = {
     });
     const owner = await Fabric.GetContentLibraryOwner({libraryId});
     const currentAccountAddress = await Fabric.CurrentAccountAddress();
-
+    const name = libraryInfo.meta.name || libraryInfo.meta["eluv.name"] || "Content Library " + libraryId;
     return {
       ...libraryInfo,
       libraryId,
-      name: libraryInfo.meta["eluv.name"],
+      name: name,
       description: libraryInfo.meta["eluv.description"],
       contractAddress: FormatAddress(client.utils.HashToAddress({hash: libraryId})),
       libraryObjectId: libraryId.replace("ilib", "iq__"),
@@ -275,7 +275,7 @@ const Fabric = {
 
   // Make sure not to call anything requiring content object authorization
   ListContentObjects: async ({libraryId}) => {
-    const libraryObjects = (await client.ContentObjects({libraryId})).contents;
+    const libraryObjects = (await client.ContentObjects({libraryId}));
 
     let objects = {};
     for (const object of libraryObjects) {
