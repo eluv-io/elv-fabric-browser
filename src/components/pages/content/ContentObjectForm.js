@@ -70,8 +70,6 @@ class ContentObjectForm extends React.Component {
               libraryId: this.state.libraryId,
               objectId: this.state.objectId,
             });
-
-            await this.props.ListContentTypes({latestOnly: false});
           }
         })
       });
@@ -79,8 +77,7 @@ class ContentObjectForm extends React.Component {
   }
 
   RequestComplete() {
-    const object = this.state.createForm ? undefined : this.props.objects[this.state.objectId];
-
+    let type = "";
     let types = {
       "": {
         name: "[none]",
@@ -88,23 +85,38 @@ class ContentObjectForm extends React.Component {
       }
     };
 
-    const type = object ? object.type : "";
+    if(this.state.createForm) {
+      Object.values(this.props.types).forEach(type => {
+        const typeName = (type.meta && type.meta["eluv.name"]) || type.hash;
+        types[type.hash] = {
+          ...type,
+          name: typeName,
+          schema: type.meta && type.meta["eluv.schema"],
+          allowCustomMetadata: type.meta && type.meta["eluv.allowCustomMetadata"],
+        };
+      });
+    } else {
+      const object = this.props.objects[this.state.objectId];
+      type = object.type;
 
-    Object.values(this.props.types).forEach(type => {
-      const typeName = (type.meta && type.meta["eluv.name"]) || type.hash;
+      if(object.typeInfo) {
+        const typeName = (object.typeInfo.meta && object.typeInfo.meta["eluv.name"]) || object.typeInfo.hash;
 
-      types[type.hash] = {
-        ...type,
-        name: typeName,
-        schema: type.meta && type.meta["eluv.schema"],
-        allowCustomMetadata: type.meta && type.meta["eluv.allowCustomMetadata"],
-      };
-    });
+        types = {
+          [type]: {
+            ...object.typeInfo,
+            name: typeName,
+            schema: object.typeInfo.meta && object.typeInfo.meta["eluv.schema"],
+            allowCustomMetadata: object.typeInfo.meta && object.typeInfo.meta["eluv.allowCustomMetadata"],
+          }
+        };
+      }
+    }
 
     this.setState({
       types,
-      type,
-      metadata: object ? JSON.stringify(object.meta, null, 2) : ""
+      type: "",
+      metadata: ""
     });
 
     this.SwitchType(types, type);

@@ -58,17 +58,15 @@ class ContentObject extends React.Component {
             objectId: this.state.objectId
           });
 
-          await this.props.ListContentTypes({latestOnly: false});
-
           const object = this.props.objects[this.state.objectId];
-          const type = this.props.types[object.type];
+          const typeInfo = object.typeInfo;
 
           let displayAppUrl;
-          if(type && type.meta["eluv.displayApp"]) {
+          if(typeInfo && typeInfo.meta["eluv.displayApp"]) {
             displayAppUrl = await this.props.FileUrl({
               libraryId: Fabric.contentSpaceLibraryId,
-              objectId: type.id,
-              filePath: type.meta["eluv.displayApp"]
+              objectId: typeInfo.id,
+              filePath: typeInfo.meta["eluv.displayApp"]
             });
 
             this.setState({
@@ -110,11 +108,11 @@ class ContentObject extends React.Component {
 
     // Determine the name of the content type
     const object = this.props.objects[this.state.objectId];
-    if(object.isNormalObject && object.type) {
-      const type = this.props.types[object.type];
+    const typeInfo = object.typeInfo;
+    if(object.isNormalObject && typeInfo) {
       this.setState({
-        typeHash: type.hash,
-        typeName: (type.meta && type.meta["eluv.name"]) ? type.meta["eluv.name"] : type.hash
+        typeHash: typeInfo.hash,
+        typeName: (typeInfo.meta && typeInfo.meta["eluv.name"]) ? typeInfo.meta["eluv.name"] : typeInfo.hash
       });
     }
 

@@ -17,6 +17,7 @@ class DeployContractForm extends React.Component {
       objectId: this.props.match.params.objectId,
       name: "",
       description: "",
+      funds: 0,
       // If object ID exists in route, this form is for deploying a custom content object contract
       isContentObjectContract: !!(this.props.match.params.objectId),
       selectedContract: selectedContractParam,
@@ -84,7 +85,8 @@ class DeployContractForm extends React.Component {
     this.setState({
       selectedContract: event.target.value,
       constructorInputs,
-      constructor
+      constructor,
+      funds: 0
     });
   }
 
@@ -121,7 +123,8 @@ class DeployContractForm extends React.Component {
               contractDescription: contract.description,
               abi: contract.abi,
               bytecode: contract.bytecode,
-              inputs: this.ConstructorInput()
+              inputs: this.ConstructorInput(),
+              funds: this.state.funds
             });
           }
         })
@@ -136,7 +139,8 @@ class DeployContractForm extends React.Component {
               contractDescription: this.state.description,
               abi: contract.abi,
               bytecode: contract.bytecode,
-              inputs: this.ConstructorInput()
+              inputs: this.ConstructorInput(),
+              funds: this.state.funds
             });
 
             this.setState({contractAddress});
@@ -211,6 +215,10 @@ class DeployContractForm extends React.Component {
           <div className="form-text">{this.props.contracts[this.state.selectedContract].description}</div>
         </div>
         { this.ConstructorForm() }
+        <div className="labelled-input">
+          <label htmlFor="funds">Funds</label>
+          <input name="funds" type="number" step={"0.00000001"} onChange={this.HandleInputChange} />
+        </div>
       </div>
     );
   }
