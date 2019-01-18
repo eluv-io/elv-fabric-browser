@@ -85,6 +85,7 @@ export default (Component) => {
       let library;
       let object;
       let deployedContract;
+      let contractAddress = this.state.contract.address;
 
       // Determine how to extract any missing contract info from loaded resources
       switch (this.state.contract.type) {
@@ -111,11 +112,12 @@ export default (Component) => {
 
         case ContractTypes.customObject:
           object = this.props.content.objects[this.state.objectId];
+          contractAddress = object.meta.customContract.address;
           this.setState({
             contract: {
               name: "Custom Contract - " + object.name,
               description: object.meta.customContract.description,
-              address: object.meta.customContract.address,
+              address: contractAddress,
               abi: object.meta.customContract.abi,
             }
           });
@@ -135,7 +137,7 @@ export default (Component) => {
       }
 
       // Get the contract balance after loading everything
-      this.props.GetContractBalance({contractAddress: this.state.contract.address})
+      this.props.GetContractBalance({contractAddress: contractAddress})
         .then(balance => {
           this.setState({
             contract: {

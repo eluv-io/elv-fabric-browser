@@ -340,11 +340,17 @@ const Fabric = {
     const isContentLibraryObject = client.utils.EqualHash(libraryId, objectId);
     const isContentType = libraryId === Fabric.contentSpaceLibraryId && !isContentLibraryObject;
 
+    let typeInfo;
+    if(object.type) {
+      typeInfo = await Fabric.GetContentType({versionHash: object.type});
+    }
+
     return {
       ...object,
       meta: metadata,
       name: metadata["eluv.name"] || metadata["name"],
       description: metadata["eluv.description"],
+      typeInfo,
       imageUrl,
       contractAddress: FormatAddress(client.utils.HashToAddress({hash: objectId})),
       owner,
@@ -558,32 +564,36 @@ const Fabric = {
     });
   },
 
-  ListContentTypes: async ({latestOnly=true}) => {
-    let contentTypes = await client.ContentTypes({latestOnly});
+  FormatType: async ({type}) => {
+    const apps = ["display", "manage", "review"];
 
     // Inject app URLs, if present
-    for(const typeHash of Object.keys(contentTypes)) {
-      const type = contentTypes[typeHash];
-      if(type.meta["eluv.displayApp"]) {
-        contentTypes[typeHash].displayAppUrl = await Fabric.FileUrl({
+    for(const appName of apps) {
+      if (type.meta[`eluv.${appName}App`]) {
+        type[`${appName}AppUrl`] = await Fabric.FileUrl({
           libraryId: Fabric.contentSpaceLibraryId,
           objectId: type.id,
-          versionHash: typeHash,
-          filePath: type.meta["eluv.displayApp"]
-        });
-      }
-
-      if(type.meta["eluv.manageApp"]) {
-        contentTypes[typeHash].manageAppUrl = await Fabric.FileUrl({
-          libraryId: Fabric.contentSpaceLibraryId,
-          objectId: type.id,
-          versionHash: typeHash,
-          filePath: type.meta["eluv.manageApp"]
+          versionHash: type.hash,
+          filePath: type.meta[`eluv.${appName}App`]
         });
       }
     }
 
+    return type;
+  },
+
+  ListContentTypes: async ({latestOnly=true}) => {
+    let contentTypes = await client.ContentTypes({latestOnly});
+
+    for(const typeHash of Object.keys(contentTypes)) {
+      contentTypes[typeHash] = await Fabric.FormatType({type: contentTypes[typeHash]});
+    }
+
     return contentTypes;
+  },
+
+  GetContentType: async ({versionHash}) => {
+    return await Fabric.FormatType({type: await client.ContentType({versionHash})});
   },
 
   /* Contract calls */
