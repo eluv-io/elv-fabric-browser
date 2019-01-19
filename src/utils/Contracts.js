@@ -55,7 +55,7 @@ export const DetermineContractInterface = ({
     };
   }
 
-  if(isContentSpaceLibrary) {
+  if(isContentSpaceLibrary && !isCustomContentObjectContract) {
     // Content Type
     return {
       type: ContractTypes.contentType,
@@ -67,14 +67,14 @@ export const DetermineContractInterface = ({
 
   if(objectId) {
     if(isCustomContentObjectContract) {
-      // Custom content object contract
+      // Custom content object or content type contract
       return {
         type: ContractTypes.customObject,
         description: "Custom Content Object Contract",
         abi: undefined,
         contractAddress: undefined
       };
-    } {
+    } else {
       // Content Object
       return {
         type: ContractTypes.object,

@@ -25,7 +25,8 @@ import {
   UploadFiles,
   FileUrl,
   SetLibraryContentTypes,
-  ListLibraryContentTypes
+  ListLibraryContentTypes,
+  GetContentType
 } from "../../actions/Content";
 import ContentLibraries from "../../components/pages/content/ContentLibraries";
 import ContentLibrary from "../../components/pages/content/ContentLibrary";
@@ -74,6 +75,7 @@ const mapDispatchToProps = dispatch =>
       ListLibraryContentTypes,
       CreateContentType,
       ListContentTypes,
+      GetContentType,
       CreateFromContentTypeSchema,
       UpdateFromContentTypeSchema,
       DownloadFile,

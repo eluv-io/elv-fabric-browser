@@ -432,8 +432,8 @@ class ContentObject extends React.Component {
 
     );
 
-    if(!this.state.object.isContentLibraryObject && this.state.object.meta.customContract) {
-      const customContractAddress = FormatAddress(this.state.object.meta.customContract.address);
+    if(!this.state.object.isContentLibraryObject && this.state.object.customContractAddress) {
+      const customContractAddress = this.state.object.customContractAddress;
 
       contractInfo.push(
         <LabelledField
@@ -505,7 +505,11 @@ class ContentObject extends React.Component {
     }
 
     let setContractButton;
-    if(this.state.object.isNormalObject && this.state.object.isOwner) {
+    if(
+      !this.state.object.customContractAddress &&
+      (this.state.object.isNormalObject || this.state.object.isContentType) &&
+      this.state.object.isOwner
+    ) {
       setContractButton =  <Link to={Path.join(this.props.match.url, "deploy")} className="action">Set Custom Contract</Link>;
     }
 

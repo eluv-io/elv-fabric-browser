@@ -212,6 +212,8 @@ export const DeployContentContract = ({
   funds
 }) => {
   return async (dispatch) => {
+    const isContentType = libraryId === Fabric.contentSpaceLibraryId;
+
     let constructorArgs = [];
     if(inputs.length > 0) {
       constructorArgs = await Fabric.FormatContractArguments({
@@ -227,11 +229,14 @@ export const DeployContentContract = ({
       constructorArgs
     });
 
-    await Fabric.SetCustomContentContract({
-      objectId,
-      customContractAddress: contractInfo.contractAddress,
-      overrides: { gasLimit: 60000000, gasPrice: 1000000 },
-    });
+    // Content types don't have a hook to associate custom contracts
+    if(!isContentType) {
+      await Fabric.SetCustomContentContract({
+        objectId,
+        customContractAddress: contractInfo.contractAddress,
+        overrides: {gasLimit: 60000000, gasPrice: 1000000},
+      });
+    }
 
     if(funds) {
       if(funds) {
