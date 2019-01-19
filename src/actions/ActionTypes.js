@@ -20,6 +20,7 @@ const ActionTypes = {
       versions: "GET_OBJECT_VERSIONS"
     },
     types: {
+      get: "GET_TYPE",
       list: "LIST_TYPES"
     }
   },

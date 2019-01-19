@@ -76,6 +76,14 @@ const ContentReducer = (state = {}, action) => {
         ...state,
         types: action.types
       };
+    case ActionTypes.content.types.get:
+      return {
+        ...state,
+        types: {
+          ...state.types,
+          [action.contentType.hash]: action.contentType
+        }
+      };
 
     default:
       return {

@@ -341,6 +341,24 @@ const Fabric = {
     return objects;
   },
 
+  GetCustomContentContractAddress: async ({libraryId, objectId, metadata={}}) => {
+    if(libraryId === Fabric.contentSpaceLibraryId) {
+      // Content type - look at metadata
+      return metadata.customContract && metadata.customContract.address;
+    }
+
+    const customContractAddress = FormatAddress(await client.CallContractMethod({
+      contractAddress: client.utils.HashToAddress({hash: objectId}),
+      abi: BaseContentContract.abi,
+      methodName: "contentContractAddress",
+      methodArgs: []
+    }));
+
+    if(customContractAddress === client.utils.nullAddress) { return; }
+
+    return customContractAddress;
+  },
+
   GetContentObject: async ({libraryId, objectId}) => {
     const object = await client.ContentObject({libraryId, objectId});
     const metadata = await client.ContentObjectMetadata({libraryId, objectId});
@@ -361,6 +379,8 @@ const Fabric = {
       typeInfo = await Fabric.GetContentType({versionHash: object.type});
     }
 
+    const customContractAddress = await Fabric.GetCustomContentContractAddress({libraryId, objectId, metadata});
+
     return {
       ...object,
       meta: metadata,
@@ -369,6 +389,7 @@ const Fabric = {
       typeInfo,
       imageUrl,
       contractAddress: FormatAddress(client.utils.HashToAddress({hash: objectId})),
+      customContractAddress,
       owner,
       isOwner: EqualAddress(owner, await Fabric.CurrentAccountAddress()),
       status,

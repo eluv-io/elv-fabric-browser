@@ -150,7 +150,7 @@ class Router extends React.Component {
 
           <Route exact path="/content/:libraryId/:objectId/deploy" component={DeployContractFormContainer}/>
           <Route exact path="/content-types/:objectId/deploy" render={(props) =>
-            <DeployContentContractFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
+            <DeployContractFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
 
           /* Base content contract */
           <Route exact path="/content/:libraryId/:objectId/contract" component={DeployedContractContainer}/>

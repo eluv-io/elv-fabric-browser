@@ -60,6 +60,13 @@ export default (Component) => {
               libraryId: this.state.libraryId,
               objectId: this.state.objectId
             });
+
+            const object = this.props.content.objects[this.state.objectId];
+            if(!object.meta.customContract) {
+              if(!object.type) { throw Error("Unknown contract"); }
+
+              await this.props.GetContentType({versionHash: object.type});
+            }
           };
           break;
 
@@ -112,13 +119,22 @@ export default (Component) => {
 
         case ContractTypes.customObject:
           object = this.props.content.objects[this.state.objectId];
-          contractAddress = object.meta.customContract.address;
+
+          let contractInfo = object.meta.customContract;
+
+          contractAddress = object.customContractAddress || contractInfo.address;
+
+          if(!contractInfo) {
+            const type = this.props.content.types[object.type];
+            contractInfo = type.meta.customContract;
+          }
+
           this.setState({
             contract: {
               name: "Custom Contract - " + object.name,
-              description: object.meta.customContract.description,
-              address: contractAddress,
-              abi: object.meta.customContract.abi,
+              description: contractInfo.description,
+              address: object.customContractAddress,
+              abi: contractInfo.abi,
             }
           });
           break;

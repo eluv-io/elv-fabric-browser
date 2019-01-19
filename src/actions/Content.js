@@ -149,8 +149,14 @@ export const SetLibraryContentTypes = ({libraryId, typeIds=[]}) => {
 
     const idsToAdd = typeIds.filter(id => !currentTypeIds.includes(id));
 
-    for(const typeId of idsToAdd) {
-      await Fabric.AddLibraryContentType({libraryId, typeId});
+    if(idsToAdd.length > 0) {
+      const contentTypes = Object.values(await Fabric.ListContentTypes({}));
+      for (const typeId of idsToAdd) {
+        // When adding a content type, check for custom contract
+        const type = contentTypes.find(type => type.id === typeId);
+        const customContractAddress = type.meta.customContract && type.meta.customContract.address;
+        await Fabric.AddLibraryContentType({libraryId, typeId, customContractAddress});
+      }
     }
 
     const idsToRemove = currentTypeIds.filter(id => !typeIds.includes(id));
@@ -356,6 +362,15 @@ export const ListContentTypes = ({latestOnly=true}) => {
     dispatch({
       type: ActionTypes.content.types.list,
       types: await Fabric.ListContentTypes({latestOnly})
+    });
+  };
+};
+
+export const GetContentType = ({versionHash}) => {
+  return async (dispatch) => {
+    dispatch({
+      type: ActionTypes.content.types.get,
+      contentType: await Fabric.GetContentType({versionHash})
     });
   };
 };

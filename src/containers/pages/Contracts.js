@@ -23,7 +23,7 @@ import Contract from "../../components/pages/contracts/Contract";
 import DeployContractForm from "../../components/pages/contracts/DeployContractForm";
 
 import { WrapRequest } from "../../actions/Requests";
-import {GetContentLibrary, GetContentObject} from "../../actions/Content";
+import {GetContentLibrary, GetContentObject, GetContentType} from "../../actions/Content";
 import { SetErrorMessage } from "../../actions/Notifications";
 import DeployedContract from "../../components/pages/contracts/deployed/DeployedContract";
 import DeployedContractMethodForm from "../../components/pages/contracts/deployed/DeployedContractMethodForm";
@@ -61,7 +61,8 @@ const mapDispatchToProps = dispatch =>
       WithdrawContractFunds,
       GetContractBalance,
       WatchContract,
-      ListAccessGroups
+      ListAccessGroups,
+      GetContentType
     ]
   );
 
