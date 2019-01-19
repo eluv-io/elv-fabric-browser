@@ -33,6 +33,18 @@ export const GetContentLibrary = ({libraryId}) => {
   };
 };
 
+export const ListLibraryContentTypes = ({libraryId}) => {
+  return async (dispatch) => {
+    const types = await Fabric.ListLibraryContentTypes({libraryId});
+
+    dispatch({
+      type: ActionTypes.content.libraries.types,
+      libraryId: libraryId,
+      types
+    });
+  };
+};
+
 export const ListContentLibraryGroups = ({libraryId}) => {
   return async (dispatch) => {
     // Content space does not have groups
@@ -125,6 +137,30 @@ export const DeleteContentLibrary = ({ libraryId }) => {
 
     dispatch(SetNotificationMessage({
       message: "Successfully deleted content library",
+      redirect: true
+    }));
+  };
+};
+
+export const SetLibraryContentTypes = ({libraryId, typeIds=[]}) => {
+  return async (dispatch) => {
+    const currentTypeIds = Object.values(await Fabric.ListLibraryContentTypes({libraryId}))
+      .map(type => type.id);
+
+    const idsToAdd = typeIds.filter(id => !currentTypeIds.includes(id));
+
+    for(const typeId of idsToAdd) {
+      await Fabric.AddLibraryContentType({libraryId, typeId});
+    }
+
+    const idsToRemove = currentTypeIds.filter(id => !typeIds.includes(id));
+
+    for(const typeId of idsToRemove) {
+      await Fabric.RemoveLibraryContentType({libraryId, typeId});
+    }
+
+    dispatch(SetNotificationMessage({
+      message: "Successfully updated content library types",
       redirect: true
     }));
   };

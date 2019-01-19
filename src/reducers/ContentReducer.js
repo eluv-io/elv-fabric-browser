@@ -17,6 +17,18 @@ const ContentReducer = (state = {}, action) => {
         }
       };
 
+    case ActionTypes.content.libraries.types:
+      return {
+        ...state,
+        libraries: {
+          ...state.libraries,
+          [action.libraryId]: {
+            ...state.libraries[action.libraryId],
+            types: action.types
+          }
+        }
+      };
+
     case ActionTypes.content.libraries.groups:
       return {
         ...state,

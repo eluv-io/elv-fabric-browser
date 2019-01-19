@@ -1,5 +1,6 @@
 // Create initial library + content objects needed to store fabric browser info
 
+// TODO: Switch from using /naming API to storing info in content space object
 const { ElvClient } = require("elv-client-js/src/ElvClient");
 const BaseContentContract = require("elv-client-js/src/contracts/BaseContent.js");
 

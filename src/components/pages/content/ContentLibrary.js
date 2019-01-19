@@ -106,23 +106,46 @@ class ContentLibrary extends React.Component {
     );
   }
 
-  ToggleButton(label, id) {
-    const visible = this.state.visibleItems[id];
-    const toggleVisible = () => this.setState({
+  ToggleVisible(id) {
+    this.setState({
       visibleItems: {
         ...this.state.visibleItems,
-        [id]: !visible
+        [id]: !this.state.visibleItems[id]
       }
     });
+  }
+
+  ToggleButton(label, id) {
+    const toggleVisible = () => this.ToggleVisible(id);
+    const visible = this.state.visibleItems[id];
     const toggleButtonText = (visible ? "Hide " : "Show ") + label;
 
     return (
       <div className="actions-container">
         <button
           className={"action action-compact action-wide " + (visible ? "" : "secondary")}
-          onClick={toggleVisible}>
+          onClick={toggleVisible}
+        >
           { toggleButtonText }
         </button>
+      </div>
+    );
+  }
+
+  ToggleSection(label, id, value, format=true) {
+    const visible = this.state.visibleItems[id];
+
+    let content;
+    if(visible) {
+      if(format) {
+        content = <pre className="content-object-data">{JSON.stringify(value, null, 2)}</pre>;
+      } else { content = value; }
+    }
+
+    return (
+      <div className="formatted-data">
+        <LabelledField label={label} value={this.ToggleButton(label, id)} />
+        { content }
       </div>
     );
   }
@@ -178,29 +201,6 @@ class ContentLibrary extends React.Component {
     );
   }
 
-  LibraryMetadata() {
-    let metadata;
-    if(this.state.visibleItems["meta"]) {
-      metadata = <pre className="content-object-data">{JSON.stringify(this.state.library.meta, null, 2)}</pre>;
-    }
-
-    let privateMetadata;
-    if(this.state.visibleItems["privateMeta"]) {
-      privateMetadata = <pre className="content-object-data">{JSON.stringify(this.state.library.privateMeta, null, 2)}</pre>;
-    }
-
-    return [
-      <div className="formatted-data" key="meta">
-        <LabelledField label="Public Metadata" value={this.ToggleButton("Metadata", "meta")} />
-        { metadata }
-      </div>,
-      <div className="formatted-data" key="privateMeta">
-        <LabelledField label="Private Metadata" value={this.ToggleButton("Metadata", "privateMeta")} />
-        { privateMetadata }
-      </div>
-    ];
-  }
-
   LibraryImage() {
     if(this.state.library.imageUrl) {
       return (
@@ -241,7 +241,9 @@ class ContentLibrary extends React.Component {
           }
         />
         <LabelledField label={"Content Objects"} value={this.state.library.objects.length} />
-        { this.LibraryMetadata() }
+        { this.ToggleSection("Content Types", "content-types", this.state.library.types, true) }
+        { this.ToggleSection("Public Metadata", "public-metadata", this.state.library.meta, true) }
+        { this.ToggleSection("Private Metadata", "private-metadata", this.state.library.privateMeta, true) }
         { this.LibraryGroups() }
       </div>
     );
@@ -249,15 +251,18 @@ class ContentLibrary extends React.Component {
 
   Actions() {
     let manageGroupsButton;
+    let manageTypesButton;
     if(this.state.library.isOwner && !this.state.library.isContentSpaceLibrary) {
       manageGroupsButton = <Link to={Path.join(this.props.match.url, "groups")} className="action" >Manage Groups</Link>;
+      manageTypesButton = <Link to={Path.join(this.props.match.url, "types")} className="action" >Manage Types</Link>;
     }
 
     return (
       <div className="actions-container">
         <Link to={Path.dirname(this.props.match.url)} className="action secondary" >Back</Link>
-        <Link to={Path.join(this.props.match.url, "edit")} className="action" >Manage Content Library</Link>
+        <Link to={Path.join(this.props.match.url, "edit")} className="action" >Manage Library</Link>
         { manageGroupsButton }
+        { manageTypesButton }
         <Link to={Path.join(this.props.match.url, "create")} className="action" >
           { this.state.library.isContentSpaceLibrary ? "New Content Type" : "Contribute" }
         </Link>

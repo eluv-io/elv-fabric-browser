@@ -59,6 +59,7 @@ class ContentObjectForm extends React.Component {
         loadRequestId: this.props.WrapRequest({
           todo: async () => {
             await this.props.ListContentTypes({});
+            await this.props.ListLibraryContentTypes({libraryId: this.state.libraryId});
           }
         })
       });
@@ -76,6 +77,20 @@ class ContentObjectForm extends React.Component {
     }
   }
 
+  FormatType(type) {
+    // Skip "none" type
+    if(!type.hash) { return type; }
+
+    const typeName = (type.meta && type.meta["eluv.name"]) || type.hash;
+
+    return {
+      ...type,
+      name: typeName,
+      schema: type.meta && type.meta["eluv.schema"],
+      allowCustomMetadata: type.meta && type.meta["eluv.allowCustomMetadata"],
+    };
+  }
+
   RequestComplete() {
     let type = "";
     let types = {
@@ -86,36 +101,34 @@ class ContentObjectForm extends React.Component {
     };
 
     if(this.state.createForm) {
-      Object.values(this.props.types).forEach(type => {
-        const typeName = (type.meta && type.meta["eluv.name"]) || type.hash;
-        types[type.hash] = {
-          ...type,
-          name: typeName,
-          schema: type.meta && type.meta["eluv.schema"],
-          allowCustomMetadata: type.meta && type.meta["eluv.allowCustomMetadata"],
+      let allowedTypes = this.props.libraries[this.state.libraryId].types;
+      if(Object.keys(allowedTypes).length > 0) {
+        // Allowed types specified on library - limit options to that list
+        type = Object.values(allowedTypes)[0].hash;
+        types = allowedTypes;
+      } else {
+        // No allowed types specified on library - all types allowed
+        types = {
+          ...types,
+          ...this.props.types
         };
-      });
+      }
+
+      Object.values(types).forEach(type => types[type.hash] = this.FormatType(type));
     } else {
       const object = this.props.objects[this.state.objectId];
       type = object.type;
 
       if(object.typeInfo) {
-        const typeName = (object.typeInfo.meta && object.typeInfo.meta["eluv.name"]) || object.typeInfo.hash;
-
         types = {
-          [type]: {
-            ...object.typeInfo,
-            name: typeName,
-            schema: object.typeInfo.meta && object.typeInfo.meta["eluv.schema"],
-            allowCustomMetadata: object.typeInfo.meta && object.typeInfo.meta["eluv.allowCustomMetadata"],
-          }
+          [type]: this.FormatType(object.typeInfo)
         };
       }
     }
 
     this.setState({
       types,
-      type: "",
+      type,
       metadata: ""
     });
 
