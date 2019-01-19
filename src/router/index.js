@@ -12,10 +12,11 @@ import {
   ContentLibrariesContainer,
   ContentLibraryFormContainer,
   ContentLibraryContainer,
+  ContentLibraryGroupsFormContainer,
+  ContentLibraryTypesFormContainer,
   ContentObjectContainer,
   ContentObjectUploadFormContainer,
   ContentObjectAppContainer,
-  ContentLibraryGroupsFormContainer,
   ContentObjectReviewFormContainer,
   ContentObjectFormContainer,
   ContentTypeFormContainer
@@ -112,7 +113,7 @@ class Router extends React.Component {
           * to /content/:contentSpaceLibrary
           */
           <Route exact path="/content/:libraryId" component={ContentLibraryContainer}/>
-          <Route exact path="/content-types" render={(props) =>
+          <Route exact path="/content-types" key="content-types" render={(props) =>
             <ContentLibraryContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
 
           <Route exact path="/content/:libraryId/edit" component={ContentLibraryFormContainer}/>
@@ -122,6 +123,8 @@ class Router extends React.Component {
           <Route exact path="/content/:libraryId/groups" component={ContentLibraryGroupsFormContainer}/>
           <Route exact path="/content-types/groups" render={(props) =>
             <ContentLibraryGroupsFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
+
+          <Route exact path="/content/:libraryId/types" component={ContentLibraryTypesFormContainer}/>
 
           <Route exact path="/content/:libraryId/create" component={ContentObjectFormContainer}/>
           <Route exact path="/content-types/create" render={(props) =>

@@ -11,7 +11,8 @@ const ActionTypes = {
     libraries: {
       list: "LIST_LIBRARIES",
       get: "GET_LIBRARY",
-      groups: "GET_LIBRARY_GROUPS"
+      groups: "GET_LIBRARY_GROUPS",
+      types: "GET_LIBRARY_TYPES"
     },
     objects: {
       list: "LIST_OBJECTS",

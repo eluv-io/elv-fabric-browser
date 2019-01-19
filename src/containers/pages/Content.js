@@ -23,7 +23,9 @@ import {
   UpdateFromContentTypeSchema,
   DownloadFile,
   UploadFiles,
-  FileUrl
+  FileUrl,
+  SetLibraryContentTypes,
+  ListLibraryContentTypes
 } from "../../actions/Content";
 import ContentLibraries from "../../components/pages/content/ContentLibraries";
 import ContentLibrary from "../../components/pages/content/ContentLibrary";
@@ -37,6 +39,7 @@ import ContentObjectReviewForm from "../../components/pages/content/ContentObjec
 import {ListAccessGroups} from "../../actions/AccessGroups";
 import {WrapRequest} from "../../actions/Requests";
 import ContentObjectForm from "../../components/pages/content/ContentObjectForm";
+import ContentLibraryTypesForm from "../../components/pages/content/ContentLibraryTypesForm";
 
 const mapStateToProps = (state) => ({
   requests: state.requests,
@@ -54,6 +57,7 @@ const mapDispatchToProps = dispatch =>
       GetContentLibrary,
       UpdateContentLibrary,
       DeleteContentLibrary,
+      SetLibraryContentTypes,
       ListContentObjects,
       GetContentObject,
       GetContentObjectVersions,
@@ -67,6 +71,7 @@ const mapDispatchToProps = dispatch =>
       DownloadPart,
       ListAccessGroups,
       ListContentLibraryGroups,
+      ListLibraryContentTypes,
       CreateContentType,
       ListContentTypes,
       CreateFromContentTypeSchema,
@@ -96,6 +101,11 @@ export const ContentLibraryGroupsFormContainer = connect(
   mapStateToProps,
   mapDispatchToProps
 )(ContentLibraryGroupsForm);
+
+export const ContentLibraryTypesFormContainer = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(ContentLibraryTypesForm);
 
 export const ContentObjectContainer = connect(
   mapStateToProps,

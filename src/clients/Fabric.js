@@ -141,9 +141,11 @@ const Fabric = {
     const owner = await Fabric.GetContentLibraryOwner({libraryId});
     const currentAccountAddress = await Fabric.CurrentAccountAddress();
     const name = libraryInfo.meta.name || libraryInfo.meta["eluv.name"] || "Content Library " + libraryId;
+    const types = await Fabric.ListLibraryContentTypes({libraryId});
     return {
       ...libraryInfo,
       libraryId,
+      types,
       name: name,
       description: libraryInfo.meta["eluv.description"],
       contractAddress: FormatAddress(client.utils.HashToAddress({hash: libraryId})),
@@ -155,6 +157,20 @@ const Fabric = {
       isOwner: EqualAddress(owner, currentAccountAddress),
       isContentSpaceLibrary: libraryId === Fabric.contentSpaceLibraryId
     };
+  },
+
+  ListLibraryContentTypes: async ({libraryId}) => {
+    if(libraryId === Fabric.contentSpaceLibraryId) { return {}; }
+
+    return await client.LibraryContentTypes({libraryId});
+  },
+
+  AddLibraryContentType: async ({libraryId, typeId, customContractAddress}) => {
+    return await client.AddLibraryContentType({libraryId, typeId, customContractAddress});
+  },
+
+  RemoveLibraryContentType: async ({libraryId, typeId}) => {
+    return await client.RemoveLibraryContentType({libraryId, typeId});
   },
 
   GetContentLibraryOwner: async ({libraryId}) => {
