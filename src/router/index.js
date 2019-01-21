@@ -93,7 +93,7 @@ class Router extends React.Component {
       return <Redirect to={this.state.redirectPath} />;
     } else if(!this.state.pathSynchronized) {
       // Don't render until path is synchronized
-      return <div>Loading</div>;
+      return null;
     }
 
     return (
