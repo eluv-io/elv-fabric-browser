@@ -16,12 +16,6 @@
   cp TestConfiguration.json ../elv-core-js/configuration.json && cp TestConfiguration.json ../elv-fabric-browser/configuration.json
   ```
 
-- Seed the library ```elv-fabric-browser``` uses to store information:
-  ```
-  cd ../elv-fabric-browser
-  npm install
-  node Seed.js <private-key>
-  ```
 - Run ```npm install && npm run serve``` in ```elv-core-js``` and ```elv-fabric-browser``` in separate terminal tabs
 - Open [http://localhost:8082](http://localhost:8082) in your browser
 
