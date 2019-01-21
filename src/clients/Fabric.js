@@ -37,6 +37,7 @@ const Fabric = {
   isFrameClient,
   contentSpaceId: Configuration.fabric.contentSpaceId,
   contentSpaceLibraryId: Configuration.fabric.contentSpaceId.replace("ispc", "ilib"),
+  contentSpaceObjectId: Configuration.fabric.contentSpaceId.replace("ispc", "iq__"),
   utils: client.utils,
   currentAccountAddress: undefined,
 
@@ -413,8 +414,8 @@ const Fabric = {
     return FormatAddress(await client.ContentObjectOwner({objectId}));
   },
 
-  GetContentObjectMetadata: async ({libraryId, objectId, versionHash}) => {
-    return await client.ContentObjectMetadata({ libraryId, objectId, versionHash });
+  GetContentObjectMetadata: async ({libraryId, objectId, versionHash, metadataSubtree="/"}) => {
+    return await client.ContentObjectMetadata({libraryId, objectId, versionHash, metadataSubtree});
   },
 
   // Get all versions of the specified content object, along with metadata,
@@ -853,45 +854,59 @@ const Fabric = {
   },
 
   FabricBrowser: {
-    // Get info pointing to fabric browser library and its entry objects
-    async Info() {
-      try {
-        const info = await client.GetByName({
-          name: "elv-fabric-browser"
-        });
+    // Initialize metadata structure in content space object
+    async Initialize() {
+      await Fabric.EditAndFinalizeContentObject({
+        libraryId: Fabric.contentSpaceLibraryId,
+        objectId: Fabric.contentSpaceObjectId,
+        todo: async ({writeToken}) => {
+          await Fabric.ReplaceMetadata({
+            libraryId: Fabric.contentSpaceLibraryId,
+            objectId: Fabric.contentSpaceObjectId,
+            writeToken,
+            metadata: {
+              "elv-fabric-browser": {
+                accessGroups: {},
+                contracts: {},
+                deployedContracts: {}
+              }
+            }
+          });
+        }
+      });
+    },
 
-        return JSON.parse(info.target);
+    // Get info pointing to fabric browser library and its entry objects
+    async Info(subtree="/") {
+      try {
+        return (await Fabric.GetContentObjectMetadata({
+          libraryId: Fabric.contentSpaceLibraryId,
+          objectId: Fabric.contentSpaceObjectId,
+          metadataSubtree: Path.join("elv-fabric-browser", subtree)
+        })) || {};
       } catch(error) {
-        if(error.status === 404) {
-          throw new Error("Please run the seed script to initialize the fabric browser");
+        if(error.status === 404 && ["contracts", "deployedContracts", "accessGroups"].includes(subtree)) {
+          // Not yet initialized
+          await Fabric.FabricBrowser.Initialize();
+
+          return await Fabric.FabricBrowser.Info(subtree);
         } else {
           throw error;
         }
       }
     },
 
-    async Entries({type, subtree=""}) {
-      const info = await Fabric.FabricBrowser.Info();
-
-      return (await Fabric.GetContentObjectMetadata({
-        libraryId: info.libraryId,
-        objectId: info[type]
-      }))[subtree || type] || {};
-    },
-
     // Add entry by appending to object metadata
-    async AddEntry({type, subtree="", name, metadata={}}) {
-      const info = await Fabric.FabricBrowser.Info();
-
+    async AddEntry({type, name, metadata={}}) {
       await Fabric.EditAndFinalizeContentObject({
-        libraryId: info.libraryId,
-        objectId: info[type],
+        libraryId: Fabric.contentSpaceLibraryId,
+        objectId: Fabric.contentSpaceObjectId,
         todo: async ({writeToken}) => {
           await Fabric.ReplaceMetadata({
-            libraryId: info.libraryId,
-            objectId: info[type],
+            libraryId: Fabric.contentSpaceLibraryId,
+            objectId: Fabric.contentSpaceObjectId,
             writeToken,
-            metadataSubtree: Path.join(subtree || type, name),
+            metadataSubtree: Path.join("elv-fabric-browser", type, name),
             metadata
           });
         }
@@ -899,17 +914,16 @@ const Fabric = {
     },
 
     // Remove entry by info deleting from object metadata
-    async RemoveEntry({type, subtree="", name}) {
-      const info = await Fabric.FabricBrowser.Info();
-
+    async RemoveEntry({type, name}) {
       await Fabric.EditAndFinalizeContentObject({
-        libraryId: info.libraryId,
-        objectId: info[type],
+        libraryId: Fabric.contentSpaceLibraryId,
+        objectId: Fabric.contentSpaceObjectId,
         todo: async ({writeToken}) => {
           await Fabric.DeleteMetadata({
-            libraryId: info.libraryId,
+            libraryId: Fabric.contentSpaceLibraryId,
+            objectId: Fabric.contentSpaceObjectId,
             writeToken,
-            metadataSubtree: Path.join(subtree || type, name),
+            metadataSubtree: Path.join("elv-fabric-browser", type, name),
           });
         }
       });
@@ -918,7 +932,7 @@ const Fabric = {
     /* Access Groups */
 
     async AccessGroups() {
-      let accessGroups = await Fabric.FabricBrowser.Entries({type: "accessGroups"});
+      let accessGroups = await Fabric.FabricBrowser.Info("accessGroups");
       const currentAccountAddress = await Fabric.CurrentAccountAddress();
 
       Object.keys(accessGroups).map(address => {
@@ -951,11 +965,11 @@ const Fabric = {
     /* Contracts */
 
     async Contracts() {
-      return await Fabric.FabricBrowser.Entries({type: "contracts"});
+      return await Fabric.FabricBrowser.Info("contracts");
     },
 
     async DeployedContracts() {
-      return await Fabric.FabricBrowser.Entries({type: "contracts", subtree: "deployed"});
+      return await Fabric.FabricBrowser.Info("deployedContracts");
     },
 
     async AddContract({name, description, abi, bytecode}) {
@@ -979,8 +993,7 @@ const Fabric = {
       address = FormatAddress(address);
 
       await Fabric.FabricBrowser.AddEntry({
-        type: "contracts",
-        subtree: "deployed",
+        type: "deployedContracts",
         name: address,
         metadata: {
           name,
@@ -995,8 +1008,7 @@ const Fabric = {
 
     async RemoveDeployedContract({address}) {
       await Fabric.FabricBrowser.RemoveEntry({
-        type: "contracts",
-        subtree: "deployed",
+        type: "deployedContracts",
         name: address
       });
     }
