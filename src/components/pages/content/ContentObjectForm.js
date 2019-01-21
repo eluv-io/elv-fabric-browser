@@ -280,7 +280,7 @@ class ContentObjectForm extends React.Component {
                       versionHash: type.hash,
                       partHash: entry.hash,
                       callback: async (url) => {
-                        await DownloadFromUrl(url, label);
+                        await DownloadFromUrl(url, entry.filename || label);
                       }
                     });
                   }

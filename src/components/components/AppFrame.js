@@ -179,6 +179,16 @@ class AppFrame extends React.Component {
           if(this.props.onCancel) { await this.props.onCancel(); }
           this.Respond(event, {});
           break;
+        case "SetFrameDimensions":
+          if(event.data.width) {
+            this.state.appRef.current.style.width = Math.min(parseInt(event.data.width), 1200) + "px";
+          }
+
+          if(event.data.height) {
+            this.state.appRef.current.style.height = Math.min(parseInt(event.data.height), 1200) + "px";
+          }
+
+          break;
       }
     }
   }

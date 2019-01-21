@@ -110,7 +110,7 @@ class BrowseWidget extends React.Component {
             <tr>
               <th className="type-header" />
               <th>Name</th>
-              <th>Size</th>
+              <th className="size-header">Size</th>
             </tr>
           </thead>
           <tbody>

@@ -98,7 +98,7 @@ class ContentObjectReviewForm extends React.Component {
       contentSpaceId: Fabric.contentSpaceId,
       libraryId: this.state.libraryId,
       objectId: this.state.objectId,
-      type: this.state.type,
+      type: this.state.object.type,
       action: "review"
     };
 
