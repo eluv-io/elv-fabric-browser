@@ -41,35 +41,44 @@ import connect from "react-redux/es/connect/connect";
 import Thunk from "../utils/Thunk";
 import {StartRouteSynchronization} from "../actions/Routing";
 
+let isMounted = false;
+
 class Router extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
       redirectPath: "",
-      pathSynchronized: false
+      pathSynchronized: false,
+      getPath: Fabric.GetFramePath()
     };
   }
+
+  componentDidMount() { isMounted = true; }
+  componentWillUnmount() { isMounted = false; }
 
   // If using FrameClient, determine app path specified in url by requesting it from core-js,
   // then redirect to it. After synchronized with initial URL, keep the URL synchronized with
   // app routing changes by signalling RoutingReducer to intercept route changes and send them
   // up to the container.
-  componentDidUpdate() {
+  async componentDidUpdate() {
     if(!this.state.pathSynchronized) {
       if(Fabric.isFrameClient) {
-        Fabric.GetFramePath().then(path => {
-          if (path !== this.props.router.location.pathname) {
-            this.setState({redirectPath: path});
-          } else {
-            this.setState({
-              redirectPath: "",
-              pathSynchronized: true
-            });
+        const path = await Fabric.GetFramePath();
 
-            this.props.StartRouteSynchronization();
-          }
-        });
+        // If component unmounts, don't update state
+        if(!isMounted) { return; }
+
+        if (path !== this.props.router.location.pathname) {
+          this.setState({redirectPath: path});
+        } else {
+          this.setState({
+            redirectPath: "",
+            pathSynchronized: true
+          });
+
+          this.props.StartRouteSynchronization();
+        }
       } else {
         this.setState({pathSynchronized: true});
       }
@@ -84,7 +93,7 @@ class Router extends React.Component {
       return <Redirect to={this.state.redirectPath} />;
     } else if(!this.state.pathSynchronized) {
       // Don't render until path is synchronized
-      return null;
+      return <div>Loading</div>;
     }
 
     return (

@@ -408,7 +408,7 @@ export const UploadParts = ({libraryId, objectId, files, encrypt}) => {
 
 export const DownloadPart = ({libraryId, objectId, versionHash, partHash, callback}) => {
   return async (dispatch) => {
-    let blob = await Fabric.DownloadPart({libraryId, objectId, versionHash, partHash, encrypted:false});
+    let blob = await Fabric.DownloadPart({libraryId, objectId, versionHash, partHash, encrypted: false});
     let url = window.URL.createObjectURL(blob);
 
     await callback(url);
