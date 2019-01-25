@@ -4,7 +4,7 @@ import {LabelledField} from "../../../components/LabelledField";
 
 import PropTypes from "prop-types";
 import {Bytes32ToUtf8} from "../../../../utils/Helpers";
-import TransactionCard from "../../../components/TransactionCard";
+import EventCard from "../../../components/EventCard";
 
 class DeployedContractMethodForm extends React.Component {
   constructor(props) {
@@ -241,7 +241,7 @@ class DeployedContractMethodForm extends React.Component {
       return (
         <div className="label-box">
           <h3>Result: </h3>
-          <TransactionCard events={this.state.transactionResults} />
+          <EventCard events={this.state.transactionResults} />
         </div>
       );
     }

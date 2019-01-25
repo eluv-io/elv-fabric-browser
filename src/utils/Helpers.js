@@ -1,3 +1,5 @@
+import Utils from "elv-client-js/src/Utils";
+
 // Traverse through a hashmap without throwing errors on undefined keys
 // If any keys undefined, returns undefined
 export const SafeTraverse = (object, ...keys) => {
@@ -21,14 +23,19 @@ export const Wait = async (ms) => {
 };
 
 export const FormatAddress = (address) => {
-  if(!address || typeof address !== "string") { return ""; }
-
-  if(!address.startsWith("0x")) { address = "0x" + address; }
-  return address.toLowerCase();
+  return Utils.FormatAddress({address});
 };
 
 export const EqualAddress = (address1, address2) => {
   return FormatAddress(address1) === FormatAddress(address2);
+};
+
+export const WeiToEther = (wei) => {
+  return wei / 1000000000000000000;
+};
+
+export const EtherToWei = (ether) => {
+  return ether * 1000000000000000000;
 };
 
 // Adapted from ethers.js/utils/utf8.js#toUtf8String

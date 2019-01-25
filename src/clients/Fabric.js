@@ -163,7 +163,12 @@ const Fabric = {
   ListLibraryContentTypes: async ({libraryId}) => {
     if(libraryId === Fabric.contentSpaceLibraryId) { return {}; }
 
-    return await client.LibraryContentTypes({libraryId});
+    let types = await client.LibraryContentTypes({libraryId});
+    await Promise.all(
+      Object.keys(types).map(async typeHash => types[typeHash] = await Fabric.FormatType({type: types[typeHash]}))
+    );
+
+    return types;
   },
 
   AddLibraryContentType: async ({libraryId, typeId, customContractAddress}) => {
@@ -348,16 +353,7 @@ const Fabric = {
       return metadata.customContract && metadata.customContract.address;
     }
 
-    const customContractAddress = FormatAddress(await client.CallContractMethod({
-      contractAddress: client.utils.HashToAddress({hash: objectId}),
-      abi: BaseContentContract.abi,
-      methodName: "contentContractAddress",
-      methodArgs: []
-    }));
-
-    if(customContractAddress === client.utils.nullAddress) { return; }
-
-    return customContractAddress;
+    return await client.CustomContractAddress({libraryId, objectId});
   },
 
   GetContentObject: async ({libraryId, objectId}) => {
@@ -757,6 +753,7 @@ const Fabric = {
   },
 
   /* Contracts */
+
   FormatContractArguments: ({abi, methodName, args}) => {
     return client.FormatContractArguments({abi, methodName, args});
   },
@@ -791,6 +788,10 @@ const Fabric = {
 
   WithdrawContractFunds: ({contractAddress, abi, ether}) => {
     return client.WithdrawContractFunds({contractAddress, abi, ether});
+  },
+
+  GetBlockchainEvents: ({toBlock, fromBlock, count=10}) => {
+    return client.Events({toBlock, fromBlock, count});
   },
 
   /* Naming */

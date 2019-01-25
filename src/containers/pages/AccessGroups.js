@@ -3,7 +3,8 @@ import Thunk from "../../utils/Thunk";
 import {
   SaveAccessGroup,
   ListAccessGroups,
-  RemoveAccessGroup, UpdateAccessGroupMembers
+  RemoveAccessGroup,
+  UpdateAccessGroupMembers
 } from "../../actions/AccessGroups";
 import AccessGroups from "../../components/pages/access_groups/AccessGroups";
 import AccessGroup from "../../components/pages/access_groups/AccessGroup";

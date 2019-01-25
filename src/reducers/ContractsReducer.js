@@ -1,5 +1,9 @@
 import ActionTypes from "../actions/ActionTypes";
 
+const SortBlocks = (blocks) => {
+  return blocks.sort((a, b) => a.blockNumber < b.blockNumber ? 1 : -1);
+};
+
 const ContractsReducer = (state = {}, action) => {
   let contractState;
 
@@ -52,10 +56,21 @@ const ContractsReducer = (state = {}, action) => {
           ...state.deployedContracts,
           [action.contractAddress]: {
             ...contractState,
-            events: {
-              ...(contractState.events || {}),
-              ...action.blocks
-            }
+            events: SortBlocks((contractState.events || []).concat(action.blocks))
+          }
+        }
+      };
+
+    case ActionTypes.contracts.deployed.clearEvents:
+      contractState = state.deployedContracts[action.contractAddress] || {};
+
+      return {
+        ...state,
+        deployedContracts: {
+          ...state.deployedContracts,
+          [action.contractAddress]: {
+            ...contractState,
+            events: []
           }
         }
       };
@@ -80,7 +95,8 @@ const ContractsReducer = (state = {}, action) => {
       return {
         ...state,
         contracts: state.contracts || {},
-        deployedContracts: state.deployedContracts || {}
+        deployedContracts: state.deployedContracts || {},
+        logs: state.logs || {}
       };
   }
 };
