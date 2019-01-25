@@ -5,6 +5,7 @@ import ContentIcon from "../static/icons/content.svg";
 import GroupsIcon from "../static/icons/groups.svg";
 import ContentTypeIcon from "../static/icons/content_types.svg";
 import ContractsIcon from "../static/icons/contracts.svg";
+import LogsIcon from "../static/icons/logs.svg";
 import {Icon} from "./components/Icons";
 
 class NavigationBar extends React.Component {
@@ -30,6 +31,11 @@ class NavigationBar extends React.Component {
         link: "contracts",
         text: "Contracts",
         icon: ContractsIcon
+      },
+      {
+        link: "logs",
+        text: "Logs",
+        icon: LogsIcon
       }
     ];
   }

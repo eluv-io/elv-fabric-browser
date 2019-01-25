@@ -31,11 +31,16 @@ const ActionTypes = {
       list: "LIST_DEPLOYED_CONTRACTS",
       balance: "GET_CONTRACT_BALANCE",
       events: "GET_CONTRACT_EVENTS",
+      clearEvents: "CLEAR_CONTRACT_EVENTS",
       call: "CALL_CONTRACT_METHOD",
     },
     error: {
       compile: "ERROR_CONTRACT_COMPILATION"
     }
+  },
+  logs: {
+    clear: "CLEAR_BLOCKCHAIN_LOGS",
+    list: "LIST_BLOCKCHAIN_LOGS"
   },
   notifications: {
     error: "SET_ERROR_MESSAGE",
@@ -50,6 +55,7 @@ const ActionTypes = {
     }
   },
   routes: {
+    path: "ROUTING_FRAME_PATH",
     synchronize: "START_ROUTE_SYNCHRONIZATION"
   }
 };

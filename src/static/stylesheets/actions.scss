@@ -17,6 +17,10 @@
 .actions-container {
   display: flex;
 
+  &.centered {
+    justify-content: center;
+  }
+
   :first-child {
     &.action,
     &.action-loading {

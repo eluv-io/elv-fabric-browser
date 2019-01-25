@@ -14,7 +14,7 @@ import {
   DeployContract,
   ListDeployedContracts,
   RemoveDeployedContract,
-  WatchContract
+  WatchContract, ClearContractEvents
 } from "../../actions/Contracts";
 import CompileContractForm from "../../components/pages/contracts/CompileContractForm";
 import ContractForm from "../../components/pages/contracts/ContractForm";
@@ -57,6 +57,7 @@ const mapDispatchToProps = dispatch =>
       GetContentLibrary,
       CallContractMethod,
       GetContractEvents,
+      ClearContractEvents,
       SendFunds,
       WithdrawContractFunds,
       GetContractBalance,
