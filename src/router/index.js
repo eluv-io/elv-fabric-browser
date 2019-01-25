@@ -39,9 +39,8 @@ import ErrorHandler from "./ErrorHandler";
 import Redirect from "react-router/es/Redirect";
 import connect from "react-redux/es/connect/connect";
 import Thunk from "../utils/Thunk";
-import {StartRouteSynchronization} from "../actions/Routing";
-
-let isMounted = false;
+import {GetFramePath, StartRouteSynchronization} from "../actions/Routing";
+import {LogsContainer} from "../containers/pages/Logs";
 
 class Router extends React.Component {
   constructor(props) {
@@ -49,13 +48,13 @@ class Router extends React.Component {
 
     this.state = {
       redirectPath: "",
-      pathSynchronized: false,
-      getPath: Fabric.GetFramePath()
+      pathSynchronized: false
     };
-  }
 
-  componentDidMount() { isMounted = true; }
-  componentWillUnmount() { isMounted = false; }
+    if(Fabric.isFrameClient) {
+      this.props.GetFramePath();
+    }
+  }
 
   // If using FrameClient, determine app path specified in url by requesting it from core-js,
   // then redirect to it. After synchronized with initial URL, keep the URL synchronized with
@@ -64,13 +63,10 @@ class Router extends React.Component {
   async componentDidUpdate() {
     if(!this.state.pathSynchronized) {
       if(Fabric.isFrameClient) {
-        const path = await Fabric.GetFramePath();
+        if(this.props.frameRouting.path === undefined) { return; }
 
-        // If component unmounts, don't update state
-        if(!isMounted) { return; }
-
-        if (path !== this.props.router.location.pathname) {
-          this.setState({redirectPath: path});
+        if (this.props.frameRouting.path !== this.props.router.location.pathname) {
+          this.setState({redirectPath: this.props.frameRouting.path});
         } else {
           this.setState({
             redirectPath: "",
@@ -101,26 +97,24 @@ class Router extends React.Component {
         <Switch>
           <Route exact path="/" component={ContentLibrariesContainer}/>
 
+          /* Access Groups */
+
           <Route exact path="/access-groups" component={AccessGroupsContainer}/>
           <Route exact path="/access-groups/create" component={AccessGroupFormContainer}/>
           <Route exact path="/access-groups/:contractAddress" component={AccessGroupContainer}/>
           <Route exact path="/access-groups/:contractAddress/edit" component={AccessGroupFormContainer}/>
           <Route exact path="/access-groups/:contractAddress/members" component={AccessGroupMembersFormContainer}/>
           <Route exact path="/access-groups/:contractAddress/contract" component={DeployedContractContainer}/>
-          <Route exact path="/access-groups/:contractAddress/contract/logs"
-            component={DeployedContractEventsContainer}/>
-          <Route exact path="/access-groups/:contractAddress/contract/call/:method"
-            component={DeployedContractMethodFormContainer}/>
-          <Route exact path="/access-groups/:contractAddress/contract/funds"
-            component={DeployedContractFundsFormContainer}/>
+          <Route exact path="/access-groups/:contractAddress/contract/logs" component={DeployedContractEventsContainer}/>
+          <Route exact path="/access-groups/:contractAddress/contract/call/:method" component={DeployedContractMethodFormContainer}/>
+          <Route exact path="/access-groups/:contractAddress/contract/funds" component={DeployedContractFundsFormContainer}/>
+
+          /* Content */
+          /* For most content routes, add content-types route corresponding to /content/:contentSpaceLibrary */
 
           <Route exact path="/content" component={ContentLibrariesContainer}/>
           <Route exact path="/content/create" component={ContentLibraryFormContainer}/>
 
-          /**
-          * For most content routes, add content-types route corresponding
-          * to /content/:contentSpaceLibrary
-          */
           <Route exact path="/content/:libraryId" component={ContentLibraryContainer}/>
           <Route exact path="/content-types" key="content-types" render={(props) =>
             <ContentLibraryContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
@@ -201,21 +195,23 @@ class Router extends React.Component {
           <Route exact path="/content-types/:objectId/custom-contract/call/:method" render={(props) =>
             <DeployedContractMethodFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
 
+          /* Contracts */
+
           <Route exact path="/contracts" component={ContractsContainer}/>
           <Route exact path="/contracts/compile" component={CompileContractFormContainer}/>
           <Route exact path="/contracts/save" component={ContractFormContainer}/>
           <Route exact path="/contracts/watch" component={WatchContractFormContainer}/>
           <Route exact path="/contracts/deploy" component={DeployContractFormContainer}/>
           <Route exact path="/contracts/deployed/:contractAddress" component={DeployedContractContainer}/>
-          <Route exact path="/contracts/deployed/:contractAddress/logs"
-            component={DeployedContractEventsContainer}/>
-          <Route exact path="/contracts/deployed/:contractAddress/call/:method"
-            component={DeployedContractMethodFormContainer}/>
-          <Route exact path="/contracts/deployed/:contractAddress/funds"
-            component={DeployedContractFundsFormContainer}/>
+          <Route exact path="/contracts/deployed/:contractAddress/logs" component={DeployedContractEventsContainer}/>
+          <Route exact path="/contracts/deployed/:contractAddress/call/:method" component={DeployedContractMethodFormContainer}/>
+          <Route exact path="/contracts/deployed/:contractAddress/funds" component={DeployedContractFundsFormContainer}/>
           <Route exact path="/contracts/:contractName" component={ContractContainer}/>
           <Route exact path="/contracts/:contractName/edit" component={ContractFormContainer}/>
           <Route exact path="/contracts/:contractName/deploy" component={DeployContractFormContainer}/>
+
+          /* Logs */
+          <Route exact path="/logs" component={LogsContainer} />
         </Switch>
       </div>
     );
@@ -223,8 +219,8 @@ class Router extends React.Component {
 }
 
 const RouterContainer = connect(
-  (state) => { return {router: state.router}; },
-  (dispatch) => Thunk(dispatch, [ StartRouteSynchronization ])
+  (state) => { return {router: state.router, frameRouting: state.frameRouting}; },
+  (dispatch) => Thunk(dispatch, [ GetFramePath, StartRouteSynchronization ])
 )(Router);
 
 // Wrap the router in an error handler to ensure a crash in the main content does not

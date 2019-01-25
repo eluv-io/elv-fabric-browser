@@ -58,8 +58,6 @@ class BrowseWidget extends React.Component {
           fileInfo: Object.values(files)
         });
       }
-
-
     });
 
     this.props.onChange(event);

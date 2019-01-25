@@ -284,22 +284,36 @@ export const DeployContentContract = ({
 
 export const GetContractEvents = ({contractAddress, abi, fromBlock=0, toBlock}) => {
   return async (dispatch) => {
-    const events = await Fabric.ContractEvents({contractAddress, abi, fromBlock, toBlock});
-
-    // Group events by block
-    const blocks = {};
-    events.map(event => {
-      if(blocks[event.blockNumber]) {
-        blocks[event.blockNumber].unshift(event);
-      } else {
-        blocks[event.blockNumber] = [event];
-      }
-    });
-
     dispatch({
       type: ActionTypes.contracts.deployed.events,
       contractAddress,
-      blocks
+      blocks: await Fabric.ContractEvents({contractAddress, abi, fromBlock, toBlock})
+    });
+  };
+};
+
+export const ClearContractEvents = ({contractAddress}) => {
+  return async (dispatch) => {
+    dispatch({
+      type: ActionTypes.contracts.deployed.clearEvents,
+      contractAddress
+    });
+  };
+};
+
+export const GetBlockchainEvents = ({toBlock, fromBlock, count=10}) => {
+  return async (dispatch) => {
+    dispatch({
+      type: ActionTypes.logs.list,
+      blocks: await Fabric.GetBlockchainEvents({toBlock, fromBlock, count})
+    });
+  };
+};
+
+export const ClearBlockchainEvents = () => {
+  return async (dispatch) => {
+    dispatch({
+      type: ActionTypes.logs.clear
     });
   };
 };
@@ -351,7 +365,7 @@ export const CallContractMethod = ({
         throw Error("Transaction failed");
       }
 
-      methodResults.reverse();
+      methodResults = methodResults[0];
     }
 
     dispatch({

@@ -8,6 +8,7 @@ import NotificationsReducer from "./NotificationsReducer";
 import RequestsReducer from "./RequestsReducer";
 import AccessGroupsReducer from "./AccessGroupsReducer";
 import FrameRoutingReducer from "./FrameRoutingReducer";
+import LogsReducer from "./LogsReducer";
 
 // Collect all dispatched actions
 const DebugReducer = (state = {}, action) => {
@@ -32,6 +33,7 @@ export default (history) => {
     content: ContentReducer,
     contracts: ContractsReducer,
     notifications: NotificationsReducer,
+    logs: LogsReducer,
     requests: RequestsReducer
   });
 };
