@@ -573,8 +573,8 @@ class ContentObject extends React.Component {
           <PageHeader header={header} />
           { this.AppFrame() }
           { this.ObjectMedia() }
-          { this.ObjectFiles() }
           { this.ObjectInfo() }
+          { this.ObjectFiles() }
         </div>
       </div>
     );
