@@ -41,7 +41,7 @@ export const DetermineContractInterface = ({
       type: ContractTypes.contentSpace,
       description: "Base Content Space Contract",
       abi: BaseContentSpaceContract.abi,
-      contractAddress: Fabric.utils.HashToAddress({hash: libraryId})
+      contractAddress: Fabric.utils.HashToAddress(libraryId)
     };
   }
 
@@ -51,7 +51,7 @@ export const DetermineContractInterface = ({
       type: ContractTypes.library,
       description: "Base Content Library Contract",
       abi: BaseLibraryContract.abi,
-      contractAddress: Fabric.utils.HashToAddress({hash: libraryId})
+      contractAddress: Fabric.utils.HashToAddress(libraryId)
     };
   }
 
@@ -61,7 +61,7 @@ export const DetermineContractInterface = ({
       type: ContractTypes.contentType,
       description: "Base Content Type Contract",
       abi: BaseContentTypeContract.abi,
-      contractAddress: Fabric.utils.HashToAddress({hash: objectId})
+      contractAddress: Fabric.utils.HashToAddress(objectId)
     };
   }
 
@@ -80,7 +80,7 @@ export const DetermineContractInterface = ({
         type: ContractTypes.object,
         description: "Base Content Object Contract",
         abi: BaseContentContract.abi,
-        contractAddress: Fabric.utils.HashToAddress({hash: objectId})
+        contractAddress: Fabric.utils.HashToAddress(objectId)
       };
     }
   }
