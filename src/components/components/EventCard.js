@@ -51,7 +51,7 @@ class EventCard extends React.Component {
         <div className="inputs indented">
           <div className="labelled-field">
             <label>ID</label>
-            <div className="value">{Fabric.utils.AddressToHash({address: event.address})}</div>
+            <div className="value">{Fabric.utils.AddressToHash(event.address)}</div>
           </div>
           <div className="labelled-field">
             <label>Address</label>

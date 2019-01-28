@@ -149,7 +149,7 @@ const Fabric = {
       types,
       name: name,
       description: libraryInfo.meta["eluv.description"],
-      contractAddress: FormatAddress(client.utils.HashToAddress({hash: libraryId})),
+      contractAddress: FormatAddress(client.utils.HashToAddress(libraryId)),
       libraryObjectId: libraryId.replace("ilib", "iq__"),
       privateMeta,
       imageUrl,
@@ -207,7 +207,7 @@ const Fabric = {
   // - Check if the address matches a known group - if so include additional information
   CollectLibraryGroups: async ({libraryId, type, knownGroups}) => {
     let numGroups = await client.CallContractMethod({
-      contractAddress: client.utils.HashToAddress({hash: libraryId}),
+      contractAddress: client.utils.HashToAddress(libraryId),
       abi: BaseLibraryContract.abi,
       methodName: type + "GroupsLength"
     });
@@ -217,7 +217,7 @@ const Fabric = {
     let groups = [];
     for(let i = 0; i < numGroups; i++) {
       const groupAddress = await client.CallContractMethod({
-        contractAddress: client.utils.HashToAddress({hash: libraryId}),
+        contractAddress: client.utils.HashToAddress(libraryId),
         abi: BaseLibraryContract.abi,
         methodName: type + "Groups",
         methodArgs: [i]
@@ -258,7 +258,7 @@ const Fabric = {
   AddContentLibraryGroup: async ({libraryId, address, groupType}) => {
     try {
       const event = await client.CallContractMethodAndWait({
-        contractAddress: client.utils.HashToAddress({hash: libraryId}),
+        contractAddress: client.utils.HashToAddress(libraryId),
         abi: BaseLibraryContract.abi,
         methodName: "add" + groupType.capitalize() + "Group",
         methodArgs: [FormatAddress(address)]
@@ -277,7 +277,7 @@ const Fabric = {
   RemoveContentLibraryGroup: async ({libraryId, address, groupType}) => {
     try {
       const event = await client.CallContractMethodAndWait({
-        contractAddress: client.utils.HashToAddress({hash: libraryId}),
+        contractAddress: client.utils.HashToAddress(libraryId),
         abi: BaseLibraryContract.abi,
         methodName: "remove" + groupType.capitalize() + "Group",
         methodArgs: [FormatAddress(address)]
@@ -331,7 +331,7 @@ const Fabric = {
           name: latestVersion.meta["eluv.name"] || latestVersion.meta["name"],
           description: latestVersion.meta["eluv.description"],
           imageUrl,
-          contractAddress: client.utils.HashToAddress({hash: object.id}),
+          contractAddress: client.utils.HashToAddress(object.id),
           owner,
           isOwner: EqualAddress(owner, await Fabric.CurrentAccountAddress()),
           status,
@@ -385,7 +385,7 @@ const Fabric = {
       description: metadata["eluv.description"],
       typeInfo,
       imageUrl,
-      contractAddress: FormatAddress(client.utils.HashToAddress({hash: objectId})),
+      contractAddress: FormatAddress(client.utils.HashToAddress(objectId)),
       customContractAddress,
       owner,
       isOwner: EqualAddress(owner, await Fabric.CurrentAccountAddress()),
@@ -636,14 +636,14 @@ const Fabric = {
     const currentAccountAddress = await client.CurrentAccountAddress();
 
     const canContribute = await Fabric.CallContractMethod({
-      contractAddress: client.utils.HashToAddress({hash: libraryId}),
+      contractAddress: client.utils.HashToAddress(libraryId),
       abi: BaseLibraryContract.abi,
       methodName: "canContribute",
       methodArgs: [currentAccountAddress]
     });
 
     const canReview = await Fabric.CallContractMethod({
-      contractAddress: client.utils.HashToAddress({hash: libraryId}),
+      contractAddress: client.utils.HashToAddress(libraryId),
       abi: BaseLibraryContract.abi,
       methodName: "canReview",
       methodArgs: [currentAccountAddress]
@@ -663,14 +663,14 @@ const Fabric = {
 
   GetContentObjectStatus: async ({objectId}) => {
     const statusCode = await Fabric.CallContractMethod({
-      contractAddress: client.utils.HashToAddress({hash: objectId}),
+      contractAddress: client.utils.HashToAddress(objectId),
       abi: BaseContentContract.abi,
       methodName: "statusCode",
       methodArgs: []
     });
 
     const statusDescription = await Fabric.CallContractMethod({
-      contractAddress: client.utils.HashToAddress({hash: objectId}),
+      contractAddress: client.utils.HashToAddress(objectId),
       abi: BaseContentContract.abi,
       methodName: "statusDescription",
       methodArgs: []
@@ -684,7 +684,7 @@ const Fabric = {
 
   PublishContentObject: async ({objectId}) => {
     await client.CallContractMethodAndWait({
-      contractAddress: client.utils.HashToAddress({hash: objectId}),
+      contractAddress: client.utils.HashToAddress(objectId),
       abi: BaseContentContract.abi,
       methodName: "publish",
       methodArgs: []
@@ -693,11 +693,11 @@ const Fabric = {
 
   ReviewContentObject: async ({libraryId, objectId, approve, note}) => {
     await client.CallContractMethodAndWait({
-      contractAddress: client.utils.HashToAddress({hash: libraryId}),
+      contractAddress: client.utils.HashToAddress(libraryId),
       abi: BaseLibraryContract.abi,
       methodName: "approveContent",
       methodArgs: [
-        client.utils.HashToAddress({hash: objectId}), // Object contract address,
+        client.utils.HashToAddress(objectId), // Object contract address,
         approve,
         note
       ]
