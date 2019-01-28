@@ -100,6 +100,10 @@ export const CompileContracts = (contractFiles) => {
 
 export const SaveContract = ({name, oldContractName, description, abi, bytecode}) => {
   return async (dispatch) => {
+    if(typeof abi === "string") {
+      abi = ParseInputJson(abi);
+    }
+
     await Fabric.FabricBrowser.AddContract({
       name,
       description,

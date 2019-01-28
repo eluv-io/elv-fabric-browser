@@ -23,7 +23,7 @@ export const Wait = async (ms) => {
 };
 
 export const FormatAddress = (address) => {
-  return Utils.FormatAddress({address});
+  return Utils.FormatAddress(address);
 };
 
 export const EqualAddress = (address1, address2) => {
