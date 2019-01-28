@@ -205,11 +205,12 @@ export const DeployContract = ({
   };
 };
 
-export const DeployContentContract = ({
+export const SetCustomContentContract = ({
   libraryId,
   objectId,
   contractName,
   contractDescription,
+  address,
   abi,
   bytecode,
   inputs,
@@ -227,17 +228,22 @@ export const DeployContentContract = ({
       });
     }
 
-    const contractInfo = await Fabric.DeployContract({
-      abi,
-      bytecode,
-      constructorArgs
-    });
+    // If address is not specified, contract not yet deployed
+    if(!address) {
+      const contractInfo = await Fabric.DeployContract({
+        abi,
+        bytecode,
+        constructorArgs
+      });
+
+      address = contractInfo.contractAddress;
+    }
 
     // Content types don't have a hook to associate custom contracts
     if(!isContentType) {
       await Fabric.SetCustomContentContract({
         objectId,
-        customContractAddress: contractInfo.contractAddress,
+        customContractAddress: address,
         overrides: {gasLimit: 60000000, gasPrice: 1000000},
       });
     }
@@ -246,7 +252,7 @@ export const DeployContentContract = ({
       if(funds) {
         await Fabric.SendFunds({
           sender: Fabric.CurrentAccountAddress(),
-          recipient: contractInfo.contractAddress,
+          recipient: address,
           ether: funds
         });
       }
@@ -266,7 +272,7 @@ export const DeployContentContract = ({
       metadata: {
         name: contractName,
         description: contractDescription,
-        address: contractInfo.contractAddress,
+        address: address,
         abi
       }
     });
@@ -282,7 +288,7 @@ export const DeployContentContract = ({
       redirect: true
     }));
 
-    return FormatAddress(contractInfo.contractAddress);
+    return FormatAddress(address);
   };
 };
 

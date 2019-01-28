@@ -3,7 +3,6 @@ import Thunk from "../../utils/Thunk";
 import {
   ListContracts,
   CompileContracts,
-  DeployContentContract,
   SaveContract,
   RemoveContract,
   CallContractMethod,
@@ -14,7 +13,9 @@ import {
   DeployContract,
   ListDeployedContracts,
   RemoveDeployedContract,
-  WatchContract, ClearContractEvents
+  WatchContract,
+  ClearContractEvents,
+  SetCustomContentContract
 } from "../../actions/Contracts";
 import CompileContractForm from "../../components/pages/contracts/CompileContractForm";
 import ContractForm from "../../components/pages/contracts/ContractForm";
@@ -51,7 +52,7 @@ const mapDispatchToProps = dispatch =>
       CompileContracts,
       SaveContract,
       DeployContract,
-      DeployContentContract,
+      SetCustomContentContract,
       SetErrorMessage,
       GetContentObject,
       GetContentLibrary,

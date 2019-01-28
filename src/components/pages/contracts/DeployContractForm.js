@@ -2,9 +2,8 @@ import React from "react";
 import Path from "path";
 import RequestForm from "../../forms/RequestForm";
 import RequestPage from "../RequestPage";
-import Link from "react-router-dom/es/Link";
 import { FormatAddress } from "../../../utils/Helpers";
-import {PageHeader} from "../../components/Page";
+import RadioSelect from "../../components/RadioSelect";
 
 class DeployContractForm extends React.Component {
   constructor(props) {
@@ -21,7 +20,10 @@ class DeployContractForm extends React.Component {
       // If object ID exists in route, this form is for deploying a custom content object contract
       isContentObjectContract: !!(this.props.match.params.objectId),
       selectedContract: selectedContractParam,
-      selectedContractParam,
+      fixedContract: !!selectedContractParam,
+      contractSource: "saved",
+      contracts: {},
+      currentContractFunds: 0,
       loadRequestId: undefined,
       submitRequestId: undefined
     };
@@ -30,8 +32,13 @@ class DeployContractForm extends React.Component {
     this.RequestComplete = this.RequestComplete.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleContractChange = this.HandleContractChange.bind(this);
+    this.HandleContractSourceChange = this.HandleContractSourceChange.bind(this);
     this.HandleConstructorInputChange = this.HandleConstructorInputChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
+  }
+
+  Contracts() {
+    return this.state.contractSource === "saved" ? this.props.contracts : this.props.deployedContracts;
   }
 
   componentDidMount() {
@@ -40,20 +47,30 @@ class DeployContractForm extends React.Component {
       loadRequestId: this.props.WrapRequest({
         todo: async () => {
           await this.props.ListContracts();
+          await this.props.ListDeployedContracts();
         }
       })
     });
   }
 
   RequestComplete() {
-    if(Object.keys(this.props.contracts).length === 0) { return; }
-
-    // Initialize selected contract to be the first contract in the list if not present
-    const contract = this.state.selectedContract || Object.keys(this.props.contracts)[0];
+    let selectedContract = this.state.selectedContract;
+    let contractSource = "saved";
+    if(!selectedContract) {
+      if(Object.keys(this.props.contracts).length > 0) {
+        // Initialize selected contract to be the first saved contract
+        selectedContract = Object.keys(this.props.contracts)[0];
+      } else if(Object.keys(this.props.deployedContracts).length > 0) {
+        // Initialize selected contract to be the first deployed contract
+        selectedContract = Object.keys(this.props.deployedContracts)[0];
+        contractSource = "deployed";
+      }
+    }
 
     this.setState({
-      selectedContract: contract
-    }, () => this.HandleContractChange({target: { value: contract }}));
+      selectedContract,
+      contractSource,
+    }, () => this.HandleContractChange());
   }
 
   HandleInputChange(event) {
@@ -62,15 +79,25 @@ class DeployContractForm extends React.Component {
     });
   }
 
+  HandleContractSourceChange(event) {
+    this.setState({
+      contractSource: event.target.value,
+      selectedContract: undefined,
+    }, () => this.HandleContractChange());
+  }
+
   // When selected contract is changed, find the constructor description in the ABI
   // and reset the constructor input state
   HandleContractChange(event) {
-    if(!this.props.contracts) { return null; }
+    const contracts = this.Contracts();
 
-    const contractName = event.target.value;
-    const contractAbi = this.props.contracts[contractName].abi;
+    const selectedContract = (event && event.target.value) || this.state.selectedContract || Object.keys(contracts)[0];
 
-    const constructor = contractAbi.find((method) => {
+    if(!selectedContract || !contracts[selectedContract]) {
+      this.setState({selectedContract});
+    }
+
+    const constructor = contracts[selectedContract].abi.find((method) => {
       return method.type === "constructor";
     });
 
@@ -83,11 +110,15 @@ class DeployContractForm extends React.Component {
     }
 
     this.setState({
-      selectedContract: event.target.value,
+      selectedContract,
       constructorInputs,
       constructor,
       funds: 0
     });
+
+    if(this.state.contractSource === "deployed") {
+      this.props.GetContractBalance({contractAddress: contracts[selectedContract].address});
+    }
   }
 
   HandleConstructorInputChange(event) {
@@ -109,18 +140,19 @@ class DeployContractForm extends React.Component {
   }
 
   HandleSubmit() {
-    const contract = this.props.contracts[this.state.selectedContract];
+    const contract = this.Contracts()[this.state.selectedContract];
 
     if(this.state.isContentObjectContract) {
       // Deploy custom content object contract
       this.setState({
         submitRequestId: this.props.WrapRequest({
           todo: async () => {
-            await this.props.DeployContentContract({
+            await this.props.SetCustomContentContract({
               libraryId: this.state.libraryId,
               objectId: this.state.objectId,
               contractName: this.state.selectedContract,
               contractDescription: contract.description,
+              address: contract.address,
               abi: contract.abi,
               bytecode: contract.bytecode,
               inputs: this.ConstructorInput(),
@@ -167,20 +199,52 @@ class DeployContractForm extends React.Component {
     });
   }
 
-  AvailableContracts() {
-    const options = Object.keys(this.props.contracts).map(contractName => {
-      return <option key={contractName} value={contractName}>{contractName}</option>;
+  ContractSelection() {
+    if(this.state.fixedContract) {
+      return (
+        <div className="labelled-input">
+          <label className="label text-label">Contract</label>
+          <div className="form-text">{this.state.selectedContract}</div>
+        </div>
+      );
+    }
+
+    const options = Object.keys(this.Contracts()).map(contractKey => {
+      return <option key={contractKey} value={contractKey}>{this.Contracts()[contractKey].name}</option>;
     });
 
     return (
-      <select
-        name="selectedContract"
-        onChange={this.HandleContractChange}
-        value={this.state.selectedContract}
-        disabled={this.state.selectedContractParam}
-      >
-        { options }
-      </select>
+      <div className="labelled-input">
+        <label className="label" htmlFor="selectedContract">Contract</label>
+        <select
+          name="selectedContract"
+          onChange={this.HandleContractChange}
+          value={this.state.selectedContract}
+          disabled={this.state.fixedContract}
+        >
+          { options }
+        </select>
+      </div>
+    );
+  }
+
+  ContractSourceSelection() {
+    if(this.state.fixedContract || !this.state.isContentObjectContract) {
+      return null;
+    }
+
+    return (
+      <RadioSelect
+        name="contractSource"
+        label="Contract Source"
+        options={[
+          ["Saved", "saved"],
+          ["Deployed", "deployed"]
+        ]}
+        inline={true}
+        selected={this.state.contractSource}
+        onChange={this.HandleContractSourceChange}
+      />
     );
   }
 
@@ -202,45 +266,67 @@ class DeployContractForm extends React.Component {
     );
   }
 
-  ContractFileForm() {
+  ContractFunds(balance) {
+    let currentFunds;
+    let label = "Funds";
+    if(this.state.contractSource === "deployed") {
+      label = "Additional Funds";
+      currentFunds = (
+        <div className="labelled-input">
+          <label className="label text-label" htmlFor="selectedContractDescription">Current Balance</label>
+          <div className="form-text">{balance}</div>
+        </div>
+      );
+    }
+
     return (
-      <div className="contracts-form-data">
-        { this.ContractInfoFields() }
+      <div>
+        { currentFunds }
         <div className="labelled-input">
-          <label className="label" htmlFor="selectedContract">Contract</label>
-          { this.AvailableContracts() }
-        </div>
-        <div className="labelled-input">
-          <label className="label text-label" htmlFor="selectedContractDescription" />
-          <div className="form-text">{this.props.contracts[this.state.selectedContract].description}</div>
-        </div>
-        { this.ConstructorForm() }
-        <div className="labelled-input">
-          <label htmlFor="funds">Funds</label>
+          <label htmlFor="funds">{label}</label>
           <input name="funds" type="number" step={"0.00000001"} onChange={this.HandleInputChange} />
         </div>
       </div>
     );
   }
 
-  PageContent() {
-    if(Object.keys(this.props.contracts).length === 0){
+  ContractForm() {
+    if(Object.keys(this.Contracts()).length === 0) {
       return (
-        <div className="page-container">
-          <div className="actions-container">
-            <Link className="action secondary" to={Path.dirname(this.props.match.url)}>Back</Link>
+        <div>
+          {this.ContractSourceSelection()}
+          <div className="labelled-input">
+            <label className="label text-label"/>
+            <div className="form-text">{`No ${this.state.contractSource} contracts available`}</div>
           </div>
-          <PageHeader header="No custom contracts available" />
         </div>
       );
     }
+
+    const selectedContract = this.Contracts()[this.state.selectedContract] || {};
+    return (
+      <div className="contracts-form-data">
+        { this.ContractSourceSelection() }
+        { this.ContractSelection() }
+        { this.ContractInfoFields() }
+        <div className="labelled-input">
+          <label className="label text-label" htmlFor="selectedContractDescription" />
+          <div className="form-text">{selectedContract.description}</div>
+        </div>
+        { this.ConstructorForm() }
+        { this.ContractFunds(selectedContract.balance) }
+      </div>
+    );
+  }
+
+  PageContent() {
     const legend = this.state.isContentObjectContract ?
       "Set Custom Contract" : "Deploy Custom Contract";
 
     let redirectPath = Path.dirname(this.props.match.url);
 
     // Go back one extra path if deploying specific contract
-    if(this.state.selectedContractParam) { redirectPath = Path.dirname(redirectPath); }
+    if(this.state.fixedContract) { redirectPath = Path.dirname(redirectPath); }
 
     if(this.state.contractAddress) {
       // Contract address won't exist until submission
@@ -252,7 +338,7 @@ class DeployContractForm extends React.Component {
         requests={this.props.requests}
         requestId={this.state.submitRequestId}
         legend={legend}
-        formContent={this.ContractFileForm()}
+        formContent={this.ContractForm()}
         redirectPath={redirectPath}
         cancelPath={Path.dirname(this.props.match.url)}
         OnSubmit={this.HandleSubmit}
