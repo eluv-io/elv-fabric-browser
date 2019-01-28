@@ -100,6 +100,7 @@ class ContentObjectForm extends React.Component {
       }
     };
 
+    let metadata = "";
     if(this.state.createForm) {
       let allowedTypes = this.props.libraries[this.state.libraryId].types;
       if(Object.keys(allowedTypes).length > 0) {
@@ -117,6 +118,7 @@ class ContentObjectForm extends React.Component {
       Object.values(types).forEach(type => types[type.hash] = this.FormatType(type));
     } else {
       const object = this.props.objects[this.state.objectId];
+      metadata = JSON.stringify(object.meta, null, 2);
       type = object.type;
 
       if(object.typeInfo) {
@@ -129,7 +131,7 @@ class ContentObjectForm extends React.Component {
     this.setState({
       types,
       type,
-      metadata: ""
+      metadata
     });
 
     this.SwitchType(types, type);
