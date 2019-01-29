@@ -166,7 +166,8 @@ const Fabric = {
     let types = await client.LibraryContentTypes({libraryId});
     await Promise.all(
       Object.keys(types).map(async typeHash => {
-        const appUrls = await Fabric.AppUrls({object: types[typeHash]});
+        const type = types[typeHash];
+        const appUrls = await Fabric.AppUrls({object: type});
         types[typeHash] = {
           ...type,
           ...appUrls
