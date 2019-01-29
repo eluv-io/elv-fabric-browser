@@ -135,6 +135,10 @@ export default (Component) => {
           if(!contractInfo) {
             const type = this.props.content.types[object.type];
             contractInfo = type.meta.customContract;
+            // If factory ABI is specified - that ABI should be used for this contract
+            if(contractInfo.factoryAbi) {
+              contractInfo.abi = contractInfo.factoryAbi;
+            }
           }
 
           this.setState({

@@ -43,7 +43,7 @@ class Contracts extends React.Component {
         let methodCount = Object.values(contract.abi).filter(element => element.type === "function").length;
         methodCount = methodCount === 1 ? methodCount + " method" : methodCount + " methods";
 
-        const link = this.state.viewDeployed ?
+        const link = this.state.view === "deployed" ?
           Path.join("/contracts", "deployed", contractId) :
           Path.join("/contracts", contractId);
 
