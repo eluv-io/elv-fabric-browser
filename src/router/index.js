@@ -16,10 +16,11 @@ import {
   ContentLibraryTypesFormContainer,
   ContentObjectContainer,
   ContentObjectUploadFormContainer,
-  ContentObjectAppContainer,
   ContentObjectReviewFormContainer,
   ContentObjectFormContainer,
-  ContentTypeFormContainer
+  ContentTypeFormContainer,
+  ContentAppFormContainer,
+  ContentAppsContainer
 } from "../containers/pages/Content";
 
 import {
@@ -147,9 +148,13 @@ class Router extends React.Component {
           <Route exact path="/content-types/:objectId/upload" render={(props) =>
             <ContentObjectUploadFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
 
-          <Route exact path="/content/:libraryId/:objectId/app" component={ContentObjectAppContainer}/>
-          <Route exact path="/content-types/:objectId/app" render={(props) =>
-            <ContentObjectAppContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
+          <Route exact path="/content/:libraryId/:objectId/apps" component={ContentAppsContainer}/>
+          <Route exact path="/content-types/:objectId/apps" render={(props) =>
+            <ContentAppsContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
+
+          <Route exact path="/content/:libraryId/:objectId/apps/:role/add" component={ContentAppFormContainer}/>
+          <Route exact path="/content-types/:objectId/apps/:role/add" render={(props) =>
+            <ContentAppFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
 
           <Route exact path="/content/:libraryId/:objectId/deploy" component={DeployContractFormContainer}/>
           <Route exact path="/content-types/:objectId/deploy" render={(props) =>

@@ -273,7 +273,7 @@ class DeployContractForm extends React.Component {
       label = "Additional Funds";
       currentFunds = (
         <div className="labelled-input">
-          <label className="label text-label" htmlFor="selectedContractDescription">Current Balance</label>
+          <label className="label text-label">Current Balance</label>
           <div className="form-text">{balance}</div>
         </div>
       );

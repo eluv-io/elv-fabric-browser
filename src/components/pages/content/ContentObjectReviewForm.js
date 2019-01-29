@@ -43,7 +43,7 @@ class ContentObjectReviewForm extends React.Component {
 
   RequestComplete() {
     const object = this.props.objects[this.state.objectId];
-    const reviewAppUrl = object.typeInfo && object.typeInfo.reviewAppUrl;
+    const reviewAppUrl = object.reviewAppUrl || (object.typeInfo && object.typeInfo.reviewAppUrl);
     this.setState({
       object,
       reviewAppUrl

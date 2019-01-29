@@ -165,7 +165,13 @@ const Fabric = {
 
     let types = await client.LibraryContentTypes({libraryId});
     await Promise.all(
-      Object.keys(types).map(async typeHash => types[typeHash] = await Fabric.FormatType({type: types[typeHash]}))
+      Object.keys(types).map(async typeHash => {
+        const appUrls = await Fabric.AppUrls({object: types[typeHash]});
+        types[typeHash] = {
+          ...type,
+          ...appUrls
+        };
+      })
     );
 
     return types;
@@ -323,7 +329,6 @@ const Fabric = {
         const owner = await Fabric.GetContentObjectOwner({objectId: object.id});
         const isContentLibraryObject = client.utils.EqualHash(libraryId, object.id);
         const isContentType = libraryId === Fabric.contentSpaceLibraryId && !isContentLibraryObject;
-
         objects[object.id] = {
           // Pull latest version info up to top level
           ...latestVersion,
@@ -364,7 +369,7 @@ const Fabric = {
     // Retrieve status if normal object
     let status;
     if(libraryId !== Fabric.contentSpaceLibraryId && !client.utils.EqualHash(libraryId, objectId)) {
-      status =await Fabric.GetContentObjectStatus({objectId});
+      status = await Fabric.GetContentObjectStatus({objectId});
     }
 
     const owner = await Fabric.GetContentObjectOwner({objectId});
@@ -377,9 +382,15 @@ const Fabric = {
     }
 
     const customContractAddress = await Fabric.GetCustomContentContractAddress({libraryId, objectId, metadata});
+    const appUrls = await Fabric.AppUrls({object: {
+      id: object.id,
+      hash: object.hash,
+      meta: metadata
+    }});
 
     return {
       ...object,
+      ...appUrls,
       meta: metadata,
       name: metadata["eluv.name"] || metadata["name"],
       description: metadata["eluv.description"],
@@ -561,7 +572,7 @@ const Fabric = {
     });
 
     if(todo) {
-      await todo({writeToken: createResponse.write_token});
+      await todo(createResponse.write_token);
     }
 
     return (
@@ -579,8 +590,7 @@ const Fabric = {
     todo
   }) => {
     const editResponse = await Fabric.EditContentObject({libraryId, objectId});
-
-    await todo({writeToken: editResponse.write_token});
+    await todo(editResponse.write_token);
 
     await Fabric.FinalizeContentObject({libraryId, objectId, writeToken: editResponse.write_token});
   },
@@ -598,36 +608,46 @@ const Fabric = {
     });
   },
 
-  FormatType: async ({type}) => {
+  AppUrls: async ({object}) => {
     const apps = ["display", "manage", "review"];
 
+    const appUrls = {};
     // Inject app URLs, if present
     for(const appName of apps) {
-      if (type.meta[`eluv.${appName}App`]) {
-        type[`${appName}AppUrl`] = await Fabric.FileUrl({
+      if(object.meta[`eluv.${appName}App`]) {
+        appUrls[`${appName}AppUrl`] = await Fabric.FileUrl({
           libraryId: Fabric.contentSpaceLibraryId,
-          objectId: type.id,
-          versionHash: type.hash,
-          filePath: type.meta[`eluv.${appName}App`]
+          objectId: object.id,
+          versionHash: object.hash,
+          filePath: object.meta[`eluv.${appName}App`]
         });
       }
     }
 
-    return type;
+    return appUrls;
   },
 
   ListContentTypes: async ({latestOnly=true}) => {
     let contentTypes = await client.ContentTypes({latestOnly});
 
     for(const typeHash of Object.keys(contentTypes)) {
-      contentTypes[typeHash] = await Fabric.FormatType({type: contentTypes[typeHash]});
+      const appUrls = await Fabric.AppUrls({object: contentTypes[typeHash]});
+      contentTypes[typeHash] = {
+        ...contentTypes[typeHash],
+        ...appUrls
+      };
     }
 
     return contentTypes;
   },
 
   GetContentType: async ({versionHash}) => {
-    return await Fabric.FormatType({type: await client.ContentType({versionHash})});
+    const type = await client.ContentType({versionHash});
+    const appUrls = await Fabric.AppUrls({object: type});
+    return {
+      ...type,
+      ...appUrls
+    };
   },
 
   /* Contract calls */
@@ -860,7 +880,7 @@ const Fabric = {
       await Fabric.EditAndFinalizeContentObject({
         libraryId: Fabric.contentSpaceLibraryId,
         objectId: Fabric.contentSpaceObjectId,
-        todo: async ({writeToken}) => {
+        todo: async (writeToken) => {
           await Fabric.ReplaceMetadata({
             libraryId: Fabric.contentSpaceLibraryId,
             objectId: Fabric.contentSpaceObjectId,
@@ -902,7 +922,7 @@ const Fabric = {
       await Fabric.EditAndFinalizeContentObject({
         libraryId: Fabric.contentSpaceLibraryId,
         objectId: Fabric.contentSpaceObjectId,
-        todo: async ({writeToken}) => {
+        todo: async (writeToken) => {
           await Fabric.ReplaceMetadata({
             libraryId: Fabric.contentSpaceLibraryId,
             objectId: Fabric.contentSpaceObjectId,
@@ -919,7 +939,7 @@ const Fabric = {
       await Fabric.EditAndFinalizeContentObject({
         libraryId: Fabric.contentSpaceLibraryId,
         objectId: Fabric.contentSpaceObjectId,
-        todo: async ({writeToken}) => {
+        todo: async (writeToken) => {
           await Fabric.DeleteMetadata({
             libraryId: Fabric.contentSpaceLibraryId,
             objectId: Fabric.contentSpaceObjectId,
