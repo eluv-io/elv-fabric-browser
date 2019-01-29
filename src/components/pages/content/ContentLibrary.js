@@ -8,6 +8,7 @@ import { LabelledField } from "../../components/LabelledField";
 import Redirect from "react-router/es/Redirect";
 import ClippedText from "../../components/ClippedText";
 import {PageHeader} from "../../components/Page";
+import PageTabs from "../../components/PageTabs";
 
 class ContentLibrary extends React.Component {
   constructor(props) {
@@ -18,6 +19,7 @@ class ContentLibrary extends React.Component {
     this.state = {
       libraryId,
       visibleItems: {},
+      view: "content"
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -99,8 +101,7 @@ class ContentLibrary extends React.Component {
     }
 
     return (
-      <div className="object-info label-box">
-        <h3>Content</h3>
+      <div>
         {objectElements}
       </div>
     );
@@ -276,13 +277,24 @@ class ContentLibrary extends React.Component {
       return <Redirect push to={"/content"}/>;
     }
 
+    const tabs = (
+      <PageTabs
+        options={[
+          ["Content", "content"],
+          ["Library Info", "info"]
+        ]}
+        selected={this.state.view}
+        onChange={(value) => this.setState({view: value})}
+      />
+    );
+
     return (
       <div className="page-container contents-page-container">
         { this.Actions() }
         <div className="object-display">
           <PageHeader header={this.state.library.name} />
-          { this.LibraryInfo() }
-          { this.ContentObjects() }
+          { tabs }
+          { this.state.view === "content" ? this.ContentObjects() : this.LibraryInfo() }
         </div>
       </div>
     );

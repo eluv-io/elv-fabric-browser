@@ -16,6 +16,7 @@ import {DownloadFromUrl} from "../../../utils/Files";
 import FileBrowser from "../../components/FileBrowser";
 import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
+import PageTabs from "../../components/PageTabs";
 
 class ContentObject extends React.Component {
   constructor(props) {
@@ -29,6 +30,7 @@ class ContentObject extends React.Component {
       objectId,
       visibleVersions: {},
       appRef: React.createRef(),
+      view: "info"
     };
 
     this.LoadObject = this.LoadObject.bind(this);
@@ -60,9 +62,13 @@ class ContentObject extends React.Component {
           const object = this.props.objects[this.state.objectId];
           const typeInfo = object.typeInfo;
 
-          this.setState({
-            displayAppUrl: object.displayAppUrl || (typeInfo && typeInfo.displayAppUrl)
-          });
+          const displayAppUrl = object.displayAppUrl || (typeInfo && typeInfo.displayAppUrl);
+          if(displayAppUrl) {
+            this.setState({
+              displayAppUrl,
+              view: "display"
+            });
+          }
 
           if(object.isNormalObject) {
             // If object not yet published, need information about groups to determine
@@ -547,6 +553,25 @@ class ContentObject extends React.Component {
     );
   }
 
+  Tabs() {
+    let tabOptions = [
+      ["Content Info", "info"],
+      ["Files", "files"]
+    ];
+
+    if(this.state.displayAppUrl) {
+      tabOptions.unshift(["Display", "display"]);
+    }
+
+    return (
+      <PageTabs
+        options={tabOptions}
+        selected={this.state.view}
+        onChange={(value) => this.setState({view: value})}
+      />
+    );
+  }
+
   PageContent() {
     if(this.state.deleted) {
       return <Redirect push to={Path.dirname(this.props.match.url)} />;
@@ -556,15 +581,27 @@ class ContentObject extends React.Component {
       this.state.library.name + " > Library Object" :
       this.state.library.name + " > " + this.state.object.name;
 
+    let pageContent;
+    if(this.state.view === "display") {
+      pageContent = this.AppFrame();
+    } else if(this.state.view === "info") {
+      pageContent = (
+        <div>
+          { this.ObjectMedia() }
+          { this.ObjectInfo() }
+        </div>
+      );
+    } else {
+      pageContent = this.ObjectFiles();
+    }
+
     return (
       <div className="page-container content-page-container">
         { this.Actions() }
         <div className="object-display">
           <PageHeader header={header} />
-          { this.AppFrame() }
-          { this.ObjectMedia() }
-          { this.ObjectInfo() }
-          { this.ObjectFiles() }
+          { this.Tabs() }
+          { pageContent }
         </div>
       </div>
     );

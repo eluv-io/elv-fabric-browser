@@ -7,13 +7,14 @@ import { LibraryCard } from "../../components/DisplayCards";
 
 import ContractIcon from "../../../static/icons/contracts.svg";
 import {PageHeader} from "../../components/Page";
+import PageTabs from "../../components/PageTabs";
 
 class Contracts extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      viewDeployed: true
+      view: "deployed"
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -30,33 +31,9 @@ class Contracts extends React.Component {
     });
   }
 
-  ToggleView() {
-    return (
-      <div className="actions-container">
-        <button
-          className={
-            "action action-compact action-wide action-inline " +
-            (this.state.viewDeployed ? "tertiary" : "secondary")
-          }
-          onClick={() => { this.setState({viewDeployed: true}); }}
-        >
-          Watched Contracts
-        </button>
-        <button
-          className={
-            "action action-compact action-wide action-inline " +
-            (this.state.viewDeployed ? "secondary" : "tertiary")
-          }
-          onClick={() => { this.setState({viewDeployed: false}); }}
-        >
-          Saved Contracts
-        </button>
-      </div>
-    );
-  }
-
   SavedContracts() {
-    const contracts = this.state.viewDeployed ? this.props.deployedContracts : this.props.contracts;
+    const contracts = this.state.view === "saved" ? this.props.contracts : this.props.deployedContracts;
+
     return (
       Object.keys(contracts).map(contractId => {
         const contract = contracts[contractId];
@@ -86,6 +63,17 @@ class Contracts extends React.Component {
   }
 
   PageContent() {
+    const tabs = (
+      <PageTabs
+        options={[
+          ["Deployed Contracts", "deployed"],
+          ["Saved Contracts", "saved"]
+        ]}
+        selected={this.state.view}
+        onChange={(value) => this.setState({view: value})}
+      />
+    );
+
     return (
       <div className="page-container contents-page-container">
         <div className="actions-container">
@@ -94,7 +82,7 @@ class Contracts extends React.Component {
           <Link to="/contracts/watch" className="action" >Watch Contract</Link>
         </div>
         <PageHeader header="Contracts" />
-        { this.ToggleView() }
+        { tabs }
         { this.SavedContracts() }
       </div>
     );

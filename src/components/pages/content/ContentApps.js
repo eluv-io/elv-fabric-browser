@@ -144,7 +144,6 @@ class ContentApps extends React.Component {
       <div className="page-container contracts-page-container">
         <div className="actions-container">
           <Link to={Path.dirname(this.props.match.url)} className="action secondary">Back</Link>
-          <Link to={Path.join(this.props.match.url, "manage")} className="action" >Add New App</Link>
         </div>
         <div className="object-display">
           <PageHeader header={header} subHeader="App management" />
