@@ -590,7 +590,7 @@ export const AddApp = ({libraryId, objectId, role, file}) => {
     });
 
     dispatch(SetNotificationMessage({
-      message: "Successfully removed " + role + " app",
+      message: "Successfully added " + role + " app",
       redirect: true
     }));
   };
