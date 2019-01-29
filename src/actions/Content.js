@@ -107,7 +107,7 @@ export const UpdateContentLibrary = ({
     await Fabric.EditAndFinalizeContentObject({
       libraryId,
       objectId: libraryObjectId,
-      todo: async ({writeToken}) => {
+      todo: async (writeToken) => {
         await Fabric.ReplaceMetadata({
           libraryId,
           objectId: libraryObjectId,
@@ -249,7 +249,7 @@ export const ReviewContentObject = async ({libraryId, objectId, approve, note}) 
   await Fabric.EditAndFinalizeContentObject({
     libraryId,
     objectId,
-    todo: async ({writeToken}) => {
+    todo: async (writeToken) => {
       await Fabric.MergeMetadata({
         libraryId,
         writeToken,
@@ -420,7 +420,7 @@ export const UploadFiles = ({libraryId, objectId, path, fileList}) => {
     await Fabric.EditAndFinalizeContentObject({
       libraryId,
       objectId,
-      todo: async ({writeToken}) => {
+      todo: async (writeToken) => {
         const fileInfo = await FileInfo(path, fileList);
 
         await Fabric.UploadFiles({libraryId, objectId, writeToken, fileInfo});
@@ -517,7 +517,7 @@ export const CreateFromContentTypeSchema = ({libraryId, type, metadata, schema, 
     await Fabric.CreateAndFinalizeContentObject({
       libraryId,
       type,
-      todo: async ({writeToken}) => {
+      todo: async (writeToken) => {
         await Fabric.ReplaceMetadata({
           libraryId,
           writeToken,
@@ -541,7 +541,7 @@ export const UpdateFromContentTypeSchema = ({libraryId, objectId, metadata, sche
     await Fabric.EditAndFinalizeContentObject({
       libraryId,
       objectId,
-      todo: async ({writeToken}) => {
+      todo: async (writeToken) => {
         await Fabric.ReplaceMetadata({
           libraryId,
           writeToken,
@@ -555,6 +555,64 @@ export const UpdateFromContentTypeSchema = ({libraryId, objectId, metadata, sche
 
     dispatch(SetNotificationMessage({
       message: "Successfully updated content",
+      redirect: true
+    }));
+  };
+};
+
+export const AddApp = ({libraryId, objectId, role, file}) => {
+  return async (dispatch) => {
+    await Fabric.EditAndFinalizeContentObject({
+      libraryId,
+      objectId,
+      todo: async (writeToken) => {
+        // Override given filename
+        const fileName = `${role}App.html`;
+        file[0].overrideName = fileName;
+
+        const fileInfo = await FileInfo("/", file);
+
+        await Fabric.UploadFiles({
+          libraryId,
+          objectId,
+          writeToken,
+          fileInfo
+        });
+
+        await Fabric.ReplaceMetadata({
+          libraryId,
+          objectId,
+          writeToken,
+          metadataSubtree: `eluv.${role}App`,
+          metadata: fileName
+        });
+      }
+    });
+
+    dispatch(SetNotificationMessage({
+      message: "Successfully removed " + role + " app",
+      redirect: true
+    }));
+  };
+};
+
+export const RemoveApp = ({libraryId, objectId, role}) => {
+  return async (dispatch) => {
+    await Fabric.EditAndFinalizeContentObject({
+      libraryId,
+      objectId,
+      todo: async (writeToken) => {
+        await Fabric.DeleteMetadata({
+          libraryId,
+          objectId,
+          writeToken,
+          metadataSubtree: `eluv.${role}App`
+        });
+      }
+    });
+
+    dispatch(SetNotificationMessage({
+      message: "Successfully removed " + role + " app",
       redirect: true
     }));
   };
