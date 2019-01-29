@@ -80,47 +80,6 @@ class DeployedContract extends React.Component {
     );
   }
 
-  ContractInfo(info) {
-    return info.sort((a, b) => a.name > b.name).map(entry => {
-      if(!entry.name && entry.type !== "constructor") {
-        return null;
-      }
-
-      const methodDisplayInfo = this.state.visibleMethods[entry.name] ? <pre>{JSON.stringify(entry, null, 2)}</pre> : null;
-
-      const toggleButton = this.ToggleButton("Interface", entry.name);
-
-      // Add link to call contract method
-      let callButton;
-      if(entry.type === "function") {
-        callButton =
-          <Link
-            className="action action-compact action-wide action-inline"
-            key={"call-" + entry.name}
-            to={Path.join(this.props.match.url, "call", entry.name)}
-          >
-            Call Method
-          </Link>;
-      }
-
-      return (
-        <div className="indented" key={"contract-method-" + entry.name}>
-          <LabelledField
-            label={entry.name}
-            value={
-              <div className="actions-container">
-                { callButton }
-                { toggleButton }
-              </div>
-            }
-            wideLabel={true}
-          />
-          { methodDisplayInfo }
-        </div>
-      );
-    });
-  }
-
   AbiInfo() {
     if(!this.props.contract.abi) { return null; }
 

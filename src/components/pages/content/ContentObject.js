@@ -63,7 +63,7 @@ class ContentObject extends React.Component {
           const typeInfo = object.typeInfo;
 
           const displayAppUrl = object.displayAppUrl || (typeInfo && typeInfo.displayAppUrl);
-          if(displayAppUrl) {
+          if(displayAppUrl && !object.isContentType) {
             this.setState({
               displayAppUrl,
               view: "display"

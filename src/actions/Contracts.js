@@ -212,6 +212,7 @@ export const SetCustomContentContract = ({
   contractDescription,
   address,
   abi,
+  factoryAbi,
   bytecode,
   inputs,
   funds
@@ -273,7 +274,8 @@ export const SetCustomContentContract = ({
         name: contractName,
         description: contractDescription,
         address: address,
-        abi
+        abi,
+        factoryAbi: ParseInputJson(factoryAbi)
       }
     });
 

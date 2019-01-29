@@ -76,6 +76,14 @@ class ContentLibrary extends React.Component {
   }
 
   ContentObjects() {
+    if(this.state.library.objects.length === 0) {
+      return (
+        <div className="label-box">
+          <h3>No Content Available</h3>
+        </div>
+      );
+    }
+
     let objectElements = [];
 
     for(const objectId of this.state.library.objects.sort()) {

@@ -112,6 +112,7 @@ class CompileContractForm extends React.Component {
           onChange={this.HandleFileSelect}
           required={true}
           multiple={true}
+          accept=".sol"
         />
         { this.Errors() }
       </div>

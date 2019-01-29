@@ -4,21 +4,26 @@ import RequestForm from "../../forms/RequestForm";
 import RequestPage from "../RequestPage";
 import { FormatAddress } from "../../../utils/Helpers";
 import RadioSelect from "../../components/RadioSelect";
+import Fabric from "../../../clients/Fabric";
+import {JsonTextArea} from "../../../utils/Input";
 
 class DeployContractForm extends React.Component {
   constructor(props) {
     super(props);
 
     const selectedContractParam = this.props.match.params.contractName;
+    const libraryId = this.props.libraryId || this.props.match.params.libraryId;
+    const isContentTypeContract = Fabric.contentSpaceLibraryId === libraryId;
 
     this.state = {
-      libraryId: this.props.libraryId || this.props.match.params.libraryId,
+      libraryId,
       objectId: this.props.match.params.objectId,
       name: "",
       description: "",
       funds: 0,
       // If object ID exists in route, this form is for deploying a custom content object contract
       isContentObjectContract: !!(this.props.match.params.objectId),
+      isContentTypeContract,
       selectedContract: selectedContractParam,
       fixedContract: !!selectedContractParam,
       contractSource: "saved",
@@ -113,6 +118,7 @@ class DeployContractForm extends React.Component {
       selectedContract,
       constructorInputs,
       constructor,
+      factoryAbi: "",
       funds: 0
     });
 
@@ -154,6 +160,7 @@ class DeployContractForm extends React.Component {
               contractDescription: contract.description,
               address: contract.address,
               abi: contract.abi,
+              factoryAbi: this.state.factoryAbi,
               bytecode: contract.bytecode,
               inputs: this.ConstructorInput(),
               funds: this.state.funds
@@ -290,6 +297,31 @@ class DeployContractForm extends React.Component {
     );
   }
 
+  // Request ABI for content type factory contracts
+  FactoryAbi() {
+    if(this.state.isContentTypeContract) {
+      return (
+        <div>
+          <div className="labelled-input">
+            <label className="label text-label">Factory ABI</label>
+            <div className="form-text">
+              If this contract is a factory, specify the ABI of the contract that will be applied to the content objects of this type
+            </div>
+          </div>
+          <div className="labelled-input">
+            <label className="textarea-label" htmlFor="factoryAbi" />
+            <JsonTextArea
+              name="factoryAbi"
+              value={this.state.factoryAbi}
+              onChange={this.HandleInputChange}
+              UpdateValue={formattedAbi => this.setState({factoryAbi: formattedAbi})}
+            />
+          </div>
+        </div>
+      );
+    }
+  }
+
   ContractForm() {
     if(Object.keys(this.Contracts()).length === 0) {
       return (
@@ -308,6 +340,7 @@ class DeployContractForm extends React.Component {
       <div className="contracts-form-data">
         { this.ContractSourceSelection() }
         { this.ContractSelection() }
+        { this.FactoryAbi() }
         { this.ContractInfoFields() }
         <div className="labelled-input">
           <label className="label text-label" htmlFor="selectedContractDescription" />
