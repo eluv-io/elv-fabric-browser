@@ -141,7 +141,7 @@ class ContentObjectForm extends React.Component {
     const object = this.props.objects[this.state.objectId];
     const typeOptions = type && types[type] || {};
 
-    if(object.manageAppUrl) {
+    if(object && object.manageAppUrl) {
       this.setState({
         manageAppUrl: object.manageAppUrl
       });
