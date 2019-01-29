@@ -3,11 +3,13 @@
 
 .navbar-container {
   background: $color-bg-dark;
-  padding: $spacing-l $spacing-m 0;
   z-index: 99;
 }
 
 .navbar-links-container {
+  margin-top: $spacing-s;
+  padding: 0 $spacing-xs;
+
   .navbar-link-container {
     display: block;
     text-align: center;
@@ -17,7 +19,11 @@
   .navbar-link {
     color: $color-darkgray;
     font-size: 16px;
-    margin-bottom: $spacing-s;
+    padding: $spacing-xs 0;
+
+    &:hover {
+      background: $color-lightergray;
+    }
 
     &.active,
     &:hover {

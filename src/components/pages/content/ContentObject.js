@@ -11,7 +11,6 @@ import {
   GetContentObjectPermissions,
   PublishContentObject
 } from "../../../actions/Content";
-import {FormatAddress} from "../../../utils/Helpers";
 import {PageHeader} from "../../components/Page";
 import {DownloadFromUrl} from "../../../utils/Files";
 import FileBrowser from "../../components/FileBrowser";
@@ -61,18 +60,9 @@ class ContentObject extends React.Component {
           const object = this.props.objects[this.state.objectId];
           const typeInfo = object.typeInfo;
 
-          let displayAppUrl;
-          if(typeInfo && typeInfo.meta["eluv.displayApp"]) {
-            displayAppUrl = await this.props.FileUrl({
-              libraryId: Fabric.contentSpaceLibraryId,
-              objectId: typeInfo.id,
-              filePath: typeInfo.meta["eluv.displayApp"]
-            });
-
-            this.setState({
-              displayAppUrl
-            });
-          }
+          this.setState({
+            displayAppUrl: object.displayAppUrl || (typeInfo && typeInfo.displayAppUrl)
+          });
 
           if(object.isNormalObject) {
             // If object not yet published, need information about groups to determine
@@ -495,11 +485,11 @@ class ContentObject extends React.Component {
   }
 
   Actions() {
-    let appLink;
-    if(this.state.object.meta && this.state.object.meta.app) {
-      appLink = (
-        <Link to={Path.join(this.props.match.url, "app")} className="action">
-          View App
+    let manageAppsLink;
+    if(this.state.object.isOwner) {
+      manageAppsLink = (
+        <Link to={Path.join(this.props.match.url, "apps")} className="action">
+          Manage Apps
         </Link>
       );
     }
@@ -524,13 +514,13 @@ class ContentObject extends React.Component {
 
     return (
       <div className="actions-container">
-        <Link to={Path.dirname(this.props.match.url)} className="action secondary" >Back</Link>
-        <Link to={Path.join(this.props.match.url, "edit")} className="action" >Manage</Link>
+        <Link to={Path.dirname(this.props.match.url)} className="action secondary">Back</Link>
+        <Link to={Path.join(this.props.match.url, "edit")} className="action">Manage</Link>
         { this.PublishButton() }
         { setContractButton }
-        <Link to={Path.join(this.props.match.url, "upload")} className="action" >Upload Parts</Link>
+        <Link to={Path.join(this.props.match.url, "upload")} className="action">Upload Parts</Link>
+        { manageAppsLink }
         { deleteObjectButton }
-        { appLink }
       </div>
     );
   }

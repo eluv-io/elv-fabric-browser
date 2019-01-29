@@ -138,9 +138,16 @@ class ContentObjectForm extends React.Component {
   }
 
   SwitchType(types, type) {
+    const object = this.props.objects[this.state.objectId];
     const typeOptions = type && types[type] || {};
 
-    if(typeOptions.manageAppUrl) {
+    if(object.manageAppUrl) {
+      this.setState({
+        manageAppUrl: object.manageAppUrl
+      });
+
+      return;
+    } else if(typeOptions.manageAppUrl) {
       this.setState({
         manageAppUrl: typeOptions.manageAppUrl
       });
