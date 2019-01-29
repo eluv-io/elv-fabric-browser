@@ -21,6 +21,10 @@
     justify-content: center;
   }
 
+  &.tab-container {
+    margin-bottom: $spacing-s;
+  }
+
   :first-child {
     &.action,
     &.action-loading {
