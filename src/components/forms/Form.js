@@ -2,6 +2,7 @@ import React from "react";
 import Redirect from "react-router-dom/es/Redirect";
 import PropTypes from "prop-types";
 import { BallPulse } from "../components/AnimatedIcons";
+import Action from "../components/Action";
 
 class Form extends React.Component {
   constructor(props) {
@@ -48,13 +49,17 @@ class Form extends React.Component {
 
     let cancelButton;
     if(this.props.OnCancel || this.props.cancelPath) {
-      cancelButton = <button className="action secondary" type="button" onClick={this.HandleCancel}>{this.props.cancelText || "Cancel"}</button>;
+      cancelButton = (
+        <Action className="secondary" type="button" onClick={this.HandleCancel}>
+          {this.props.cancelText || "Cancel"}
+        </Action>
+      );
     }
 
     return (
       <div className="actions-container">
         { cancelButton }
-        <button className="action" type="submit">{this.props.submitText || "Submit"}</button>
+        <Action type="submit">{this.props.submitText || "Submit"}</Action>
       </div>
     );
   }

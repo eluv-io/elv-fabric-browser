@@ -9,6 +9,7 @@ import Redirect from "react-router/es/Redirect";
 import ClippedText from "../../components/ClippedText";
 import {PageHeader} from "../../components/Page";
 import PageTabs from "../../components/PageTabs";
+import Action from "../../components/Action";
 
 class ContentLibrary extends React.Component {
   constructor(props) {
@@ -69,9 +70,9 @@ class ContentLibrary extends React.Component {
     if(this.state.library.isContentSpaceLibrary) { return null; }
 
     return (
-      <button className="action delete-action" onClick={() => this.DeleteContentLibrary()}>
+      <Action className="delete-action" onClick={() => this.DeleteContentLibrary()}>
         Delete Content Library
-      </button>
+      </Action>
     );
   }
 
@@ -262,19 +263,19 @@ class ContentLibrary extends React.Component {
     let manageGroupsButton;
     let manageTypesButton;
     if(this.state.library.isOwner && !this.state.library.isContentSpaceLibrary) {
-      manageGroupsButton = <Link to={Path.join(this.props.match.url, "groups")} className="action" >Manage Groups</Link>;
-      manageTypesButton = <Link to={Path.join(this.props.match.url, "types")} className="action" >Manage Types</Link>;
+      manageGroupsButton = <Action type="link" to={Path.join(this.props.match.url, "groups")}>Manage Groups</Action>;
+      manageTypesButton = <Action type="link" to={Path.join(this.props.match.url, "types")}>Manage Types</Action>;
     }
 
     return (
       <div className="actions-container">
-        <Link to={Path.dirname(this.props.match.url)} className="action secondary" >Back</Link>
-        <Link to={Path.join(this.props.match.url, "edit")} className="action" >Manage Library</Link>
+        <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+        <Action type="link" to={Path.join(this.props.match.url, "edit")}>Manage Library</Action>
         { manageGroupsButton }
         { manageTypesButton }
-        <Link to={Path.join(this.props.match.url, "create")} className="action" >
+        <Action type="link" to={Path.join(this.props.match.url, "create")}>
           { this.state.library.isContentSpaceLibrary ? "New Content Type" : "Contribute" }
-        </Link>
+        </Action>
         { this.DeleteContentLibraryButton() }
       </div>
     );

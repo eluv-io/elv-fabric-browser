@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import Path from "path";
 
 import RequestPage from "../RequestPage";
@@ -8,6 +7,7 @@ import { LibraryCard } from "../../components/DisplayCards";
 import ContractIcon from "../../../static/icons/contracts.svg";
 import {PageHeader} from "../../components/Page";
 import PageTabs from "../../components/PageTabs";
+import Action from "../../components/Action";
 
 class Contracts extends React.Component {
   constructor(props) {
@@ -77,9 +77,9 @@ class Contracts extends React.Component {
     return (
       <div className="page-container contents-page-container">
         <div className="actions-container">
-          <Link to="/contracts/compile" className="action" >New Contract</Link>
-          <Link to="/contracts/deploy" className="action" >Deploy Contract</Link>
-          <Link to="/contracts/watch" className="action" >Watch Contract</Link>
+          <Action type="link" to="/contracts/compile">New Contract</Action>
+          <Action type="link" to="/contracts/deploy">Deploy Contract</Action>
+          <Action type="link" to="/contracts/watch">Watch Contract</Action>
         </div>
         <PageHeader header="Contracts" />
         { tabs }
