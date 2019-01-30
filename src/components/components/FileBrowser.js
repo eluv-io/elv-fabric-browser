@@ -82,6 +82,12 @@ class FileBrowser extends React.Component {
         };
       });
 
+    if(items.length === 0) {
+      return (
+        <tr><td/><td>No files</td><td/><td/></tr>
+      );
+    }
+
     // Sort items - directory first, then case-insensitive alphabetical order
     return (
       items.sort((item1, item2) => {

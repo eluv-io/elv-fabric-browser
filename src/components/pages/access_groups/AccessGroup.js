@@ -62,6 +62,12 @@ class AccessGroup extends React.Component {
   }
 
   AccessGroupMembers() {
+    if(Object.keys(this.state.accessGroup.members).length === 0) {
+      return (
+        <h4>No members</h4>
+      );
+    }
+
     return Object.values(this.state.accessGroup.members).map(member => {
       return (
         <div className="member-info indented" key={"member-" + member.address}>
@@ -80,8 +86,8 @@ class AccessGroup extends React.Component {
     let editButton;
     let deleteButton;
     if(this.state.accessGroup.isOwner) {
-      editButton = <Action type="link" to={Path.join(this.props.match.url, "edit")}>Manage Access Group</Action>;
-      deleteButton = <Action className="delete-action" onClick={this.DeleteAccessGroup}>Delete Access Group</Action>;
+      editButton = <Action type="link" to={Path.join(this.props.match.url, "edit")}>Manage Group</Action>;
+      deleteButton = <Action className="delete-action" onClick={this.DeleteAccessGroup}>Delete</Action>;
     }
 
     let manageButton;

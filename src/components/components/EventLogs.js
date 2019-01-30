@@ -174,7 +174,7 @@ class EventLogs extends React.Component {
   }
 
   Events() {
-    if(this.props.events.length === 0) { return <h3>No events</h3>; }
+    if(this.props.events.length === 0) { return <h4>No events found</h4>; }
 
     return this.props.events.map(block => {
       return <EventCard events={block} key={"block-" + block[0].blockNumber} />;

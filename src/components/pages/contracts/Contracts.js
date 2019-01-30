@@ -31,8 +31,14 @@ class Contracts extends React.Component {
     });
   }
 
-  SavedContracts() {
+  Contracts() {
     const contracts = this.state.view === "saved" ? this.props.contracts : this.props.deployedContracts;
+
+    if(Object.keys(contracts).length === 0) {
+      return (
+        <h4>{`No ${this.state.view} contracts`}</h4>
+      );
+    }
 
     return (
       Object.keys(contracts).map(contractId => {
@@ -83,7 +89,7 @@ class Contracts extends React.Component {
         </div>
         <PageHeader header="Contracts" />
         { tabs }
-        { this.SavedContracts() }
+        { this.Contracts() }
       </div>
     );
   }
