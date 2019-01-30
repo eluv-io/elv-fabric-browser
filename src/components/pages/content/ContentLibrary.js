@@ -71,18 +71,14 @@ class ContentLibrary extends React.Component {
 
     return (
       <Action className="delete-action" onClick={() => this.DeleteContentLibrary()}>
-        Delete Content Library
+        Delete
       </Action>
     );
   }
 
   ContentObjects() {
     if(this.state.library.objects.length === 0) {
-      return (
-        <div className="label-box">
-          <h3>No Content Available</h3>
-        </div>
-      );
+      return <h4>No Content Available</h4>;
     }
 
     let objectElements = [];

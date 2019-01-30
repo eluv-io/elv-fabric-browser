@@ -27,8 +27,11 @@ class ContentLibraries extends React.Component {
   }
 
   ContentLibraries(path) {
-    let libraryElements = [];
+    if(Object.keys(this.props.libraries).length === 0) {
+      return <h4>No libraries available</h4>;
+    }
 
+    let libraryElements = [];
     for(const libraryId of Object.keys(this.props.libraries).sort()) {
       const library = this.props.libraries[libraryId];
 
