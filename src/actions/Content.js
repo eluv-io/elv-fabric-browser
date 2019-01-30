@@ -342,7 +342,7 @@ export const UpdateContentObject = ({libraryId, objectId, name, description, typ
 export const CreateContentType = ({name, description, metadata, bitcode}) => {
   return async (dispatch) => {
     bitcode = await new Response(bitcode).blob();
-    
+
     const objectId = await Fabric.CreateContentType({
       name,
       description,
