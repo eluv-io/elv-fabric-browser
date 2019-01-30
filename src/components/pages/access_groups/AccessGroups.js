@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import Path from "path";
 
 import RequestPage from "../RequestPage";
@@ -7,6 +6,7 @@ import { LibraryCard } from "../../components/DisplayCards";
 
 import AccessGroupIcon from "../../../static/icons/groups.svg";
 import {PageHeader} from "../../components/Page";
+import Action from "../../components/Action";
 
 class AccessGroups extends React.Component {
   constructor(props) {
@@ -50,7 +50,7 @@ class AccessGroups extends React.Component {
     return (
       <div className="page-container contents-page-container">
         <div className="actions-container">
-          <Link to="/access-groups/create" className="action" >New Access Group</Link>
+          <Action type="link" to="/access-groups/create">New Access Group</Action>
         </div>
         <PageHeader header="Access Groups" />
         { this.AccessGroups() }

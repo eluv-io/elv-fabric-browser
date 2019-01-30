@@ -6,6 +6,7 @@ import FileIcon from "../../static/icons/file.svg";
 import {FileInfo} from "../../utils/Files";
 import Path from "path";
 import {Icon} from "./Icons";
+import Action from "./Action";
 
 // A styled browse widget for forms
 class BrowseWidget extends React.Component {
@@ -149,13 +150,12 @@ class BrowseWidget extends React.Component {
               onChange={this.HandleChange}
               {...directoryAttributes}
             />
-            <button
-              className="action action-compact action-full-width"
-              type="button"
-              onClick={() => {this.state.browseButtonRef.current.click();}}
+            <Action
+              className="action-compact action-full-width"
+              onClick={() => this.state.browseButtonRef.current.click()}
             >
               Browse
-            </button>
+            </Action>
           </div>
           { this.FileSelections() }
         </div>

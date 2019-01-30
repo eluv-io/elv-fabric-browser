@@ -1,10 +1,10 @@
 import React from "react";
 import Path from "path";
 import RequestPage from "../RequestPage";
-import {Link} from "react-router-dom";
 import {PageHeader} from "../../components/Page";
 import {LabelledField} from "../../components/LabelledField";
 import RequestButton from "../../components/RequestButton";
+import Action from "../../components/Action";
 
 class ContentApps extends React.Component {
   constructor(props) {
@@ -102,12 +102,11 @@ class ContentApps extends React.Component {
       info = <LabelledField label="Name" value={app.filename} />;
     } else {
       // App not set for this role - add button
-      action = <Link
-        to={Path.join(this.props.match.url, role, "add")}
-        className="action action-compact action-wide"
-      >
-        {`Add ${role.capitalize()} App`}
-      </Link>;
+      action = (
+        <Action type="link" to={Path.join(this.props.match.url, role, "add")} className="action-compact action-wide">
+          {`Add ${role.capitalize()} App`}
+        </Action>
+      );
       const typeMeta = (this.state.object.typeInfo && this.state.object.typeInfo.meta) || {};
       const typeApp = typeMeta[`eluv.${role}App`];
       if(typeApp) {
@@ -143,7 +142,7 @@ class ContentApps extends React.Component {
     return (
       <div className="page-container contracts-page-container">
         <div className="actions-container">
-          <Link to={Path.dirname(this.props.match.url)} className="action secondary">Back</Link>
+          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
         </div>
         <div className="object-display">
           <PageHeader header={header} subHeader="App management" />

@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import Path from "path";
 import {LabelledField} from "../../../components/LabelledField";
 import ClippedText from "../../../components/ClippedText";
@@ -10,6 +9,7 @@ import RequestPage from "../../RequestPage";
 import Redirect from "react-router/es/Redirect";
 import {PageHeader} from "../../../components/Page";
 import DeployedContractMethodForm from "./DeployedContractMethodForm";
+import Action from "../../../components/Action";
 
 class DeployedContract extends React.Component {
   constructor(props) {
@@ -35,8 +35,8 @@ class DeployedContract extends React.Component {
     if(this.props.contract.type !== ContractTypes.unknown) { return null; }
 
     return (
-      <button
-        className="action delete-action"
+      <Action
+        className="delete-action"
         onClick={async () => {
           if(confirm("Are you sure you want to stop watching this contract?")) {
             this.setState({
@@ -52,7 +52,7 @@ class DeployedContract extends React.Component {
         }}
       >
         Remove Contract
-      </button>
+      </Action>
     );
   }
 
@@ -116,9 +116,9 @@ class DeployedContract extends React.Component {
     return (
       <div className="page-container contracts-page-container">
         <div className="actions-container">
-          <Link to={backPath} className="action secondary" >Back</Link>
-          <Link to={Path.join(this.props.match.url, "funds")} className="action" >Transfer Funds</Link>
-          <Link to={Path.join(this.props.match.url, "logs")} className="action" >Contract Logs</Link>
+          <Action type="link" to={backPath} className="secondary" >Back</Action>
+          <Action type="link" to={Path.join(this.props.match.url, "funds")}>Transfer Funds</Action>
+          <Action type="link" to={Path.join(this.props.match.url, "logs")}>Contract Logs</Action>
           { this.DeleteButton() }
         </div>
         <div className="object-display">

@@ -7,6 +7,7 @@ import RadioSelect from "../../components/RadioSelect";
 import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
 import Redirect from "react-router/es/Redirect";
+import Action from "../../components/Action";
 
 class ContentObjectReviewForm extends React.Component {
   constructor(props) {
@@ -113,7 +114,7 @@ class ContentObjectReviewForm extends React.Component {
             onCancel={this.FrameCompleted}
           />
           <div className="actions-container">
-            <button className="action secondary" onClick={this.FrameCompleted}>Cancel</button>
+            <Action className="secondary" onClick={this.FrameCompleted}>Cancel</Action>
           </div>
         </fieldset>
       </form>
