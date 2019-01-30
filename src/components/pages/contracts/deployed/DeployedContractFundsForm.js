@@ -1,11 +1,11 @@
 import React from "react";
 import Path from "path";
-import Link from "react-router-dom/es/Link";
 import RequestForm from "../../../forms/RequestForm";
 import RadioSelect from "../../../components/RadioSelect";
 import DeployedContractWrapper from "./DeployedContractWrapper";
 import PropTypes from "prop-types";
 import { PageHeader } from "../../../components/Page";
+import Action from "../../../components/Action";
 
 class DeployedContractFundsForm extends React.Component {
   constructor(props) {
@@ -84,7 +84,7 @@ class DeployedContractFundsForm extends React.Component {
     return (
       <div className="page-container">
         <div className="actions-container">
-          <Link className="action secondary" to={Path.dirname(this.props.match.url)}>Back</Link>
+          <Action type="link" className="secondary" to={Path.dirname(this.props.match.url)}>Back</Action>
         </div>
         <PageHeader header={this.props.contract.name} subHeader={this.props.contract.description} />
         <RequestForm

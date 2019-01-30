@@ -95,14 +95,17 @@ class DeployContractForm extends React.Component {
   // and reset the constructor input state
   HandleContractChange(event) {
     const contracts = this.Contracts();
-
     const selectedContract = (event && event.target.value) || this.state.selectedContract || Object.keys(contracts)[0];
 
     if(!selectedContract || !contracts[selectedContract]) {
       this.setState({selectedContract});
     }
 
-    const constructor = contracts[selectedContract].abi.find((method) => {
+    if(!selectedContract) {
+      return;
+    }
+
+    const constructor = selectedContract.abi.find((method) => {
       return method.type === "constructor";
     });
 
@@ -123,7 +126,7 @@ class DeployContractForm extends React.Component {
     });
 
     if(this.state.contractSource === "deployed") {
-      this.props.GetContractBalance({contractAddress: contracts[selectedContract].address});
+      this.props.GetContractBalance({contractAddress: selectedContract.address});
     }
   }
 

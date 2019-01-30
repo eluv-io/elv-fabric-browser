@@ -8,6 +8,7 @@ import ClippedText from "../../components/ClippedText";
 import Redirect from "react-router/es/Redirect";
 import {EqualAddress} from "../../../utils/Helpers";
 import {PageHeader} from "../../components/Page";
+import Action from "../../components/Action";
 
 class AccessGroup extends React.Component {
   constructor(props) {
@@ -79,18 +80,18 @@ class AccessGroup extends React.Component {
     let editButton;
     let deleteButton;
     if(this.state.accessGroup.isOwner) {
-      editButton = <Link to={Path.join(this.props.match.url, "edit")} className="action" >Manage Access Group</Link>;
-      deleteButton = <button className="action delete-action" onClick={this.DeleteAccessGroup}>Delete Access Group</button>;
+      editButton = <Action type="link" to={Path.join(this.props.match.url, "edit")}>Manage Access Group</Action>;
+      deleteButton = <Action className="delete-action" onClick={this.DeleteAccessGroup}>Delete Access Group</Action>;
     }
 
     let manageButton;
     if(isManager || this.state.accessGroup.isOwner) {
-      manageButton = <Link to={Path.join(this.props.match.url, "members")} className="action" >Manage Members</Link>;
+      manageButton = <Action type="link" to={Path.join(this.props.match.url, "members")}>Manage Members</Action>;
     }
 
     return (
       <div className="actions-container">
-        <Link to={Path.dirname(this.props.match.url)} className="action secondary" >Back</Link>
+        <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary" >Back</Action>
         { editButton }
         { manageButton }
         { deleteButton }

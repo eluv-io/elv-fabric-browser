@@ -3,6 +3,7 @@ import RequestForm from "../../forms/RequestForm";
 import RequestPage from "../RequestPage";
 import Path from "path";
 import Id from "../../../utils/Id";
+import Action from "../../components/Action";
 
 class ContentLibraryGroupsForm extends React.Component {
   constructor(props) {
@@ -187,15 +188,11 @@ class ContentLibraryGroupsForm extends React.Component {
             <input name="address" value={group.address} onChange={this.HandleInputChange(groupType, groupId)} />
           </div>
           <div className="labelled-input">
-            <label className="label" htmlFor="removeGroup"></label>
+            <label className="label" htmlFor="removeGroup" />
             <div className="actions-container compact">
-              <button
-                className="action action-compact action-wide delete-action"
-                type="button"
-                onClick={this.RemoveGroup(groupType, groupId)}
-              >
+              <Action className="action-compact action-wide delete-action" onClick={this.RemoveGroup(groupType, groupId)}>
                 Remove Group
-              </button>
+              </Action>
             </div>
           </div>
         </div>
@@ -209,9 +206,9 @@ class ContentLibraryGroupsForm extends React.Component {
         <div className="labelled-input">
           <label className="label bold" htmlFor="addGroup" >{groupType.capitalize() + "s"}</label>
           <div className="actions-container left">
-            <button className="action action-compact action-full-width" type="button" onClick={this.AddGroup(groupType)}>
+            <Action className="action-compact action-full-width" onClick={this.AddGroup(groupType)}>
               { `Add ${groupType.capitalize()} Group` }
-            </button>
+            </Action>
           </div>
         </div>
 

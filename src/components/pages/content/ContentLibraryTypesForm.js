@@ -4,6 +4,7 @@ import RequestPage from "../RequestPage";
 import Path from "path";
 import {IconButton} from "../../components/Icons";
 import DeleteIcon from "../../../static/icons/trash.svg";
+import Action from "../../components/Action";
 
 class ContentLibraryTypesForm extends React.Component {
   constructor(props) {
@@ -115,14 +116,13 @@ class ContentLibraryTypesForm extends React.Component {
             { typeOptions }
           </select>
           <div className="actions-container compact">
-            <button
-              className="action action-compact"
-              type="button"
+            <Action
+              className="action-compact"
               onClick={this.HandleAddType}
               disabled={disabled}
             >
               Add
-            </button>
+            </Action>
           </div>
         </div>
       </div>

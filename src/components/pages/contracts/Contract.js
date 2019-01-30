@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import Path from "path";
 
 import RequestPage from "../RequestPage";
@@ -7,6 +6,7 @@ import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
 import Redirect from "react-router/es/Redirect";
 import {PageHeader} from "../../components/Page";
+import Action from "../../components/Action";
 
 class Contract extends React.Component {
   constructor(props) {
@@ -113,10 +113,10 @@ class Contract extends React.Component {
     return (
       <div className="page-container contracts-page-container">
         <div className="actions-container">
-          <Link to={Path.dirname(this.props.match.url)} className="action secondary" >Back</Link>
-          <Link to={Path.join(this.props.match.url, "edit")} className="action" >Edit Contract</Link>
-          <Link to={Path.join(this.props.match.url, "deploy")} className="action" >Deploy Contract</Link>
-          <button className="action delete-action" onClick={() => this.DeleteContract(this.state.contractName)}>Delete Contract</button>
+          <Action type="link" to={Path.dirname(this.props.match.url)}>Back</Action>
+          <Action type="link" to={Path.join(this.props.match.url, "edit")}>Edit Contract</Action>
+          <Action type="link" to={Path.join(this.props.match.url, "deploy")}>Deploy Contract</Action>
+          <Action className="delete-action" onClick={() => this.DeleteContract(this.state.contractName)}>Delete Contract</Action>
         </div>
         <div className="object-display">
           <PageHeader header={this.state.contractName} />

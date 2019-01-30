@@ -13,6 +13,7 @@ import Fabric from "../../../clients/Fabric";
 import {IconButton} from "../../components/Icons";
 import AppFrame from "../../components/AppFrame";
 import Redirect from "react-router/es/Redirect";
+import Action from "../../components/Action";
 
 const defaultSchema = [
   {
@@ -276,9 +277,8 @@ class ContentObjectForm extends React.Component {
       case "attachedFile":
         field = (
           <div className="actions-container compact full-width">
-            <button
-              className="action action-compact secondary action-full-width"
-              type="button"
+            <Action
+              className="action-compact secondary action-full-width"
               onClick={
                 async () => {
                   const type = this.state.types[this.state.type];
@@ -297,7 +297,7 @@ class ContentObjectForm extends React.Component {
               }
             >
               Download
-            </button>
+            </Action>
           </div>
         );
         break;
@@ -352,13 +352,12 @@ class ContentObjectForm extends React.Component {
         field = (
           <div className="full-width">
             <div className="actions-container compact left">
-              <button
-                type="button"
-                className="action action-compact action-full-width"
+              <Action
+                className="action-compact action-full-width"
                 onClick={() => this.HandleFieldChange({target: {value: ""}}, {key: Id.next()}, subtree.concat(entry.key))}
               >
                 Add Element
-              </button>
+              </Action>
             </div>
             <div className="list">
               {elements}
@@ -445,7 +444,7 @@ class ContentObjectForm extends React.Component {
             className="form-frame"
           />
           <div className="actions-container">
-            <button className="action secondary" onClick={this.FrameCompleted}>Cancel</button>
+            <Action className="secondary" onClick={this.FrameCompleted}>Cancel</Action>
           </div>
         </fieldset>
       </form>

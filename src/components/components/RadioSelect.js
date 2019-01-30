@@ -21,9 +21,7 @@ class RadioSelect extends React.Component {
 
   // Set name and value for label click event
   HandleClick(event, value) {
-    event.target.name = this.props.name;
-    event.target.value = event.target.value || value;
-    this.props.onChange(event);
+    this.props.onChange({target: {name: this.props.name, value}});
   }
 
   RadioOption(option, index) {

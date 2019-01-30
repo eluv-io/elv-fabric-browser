@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import Path from "path";
 
 import { LibraryCard } from "../../components/DisplayCards";
@@ -7,6 +6,7 @@ import RequestPage from "../RequestPage";
 
 import LibraryIcon from "../../../static/icons/content.svg";
 import {PageHeader} from "../../components/Page";
+import Action from "../../components/Action";
 
 class ContentLibraries extends React.Component {
   constructor(props) {
@@ -55,7 +55,7 @@ class ContentLibraries extends React.Component {
     return (
       <div className="page-container contents-page-container">
         <div className="actions-container">
-          <Link to={Path.join(path, "create")} className="action" >New Library</Link>
+          <Action type="link" to={Path.join(path, "create")}>New Library</Action>
         </div>
         <PageHeader header="Content Libraries" />
         { this.ContentLibraries(path) }

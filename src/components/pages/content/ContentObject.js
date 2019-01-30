@@ -17,6 +17,7 @@ import FileBrowser from "../../components/FileBrowser";
 import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
 import PageTabs from "../../components/PageTabs";
+import Action from "../../components/Action";
 
 class ContentObject extends React.Component {
   constructor(props) {
@@ -171,11 +172,11 @@ class ContentObject extends React.Component {
 
     return (
       <div className="actions-container">
-        <button
-          className="action delete-action action-compact action-wide"
+        <Action
+          className="delete-action action-compact action-wide"
           onClick={() => this.DeleteContentVersion(versionHash)}>
           Delete Content Version
-        </button>
+        </Action>
       </div>
     );
   }
@@ -196,7 +197,9 @@ class ContentObject extends React.Component {
 
     return (
       <div className="actions-container">
-        <button className={"action action-compact action-wide " + (visible ? "" : "secondary")} onClick={toggleVisible}>{ toggleButtonText }</button>
+        <Action className={"action-compact action-wide " + (visible ? "" : "secondary")} onClick={toggleVisible}>
+          { toggleButtonText }
+        </Action>
       </div>
     );
   }
@@ -214,20 +217,15 @@ class ContentObject extends React.Component {
         "Are you sure you want to publish this content object?";
 
       return (
-        <button
-          className="action"
-          onClick={() => { this.SubmitContentObject(confirmationMessage); }}
-        >
+        <Action onClick={() => this.SubmitContentObject(confirmationMessage)} >
           { actionText }
-        </button>
+        </Action>
       );
     }
 
     if(this.state.object.status.code > 0 && this.state.permissions.canReview) {
       return (
-        <Link className="action" to={Path.join(this.props.match.url, "review")}>
-          Review
-        </Link>
+        <Action text="Review" type="link" to={Path.join(this.props.match.url, "review")} />
       );
     }
   }
@@ -292,8 +290,8 @@ class ContentObject extends React.Component {
     const parts = (version.parts.map((part, partNumber) => {
       const downloadButton = (
         <div className="actions-container">
-          <button
-            className="action action-compact tertiary"
+          <Action
+            className="action-compact tertiary"
             onClick={() => {
               this.props.DownloadPart({
                 libraryId: this.state.libraryId,
@@ -307,7 +305,7 @@ class ContentObject extends React.Component {
             }}
           >
             Download
-          </button>
+          </Action>
         </div>
       );
 
@@ -494,9 +492,9 @@ class ContentObject extends React.Component {
     let manageAppsLink;
     if(this.state.object.isOwner) {
       manageAppsLink = (
-        <Link to={Path.join(this.props.match.url, "apps")} className="action">
+        <Action type="link" to={Path.join(this.props.match.url, "apps")}>
           Manage Apps
-        </Link>
+        </Action>
       );
     }
 
@@ -506,25 +504,29 @@ class ContentObject extends React.Component {
       (this.state.object.isNormalObject || this.state.object.isContentType) &&
       this.state.object.isOwner
     ) {
-      setContractButton =  <Link to={Path.join(this.props.match.url, "deploy")} className="action">Set Custom Contract</Link>;
+      setContractButton = (
+        <Action type="link" to={Path.join(this.props.match.url, "deploy")}>
+          Set Custom Contract
+        </Action>
+      );
     }
 
     let deleteObjectButton;
     if(!this.state.object.isContentLibraryObject) {
       deleteObjectButton = (
-        <button className="action delete-action" onClick={() => this.DeleteContentObject()}>
+        <Action className="delete-action" onClick={() => this.DeleteContentObject()}>
           Delete
-        </button>
+        </Action>
       );
     }
 
     return (
       <div className="actions-container">
-        <Link to={Path.dirname(this.props.match.url)} className="action secondary">Back</Link>
-        <Link to={Path.join(this.props.match.url, "edit")} className="action">Manage</Link>
+        <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+        <Action type="link" to={Path.join(this.props.match.url, "edit")}>Manage</Action>
         { this.PublishButton() }
         { setContractButton }
-        <Link to={Path.join(this.props.match.url, "upload")} className="action">Upload Parts</Link>
+        <Action type="link" to={Path.join(this.props.match.url, "upload")}>Upload Parts</Action>
         { manageAppsLink }
         { deleteObjectButton }
       </div>

@@ -4,6 +4,7 @@ import RequestPage from "../RequestPage";
 import Path from "path";
 import Id from "../../../utils/Id";
 import { FormatAddress } from "../../../utils/Helpers";
+import Action from "../../components/Action";
 
 class AccessGroupMembersForm extends React.Component {
   constructor(props) {
@@ -123,9 +124,9 @@ class AccessGroupMembersForm extends React.Component {
       const member = this.state.members[memberId];
       const removeMemberButton = (
         <div className="actions-container compact">
-          <button className="action action-compact action-wide delete-action" type="button" onClick={this.RemoveMember(memberId)}>
+          <Action className="action-compact action-wide delete-action" onClick={this.RemoveMember(memberId)}>
             Remove Member
-          </button>
+          </Action>
         </div>
       );
 
@@ -159,9 +160,9 @@ class AccessGroupMembersForm extends React.Component {
     return (
       <div className="access-group-form-data">
         <div className="labelled-input">
-          <label className="label" htmlFor="addMember" ></label>
+          <label className="label" htmlFor="addMember" />
           <div className="actions-container left">
-            <button className="action action-compact action-full-width" type="button" onClick={this.AddMember}>Add Member</button>
+            <Action type="button" className="action-compact action-full-width" onClick={this.AddMember}>Add Member</Action>
           </div>
         </div>
 

@@ -1,10 +1,10 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import Path from "path";
 import PropTypes from "prop-types";
 import DeployedContractWrapper from "./DeployedContractWrapper";
 import {PageHeader} from "../../../components/Page";
 import EventLogs from "../../../components/EventLogs";
+import Action from "../../../components/Action";
 
 class DeployedContractEvents extends React.Component {
   ContractEvents() {
@@ -27,7 +27,7 @@ class DeployedContractEvents extends React.Component {
     return (
       <div className="page-container contracts-page-container">
         <div className="actions-container">
-          <Link to={Path.dirname(this.props.match.url)} className="action secondary" >Back</Link>
+          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
         </div>
         <div className="object-display">
           <PageHeader header={this.props.contract.name} subHeader={this.props.contract.description} />
