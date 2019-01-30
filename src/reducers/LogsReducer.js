@@ -1,7 +1,7 @@
 import ActionTypes from "../actions/ActionTypes";
 
 const SortBlocks = (blocks) => {
-  return blocks.sort((a, b) => a.blockNumber < b.blockNumber ? 1 : -1);
+  return blocks.sort((a, b) => a[0].blockNumber < b[0].blockNumber ? 1 : -1);
 };
 
 const LogsReducer = (state = [], action) => {

@@ -37,7 +37,10 @@ h3 {
 }
 
 h4 {
-  margin: 0;
+  color: $color-text-black;
+  font-size: 16px;
+  font-weight: normal;
+  margin: $spacing-xs 0 $spacing-xxs;
 }
 
 a {

@@ -506,7 +506,7 @@ class ContentObject extends React.Component {
     ) {
       setContractButton = (
         <Action type="link" to={Path.join(this.props.match.url, "deploy")}>
-          Set Custom Contract
+          Custom Contract
         </Action>
       );
     }
