@@ -2,12 +2,11 @@ import React from "react";
 import Path from "path";
 
 import RequestPage from "../RequestPage";
-import { LibraryCard } from "../../components/DisplayCards";
 
-import ContractIcon from "../../../static/icons/contracts.svg";
 import {PageHeader} from "../../components/Page";
 import PageTabs from "../../components/PageTabs";
 import Action from "../../components/Action";
+import Listing from "../../components/Listing";
 
 class Contracts extends React.Component {
   constructor(props) {
@@ -34,38 +33,28 @@ class Contracts extends React.Component {
   Contracts() {
     const contracts = this.state.view === "saved" ? this.props.contracts : this.props.deployedContracts;
 
-    if(Object.keys(contracts).length === 0) {
-      return (
-        <h4>{`No ${this.state.view} contracts`}</h4>
-      );
-    }
+    const content = Object.keys(contracts).map(contractId => {
+      const link = this.state.view === "deployed" ?
+        Path.join("/contracts", "deployed", contractId) :
+        Path.join("/contracts", contractId);
 
-    return (
-      Object.keys(contracts).map(contractId => {
-        const contract = contracts[contractId];
-        let eventCount = Object.values(contract.abi).filter(element => element.type === "event").length;
-        eventCount = eventCount === 1 ? eventCount + " event" : eventCount + " events";
+      const contract = contracts[contractId];
+      let eventCount = Object.values(contract.abi).filter(element => element.type === "event").length;
+      eventCount = eventCount === 1 ? eventCount + " event" : eventCount + " events";
 
-        let methodCount = Object.values(contract.abi).filter(element => element.type === "function").length;
-        methodCount = methodCount === 1 ? methodCount + " method" : methodCount + " methods";
+      let methodCount = Object.values(contract.abi).filter(element => element.type === "function").length;
+      methodCount = methodCount === 1 ? methodCount + " method" : methodCount + " methods";
 
-        const link = this.state.view === "deployed" ?
-          Path.join("/contracts", "deployed", contractId) :
-          Path.join("/contracts", contractId);
+      return {
+        id: contractId,
+        title: contract.name,
+        description: contract.description,
+        status: `${eventCount}, ${methodCount}`,
+        link
+      };
+    });
 
-        return (
-          <div className="contracts" key={"contract-" + contractId}>
-            <LibraryCard
-              icon={ContractIcon}
-              link={link}
-              name={contract.name}
-              infoText={`${eventCount}, ${methodCount}`}
-              description={contract.description}
-              title={"Contract " + contract.name}/>
-          </div>
-        );
-      })
-    );
+    return <Listing pageId="Contracts" content={content} noIcon={true} />;
   }
 
   PageContent() {

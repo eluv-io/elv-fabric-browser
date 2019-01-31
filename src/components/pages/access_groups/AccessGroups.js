@@ -2,11 +2,11 @@ import React from "react";
 import Path from "path";
 
 import RequestPage from "../RequestPage";
-import { LibraryCard } from "../../components/DisplayCards";
 
 import AccessGroupIcon from "../../../static/icons/groups.svg";
 import {PageHeader} from "../../components/Page";
 import Action from "../../components/Action";
+import Listing from "../../components/Listing";
 
 class AccessGroups extends React.Component {
   constructor(props) {
@@ -27,23 +27,21 @@ class AccessGroups extends React.Component {
   }
 
   AccessGroups() {
-    const accessGroups = this.props.accessGroups;
-    return (
-      Object.values(accessGroups).map(accessGroup => {
-        return (
-          <div className="accessGroups" key={"accessGroup-" + accessGroup.address}>
-            <LibraryCard
-              icon={AccessGroupIcon}
-              link={Path.join("/access-groups", accessGroup.address)}
-              name={accessGroup.name}
-              isOwner={accessGroup.isOwner}
-              infoText={"info text here"}
-              description={accessGroup.description}
-              title={"Access Group " + accessGroup.name}/>
-          </div>
-        );
-      })
-    );
+    const accessGroups = Object.values(this.props.accessGroups).map(accessGroup => {
+      let members = Object.keys(accessGroup.members).length;
+      members = members === 1 ? members + " member" : members + " members";
+
+      return {
+        id: accessGroup.address,
+        title: accessGroup.name,
+        description: accessGroup.description,
+        status: members,
+        icon: AccessGroupIcon,
+        link: Path.join(this.props.match.url, accessGroup.address)
+      };
+    });
+
+    return <Listing pageId="AccessGroups" content={accessGroups} noIcon={true} /> ;
   }
 
   PageContent() {

@@ -1,7 +1,3 @@
-@import "variables/colors";
-@import "variables/spacing";
-@import "variables/mixins";
-
 html,
 body {
   font-family: Lato, sans-serif;
@@ -79,6 +75,7 @@ pre {
 
 table {
   border-collapse: collapse;
+  table-layout: fixed;
   width: 100%;
 }
 

@@ -1,9 +1,5 @@
-@import "variables/colors";
-@import "variables/spacing";
-@import "variables/mixins";
-
 .events {
-  form.event-actions-container {
+  .event-actions-container {
     align-items: center;
     display: flex;
     justify-content: flex-start;
@@ -21,8 +17,10 @@
         min-width: max-content;
       }
 
-      input[type="number"] {
-        width: 10em;
+      input {
+        &[type="number"] {
+          width: 10em;
+        }
       }
     }
   }
