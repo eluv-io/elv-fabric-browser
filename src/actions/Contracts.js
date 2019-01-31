@@ -366,6 +366,7 @@ export const CallContractMethod = ({
         value
       });
 
+      // Try to get result event
       methodResults = await Fabric.ContractEvents({
         contractAddress,
         abi,
@@ -373,7 +374,15 @@ export const CallContractMethod = ({
         toBlock: transactionInfo.blockNumber
       });
 
-      if(methodResults.length === 0){
+      // If no event was produced, try and get block info
+      if(methodResults.length === 0) {
+        methodResults = await Fabric.GetBlockchainEvents({
+          fromBlock: transactionInfo.blockNumber,
+          toBlock: transactionInfo.blockNumber
+        });
+      }
+
+      if(methodResults.length === 0) {
         throw Error("Transaction failed");
       }
 

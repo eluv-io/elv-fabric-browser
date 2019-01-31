@@ -438,23 +438,12 @@ const Fabric = {
         const verification = await Fabric.VerifyContentObject({libraryId, objectId, versionHash: version.hash});
         const parts = (await Fabric.ListParts({libraryId, objectId, versionHash: version.hash})).parts;
 
-        const partsWithProofs = await Promise.all(
-          parts.map(async part => {
-            const proofs = await Fabric.Proofs({libraryId, objectId, versionHash: version.hash, partHash: part.hash});
-
-            return {
-              ...part,
-              proofs
-            };
-          })
-        );
-
         // Must keep versions in order from newest to oldest
         fullVersions[index] = {
           ...version,
           meta: metadata,
           verification,
-          parts: partsWithProofs,
+          parts
         };
       })
     );
