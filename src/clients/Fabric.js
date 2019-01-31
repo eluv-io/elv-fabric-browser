@@ -128,21 +128,36 @@ const Fabric = {
   },
 
   GetContentLibrary: async ({libraryId}) => {
+    /* Library */
     const libraryInfo = await client.ContentLibrary({libraryId});
-    const objectIds = (await client.ContentObjects({libraryId})).map(object => object.id)
-      .filter(objectId => !Fabric.utils.EqualHash(libraryId, objectId));
-    const imageUrl = await Fabric.GetContentObjectImageUrl({
-      libraryId,
-      objectId: libraryId.replace("ilib", "iq__")
-    });
-    const privateMeta = await Fabric.GetContentObjectMetadata({
-      libraryId,
-      objectId: libraryId.replace("ilib", "iq__")
-    });
     const owner = await Fabric.GetContentLibraryOwner({libraryId});
     const currentAccountAddress = await Fabric.CurrentAccountAddress();
     const name = libraryInfo.meta.name || libraryInfo.meta["eluv.name"] || "Content Library " + libraryId;
+
+    /* Library object and private metadata */
+    const libraryObjectId = libraryId.replace("ilib", "iq__");
+    const libraryObject = await Fabric.GetContentObject({libraryId, objectId: libraryObjectId});
+    const privateMeta = await Fabric.GetContentObjectMetadata({
+      libraryId,
+      objectId: libraryObjectId
+    });
+
+    /* Image */
+    const imageUrl = await Fabric.GetContentObjectImageUrl({
+      libraryId,
+      objectId: libraryObjectId,
+      versionHash: libraryObject.hash, // Specify version hash to break cache if image is updated,
+      metadata: privateMeta
+    });
+
+    /* Content */
+    const objectIds = (await client.ContentObjects({libraryId})).map(object => object.id)
+      .filter(objectId => !Fabric.utils.EqualHash(libraryId, objectId));
+
+
+    /* Types */
     const types = await Fabric.ListLibraryContentTypes({libraryId});
+
     return {
       ...libraryInfo,
       libraryId,
@@ -309,27 +324,25 @@ const Fabric = {
     let objects = {};
     for (const object of libraryObjects) {
       try {
+        const isContentLibraryObject = client.utils.EqualHash(libraryId, object.id);
+        const isContentType = libraryId === Fabric.contentSpaceLibraryId && !isContentLibraryObject;
+        const isNormalObject = !isContentLibraryObject && !isContentType;
+
         // Skip library content object
-        if (Fabric.utils.EqualHash(libraryId, object.id)) {
-          continue;
-        }
+        if (isContentLibraryObject) { continue; }
+
+        // Only normal objects have status
+        const status = isNormalObject ? await Fabric.GetContentObjectStatus({objectId: object.id}) : undefined;
+        const owner = await Fabric.GetContentObjectOwner({objectId: object.id});
 
         const latestVersion = object.versions[0];
         const imageUrl = await Fabric.GetContentObjectImageUrl({
           libraryId,
           objectId: object.id,
+          versionHash: latestVersion.hash,
           metadata: object.versions[0].meta
         });
 
-        // Retrieve status if normal object
-        let status;
-        if (libraryId !== Fabric.contentSpaceLibraryId && !client.utils.EqualHash(libraryId, object.id)) {
-          status = await Fabric.GetContentObjectStatus({objectId: object.id});
-        }
-
-        const owner = await Fabric.GetContentObjectOwner({objectId: object.id});
-        const isContentLibraryObject = client.utils.EqualHash(libraryId, object.id);
-        const isContentType = libraryId === Fabric.contentSpaceLibraryId && !isContentLibraryObject;
         objects[object.id] = {
           // Pull latest version info up to top level
           ...latestVersion,
@@ -343,9 +356,10 @@ const Fabric = {
           status,
           isContentLibraryObject,
           isContentType,
-          isNormalObject: !isContentLibraryObject && !isContentType
+          isNormalObject
         };
       } catch(error) {
+        console.error("Failed to list content object " + object.id);
         console.error(error);
       }
     }
@@ -353,29 +367,18 @@ const Fabric = {
     return objects;
   },
 
-  GetCustomContentContractAddress: async ({libraryId, objectId, metadata={}}) => {
-    if(libraryId === Fabric.contentSpaceLibraryId || client.utils.EqualHash(libraryId, objectId)) {
-      // Content type or content library object - look at metadata
-      return metadata.customContract && metadata.customContract.address;
-    }
-
-    return await client.CustomContractAddress({libraryId, objectId});
-  },
-
   GetContentObject: async ({libraryId, objectId}) => {
-    const object = await client.ContentObject({libraryId, objectId});
-    const metadata = await client.ContentObjectMetadata({libraryId, objectId});
-    const imageUrl = await Fabric.GetContentObjectImageUrl({libraryId, objectId});
-
-    // Retrieve status if normal object
-    let status;
-    if(libraryId !== Fabric.contentSpaceLibraryId && !client.utils.EqualHash(libraryId, objectId)) {
-      status = await Fabric.GetContentObjectStatus({objectId});
-    }
-
-    const owner = await Fabric.GetContentObjectOwner({objectId});
     const isContentLibraryObject = client.utils.EqualHash(libraryId, objectId);
     const isContentType = libraryId === Fabric.contentSpaceLibraryId && !isContentLibraryObject;
+    const isNormalObject = !isContentLibraryObject && !isContentType;
+
+    // Only normal objects have status
+    const status = isNormalObject ? await Fabric.GetContentObjectStatus({objectId: objectId}) : undefined;
+    const owner = await Fabric.GetContentObjectOwner({objectId: objectId});
+
+    const object = await client.ContentObject({libraryId, objectId});
+    const metadata = await client.ContentObjectMetadata({libraryId, objectId});
+    const imageUrl = await Fabric.GetContentObjectImageUrl({libraryId, objectId, versionHash: object.hash, metadata});
 
     let typeInfo;
     if(object.type) {
@@ -404,22 +407,8 @@ const Fabric = {
       status,
       isContentLibraryObject,
       isContentType,
-      isNormalObject: !isContentLibraryObject && !isContentType
+      isNormalObject
     };
-  },
-
-  GetContentObjectImageUrl: async ({libraryId, objectId, metadata}) => {
-    if(!metadata) { metadata = await client.ContentObjectMetadata({libraryId, objectId}); }
-
-    const imagePartHash = metadata["image"] || metadata["eluv.image"];
-
-    if(!imagePartHash) { return; }
-
-    return await client.Rep({libraryId, objectId, rep: "image"});
-  },
-
-  GetContentObjectOwner: async ({objectId}) => {
-    return FormatAddress(await client.ContentObjectOwner({objectId}));
   },
 
   GetContentObjectMetadata: async ({libraryId, objectId, versionHash, metadataSubtree="/"}) => {
@@ -449,6 +438,28 @@ const Fabric = {
     );
 
     return fullVersions;
+  },
+
+  GetContentObjectImageUrl: async ({libraryId, objectId, versionHash, metadata}) => {
+    // Ensure image is set in metadata - if not, object has no image
+    if(!metadata) { metadata = await client.ContentObjectMetadata({libraryId, objectId}); }
+    const imagePartHash = metadata["image"];
+    if(!imagePartHash) { return; }
+
+    return await client.Rep({libraryId, objectId, versionHash, rep: "image", noAuth: true});
+  },
+
+  GetCustomContentContractAddress: async ({libraryId, objectId, metadata={}}) => {
+    if(libraryId === Fabric.contentSpaceLibraryId || client.utils.EqualHash(libraryId, objectId)) {
+      // Content type or content library object - look at metadata
+      return metadata.customContract && metadata.customContract.address;
+    }
+
+    return await client.CustomContractAddress({libraryId, objectId});
+  },
+
+  GetContentObjectOwner: async ({objectId}) => {
+    return FormatAddress(await client.ContentObjectOwner({objectId}));
   },
 
   /* Object creation / modification */
