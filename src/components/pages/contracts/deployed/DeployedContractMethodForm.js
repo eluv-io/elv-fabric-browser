@@ -98,9 +98,8 @@ class DeployedContractMethodForm extends React.Component {
 
   HandleComplete() {
     const contractState = this.props.deployedContracts[this.props.contract.address];
-
     // Ensure results are set
-    if(!contractState || !contractState.methodResults || !contractState.methodResults[this.state.method]) {
+    if(!contractState || !contractState.methodResults || contractState.methodResults[this.state.method] === undefined) {
       return;
     }
 
@@ -119,6 +118,8 @@ class DeployedContractMethodForm extends React.Component {
           result = `${parseInt(result._hex, 16)} (${result._hex})`;
         } else if(outputInterface[index].type === "bytes32") {
           result = Bytes32ToUtf8(result);
+        } else {
+          result = result.toString();
         }
 
         return [outputInterface[index].name || `Output ${index}`, result];
