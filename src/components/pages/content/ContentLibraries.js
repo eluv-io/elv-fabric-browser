@@ -1,12 +1,11 @@
 import React from "react";
 import Path from "path";
-
-import { LibraryCard } from "../../components/DisplayCards";
 import RequestPage from "../RequestPage";
 
 import LibraryIcon from "../../../static/icons/content.svg";
 import {PageHeader} from "../../components/Page";
 import Action from "../../components/Action";
+import Listing from "../../components/Listing";
 
 class ContentLibraries extends React.Component {
   constructor(props) {
@@ -26,42 +25,34 @@ class ContentLibraries extends React.Component {
     });
   }
 
-  ContentLibraries(path) {
-    if(Object.keys(this.props.libraries).length === 0) {
-      return <h4>No libraries available</h4>;
-    }
+  ContentLibraries() {
+    let libraries = [];
 
-    let libraryElements = [];
-    for(const libraryId of Object.keys(this.props.libraries).sort()) {
+    for(let libraryId of Object.keys(this.props.libraries).sort()) {
       const library = this.props.libraries[libraryId];
 
-      libraryElements.push(
-        <LibraryCard
-          key={libraryId}
-          libraryId={libraryId}
-          link={Path.join(path, libraryId)}
-          icon={library.imageUrl || LibraryIcon}
-          name={library.name}
-          isOwner={library.isOwner}
-          infoText={library.objects.length + " Content Objects"}
-          description={library.description}
-        />
-      );
+      libraries.push({
+        id: libraryId,
+        title: library.name || "Content Library " + libraryId,
+        description: library.description,
+        status: library.objects.length + " Content Objects",
+        icon: library.imageUrl || LibraryIcon,
+        link: Path.join("/content", libraryId)
+      });
     }
 
-    return libraryElements;
+    return <Listing pageId="ContentLibraries" content={libraries} /> ;
   }
 
   PageContent() {
     // This is the root component, actual path may be "/content" or "/"
-    let path = "/content";
     return (
       <div className="page-container contents-page-container">
         <div className="actions-container">
-          <Action type="link" to={Path.join(path, "create")}>New Library</Action>
+          <Action type="link" to={Path.join("/content", "create")}>New Library</Action>
         </div>
         <PageHeader header="Content Libraries" />
-        { this.ContentLibraries(path) }
+        { this.ContentLibraries() }
       </div>
     );
   }

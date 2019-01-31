@@ -1,0 +1,137 @@
+.listing {
+  .listing-actions {
+    align-items: center;
+    display: flex;
+    height: 50px;
+    justify-content: flex-end;
+    width: 100%;
+
+    .icon-button {
+      margin: 0 $spacing-xs;
+      padding: $spacing-xxs;
+
+      .icon {
+        height: 30px;
+        width: 30px;
+      }
+    }
+
+    .filter {
+      font-size: 16px;
+      height: 30px;
+      padding: 0 $spacing-xs;
+      width: 300px;
+    }
+  }
+
+  // Grid view
+
+  .grid-listing {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .grid-listing-element {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    flex-shrink: 1;
+    margin: $spacing-s;
+    max-width: 300px;
+    min-width: 250px;
+
+    &:hover {
+      background: $color-lightergray;
+    }
+
+    .icon-container {
+      $image-size: 300px;
+      @include cropped-image($image-size, $image-size, 0%, $image-size, $image-size);
+    }
+
+    .title {
+      font-size: 20px;
+    }
+
+    .title,
+    .description,
+    .status {
+      text-align: center;
+    }
+  }
+
+  // Table view
+
+  table {
+    max-width: 100%;
+
+    * {
+      border: 0;
+    }
+  }
+
+  thead {
+    tr {
+      height: 30px;
+
+      th {
+        margin: 0;
+        padding: 0;
+
+        &.icon-header {
+          width: 95px;
+        }
+
+        &.title-header {
+          width: 35%;
+        }
+
+        &.status-header {
+          width: 160px;
+        }
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      height: 85px;
+
+      &:hover {
+        background: $color-lightergray;
+        cursor: pointer;
+      }
+
+      td {
+        @include ellipsis;
+
+        margin: 0;
+        padding: 0 0 0 $spacing-s;
+
+        &.icon-cell {
+          padding: $spacing-xs $spacing-xxs;
+        }
+
+        &.title-cell {
+          font-size: 18px;
+        }
+
+        &.status-cell {
+          font-size: 14px;
+        }
+
+        .icon-container {
+          $image-size: 80px;
+          @include cropped-image($image-size, $image-size, 0%, $image-size, $image-size);
+        }
+
+        a {
+          display: block;
+          height: 100%;
+          width: 100%;
+        }
+      }
+    }
+  }
+}
