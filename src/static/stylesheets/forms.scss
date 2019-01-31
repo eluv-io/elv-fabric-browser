@@ -1,7 +1,3 @@
-@import "variables/mixins";
-@import "variables/colors";
-@import "variables/spacing";
-
 form {
   @include no-select;
 

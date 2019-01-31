@@ -9,6 +9,7 @@ import Redirect from "react-router/es/Redirect";
 import {EqualAddress} from "../../../utils/Helpers";
 import {PageHeader} from "../../components/Page";
 import Action from "../../components/Action";
+import Listing from "../../components/Listing";
 
 class AccessGroup extends React.Component {
   constructor(props) {
@@ -62,21 +63,17 @@ class AccessGroup extends React.Component {
   }
 
   AccessGroupMembers() {
-    if(Object.keys(this.state.accessGroup.members).length === 0) {
-      return (
-        <h4>No members</h4>
-      );
-    }
-
-    return Object.values(this.state.accessGroup.members).map(member => {
-      return (
-        <div className="member-info indented" key={"member-" + member.address}>
-          <h4>{member.name}</h4>
-          <LabelledField label="Address" value={member.address} />
-          <LabelledField label="Type" value={member.manager ? "Manager" : "Member"} />
-        </div>
-      );
+    const members = Object.values(this.state.accessGroup.members).map(member => {
+      return {
+        id: member.address,
+        title: member.name,
+        description: member.address,
+        status: member.manager ? "Manager" : "Member",
+        link: "/"
+      };
     });
+
+    return <Listing pageId="AccessGroupMembers" content={members} noIcon={true} />;
   }
 
   Actions() {

@@ -1,5 +1,4 @@
 import React from "react";
-import {LibraryCard} from "../../components/DisplayCards";
 import { Link } from "react-router-dom";
 import Path from "path";
 import ContentIcon from "../../../static/icons/content.svg";
@@ -10,6 +9,7 @@ import ClippedText from "../../components/ClippedText";
 import {PageHeader} from "../../components/Page";
 import PageTabs from "../../components/PageTabs";
 import Action from "../../components/Action";
+import Listing from "../../components/Listing";
 
 class ContentLibrary extends React.Component {
   constructor(props) {
@@ -77,39 +77,26 @@ class ContentLibrary extends React.Component {
   }
 
   ContentObjects() {
-    if(this.state.library.objects.length === 0) {
-      return <h4>No Content Available</h4>;
-    }
-
-    let objectElements = [];
-
+    let objects = [];
+    const isContentType = this.state.library.isContentSpaceLibrary;
     for(const objectId of this.state.library.objects.sort()) {
       const object = this.props.objects[objectId];
 
       if(!object) { continue; }
 
-      const infoText = this.state.library.isContentSpaceLibrary ? "" : object.status.description;
+      const status = isContentType ? "" : object.status.description;
 
-      objectElements.push(
-        <LibraryCard
-          key={object.id}
-          libraryId={object.objectId}
-          link={Path.join(this.props.match.url, object.id)}
-          icon={object.imageUrl || ContentIcon}
-          name={object.name || "Content Object " + object.id}
-          isOwner={object.isOwner}
-          infoText={infoText}
-          description={object.description}
-          title={object.name}
-        />
-      );
+      objects.push({
+        id: objectId,
+        title: object.name || "Content Object " + objectId,
+        description: object.description,
+        status: status,
+        icon: object.imageUrl || ContentIcon,
+        link: Path.join(this.props.match.url, objectId)
+      });
     }
 
-    return (
-      <div>
-        {objectElements}
-      </div>
-    );
+    return <Listing pageId="ContentObjects" content={objects} />;
   }
 
   ToggleVisible(id) {
