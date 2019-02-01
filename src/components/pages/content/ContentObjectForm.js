@@ -30,6 +30,25 @@ const defaultSchema = [
   }
 ];
 
+const avMasterSchema = [
+  ...defaultSchema,
+  {
+    "key": "image",
+    "label": "Thumbnail",
+    "type": "file",
+    "accept": ["image/*"],
+    "preview": true,
+    "required": true
+  },
+  {
+    "key": "video",
+    "label": "Video",
+    "type": "file",
+    "accept": ["video/*"],
+    "required": false
+  }
+];
+
 // Build a form from a JSON schema
 class ContentObjectForm extends React.Component {
   constructor(props) {
@@ -40,7 +59,8 @@ class ContentObjectForm extends React.Component {
       libraryId: this.props.libraryId || this.props.match.params.libraryId,
       objectId,
       createForm: !objectId,
-      metadata: ""
+      metadata: "",
+      previewUrls: {}
     };
 
     this.RequestComplete = this.RequestComplete.bind(this);
@@ -143,7 +163,7 @@ class ContentObjectForm extends React.Component {
 
   SwitchType(types, type) {
     const object = this.props.objects[this.state.objectId];
-    const typeOptions = type && types[type] || {};
+    let typeOptions = type && types[type] || {};
 
     if(object && object.manageAppUrl && !object.isContentType) {
       this.setState({
@@ -157,6 +177,10 @@ class ContentObjectForm extends React.Component {
       });
 
       return;
+    }
+
+    if(typeOptions.name === "avmaster2000") {
+      typeOptions.schema = avMasterSchema;
     }
 
     const schema = typeOptions.schema || defaultSchema;
@@ -192,6 +216,25 @@ class ContentObjectForm extends React.Component {
     let value = event.target.value;
     if(entry.type === "file") {
       value = event.target.files;
+
+      if(entry.preview) {
+        new Response(event.target.files[0]).blob()
+          .then(imageData => {
+            this.setState({
+              fields: SetValue({
+                data: this.state.fields,
+                subtree,
+                attr: entry.key,
+                value
+              }),
+              previewUrls: {
+                ...this.state.previewUrls,
+                [entry.key]: window.URL.createObjectURL(imageData)
+              }
+            });
+          });
+        return;
+      }
     } else if(entry.type === "boolean") {
       value = event.target.checked;
     }
@@ -345,7 +388,24 @@ class ContentObjectForm extends React.Component {
         break;
       case "file":
         const required = entry.required && this.state.createForm;
-        return <BrowseWidget key={key} accept={entry.accept} label={label} onChange={onChange} multiple={entry.multiple} required={required} />;
+        const browseWidget = <BrowseWidget key={key} accept={entry.accept} label={label} onChange={onChange} multiple={entry.multiple} required={required} />;
+        const previewUrl = this.state.previewUrls[entry.key];
+        let preview;
+        if(previewUrl) {
+          preview = (
+            <div className="labelled-input">
+              <label />
+              <img src={previewUrl} className="image-preview"/>
+            </div>
+          );
+        }
+
+        return (
+          <div key={"image-preview-" + key}>
+            { preview }
+            { browseWidget }
+          </div>
+        );
       case "list":
         const elements = Object.keys(value).map(index => {
           const element = {

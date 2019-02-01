@@ -65,7 +65,7 @@ class ContentObject extends React.Component {
           const typeInfo = object.typeInfo;
 
           const displayAppUrl = object.displayAppUrl || (typeInfo && typeInfo.displayAppUrl);
-          if(displayAppUrl && !object.isContentType) {
+          if((displayAppUrl || object.videoUrl) && !object.isContentType) {
             this.setState({
               displayAppUrl,
               view: "display"
@@ -475,7 +475,8 @@ class ContentObject extends React.Component {
         <h3>{ header }</h3>
 
         <LabelledField label={"Name"} value={this.state.object.name} />
-        <LabelledField label={"Type"} value={<span title={this.state.typeHash}>{this.state.typeName}</span>} hidden={this.state.object.isContentType} />
+        <LabelledField label={"Type Name"} value={this.state.typeName} hidden={this.state.object.isContentType} />
+        <LabelledField label={"Type Hash"} value={this.state.typeHash} hidden={this.state.object.isContentType} />
         <LabelledField label={"Description"} value={description} />
         { this.ObjectStatus() }
         <LabelledField label={"Library ID"} value={this.state.libraryId} />
@@ -539,6 +540,16 @@ class ContentObject extends React.Component {
     );
   }
 
+  DisplayVideo() {
+    return (
+      <div className="video-player">
+        <video poster={this.state.object.imageUrl} controls={true} className="full-width">
+          <source src={this.state.object.videoUrl} />
+        </video>
+      </div>
+    );
+  }
+
   AppFrame() {
     if(!this.state.displayAppUrl) { return null; }
 
@@ -567,7 +578,7 @@ class ContentObject extends React.Component {
       ["Files", "files"]
     ];
 
-    if(this.state.displayAppUrl) {
+    if(this.state.displayAppUrl || this.state.object.videoUrl) {
       tabOptions.unshift(["Display", "display"]);
     }
 
@@ -591,7 +602,11 @@ class ContentObject extends React.Component {
 
     let pageContent;
     if(this.state.view === "display") {
-      pageContent = this.AppFrame();
+      if(this.state.displayAppUrl) {
+        pageContent = this.AppFrame();
+      } else {
+        pageContent = this.DisplayVideo();
+      }
     } else if(this.state.view === "info") {
       pageContent = (
         <div>
