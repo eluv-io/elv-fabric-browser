@@ -36,13 +36,15 @@ class ListingItem extends React.Component {
     return (
       <tr onClick={onClick} onKeyPress={onClick} tabIndex={0} title={this.props.title}>
         {iconCell}
-        <td className="title-cell" title={"Title: " + this.props.title} tabIndex={0}>
+        <td className="title-cell" title={this.props.title} tabIndex={0}>
           {this.props.title}
         </td>
-        <td title={"Description: " + this.props.description} tabIndex={0}>
-          {this.props.description}
+        <td className="description-cell" title={this.props.description} tabIndex={0}>
+          <div className="description-text">
+            {this.props.description}
+          </div>
         </td>
-        <td className="status-cell" title={"Status: " + this.props.status} tabIndex={0}>
+        <td className="status-cell" title={this.props.status} tabIndex={0}>
           {this.props.status}
         </td>
       </tr>

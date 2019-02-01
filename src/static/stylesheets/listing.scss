@@ -32,14 +32,18 @@
   }
 
   .grid-listing-element {
+    color: $color-text-light;
     cursor: pointer;
     display: flex;
     flex-direction: column;
     flex-grow: 1;
     flex-shrink: 1;
-    margin: $spacing-s;
+    height: 460px;
+    justify-content: space-between;
+    max-height: 460px;
     max-width: 300px;
     min-width: 250px;
+    padding: $spacing-s;
 
     &:hover {
       background: $color-lightergray;
@@ -51,7 +55,15 @@
     }
 
     .title {
+      color: $color-text-black;
       font-size: 20px;
+    }
+
+    .description {
+      height: 80px;
+      margin-bottom: $spacing-xs;
+      max-height: 80px;
+      overflow: hidden;
     }
 
     .title,
@@ -84,7 +96,7 @@
         }
 
         &.title-header {
-          width: 35%;
+          width: 30%;
         }
 
         &.status-header {
@@ -105,16 +117,29 @@
 
       td {
         @include ellipsis;
+        color: $color-text-light;
 
         margin: 0;
+        max-height: 100px;
         padding: 0 0 0 $spacing-s;
+        word-wrap: break-word;
 
         &.icon-cell {
           padding: $spacing-xs $spacing-xxs;
         }
 
         &.title-cell {
+          color: $color-text-black;
           font-size: 18px;
+        }
+
+        &.description-cell {
+          .description-text {
+            height: auto;
+            max-height: 75px;
+            overflow-x: visible;
+            white-space: normal;
+          }
         }
 
         &.status-cell {

@@ -514,9 +514,9 @@ const CollectMetadata = async ({libraryId, writeToken, schema, fields}) => {
   return metadata;
 };
 
-export const CreateFromContentTypeSchema = ({libraryId, type, metadata, schema, fields}) => {
+export const CreateFromContentTypeSchema = ({libraryId, type, metadata, accessCharge, schema, fields}) => {
   return async (dispatch) => {
-    await Fabric.CreateAndFinalizeContentObject({
+    const createResponse = await Fabric.CreateAndFinalizeContentObject({
       libraryId,
       type,
       todo: async (writeToken) => {
@@ -531,6 +531,10 @@ export const CreateFromContentTypeSchema = ({libraryId, type, metadata, schema, 
       }
     });
 
+    if(accessCharge > 0) {
+      await Fabric.SetAccessCharge({objectId: createResponse.id, accessCharge});
+    }
+
     dispatch(SetNotificationMessage({
       message: "Successfully created content",
       redirect: true
@@ -538,7 +542,7 @@ export const CreateFromContentTypeSchema = ({libraryId, type, metadata, schema, 
   };
 };
 
-export const UpdateFromContentTypeSchema = ({libraryId, objectId, metadata, schema, fields}) => {
+export const UpdateFromContentTypeSchema = ({libraryId, objectId, metadata, accessCharge, schema, fields}) => {
   return async (dispatch) => {
     await Fabric.EditAndFinalizeContentObject({
       libraryId,
@@ -554,6 +558,8 @@ export const UpdateFromContentTypeSchema = ({libraryId, objectId, metadata, sche
         });
       }
     });
+
+    await Fabric.SetAccessCharge({objectId: objectId, accessCharge});
 
     dispatch(SetNotificationMessage({
       message: "Successfully updated content",
