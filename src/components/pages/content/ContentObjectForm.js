@@ -102,6 +102,7 @@ class ContentObjectForm extends React.Component {
     };
 
     let metadata = "";
+    let accessCharge = 0;
     if(this.state.createForm) {
       let allowedTypes = this.props.libraries[this.state.libraryId].types;
       if(Object.keys(allowedTypes).length > 0) {
@@ -120,6 +121,7 @@ class ContentObjectForm extends React.Component {
     } else {
       const object = this.props.objects[this.state.objectId];
       metadata = JSON.stringify(object.meta, null, 2);
+      accessCharge = object.baseAccessCharge;
       type = object.type;
 
       if(object.typeInfo) {
@@ -132,7 +134,8 @@ class ContentObjectForm extends React.Component {
     this.setState({
       types,
       type,
-      metadata
+      metadata,
+      accessCharge
     });
 
     this.SwitchType(types, type);
@@ -226,7 +229,8 @@ class ContentObjectForm extends React.Component {
               type,
               schema: this.state.schema,
               fields: this.state.fields,
-              metadata: this.state.metadata
+              metadata: this.state.metadata,
+              accessCharge: this.state.accessCharge
             });
           } else {
             // Update
@@ -235,7 +239,8 @@ class ContentObjectForm extends React.Component {
               objectId: this.state.objectId,
               schema: this.state.schema,
               fields: this.state.fields,
-              metadata: this.state.metadata
+              metadata: this.state.metadata,
+              accessCharge: this.state.accessCharge
             });
           }
         }
@@ -418,6 +423,15 @@ class ContentObjectForm extends React.Component {
     );
   }
 
+  AccessChargeField() {
+    return (
+      <div className="labelled-input">
+        <label htmlFor="accessCharge">Access Charge</label>
+        <input type="number" name="accessCharge" value={this.state.accessCharge} onChange={this.HandleInputChange} />
+      </div>
+    );
+  }
+
   FrameCompleted() {
     this.setState({completed: true});
   }
@@ -457,6 +471,7 @@ class ContentObjectForm extends React.Component {
         {this.TypeField()}
         {this.BuildType(this.state.schema)}
         {this.MetadataField()}
+        {this.AccessChargeField()}
       </div>
     );
 

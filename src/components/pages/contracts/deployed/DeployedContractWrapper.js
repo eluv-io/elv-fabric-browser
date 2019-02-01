@@ -53,6 +53,14 @@ export default (Component) => {
           break;
 
         case ContractTypes.object:
+          todo = async () => {
+            await this.props.GetContentObject({
+              libraryId: this.state.libraryId,
+              objectId: this.state.objectId
+            });
+          };
+          break;
+
         case ContractTypes.customObject:
           todo = async () => {
             await this.props.GetContentObject({

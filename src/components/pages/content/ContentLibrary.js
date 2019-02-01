@@ -10,6 +10,7 @@ import {PageHeader} from "../../components/Page";
 import PageTabs from "../../components/PageTabs";
 import Action from "../../components/Action";
 import Listing from "../../components/Listing";
+import {AccessChargeDisplay} from "../../../utils/Helpers";
 
 class ContentLibrary extends React.Component {
   constructor(props) {
@@ -74,29 +75,6 @@ class ContentLibrary extends React.Component {
         Delete
       </Action>
     );
-  }
-
-  ContentObjects() {
-    let objects = [];
-    const isContentType = this.state.library.isContentSpaceLibrary;
-    for(const objectId of this.state.library.objects.sort()) {
-      const object = this.props.objects[objectId];
-
-      if(!object) { continue; }
-
-      const status = isContentType ? "" : object.status.description;
-
-      objects.push({
-        id: objectId,
-        title: object.name || "Content Object " + objectId,
-        description: object.description,
-        status: status,
-        icon: object.imageUrl || ContentIcon,
-        link: Path.join(this.props.match.url, objectId)
-      });
-    }
-
-    return <Listing pageId="ContentObjects" content={objects} />;
   }
 
   ToggleVisible(id) {
@@ -242,6 +220,37 @@ class ContentLibrary extends React.Component {
     );
   }
 
+  ContentObjects() {
+    let objects = [];
+    for(const objectId of this.state.library.objects.sort()) {
+      const object = this.props.objects[objectId];
+
+      if(!object) { continue; }
+
+      let status;
+      if(object.isNormalObject) {
+        if(object.status.code !== 0) {
+          // Owner or not yet published
+          status = object.status.description;
+        } else {
+          // Published - Show access charge
+          status = AccessChargeDisplay(object.baseAccessCharge);
+        }
+      }
+
+      objects.push({
+        id: objectId,
+        title: object.name || "Content Object " + objectId,
+        description: object.description,
+        status: status,
+        icon: object.imageUrl || ContentIcon,
+        link: Path.join(this.props.match.url, objectId)
+      });
+    }
+
+    return <Listing pageId="ContentObjects" content={objects} />;
+  }
+
   Actions() {
     let manageGroupsButton;
     let manageTypesButton;
@@ -284,7 +293,7 @@ class ContentLibrary extends React.Component {
       <div className="page-container contents-page-container">
         { this.Actions() }
         <div className="object-display">
-          <PageHeader header={this.state.library.name} />
+          <PageHeader header={this.state.library.name} subHeader={this.state.library.description} />
           { tabs }
           { this.state.view === "content" ? this.ContentObjects() : this.LibraryInfo() }
         </div>
