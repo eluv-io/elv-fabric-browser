@@ -26,7 +26,7 @@ class ClippedText extends React.Component {
     const showText = this.state.showMore ? "Show less" : "Show more";
 
     return (
-      <div className={displayClass + this.props.className} title={showText}>
+      <div className={displayClass + (this.props.className || "")} title={showText}>
         <pre className="text">
           {this.props.text}
         </pre>
