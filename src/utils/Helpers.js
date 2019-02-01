@@ -30,12 +30,12 @@ export const EqualAddress = (address1, address2) => {
   return FormatAddress(address1) === FormatAddress(address2);
 };
 
-export const WeiToEther = (wei) => {
-  return wei / 1000000000000000000;
-};
-
-export const EtherToWei = (ether) => {
-  return ether * 1000000000000000000;
+export const AccessChargeDisplay = (accessCharge) => {
+  if(accessCharge === 0) {
+    return "Free";
+  } else {
+    return `φ${accessCharge}`;
+  }
 };
 
 // Adapted from ethers.js/utils/utf8.js#toUtf8String

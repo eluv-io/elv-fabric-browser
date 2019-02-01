@@ -18,6 +18,7 @@ import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
 import PageTabs from "../../components/PageTabs";
 import Action from "../../components/Action";
+import {AccessChargeDisplay} from "../../../utils/Helpers";
 
 class ContentObject extends React.Component {
   constructor(props) {
@@ -464,6 +465,10 @@ class ContentObject extends React.Component {
     const latestVersion = this.state.object.versions[0];
     const description = <ClippedText className="object-description" text={this.state.object.description} />;
     const header = this.state.object.isContentType ? "Content Type Info" : "Content Object Info";
+    let accessCharge;
+    if(this.state.object.isNormalObject) {
+      accessCharge = <LabelledField label={"Access charge"} value={AccessChargeDisplay(this.state.object.baseAccessCharge)} />;
+    }
 
     return (
       <div className="object-info label-box">
@@ -476,6 +481,7 @@ class ContentObject extends React.Component {
         <LabelledField label={"Library ID"} value={this.state.libraryId} />
         <LabelledField label={"Object ID"} value={this.state.objectId} />
         <LabelledField label={"Owner"} value={this.state.object.owner} />
+        { accessCharge }
         { this.ContractInfo() }
         <LabelledField label={"Versions"} value={this.state.object.versions.length} />
         <LabelledField label={"Parts"} value={latestVersion.parts.length} />
@@ -601,7 +607,7 @@ class ContentObject extends React.Component {
       <div className="page-container content-page-container">
         { this.Actions() }
         <div className="object-display">
-          <PageHeader header={header} />
+          <PageHeader header={header} subHeader={this.state.object.description} />
           { this.Tabs() }
           { pageContent }
         </div>

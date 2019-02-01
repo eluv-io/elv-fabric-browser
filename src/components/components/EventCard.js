@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import {FormatAddress, WeiToEther} from "../../utils/Helpers";
+import {FormatAddress} from "../../utils/Helpers";
 import Fabric from "../../clients/Fabric";
 
 class EventCard extends React.Component {
@@ -66,7 +66,7 @@ class EventCard extends React.Component {
   RawEvent(event) {
     const to = FormatAddress(event.to);
     const from = FormatAddress(event.from);
-    const value = event.value ? WeiToEther(parseInt(event.value._hex, 16)) : 0;
+    const value = event.value ? Fabric.utils.WeiToEther(parseInt(event.value._hex, 16)) : 0;
     return (
       <div className="event" key={this.Key(event)} title={JSON.stringify(event, null, 2)}>
         <div className="header">
