@@ -403,6 +403,11 @@ const Fabric = {
       meta: metadata
     }});
 
+    let videoUrl;
+    if(metadata["video"]) {
+      videoUrl = await Fabric.FabricUrl({libraryId, objectId, partHash: metadata["video"]});
+    }
+
     return {
       ...object,
       ...appUrls,
@@ -411,6 +416,7 @@ const Fabric = {
       description: metadata["eluv.description"],
       typeInfo,
       imageUrl,
+      videoUrl,
       contractAddress: FormatAddress(client.utils.HashToAddress(objectId)),
       customContractAddress,
       owner,
