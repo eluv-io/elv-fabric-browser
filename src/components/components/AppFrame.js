@@ -173,12 +173,12 @@ class AppFrame extends React.Component {
       switch (event.data.operation) {
         case "Complete":
           if(this.props.onComplete) { await this.props.onComplete(); }
-          this.Respond(event, {});
           break;
+          
         case "Cancel":
           if(this.props.onCancel) { await this.props.onCancel(); }
-          this.Respond(event, {});
           break;
+
         case "SetFrameDimensions":
           if(event.data.width) {
             this.state.appRef.current.style.width = Math.min(parseInt(event.data.width), 1200) + "px";
