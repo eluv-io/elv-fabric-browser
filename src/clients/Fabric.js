@@ -470,7 +470,7 @@ const Fabric = {
   GetCustomContentContractAddress: async ({libraryId, objectId, metadata={}}) => {
     if(libraryId === Fabric.contentSpaceLibraryId || client.utils.EqualHash(libraryId, objectId)) {
       // Content type or content library object - look at metadata
-      return metadata.customContract && metadata.customContract.address;
+      return metadata.custom_contract && metadata.custom_contract.address;
     }
 
     return await client.CustomContractAddress({libraryId, objectId});
