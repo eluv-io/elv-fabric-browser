@@ -79,7 +79,10 @@ class IFrameBase extends React.Component {
     ].join(" ");
   }
 
-  shouldComponentUpdate() { return false; }
+  // Only update if the app URL has changed
+  shouldComponentUpdate(oldProps) {
+    return this.props.appUrl !== oldProps.appUrl;
+  }
 
   componentDidMount() {
     window.addEventListener("message", this.props.listener);
@@ -116,22 +119,25 @@ class AppFrame extends React.Component {
   constructor(props) {
     super(props);
 
+    this.state = {
+      appRef: React.createRef()
+    };
+
+    this.ApiRequestListener = this.ApiRequestListener.bind(this);
+  }
+
+  AppUrl() {
     // Inject any query parameters into the given URL
-    let appUrl = props.appUrl;
-    if(props.queryParams) {
+    let appUrl = this.props.appUrl;
+    if(this.props.queryParams) {
       const parsedUrl = URI(appUrl);
-      Object.keys(props.queryParams).forEach(key => {
-        parsedUrl.addSearch(key, props.queryParams[key]);
+      Object.keys(this.props.queryParams).forEach(key => {
+        parsedUrl.addSearch(key, this.props.queryParams[key]);
       });
       appUrl = parsedUrl.toString();
     }
 
-    this.state = {
-      appRef: React.createRef(),
-      appUrl
-    };
-
-    this.ApiRequestListener = this.ApiRequestListener.bind(this);
+    return appUrl;
   }
 
   Respond(event, responseMessage) {
@@ -197,7 +203,7 @@ class AppFrame extends React.Component {
     return (
       <IFrame
         ref={this.state.appRef}
-        appUrl={this.state.appUrl}
+        appUrl={this.AppUrl()}
         listener={this.ApiRequestListener}
         className={this.props.className}
       />
