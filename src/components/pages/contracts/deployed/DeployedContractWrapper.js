@@ -69,7 +69,7 @@ export default (Component) => {
             });
 
             const object = this.props.content.objects[this.state.objectId];
-            if(!object.meta.customContract) {
+            if(!object.meta.custom_contract) {
               if(!object.type) { throw Error("Unknown contract"); }
 
               await this.props.GetContentType({versionHash: object.type});
@@ -136,13 +136,13 @@ export default (Component) => {
         case ContractTypes.customObject:
           object = this.props.content.objects[this.state.objectId];
 
-          let contractInfo = object.meta.customContract;
+          let contractInfo = object.meta.custom_contract;
 
           contractAddress = object.customContractAddress || contractInfo.address;
 
           if(!contractInfo) {
             const type = this.props.content.types[object.type];
-            contractInfo = type.meta.customContract;
+            contractInfo = type.meta.custom_contract;
             // If factory ABI is specified - that ABI should be used for this contract
             if(contractInfo.factoryAbi) {
               contractInfo.abi = contractInfo.factoryAbi;

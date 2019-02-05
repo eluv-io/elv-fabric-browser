@@ -10,7 +10,7 @@ import Id from "../../../utils/Id";
 import TrashIcon from "../../../static/icons/trash.svg";
 import {DownloadFromUrl} from "../../../utils/Files";
 import Fabric from "../../../clients/Fabric";
-import {IconButton} from "../../components/Icons";
+import {CroppedIcon, IconButton} from "../../components/Icons";
 import AppFrame from "../../components/AppFrame";
 import Redirect from "react-router/es/Redirect";
 import Action from "../../components/Action";
@@ -31,7 +31,18 @@ const defaultSchema = [
 ];
 
 const avMasterSchema = [
-  ...defaultSchema,
+  {
+    "key": "eluv.name",
+    "label": "Name",
+    "type": "string",
+    "required": true
+  },
+  {
+    "key": "eluv.description",
+    "label": "Description",
+    "type": "text",
+    "required": false
+  },
   {
     "key": "image",
     "label": "Thumbnail",
@@ -102,7 +113,7 @@ class ContentObjectForm extends React.Component {
     // Skip "none" type
     if(!type.hash) { return type; }
 
-    const typeName = (type.meta && type.meta["eluv.name"]) || type.hash;
+    const typeName = (type.meta && (type.meta.name || type.meta["eluv.name"])) || type.hash;
 
     return {
       ...type,
@@ -395,7 +406,7 @@ class ContentObjectForm extends React.Component {
           preview = (
             <div className="labelled-input">
               <label />
-              <img src={previewUrl} className="image-preview"/>
+              <CroppedIcon icon={previewUrl} containerClassname="image-preview"/>
             </div>
           );
         }

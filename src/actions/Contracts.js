@@ -269,7 +269,7 @@ export const SetCustomContentContract = ({
       libraryId,
       objectId,
       writeToken: editResponse.write_token,
-      metadataSubtree: "customContract",
+      metadataSubtree: "custom_contract",
       metadata: {
         name: contractName,
         description: contractDescription,

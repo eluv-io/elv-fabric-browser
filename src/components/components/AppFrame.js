@@ -174,7 +174,7 @@ class AppFrame extends React.Component {
         case "Complete":
           if(this.props.onComplete) { await this.props.onComplete(); }
           break;
-          
+
         case "Cancel":
           if(this.props.onCancel) { await this.props.onCancel(); }
           break;
