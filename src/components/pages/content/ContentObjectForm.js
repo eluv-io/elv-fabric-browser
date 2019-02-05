@@ -406,7 +406,9 @@ class ContentObjectForm extends React.Component {
           preview = (
             <div className="labelled-input">
               <label />
-              <CroppedIcon icon={previewUrl} containerClassname="image-preview"/>
+              <div className="image-preview">
+                <img src={previewUrl} alt={`${label} Preview`} title={`${label} Preview`} />
+              </div>
             </div>
           );
         }
