@@ -7,39 +7,18 @@
   }
 }
 
-.object-image,
-.image-preview {
+.object-image {
   img {
     border: 1px solid $color-gray;
     box-shadow: $color-gray 5px 5px 8px;
   }
 }
 
-.object-video,
-.dash-video {
-  margin: $spacing-s 0;
+.video-player {
   width: 100%;
-}
-
-.content-video-container {
-  background: $color-bg-black;
-  display: flex;
-  justify-content: center;
-
-  &.normal-size {
-    max-width: 1200px;
-    width: 75%;
-  }
-
-  &.full-size {
-    width: 100%;
-  }
 
   video {
-    &.content-object-video {
-      max-width: 100%;
-      min-width: 100%;
-    }
+    max-width: 90%;
   }
 }
 

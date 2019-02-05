@@ -123,8 +123,11 @@ class ContentLibraryForm extends React.Component {
     let imagePreview;
     if(this.state.imagePreviewUrl) {
       imagePreview = (
-        <div className="image-preview">
-          <img src={this.state.imagePreviewUrl}/>
+        <div className="labelled-input">
+          <label/>
+          <div className="image-preview">
+            <img src={this.state.imagePreviewUrl}/>
+          </div>
         </div>
       );
     }
@@ -146,11 +149,11 @@ class ContentLibraryForm extends React.Component {
   FormContent() {
     return (
       <div className="form-content">
-        { this.Image() }
         <div className="labelled-input">
           <label htmlFor="name">Name</label>
           <input name="name" value={this.state.name} onChange={this.HandleInputChange} readOnly={this.state.isContentSpaceLibrary} />
         </div>
+        { this.Image() }
         <div className="labelled-input">
           <label className="textarea-label" htmlFor="description">Description</label>
           <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />

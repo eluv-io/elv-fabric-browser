@@ -543,7 +543,7 @@ class ContentObject extends React.Component {
   DisplayVideo() {
     return (
       <div className="video-player">
-        <video poster={this.state.object.imageUrl} controls={true} className="full-width">
+        <video poster={this.state.object.imageUrl} controls={true}>
           <source src={this.state.object.videoUrl} />
         </video>
       </div>
