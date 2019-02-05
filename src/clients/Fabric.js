@@ -950,22 +950,17 @@ const Fabric = {
 
     // Get info pointing to fabric browser library and its entry objects
     async Info(subtree="/") {
-      try {
-        return (await Fabric.GetContentObjectMetadata({
-          libraryId: Fabric.contentSpaceLibraryId,
-          objectId: Fabric.contentSpaceObjectId,
-          metadataSubtree: Path.join("elv-fabric-browser", subtree)
-        })) || {};
-      } catch(error) {
-        if(error.status === 404 && ["contracts", "deployedContracts", "accessGroups"].includes(subtree)) {
-          // Not yet initialized
-          await Fabric.FabricBrowser.Initialize();
+      const info = await Fabric.GetContentObjectMetadata({
+        libraryId: Fabric.contentSpaceLibraryId,
+        objectId: Fabric.contentSpaceObjectId,
+        metadataSubtree: Path.join("elv-fabric-browser", subtree)
+      });
 
-          return await Fabric.FabricBrowser.Info(subtree);
-        } else {
-          throw error;
-        }
+      if(!info && ["contracts", "deployedContracts", "accessGroups"].includes(subtree)) {
+        await Fabric.FabricBrowser.Initialize();
       }
+
+      return info || {};
     },
 
     // Add entry by appending to object metadata
