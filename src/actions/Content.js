@@ -154,7 +154,7 @@ export const SetLibraryContentTypes = ({libraryId, typeIds=[]}) => {
       for (const typeId of idsToAdd) {
         // When adding a content type, check for custom contract
         const type = contentTypes.find(type => type.id === typeId);
-        const customContractAddress = type.meta.customContract && type.meta.customContract.address;
+        const customContractAddress = type.meta.custom_contract && type.meta.custom_contract.address;
         await Fabric.AddLibraryContentType({libraryId, typeId, customContractAddress});
       }
     }
