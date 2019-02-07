@@ -17,7 +17,7 @@ import Action from "../../components/Action";
 
 const defaultSchema = [
   {
-    "key": "eluv.name",
+    "key": "name",
     "label": "Name",
     "type": "string",
     "required": true
@@ -26,36 +26,6 @@ const defaultSchema = [
     "key": "eluv.description",
     "label": "Description",
     "type": "text",
-    "required": false
-  }
-];
-
-const avMasterSchema = [
-  {
-    "key": "eluv.name",
-    "label": "Name",
-    "type": "string",
-    "required": true
-  },
-  {
-    "key": "eluv.description",
-    "label": "Description",
-    "type": "text",
-    "required": false
-  },
-  {
-    "key": "image",
-    "label": "Thumbnail",
-    "type": "file",
-    "accept": ["image/*"],
-    "preview": true,
-    "required": true
-  },
-  {
-    "key": "video",
-    "label": "Video",
-    "type": "file",
-    "accept": ["video/*"],
     "required": false
   }
 ];
@@ -113,7 +83,7 @@ class ContentObjectForm extends React.Component {
     // Skip "none" type
     if(!type.hash) { return type; }
 
-    const typeName = (type.meta && (type.meta.name || type.meta["eluv.name"])) || type.hash;
+    const typeName = (type.meta && (type.meta.name)) || type.hash;
 
     return {
       ...type,
@@ -188,10 +158,6 @@ class ContentObjectForm extends React.Component {
       });
 
       return;
-    }
-
-    if(typeOptions.name === "avmaster2000") {
-      typeOptions.schema = avMasterSchema;
     }
 
     const schema = typeOptions.schema || defaultSchema;

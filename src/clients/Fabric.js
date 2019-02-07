@@ -132,7 +132,7 @@ const Fabric = {
     const libraryInfo = await client.ContentLibrary({libraryId});
     const owner = await Fabric.GetContentLibraryOwner({libraryId});
     const currentAccountAddress = await Fabric.CurrentAccountAddress();
-    const name = libraryInfo.meta.name || libraryInfo.meta["eluv.name"] || "Content Library " + libraryId;
+    const name = libraryInfo.meta.name || "Content Library " + libraryId;
 
     /* Library object and private metadata */
     const libraryObjectId = libraryId.replace("ilib", "iq__");
@@ -352,7 +352,7 @@ const Fabric = {
           // Pull latest version info up to top level
           ...latestVersion,
           ...object,
-          name: latestVersion.meta["eluv.name"] || latestVersion.meta["name"],
+          name: latestVersion.meta.name,
           description: latestVersion.meta["eluv.description"],
           imageUrl,
           contractAddress: client.utils.HashToAddress(object.id),
@@ -412,7 +412,7 @@ const Fabric = {
       ...object,
       ...appUrls,
       meta: metadata,
-      name: metadata["eluv.name"] || metadata["name"],
+      name: metadata.name,
       description: metadata["eluv.description"],
       typeInfo,
       imageUrl,
@@ -631,7 +631,7 @@ const Fabric = {
     return await client.CreateContentType({
       metadata: {
         ...metadata,
-        "eluv.name": name,
+        name,
         "eluv.description": description
       },
       bitcode

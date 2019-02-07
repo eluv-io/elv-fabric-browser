@@ -96,7 +96,7 @@ class ContentLibraryTypesForm extends React.Component {
 
   TypeSelector() {
     const typeOptions = this.AvailableTypes().map(type => {
-      const typeName = type.meta["eluv.name"] || type.id;
+      const typeName = type.meta.name || type.id;
 
       return <option name="selectedTypeId" key={type.id} value={type.id}>{typeName}</option>;
     });
@@ -136,7 +136,7 @@ class ContentLibraryTypesForm extends React.Component {
       const type = this.state.contentTypes.find(type => type.id === typeId);
       return (
         <div className="list-item" key={"added-type-" + type.id}>
-          <span>{type.meta["eluv.name"] || type.id}</span>
+          <span>{type.meta.name || type.id}</span>
           <IconButton
             src={DeleteIcon}
             onClick={() => this.HandleRemoveType(type.id)}

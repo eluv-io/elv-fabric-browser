@@ -110,7 +110,7 @@ class ContentObject extends React.Component {
     if(object.isNormalObject && typeInfo) {
       this.setState({
         typeHash: typeInfo.hash,
-        typeName: (typeInfo.meta && typeInfo.meta["eluv.name"]) ? typeInfo.meta["eluv.name"] : typeInfo.hash
+        typeName: (typeInfo.meta && typeInfo.meta.name) ? typeInfo.meta.name : typeInfo.hash
       });
     }
 
