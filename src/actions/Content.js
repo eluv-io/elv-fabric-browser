@@ -95,7 +95,7 @@ export const UpdateContentLibrary = ({
 }) => {
   return async (dispatch) => {
     publicMetadata = ParseInputJson(publicMetadata);
-    publicMetadata["eluv.name"] = name;
+    publicMetadata.name = name;
     publicMetadata["eluv.description"] = description;
 
     await Fabric.ReplacePublicLibraryMetadata({
@@ -265,7 +265,7 @@ export const ReviewContentObject = async ({libraryId, objectId, approve, note}) 
 export const CreateContentObject = ({libraryId, name, description, type, metadata}) => {
   return async (dispatch) => {
     metadata = ParseInputJson(metadata);
-    metadata["eluv.name"] = name;
+    metadata.name = name;
     metadata["eluv.description"] = description;
 
     const objectInfo = await Fabric.CreateAndFinalizeContentObject({
@@ -316,7 +316,7 @@ export const UpdateContentObject = ({libraryId, objectId, name, description, typ
     });
 
     metadata = ParseInputJson(metadata);
-    metadata["eluv.name"] = name;
+    metadata.name = name;
     metadata["eluv.description"] = description;
 
     await Fabric.ReplaceMetadata({
