@@ -10,7 +10,8 @@ class ContentObjectUploadForm extends React.Component {
     this.state = {
       libraryId: this.props.libraryId || this.props.match.params.libraryId,
       objectId: this.props.match.params.objectId,
-      encrypt: true
+      encrypt: true,
+      progress: {}
     };
 
     this.FormContent = this.FormContent.bind(this);
@@ -25,6 +26,15 @@ class ContentObjectUploadForm extends React.Component {
   }
 
   HandleSubmit() {
+    const callback = ({uploaded, total, filename}) => {
+      this.setState({
+        progress: {
+          ...this.state.progress,
+          [filename]: (uploaded * 100 / total).toFixed(1)
+        }}
+      );
+    };
+
     this.setState({
       submitRequestId: this.props.WrapRequest({
         todo: async () => {
@@ -32,7 +42,8 @@ class ContentObjectUploadForm extends React.Component {
             libraryId: this.state.libraryId,
             objectId: this.state.objectId,
             files: this.state.files,
-            encrypt: this.state.encrypt
+            encrypt: this.state.encrypt,
+            callback
           });
         }
       })
@@ -42,7 +53,7 @@ class ContentObjectUploadForm extends React.Component {
   FormContent() {
     return (
       <div className="upload-form">
-        <BrowseWidget label="Files" onChange={this.HandleFileSelect} required={true} multiple={true}/>
+        <BrowseWidget label="Files" onChange={this.HandleFileSelect} required={true} multiple={true} progress={this.state.progress}/>
         <div className="labelled-input">
           <label htmlFor="encrypt">Encrypt Parts</label>
           <input

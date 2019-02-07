@@ -21,6 +21,7 @@
     "browser-solc": "^1.0.0",
     "connected-react-router": "^6.0.0-beta.1",
     "elv-client-js": "git+https://github.com/eluv-io/elv-client-js.git",
+    "node-fetch": "^2.3.0",
     "path": "^0.12.7",
     "pretty-bytes": "^5.1.0",
     "prop-types": "^15.6.2",
