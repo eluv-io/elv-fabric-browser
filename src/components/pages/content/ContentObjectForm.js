@@ -10,7 +10,7 @@ import Id from "../../../utils/Id";
 import TrashIcon from "../../../static/icons/trash.svg";
 import {DownloadFromUrl} from "../../../utils/Files";
 import Fabric from "../../../clients/Fabric";
-import {CroppedIcon, IconButton} from "../../components/Icons";
+import {IconButton} from "../../components/Icons";
 import AppFrame from "../../components/AppFrame";
 import Redirect from "react-router/es/Redirect";
 import Action from "../../components/Action";

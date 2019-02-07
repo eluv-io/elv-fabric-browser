@@ -65,6 +65,7 @@ class BrowseWidget extends React.Component {
   }
 
   ItemRow(item) {
+    const info = this.props.progress[item.path] ? `${this.props.progress[item.path]}%` : PrettyBytes(item.size || 0);
     return (
       <tr className="item-icon" key={item.path}>
         <td>
@@ -74,7 +75,7 @@ class BrowseWidget extends React.Component {
           { item.path }
         </td>
         <td>
-          { PrettyBytes(item.size || 0) }
+          { info }
         </td>
       </tr>
     );
@@ -109,7 +110,7 @@ class BrowseWidget extends React.Component {
             <tr>
               <th className="type-header" />
               <th>Name</th>
-              <th className="size-header">Size</th>
+              <th className="size-header" />
             </tr>
           </thead>
           <tbody>
@@ -173,7 +174,8 @@ BrowseWidget.propTypes = {
     PropTypes.string,
     PropTypes.arrayOf(PropTypes.string)
   ]),
-  directories: PropTypes.bool
+  directories: PropTypes.bool,
+  progress: PropTypes.object
 };
 
 export default BrowseWidget;
