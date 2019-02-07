@@ -110,7 +110,7 @@ class ContentApps extends React.Component {
       const typeMeta = (this.state.object.typeInfo && this.state.object.typeInfo.meta) || {};
       const typeApp = typeMeta[`eluv.${role}App`];
       if(typeApp) {
-        const typeName = typeMeta["eluv.name"] || typeMeta["name"] || "content type";
+        const typeName = typeMeta.name || "content type";
         info = <LabelledField label="Name" value={`${typeApp} (${typeName})`} />;
       }
     }
