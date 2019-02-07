@@ -65,7 +65,8 @@ class BrowseWidget extends React.Component {
   }
 
   ItemRow(item) {
-    const info = this.props.progress[item.path] ? `${this.props.progress[item.path]}%` : PrettyBytes(item.size || 0);
+    const info = this.props.progress &&  this.props.progress[item.path] ?
+      `${this.props.progress[item.path]}%` : PrettyBytes(item.size || 0);
     return (
       <tr className="item-icon" key={item.path}>
         <td>
