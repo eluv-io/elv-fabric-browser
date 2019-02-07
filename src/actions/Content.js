@@ -377,18 +377,25 @@ export const GetContentType = ({versionHash}) => {
   };
 };
 
-export const UploadParts = ({libraryId, objectId, files, encrypt}) => {
+export const UploadParts = ({libraryId, objectId, files, callback, encrypt}) => {
   return async (dispatch) => {
-    let contentDraft = await Fabric.EditContentObject({ libraryId, objectId });
+    let contentDraft = await Fabric.EditContentObject({libraryId, objectId});
 
     await Promise.all(Array.from(files).map(async file => {
       const data = await new Response(file).blob();
+
+      let partCallback;
+      if(callback) {
+        partCallback = ({uploaded, total}) => callback({uploaded, total, filename: file.name});
+      }
 
       await Fabric.UploadPart({
         libraryId,
         objectId,
         writeToken: contentDraft.write_token,
         data,
+        chunkSize: 10000000,
+        callback: partCallback,
         encrypted: encrypt
       });
     }));

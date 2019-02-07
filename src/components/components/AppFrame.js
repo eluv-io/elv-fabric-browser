@@ -140,10 +140,10 @@ class AppFrame extends React.Component {
     return appUrl;
   }
 
-  Respond(event, responseMessage) {
+  Respond(requestId, source, responseMessage) {
     responseMessage = {
       ...responseMessage,
-      requestId: event.data.requestId,
+      requestId,
       type: "ElvFrameResponse"
     };
 
@@ -154,7 +154,7 @@ class AppFrame extends React.Component {
 
     try {
       // Try sending the response message as-is
-      event.source.postMessage(
+      source.postMessage(
         responseMessage,
         "*"
       );
@@ -173,7 +173,10 @@ class AppFrame extends React.Component {
     if(!event || !event.data || event.data.type !== "ElvFrameRequest") { return; }
 
     if(!event.data.operation) {
-      return this.Respond(event, await Fabric.ExecuteFrameRequest({event}));
+      await Fabric.ExecuteFrameRequest({
+        request: event.data,
+        Respond: (response) => this.Respond(response.requestId, event.source, response)
+      });
     } else {
 
       switch (event.data.operation) {

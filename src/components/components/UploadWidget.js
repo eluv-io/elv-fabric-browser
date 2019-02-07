@@ -41,6 +41,7 @@ class UploadWidget extends React.Component {
           onChange={(event) => this.setState({files: event.target.files})}
           directories={this.state.directories}
           multiple={true}
+          progress={this.props.progress}
         />
       </div>
     );
@@ -70,6 +71,7 @@ UploadWidget.propTypes = {
   requests: PropTypes.object.isRequired,
   path: PropTypes.string.isRequired,
   displayPath: PropTypes.string.isRequired,
+  progress: PropTypes.object,
   Upload: PropTypes.func.isRequired,
   WrapRequest: PropTypes.func.isRequired,
   OnComplete: PropTypes.func.isRequired,

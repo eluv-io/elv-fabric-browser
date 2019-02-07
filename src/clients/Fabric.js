@@ -53,11 +53,11 @@ const Fabric = {
     }
   },
 
-  async ExecuteFrameRequest({event}) {
+  async ExecuteFrameRequest({request, Respond}) {
     if(isFrameClient) {
-      return await client.PassRequest({request: event.data});
+      Respond(await client.PassRequest({request, Respond}));
     } else {
-      return await client.CallFromFrameMessage(event.data);
+      Respond(await client.CallFromFrameMessage(request));
     }
   },
 
@@ -815,8 +815,8 @@ const Fabric = {
     return client.DownloadPart({ libraryId, objectId, versionHash, partHash, encrypted});
   },
 
-  UploadPart: ({libraryId, objectId, writeToken, data, encrypted=true}) => {
-    return client.UploadPart({libraryId, objectId, writeToken, data, encrypted});
+  UploadPart: ({libraryId, objectId, writeToken, data, callback, chunkSize=1000000, encrypted=true}) => {
+    return client.UploadPart({libraryId, objectId, writeToken, data, callback, chunkSize, encrypted});
   },
 
   FabricUrl: ({libraryId, objectId, versionHash, partHash}) => {
