@@ -14,6 +14,7 @@ import {IconButton} from "../../components/Icons";
 import AppFrame from "../../components/AppFrame";
 import Redirect from "react-router/es/Redirect";
 import Action from "../../components/Action";
+import PageTabs from "../../components/PageTabs";
 
 const defaultSchema = [
   {
@@ -146,21 +147,17 @@ class ContentObjectForm extends React.Component {
     const object = this.props.objects[this.state.objectId];
     let typeOptions = type && types[type] || {};
 
+    let manageAppUrl;
+    let showManageApp = false;
+    let schema = typeOptions.schema || defaultSchema;
     if(object && object.manageAppUrl && !object.isContentType) {
-      this.setState({
-        manageAppUrl: object.manageAppUrl
-      });
-
-      return;
+      manageAppUrl = object.manageAppUrl;
+      showManageApp = true;
     } else if(typeOptions.manageAppUrl) {
-      this.setState({
-        manageAppUrl: typeOptions.manageAppUrl
-      });
-
-      return;
+      manageAppUrl = typeOptions.manageAppUrl;
+      showManageApp = true;
     }
 
-    const schema = typeOptions.schema || defaultSchema;
     const allowCustomMetadata = typeOptions.schema ? typeOptions.allowCustomMetadata : true;
     const data = this.state.createForm ? undefined : this.props.objects[this.state.objectId].meta;
 
@@ -170,7 +167,8 @@ class ContentObjectForm extends React.Component {
       fields: initialFields,
       schema: schema,
       allowCustomMetadata,
-      manageAppUrl: undefined
+      manageAppUrl,
+      showManageApp
     });
   }
 
@@ -447,8 +445,7 @@ class ContentObjectForm extends React.Component {
   }
 
   MetadataField() {
-    if(!this.state.allowCustomMetadata) { return null; }
-
+    //if(!this.state.allowCustomMetadata) { return null; }
     return (
       <div className="labelled-input">
         <label className="textarea-label">Metadata</label>
@@ -475,6 +472,22 @@ class ContentObjectForm extends React.Component {
     this.setState({completed: true});
   }
 
+  AppFormSelection() {
+    if(!this.state.manageAppUrl) { return null; }
+
+    return (
+      <div className="labelled-input">
+        <label>Form</label>
+        <PageTabs
+          className="compact"
+          selected={this.state.showManageApp}
+          onChange={(value) => this.setState({showManageApp: value})}
+          options={[["App", true], ["Default", false]]}
+        />
+      </div>
+    );
+  }
+
   AppFrame(legend) {
     const queryParams = {
       contentSpaceId: Fabric.contentSpaceId,
@@ -488,7 +501,9 @@ class ContentObjectForm extends React.Component {
       <form>
         <fieldset>
           <legend>{legend}</legend>
+          { this.AppFormSelection() }
           { this.TypeField() }
+          <br />
           <AppFrame
             appUrl={this.state.manageAppUrl}
             queryParams={queryParams}
@@ -507,6 +522,7 @@ class ContentObjectForm extends React.Component {
   FormContent(legend, redirectPath, cancelPath) {
     const formContent = (
       <div>
+        {this.AppFormSelection()}
         {this.TypeField()}
         {this.BuildType(this.state.schema)}
         {this.MetadataField()}
@@ -542,7 +558,7 @@ class ContentObjectForm extends React.Component {
       return <Redirect push to={redirectPath} />;
     }
 
-    if(this.state.manageAppUrl) {
+    if(this.state.manageAppUrl && this.state.showManageApp) {
       return this.AppFrame(legend);
     } else {
       return this.FormContent(legend, redirectPath, cancelPath);
