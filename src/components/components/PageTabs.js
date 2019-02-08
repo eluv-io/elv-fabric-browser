@@ -1,10 +1,11 @@
 import React from "react";
 import PropTypes from "prop-types";
+import Action from "./Action";
 
-const PageTabs = ({options, selected, onChange}) => {
+const PageTabs = ({options, selected, onChange, className=""}) => {
   const tabs = options.map(([label, value]) => {
     return (
-      <button
+      <Action
         className={
           "action action-compact action-wide action-inline " +
           (selected === value ? "tertiary" : "secondary")
@@ -13,21 +14,31 @@ const PageTabs = ({options, selected, onChange}) => {
         key={"tab-" + value}
       >
         { label }
-      </button>
+      </Action>
     );
   });
 
   return (
-    <div className="actions-container tab-container">
+    <div className={"actions-container tab-container " + className}>
       { tabs }
     </div>
   );
 };
 
 PageTabs.propTypes = {
-  options: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)).isRequired,
-  selected: PropTypes.string.isRequired,
-  onChange: PropTypes.func.isRequired
+  options: PropTypes.arrayOf(
+    PropTypes.arrayOf(
+      PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.bool
+      ])
+    )).isRequired,
+  selected: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.bool
+  ]).isRequired,
+  onChange: PropTypes.func.isRequired,
+  className: PropTypes.string
 };
 
 export default PageTabs;
