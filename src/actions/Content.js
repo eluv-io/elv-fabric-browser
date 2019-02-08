@@ -407,7 +407,7 @@ export const UploadParts = ({libraryId, objectId, files, callback, encrypt}) => 
       libraryId,
       objectId,
       writeToken: contentDraft.write_token,
-      metadataSubtree: "eluv.parts",
+      metadataSubtree: "eluv-fb.parts",
       metadata: parts
     });
 
