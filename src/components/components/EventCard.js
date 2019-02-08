@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import {FormatAddress} from "../../utils/Helpers";
+import {FormatAddress, ParseBytes32} from "../../utils/Helpers";
 import Fabric from "../../clients/Fabric";
 
 class EventCard extends React.Component {
@@ -14,6 +14,9 @@ class EventCard extends React.Component {
       .map(([key, value]) => {
         if(typeof value === "object" && value._hex) {
           return [key, `${parseInt(value._hex, 16)} (${value._hex})`];
+        } else if(value.length === 66) {
+          // bytes32
+          return [key, ParseBytes32(value), value];
         } else {
           return [key, value];
         }
@@ -21,11 +24,11 @@ class EventCard extends React.Component {
 
     if(inputs.length === 0) { return null; }
 
-    const inputFields = inputs.map(([key, value]) => {
+    const inputFields = inputs.map(([key, value, title]) => {
       return (
         <div className="labelled-field" key={"input-" + key}>
           <label>{key}</label>
-          <div className="value">{value}</div>
+          <div className="value" title={title || value}>{value}</div>
         </div>
       );
     });
@@ -54,8 +57,12 @@ class EventCard extends React.Component {
             <div className="value">{Fabric.utils.AddressToHash(event.address)}</div>
           </div>
           <div className="labelled-field">
-            <label>Address</label>
+            <label>Contract Address</label>
             <div className="value">{event.address}</div>
+          </div>
+          <div className="labelled-field">
+            <label>From</label>
+            <div className="value">{event.from}</div>
           </div>
           { this.Inputs(event) }
         </div>

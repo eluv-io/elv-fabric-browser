@@ -1,4 +1,5 @@
 import Utils from "elv-client-js/src/Utils";
+import BigNumber from "bignumber.js";
 
 // Traverse through a hashmap without throwing errors on undefined keys
 // If any keys undefined, returns undefined
@@ -35,6 +36,18 @@ export const AccessChargeDisplay = (accessCharge) => {
     return "Free";
   } else {
     return `φ${accessCharge}`;
+  }
+};
+
+export const ParseBytes32 = (bytes32String) => {
+  try {
+    return Bytes32ToUtf8(bytes32String);
+  } catch(error) {
+    if(bytes32String.startsWith("0x0000")) {
+      return new BigNumber(bytes32String).toString();
+    } else {
+      return bytes32String;
+    }
   }
 };
 
