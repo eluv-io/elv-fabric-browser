@@ -1,28 +1,21 @@
 import React from "react";
 import Path from "path";
-import RequestPage from "../RequestPage";
-
 import LibraryIcon from "../../../static/icons/content.svg";
 import {PageHeader} from "../../components/Page";
 import Action from "../../components/Action";
-import Listing from "../../components/Listing";
+import {ListingContainer} from "../../../containers/pages/Components";
 
 class ContentLibraries extends React.Component {
   constructor(props) {
     super(props);
     this.state = {};
 
-    this.PageContent = this.PageContent.bind(this);
+    this.LoadLibraries = this.LoadLibraries.bind(this);
+    this.ContentLibraries = this.ContentLibraries.bind(this);
   }
 
-  componentDidMount() {
-    this.setState({
-      requestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.ListContentLibraries();
-        }
-      })
-    });
+  async LoadLibraries() {
+    await this.props.ListContentLibraries();
   }
 
   ContentLibraries() {
@@ -41,10 +34,10 @@ class ContentLibraries extends React.Component {
       });
     }
 
-    return <Listing pageId="ContentLibraries" content={libraries} /> ;
+    return libraries;
   }
 
-  PageContent() {
+  render() {
     // This is the root component, actual path may be "/content" or "/"
     return (
       <div className="page-container contents-page-container">
@@ -52,18 +45,14 @@ class ContentLibraries extends React.Component {
           <Action type="link" to={Path.join("/content", "create")}>New Library</Action>
         </div>
         <PageHeader header="Content Libraries" />
-        { this.ContentLibraries() }
+        <div className="page-content">
+          <ListingContainer
+            pageId="ContentLibraries"
+            LoadContent={this.LoadLibraries}
+            RenderContent={this.ContentLibraries}
+          />
+        </div>
       </div>
-    );
-  }
-
-  render() {
-    return (
-      <RequestPage
-        pageContent={this.PageContent}
-        requestId={this.state.requestId}
-        requests={this.props.requests}
-      />
     );
   }
 }

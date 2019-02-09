@@ -621,9 +621,9 @@ class ContentObject extends React.Component {
     return (
       <div className="page-container content-page-container">
         { this.Actions() }
-        <div className="object-display">
-          <PageHeader header={header} subHeader={this.state.object.description} />
-          { this.Tabs() }
+        <PageHeader header={header} subHeader={this.state.object.description} />
+        { this.Tabs() }
+        <div className="page-content">
           { pageContent }
         </div>
       </div>

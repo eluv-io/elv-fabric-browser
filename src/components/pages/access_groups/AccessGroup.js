@@ -9,7 +9,7 @@ import Redirect from "react-router/es/Redirect";
 import {EqualAddress} from "../../../utils/Helpers";
 import {PageHeader} from "../../components/Page";
 import Action from "../../components/Action";
-import Listing from "../../components/Listing";
+import {ListingContainer} from "../../../containers/pages/Components";
 
 class AccessGroup extends React.Component {
   constructor(props) {
@@ -22,17 +22,23 @@ class AccessGroup extends React.Component {
     this.PageContent = this.PageContent.bind(this);
     this.RequestComplete = this.RequestComplete.bind(this);
     this.DeleteAccessGroup = this.DeleteAccessGroup.bind(this);
+    this.LoadAccessGroupMembers = this.LoadAccessGroupMembers.bind(this);
+    this.AccessGroupMembers = this.AccessGroupMembers.bind(this);
   }
 
   componentDidMount() {
     this.setState({
       requestId: this.props.WrapRequest({
         todo: async () => {
-          await this.props.SetCurrentAccount();
-          await this.props.ListAccessGroups();
+          await this.LoadAccessGroupMembers();
         }
       })
     });
+  }
+
+  async LoadAccessGroupMembers() {
+    await this.props.SetCurrentAccount();
+    await this.props.ListAccessGroups();
   }
 
   RequestComplete() {
@@ -63,7 +69,7 @@ class AccessGroup extends React.Component {
   }
 
   AccessGroupMembers() {
-    const members = Object.values(this.state.accessGroup.members).map(member => {
+    return Object.values(this.state.accessGroup.members).map(member => {
       return {
         id: member.address,
         title: member.name,
@@ -72,8 +78,17 @@ class AccessGroup extends React.Component {
         link: "/"
       };
     });
+  }
 
-    return <Listing pageId="AccessGroupMembers" content={members} noIcon={true} />;
+  AccessGroupMembersListing() {
+    return (
+      <ListingContainer
+        pageId="AccessGroupMembers"
+        LoadContent={this.LoadAccessGroupMembers}
+        RenderContent={this.AccessGroupMembers}
+        noIcon={true}
+      />
+    );
   }
 
   Actions() {
@@ -112,8 +127,8 @@ class AccessGroup extends React.Component {
     return (
       <div className="page-container access-group-page-container">
         { this.Actions() }
-        <div className="object-display">
-          <PageHeader header={this.state.accessGroup.name} />
+        <PageHeader header={this.state.accessGroup.name} />
+        <div className="page-content">
           <div className="label-box">
             <LabelledField label="Description" value={description} />
             <LabelledField label="Owner" value={this.state.accessGroup.owner} />
@@ -123,7 +138,7 @@ class AccessGroup extends React.Component {
               </Link>
             } />
             <h3>Members</h3>
-            { this.AccessGroupMembers() }
+            { this.AccessGroupMembersListing() }
           </div>
         </div>
       </div>

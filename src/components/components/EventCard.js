@@ -45,6 +45,7 @@ class EventCard extends React.Component {
 
   ParsedEvent(event) {
     const eventName = event.contract ? `${event.contract} :: ${event.name}` : event.name;
+    const value = event.value ? Fabric.utils.WeiToEther(parseInt(event.value._hex, 16)) : 0;
     return (
       <div className="event" key={this.Key(event)} title={JSON.stringify(event, null, 2)}>
         <div className="header">
@@ -52,6 +53,10 @@ class EventCard extends React.Component {
           <div className="info">{event.logIndex}</div>
         </div>
         <div className="inputs indented">
+          <div className="labelled-field">
+            <label>Transaction Hash</label>
+            <div className="value">{Fabric.utils.AddressToHash(event.transactionHash)}</div>
+          </div>
           <div className="labelled-field">
             <label>ID</label>
             <div className="value">{Fabric.utils.AddressToHash(event.address)}</div>
@@ -63,6 +68,10 @@ class EventCard extends React.Component {
           <div className="labelled-field">
             <label>From</label>
             <div className="value">{event.from}</div>
+          </div>
+          <div className="labelled-field">
+            <label>Value</label>
+            <div className="value">{"φ" + value}</div>
           </div>
           { this.Inputs(event) }
         </div>

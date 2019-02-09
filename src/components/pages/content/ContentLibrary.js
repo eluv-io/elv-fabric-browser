@@ -9,8 +9,8 @@ import ClippedText from "../../components/ClippedText";
 import {PageHeader} from "../../components/Page";
 import PageTabs from "../../components/PageTabs";
 import Action from "../../components/Action";
-import Listing from "../../components/Listing";
 import {AccessChargeDisplay} from "../../../utils/Helpers";
+import {ListingContainer} from "../../../containers/pages/Components";
 
 class ContentLibrary extends React.Component {
   constructor(props) {
@@ -26,6 +26,8 @@ class ContentLibrary extends React.Component {
 
     this.PageContent = this.PageContent.bind(this);
     this.RequestComplete = this.RequestComplete.bind(this);
+    this.LoadObjects = this.LoadObjects.bind(this);
+    this.ContentObjects = this.ContentObjects.bind(this);
   }
 
   componentDidMount() {
@@ -33,12 +35,15 @@ class ContentLibrary extends React.Component {
       requestId: this.props.WrapRequest({
         todo: async () => {
           await this.props.GetContentLibrary({libraryId: this.state.libraryId});
-          await this.props.ListContentObjects({libraryId: this.state.libraryId});
           await this.props.ListContentLibraryGroups({libraryId: this.state.libraryId});
           await this.props.ListAccessGroups();
         }
       })
     });
+  }
+
+  async LoadObjects() {
+    await this.props.ListContentObjects({libraryId: this.state.libraryId});
   }
 
   RequestComplete() {
@@ -248,7 +253,17 @@ class ContentLibrary extends React.Component {
       });
     }
 
-    return <Listing pageId="ContentObjects" content={objects} />;
+    return objects;
+  }
+
+  ObjectListing() {
+    return (
+      <ListingContainer
+        pageId="ContentObjects"
+        LoadContent={this.LoadObjects}
+        RenderContent={this.ContentObjects}
+      />
+    );
   }
 
   Actions() {
@@ -292,10 +307,10 @@ class ContentLibrary extends React.Component {
     return (
       <div className="page-container contents-page-container">
         { this.Actions() }
-        <div className="object-display">
-          <PageHeader header={this.state.library.name} subHeader={this.state.library.description} />
-          { tabs }
-          { this.state.view === "content" ? this.ContentObjects() : this.LibraryInfo() }
+        <PageHeader header={this.state.library.name} subHeader={this.state.library.description} />
+        { tabs }
+        <div className="page-content">
+          { this.state.view === "content" ? this.ObjectListing() : this.LibraryInfo() }
         </div>
       </div>
     );
