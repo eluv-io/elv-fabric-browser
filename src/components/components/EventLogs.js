@@ -151,14 +151,13 @@ class EventLogs extends React.Component {
     return (
       <form onSubmit={this.LoadMoreEvents} className="form-container event-actions-container">
         <div className="labelled-input">
-          <label htmlFor="fromBlock">From Block</label>
-          <input type="number" name="fromBlock" value={this.state.fromBlock} onChange={this.HandleInputChange} />
-        </div>
-        <div className="labelled-input">
           <label htmlFor="toBlock">To Block</label>
           <input type="number" name="toBlock" value={this.state.toBlock} onChange={this.HandleInputChange} />
         </div>
-
+        <div className="labelled-input">
+          <label htmlFor="fromBlock">From Block</label>
+          <input type="number" name="fromBlock" value={this.state.fromBlock} onChange={this.HandleInputChange} />
+        </div>
         <div className="actions-container">
           <RequestButton
             requests={this.props.requests}

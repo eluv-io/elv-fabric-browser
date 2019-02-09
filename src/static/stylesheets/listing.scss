@@ -1,4 +1,15 @@
 .listing {
+  height: 100%;
+  width: 100%;
+
+  .loading {
+    align-items: center;
+    display: flex;
+    height: 50%;
+    justify-content: center;
+    width: 100%;
+  }
+
   .listing-actions {
     align-items: center;
     display: flex;
@@ -29,6 +40,8 @@
   .grid-listing {
     display: flex;
     flex-wrap: wrap;
+    justify-content: space-around;
+    margin-top: $spacing-m;
   }
 
   .grid-listing-element {
@@ -38,32 +51,38 @@
     flex-direction: column;
     flex-grow: 1;
     flex-shrink: 1;
-    height: 460px;
+    height: 300px;
     justify-content: space-between;
-    max-height: 460px;
+    max-height: 300px;
     max-width: 300px;
-    min-width: 250px;
-    padding: $spacing-s;
+    padding: $spacing-s $spacing-xs;
+    width: 40%;
 
     &:hover {
       background: $color-lightergray;
     }
 
     .icon-container {
-      $image-size: 300px;
+      $image-size: 200px;
       @include cropped-image($image-size, $image-size, 0%, $image-size, $image-size);
     }
 
     .title {
       color: $color-text-black;
-      font-size: 20px;
+      font-size: 18px;
     }
 
     .description {
-      height: 80px;
+      font-size: 14px;
+      height: 2.5em;
       margin-bottom: $spacing-xs;
       max-height: 80px;
       overflow: hidden;
+    }
+
+    .title,
+    .status {
+      @include ellipsis;
     }
 
     .title,

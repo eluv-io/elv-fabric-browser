@@ -1,7 +1,10 @@
 @import "ball-pulse";
-@import "ball-circus";
 @import "ball-clip-rotate";
 
 .animated-icon {
   margin: 0 15px;
+}
+
+.la-dark {
+  color: $color-lightgray;
 }

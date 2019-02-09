@@ -118,8 +118,8 @@ class Contract extends React.Component {
           <Action type="link" to={Path.join(this.props.match.url, "deploy")}>Deploy Contract</Action>
           <Action className="delete-action" onClick={() => this.DeleteContract(this.state.contractName)}>Delete Contract</Action>
         </div>
-        <div className="object-display">
-          <PageHeader header={this.state.contractName} />
+        <PageHeader header={this.state.contractName} />
+        <div className="page-content">
           <div className="label-box">
             <h3>Contract Info</h3>
             <LabelledField label="Description" value={description} />

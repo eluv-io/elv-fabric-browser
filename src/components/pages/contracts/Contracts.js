@@ -1,12 +1,9 @@
 import React from "react";
 import Path from "path";
-
-import RequestPage from "../RequestPage";
-
 import {PageHeader} from "../../components/Page";
 import PageTabs from "../../components/PageTabs";
 import Action from "../../components/Action";
-import Listing from "../../components/Listing";
+import {ListingContainer} from "../../../containers/pages/Components";
 
 class Contracts extends React.Component {
   constructor(props) {
@@ -16,25 +13,20 @@ class Contracts extends React.Component {
       view: "deployed"
     };
 
-    this.PageContent = this.PageContent.bind(this);
+    this.LoadContracts = this.LoadContracts.bind(this);
+    this.Contracts = this.Contracts.bind(this);
   }
 
-  componentDidMount() {
-    this.setState({
-      requestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.ListContracts();
-          await this.props.ListDeployedContracts();
-        }
-      })
-    });
+  async LoadContracts() {
+    await this.props.ListContracts();
+    await this.props.ListDeployedContracts();
   }
 
-  Contracts() {
-    const contracts = this.state.view === "saved" ? this.props.contracts : this.props.deployedContracts;
+  Contracts(view) {
+    const contracts = view === "saved" ? this.props.contracts : this.props.deployedContracts;
 
     const content = Object.keys(contracts).map(contractId => {
-      const link = this.state.view === "deployed" ?
+      const link = view === "deployed" ?
         Path.join("/contracts", "deployed", contractId) :
         Path.join("/contracts", contractId);
 
@@ -54,10 +46,10 @@ class Contracts extends React.Component {
       };
     });
 
-    return <Listing pageId="Contracts" content={content} noIcon={true} />;
+    return content;
   }
 
-  PageContent() {
+  render() {
     const tabs = (
       <PageTabs
         options={[
@@ -78,18 +70,13 @@ class Contracts extends React.Component {
         </div>
         <PageHeader header="Contracts" />
         { tabs }
-        { this.Contracts() }
+        <ListingContainer
+          pageId="Contracts"
+          LoadContent={this.LoadContracts}
+          RenderContent={() => this.Contracts(this.state.view)}
+          noIcon={true}
+        />
       </div>
-    );
-  }
-
-  render() {
-    return (
-      <RequestPage
-        requestId={this.state.requestId}
-        requests={this.props.requests}
-        pageContent={this.PageContent}
-      />
     );
   }
 }
