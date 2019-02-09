@@ -29,8 +29,8 @@ class DeployedContractEvents extends React.Component {
         <div className="actions-container">
           <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
         </div>
-        <div className="object-display">
-          <PageHeader header={this.props.contract.name} subHeader={this.props.contract.description} />
+        <PageHeader header={this.props.contract.name} subHeader={this.props.contract.description} />
+        <div className="page-content">
           <div className="label-box">
             <div className="contract-events">
               { this.ContractEvents() }

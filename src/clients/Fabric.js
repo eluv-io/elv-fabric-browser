@@ -853,7 +853,7 @@ const Fabric = {
   },
 
   ContractEvents: ({contractAddress, abi, fromBlock, toBlock}) => {
-    return client.ContractEvents({contractAddress, abi, fromBlock, toBlock, includeSender: true});
+    return client.ContractEvents({contractAddress, abi, fromBlock, toBlock, includeTransaction: true});
   },
 
   WithdrawContractFunds: ({contractAddress, abi, ether}) => {
@@ -861,7 +861,7 @@ const Fabric = {
   },
 
   GetBlockchainEvents: ({toBlock, fromBlock, count=10}) => {
-    return client.Events({toBlock, fromBlock, count, includeSender: true});
+    return client.Events({toBlock, fromBlock, count, includeTransaction: true});
   },
 
   /* Naming */

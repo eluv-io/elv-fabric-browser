@@ -121,8 +121,8 @@ class DeployedContract extends React.Component {
           <Action type="link" to={Path.join(this.props.match.url, "logs")}>Contract Logs</Action>
           { this.DeleteButton() }
         </div>
-        <div className="object-display">
-          <PageHeader header={this.props.contract.name} subHeader={this.props.contract.description} />
+        <PageHeader header={this.props.contract.name} subHeader={this.props.contract.description} />
+        <div className="page-content">
           <div className="label-box">
             <h3>Contract Info</h3>
             <LabelledField label="Name" value={this.props.contract.name} />

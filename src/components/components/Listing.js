@@ -7,6 +7,7 @@ import GridIcon from "../../static/icons/grid.svg";
 import {CroppedIcon, IconButton} from "./Icons";
 import Redirect from "react-router/es/Redirect";
 import Link from "react-router-dom/es/Link";
+import RequestElement from "./RequestElement";
 
 class ListingItem extends React.Component {
   constructor(props) {
@@ -53,18 +54,16 @@ class ListingItem extends React.Component {
 
   AsGridElement() {
     return (
-      <Link to={this.props.link} title={this.props.title}>
-        <div className="grid-listing-element">
-          <CroppedIcon containerClassname="icon-container" className="dark" icon={this.props.icon}/>
-          <div className="title">
-            {this.props.title}
-          </div>
-          <div className="description">
-            {this.props.description}
-          </div>
-          <div className="status">
-            {this.props.status}
-          </div>
+      <Link to={this.props.link} title={this.props.title} className="grid-listing-element">
+        <CroppedIcon containerClassname="icon-container" className="dark" icon={this.props.icon}/>
+        <div className="title">
+          {this.props.title}
+        </div>
+        <div className="description">
+          {this.props.description}
+        </div>
+        <div className="status">
+          {this.props.status}
         </div>
       </Link>
     );
@@ -108,6 +107,21 @@ class Listing extends React.Component {
     };
 
     this.Filter = this.Filter.bind(this);
+    this.Content = this.Content.bind(this);
+  }
+
+  componentDidMount() {
+    this.Load();
+  }
+
+  Load() {
+    this.setState({
+      requestId: this.props.WrapRequest({
+        todo: async () => {
+          await this.props.LoadContent();
+        }
+      })
+    });
   }
 
   Filter(event) {
@@ -144,13 +158,17 @@ class Listing extends React.Component {
       <div className="listing-actions">
         <input className="filter" placeholder="Filter" value={this.state.filter} onChange={this.Filter} />
         { switchViewButton }
-        <IconButton src={RefreshIcon} title="Refresh" onClick={() => {/* TODO */}}/>
+        <RequestElement requestId={this.state.requestId} requests={this.props.requests} loadingIcon="rotate" >
+          <IconButton className="request-icon" src={RefreshIcon} title="Refresh" onClick={() => this.Load()} />
+        </RequestElement>
       </div>
     );
   }
 
   Content() {
-    if(this.props.content.length === 0) {
+    const content = this.props.RenderContent();
+
+    if(!content || content.length === 0) {
       return <h4>No Content Available</h4>;
     }
 
@@ -171,7 +189,7 @@ class Listing extends React.Component {
             </tr>
           </thead>
           <tbody>
-            { this.props.content.map(item =>
+            { content.map(item =>
               <ListingItem key={item.id} noIcon={this.props.noIcon} display={"list"} {...item} />)}
           </tbody>
         </table>
@@ -179,7 +197,7 @@ class Listing extends React.Component {
     } else {
       return (
         <div className="grid-listing">
-          { this.props.content.map(item =>
+          { content.map(item =>
             <ListingItem key={item.id} noIcon={this.props.noIcon} display={"grid"} {...item} />)}
         </div>
       );
@@ -190,7 +208,12 @@ class Listing extends React.Component {
     return (
       <div className="listing">
         { this.ActionBar() }
-        { this.Content() }
+        <RequestElement
+          requestId={this.state.requestId}
+          requests={this.props.requests}
+          render={this.Content}
+          loadingClassname="loading"
+        />
       </div>
     );
   }
@@ -198,8 +221,10 @@ class Listing extends React.Component {
 
 Listing.propTypes = {
   pageId: PropTypes.string.isRequired,
-  content: PropTypes.arrayOf(PropTypes.object).isRequired,
-  noIcon: PropTypes.bool
+  noIcon: PropTypes.bool,
+  requests: PropTypes.object.isRequired,
+  RenderContent: PropTypes.func.isRequired,
+  LoadContent: PropTypes.func.isRequired
 };
 
 export default Listing;
