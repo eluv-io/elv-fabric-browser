@@ -4,6 +4,7 @@ import EventCard from "./EventCard";
 import PropTypes from "prop-types";
 import {BallClipRotate} from "./AnimatedIcons";
 import RequestButton from "./RequestButton";
+import Action from "./Action";
 
 class EventLogs extends React.Component {
   constructor(props) {
@@ -13,13 +14,16 @@ class EventLogs extends React.Component {
       latestBlock: 0,
       earliestBlock: Number.MAX_SAFE_INTEGER,
       fromBlock: 0,
-      toBlock: 0
+      toBlock: 0,
+      watchEvents: false,
+      watcher: undefined
     };
 
     this.PageContent = this.PageContent.bind(this);
     this.FilterEvents = this.FilterEvents.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.LoadMoreEvents = this.LoadMoreEvents.bind(this);
+    this.ToggleWatch = this.ToggleWatch.bind(this);
   }
 
   componentDidMount() {
@@ -41,6 +45,30 @@ class EventLogs extends React.Component {
   HandleInputChange(event) {
     this.setState({
       [event.target.name]: parseInt(event.target.value)
+    });
+  }
+
+  Watch() {
+    this.setState({
+      watcher: setTimeout(async () => {
+        await this.RequestEvents();
+
+        this.Watch();
+      }, 5000)
+    });
+  };
+
+  ToggleWatch() {
+    if(this.state.watchEvents) {
+      if(this.state.watcher) {
+        clearTimeout(this.state.watcher);
+      }
+    } else {
+      this.Watch();
+    }
+
+    this.setState({
+      watchEvents: !this.state.watchEvents
     });
   }
 
@@ -120,14 +148,7 @@ class EventLogs extends React.Component {
   }
 
   WatchIcon() {
-    if(this.state.watcher) {
-      return (
-        <h3 className="header-with-loader">
-          Event Logs
-          <BallClipRotate />
-        </h3>
-      );
-    }
+
   }
 
   LoadMoreEventsButton() {
@@ -148,27 +169,34 @@ class EventLogs extends React.Component {
   }
 
   FilterForm() {
+    const watchButtonText = this.state.watchEvents ? "Stop Watching" : "Start Watching";
+
     return (
-      <form onSubmit={this.LoadMoreEvents} className="form-container event-actions-container">
-        <div className="labelled-input">
-          <label htmlFor="toBlock">To Block</label>
-          <input type="number" name="toBlock" value={this.state.toBlock} onChange={this.HandleInputChange} />
-        </div>
-        <div className="labelled-input">
-          <label htmlFor="fromBlock">From Block</label>
-          <input type="number" name="fromBlock" value={this.state.fromBlock} onChange={this.HandleInputChange} />
-        </div>
+      <div className="events-controls">
+        <form onSubmit={this.LoadMoreEvents} className="form-container event-actions-container">
+          <div className="labelled-input">
+            <label htmlFor="toBlock">To Block</label>
+            <input type="number" name="toBlock" value={this.state.toBlock} onChange={this.HandleInputChange} />
+          </div>
+          <div className="labelled-input">
+            <label htmlFor="fromBlock">From Block</label>
+            <input type="number" name="fromBlock" value={this.state.fromBlock} onChange={this.HandleInputChange} />
+          </div>
+          <div className="actions-container">
+            <RequestButton
+              requests={this.props.requests}
+              requestId={this.state.loadRequestId}
+              OnRequestComplete={this.RequestComplete}
+              onClick={this.FilterEvents}
+              className="action"
+              text="Filter Events"
+            />
+          </div>
+        </form>
         <div className="actions-container">
-          <RequestButton
-            requests={this.props.requests}
-            requestId={this.state.loadRequestId}
-            OnRequestComplete={this.RequestComplete}
-            onClick={this.FilterEvents}
-            className="action"
-            text="Filter Events"
-          />
+          <Action className="action action-wide" onClick={this.ToggleWatch}>{watchButtonText}</Action>
         </div>
-      </form>
+      </div>
     );
   }
 
@@ -181,11 +209,13 @@ class EventLogs extends React.Component {
   }
 
   PageContent() {
+    const watchIcon = this.state.watchEvents ? <BallClipRotate /> : null;
+
     return (
       <div className="events">
         <h3 className="header-with-loader">
           Event Logs
-          <BallClipRotate />
+          { watchIcon }
         </h3>
         { this.FilterForm() }
         <div className="events-container">

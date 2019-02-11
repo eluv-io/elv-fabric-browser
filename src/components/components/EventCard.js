@@ -24,11 +24,11 @@ class EventCard extends React.Component {
 
     if(inputs.length === 0) { return null; }
 
-    const inputFields = inputs.map(([key, value, title]) => {
+    const inputFields = inputs.map(([key, value]) => {
       return (
         <div className="labelled-field" key={"input-" + key}>
           <label>{key}</label>
-          <div className="value" title={title || value}>{value}</div>
+          <div className="value" title={value.toString()}>{value}</div>
         </div>
       );
     });
