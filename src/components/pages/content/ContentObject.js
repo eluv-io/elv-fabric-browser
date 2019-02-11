@@ -226,7 +226,9 @@ class ContentObject extends React.Component {
 
     if(this.state.object.status.code > 0 && this.state.permissions.canReview) {
       return (
-        <Action text="Review" type="link" to={Path.join(this.props.match.url, "review")} />
+        <Action type="link" to={Path.join(this.props.match.url, "review")}>
+          Review
+        </Action>
       );
     }
   }
