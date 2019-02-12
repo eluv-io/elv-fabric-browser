@@ -7,9 +7,9 @@ import {ToList} from "../utils/TypeSchema";
 import {DownloadFromUrl, FileInfo} from "../utils/Files";
 import Path from "path";
 
-export const ListContentLibraries = ({params}) => {
+export const ListContentLibraries = () => {
   return async (dispatch) => {
-    let libraries = await Fabric.ListContentLibraries({params});
+    let libraries = await Fabric.ListContentLibraries();
 
     // Exclude special content space library
     delete libraries[Fabric.contentSpaceLibraryId];
