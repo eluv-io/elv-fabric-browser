@@ -7,9 +7,9 @@ import {ToList} from "../utils/TypeSchema";
 import {DownloadFromUrl, FileInfo} from "../utils/Files";
 import Path from "path";
 
-export const ListContentLibraries = () => {
+export const ListContentLibraries = ({params}) => {
   return async (dispatch) => {
-    let libraries = await Fabric.ListContentLibraries();
+    let libraries = await Fabric.ListContentLibraries({params});
 
     // Exclude special content space library
     delete libraries[Fabric.contentSpaceLibraryId];
@@ -513,7 +513,7 @@ const CollectMetadata = async ({libraryId, writeToken, schema, fields}) => {
         break;
 
       case "list":
-        metadata[entry.key] = ToList(fields[entry.key]);
+        metadata[entry.key] = ToList(fields[entry.key]).filter(item => item);
         break;
       case "object":
         metadata[entry.key] = await CollectMetadata({
