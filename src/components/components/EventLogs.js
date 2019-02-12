@@ -42,6 +42,10 @@ class EventLogs extends React.Component {
     }
   }
 
+  componentWillUnmount() {
+    clearTimeout(this.state.watcher);
+  }
+
   HandleInputChange(event) {
     this.setState({
       [event.target.name]: parseInt(event.target.value)
@@ -145,10 +149,6 @@ class EventLogs extends React.Component {
         }
       })
     });
-  }
-
-  WatchIcon() {
-
   }
 
   LoadMoreEventsButton() {
