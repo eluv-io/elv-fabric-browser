@@ -60,7 +60,7 @@ class EventLogs extends React.Component {
         this.Watch();
       }, 5000)
     });
-  };
+  }
 
   ToggleWatch() {
     if(this.state.watchEvents) {

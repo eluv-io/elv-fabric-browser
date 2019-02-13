@@ -109,14 +109,48 @@ const Fabric = {
 
   /* Libraries */
 
-  ListContentLibraries: async () => {
+  ListContentLibraries: async ({params}) => {
     const libraryIds = await client.ContentLibraries();
-
-    let contentLibraries = {};
-    await Promise.all(
+    let filteredLibraries = await Promise.all(
       libraryIds.map(async libraryId => {
+        return {
+          libraryId,
+          meta: await client.PublicLibraryMetadata({libraryId})
+        };
+      })
+    );
+
+    // Filter libraries
+    if(params.filter) {
+      filteredLibraries = filteredLibraries.filter(({meta}) => {
         try {
-          contentLibraries[libraryId] = await Fabric.GetContentLibrary({libraryId});
+          return meta.name.toLowerCase().includes(params.filter.toLowerCase());
+        } catch(e) {
+          return false;
+        }
+      });
+    }
+
+    // Sort libraries
+    filteredLibraries = filteredLibraries.sort((a, b) => {
+      const name1 = a.meta.name || "zz";
+      const name2 = b.meta.name || "zz";
+      return name1.toLowerCase() < name2.toLowerCase() ? -1 : 1;
+    });
+
+    const count = filteredLibraries.length;
+
+    // Paginate libraries
+    const page = params.page - 1;
+    const perPage = params.perPage || 10;
+
+    filteredLibraries = filteredLibraries.slice(page * perPage, (page+1) * perPage);
+
+    let libraries = {};
+    await Promise.all(
+      filteredLibraries.map(async ({libraryId}) => {
+        try {
+          libraries[libraryId] = await Fabric.GetContentLibrary({libraryId});
         } catch(error) {
           console.error("Failed to get content library:");
           console.error(error);
@@ -124,7 +158,10 @@ const Fabric = {
       })
     );
 
-    return contentLibraries;
+    return {
+      libraries,
+      count
+    };
   },
 
   GetContentLibrary: async ({libraryId}) => {
@@ -317,8 +354,36 @@ const Fabric = {
   /* Objects */
 
   // Make sure not to call anything requiring content object authorization
-  ListContentObjects: async ({libraryId}) => {
-    const libraryObjects = (await client.ContentObjects({libraryId}));
+  ListContentObjects: async ({libraryId, params}) => {
+    let libraryObjects = (await client.ContentObjects({libraryId}));
+
+    // Exclude library object
+    libraryObjects = libraryObjects.filter(object => object.id !== libraryId.replace("ilib", "iq__"));
+
+    // Filter objects
+    if(params.filter) {
+      libraryObjects = libraryObjects.filter(object => {
+        try {
+          return object.versions[0].meta.name.toLowerCase().includes(params.filter.toLowerCase());
+        } catch(e) {
+          return false;
+        }
+      });
+    }
+
+    const count = libraryObjects.length;
+
+    // Sort objects
+    libraryObjects = libraryObjects.sort((a, b) => {
+      const name1 = a.versions[0].meta.name|| "zz";
+      const name2 = b.versions[0].meta.name || "zz";
+      return name1.toLowerCase() < name2.toLowerCase() ? -1 : 1;
+    });
+
+    // Paginate objects
+    const page = params.page - 1;
+    const perPage = params.perPage || 10;
+    libraryObjects = libraryObjects.slice(page * perPage, (page+1) * perPage);
 
     let objects = {};
     for (const object of libraryObjects) {
@@ -326,9 +391,6 @@ const Fabric = {
         const isContentLibraryObject = client.utils.EqualHash(libraryId, object.id);
         const isContentType = libraryId === Fabric.contentSpaceLibraryId && !isContentLibraryObject;
         const isNormalObject = !isContentLibraryObject && !isContentType;
-
-        // Skip library content object
-        if (isContentLibraryObject) { continue; }
 
         // Only normal objects have status and access charge
         let status, baseAccessCharge;
@@ -369,7 +431,10 @@ const Fabric = {
       }
     }
 
-    return objects;
+    return {
+      objects,
+      count
+    };
   },
 
   GetContentObject: async ({libraryId, objectId}) => {

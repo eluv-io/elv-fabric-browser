@@ -42,8 +42,8 @@ class ContentLibrary extends React.Component {
     });
   }
 
-  async LoadObjects() {
-    await this.props.ListContentObjects({libraryId: this.state.libraryId});
+  async LoadObjects({params}) {
+    await this.props.ListContentObjects({libraryId: this.state.libraryId, params});
   }
 
   RequestComplete() {
@@ -227,7 +227,7 @@ class ContentLibrary extends React.Component {
 
   ContentObjects() {
     let objects = [];
-    for(const objectId of this.state.library.objects.sort()) {
+    for(const objectId of this.state.library.objects) {
       const object = this.props.objects[objectId];
 
       if(!object) { continue; }
@@ -245,6 +245,7 @@ class ContentLibrary extends React.Component {
 
       objects.push({
         id: objectId,
+        sortKey: (object.name || "zz").toLowerCase(),
         title: object.name || "Content Object " + objectId,
         description: object.description,
         status: status,
@@ -253,13 +254,15 @@ class ContentLibrary extends React.Component {
       });
     }
 
-    return objects;
+    return objects.sort((a, b) => a.sortKey > b.sortKey ? 1 : -1);
   }
 
   ObjectListing() {
     return (
       <ListingContainer
         pageId="ContentObjects"
+        paginate={true}
+        count={this.props.count.objects[this.state.libraryId]}
         LoadContent={this.LoadObjects}
         RenderContent={this.ContentObjects}
       />

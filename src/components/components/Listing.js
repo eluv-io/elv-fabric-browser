@@ -1,96 +1,12 @@
 import React from "react";
 import PropTypes from "prop-types";
-
-import RefreshIcon from "../../static/icons/refresh.svg";
-import ListIcon from "../../static/icons/list.svg";
+import {IconButton} from "./Icons";
 import GridIcon from "../../static/icons/grid.svg";
-import {CroppedIcon, IconButton} from "./Icons";
-import Redirect from "react-router/es/Redirect";
-import Link from "react-router-dom/es/Link";
+import ListIcon from "../../static/icons/list.svg";
 import RequestElement from "./RequestElement";
-
-class ListingItem extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {};
-  }
-
-  Redirect(to) {
-    this.setState({
-      redirect: to
-    });
-  }
-
-  AsTableRow() {
-    const onClick = () => this.Redirect(this.props.link);
-
-    let iconCell;
-    if(!this.props.noIcon) {
-      iconCell = (
-        <td className="icon-cell">
-          <CroppedIcon containerClassname="icon-container" className="dark" icon={this.props.icon}/>
-        </td>
-      );
-    }
-
-    return (
-      <tr onClick={onClick} onKeyPress={onClick} tabIndex={0} title={this.props.title}>
-        {iconCell}
-        <td className="title-cell" title={this.props.title} tabIndex={0}>
-          {this.props.title}
-        </td>
-        <td className="description-cell" title={this.props.description} tabIndex={0}>
-          <div className="description-text">
-            {this.props.description}
-          </div>
-        </td>
-        <td className="status-cell" title={this.props.status} tabIndex={0}>
-          {this.props.status}
-        </td>
-      </tr>
-    );
-  }
-
-  AsGridElement() {
-    return (
-      <Link to={this.props.link} title={this.props.title} className="grid-listing-element">
-        <CroppedIcon containerClassname="icon-container" className="dark" icon={this.props.icon}/>
-        <div className="title">
-          {this.props.title}
-        </div>
-        <div className="description">
-          {this.props.description}
-        </div>
-        <div className="status">
-          {this.props.status}
-        </div>
-      </Link>
-    );
-  }
-
-  render() {
-    if(this.state.redirect) {
-      return <Redirect to={this.state.redirect} />;
-    }
-
-    if(this.props.display === "list") {
-      return this.AsTableRow();
-    } else {
-      return this.AsGridElement();
-    }
-  }
-}
-
-ListingItem.propTypes = {
-  id: PropTypes.string.isRequired,
-  title: PropTypes.string.isRequired,
-  description: PropTypes.string,
-  status: PropTypes.string,
-  icon: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
-  link: PropTypes.string.isRequired,
-  noIcon: PropTypes.bool
-};
+import RefreshIcon from "../../static/icons/refresh.svg";
+import ListingView from "./ListingView";
+import Action from "./Action";
 
 let ListingOptions = {};
 
@@ -103,11 +19,14 @@ class Listing extends React.Component {
 
     this.state = {
       display: savedOptions.display || "list",
+      perPage: 1,
+      page: 10,
       filter: "",
+      filterTimeout: undefined
     };
 
+    this.Load = this.Load.bind(this);
     this.Filter = this.Filter.bind(this);
-    this.Content = this.Content.bind(this);
   }
 
   componentDidMount() {
@@ -118,15 +37,15 @@ class Listing extends React.Component {
     this.setState({
       requestId: this.props.WrapRequest({
         todo: async () => {
-          await this.props.LoadContent();
+          await this.props.LoadContent({
+            params: {
+              page: this.state.page,
+              perPage: this.state.perPage,
+              filter: this.state.filter
+            }
+          });
         }
       })
-    });
-  }
-
-  Filter(event) {
-    this.setState({
-      filter: event.target.value
     });
   }
 
@@ -141,7 +60,100 @@ class Listing extends React.Component {
     });
   }
 
-  ActionBar() {
+  ChangePage(page) {
+    this.setState({
+      page
+    }, this.Load);
+  }
+
+  // Debounced filter
+  Filter(event) {
+    const value = event.target.value;
+
+    if(this.state.filterTimeout) {
+      clearTimeout(this.state.filterTimeout);
+    }
+
+    this.setState({
+      filter: value,
+      filterTimeout: setTimeout(this.Load, 500)
+    });
+  }
+
+  PageButton(title, text, page, disabled) {
+    const isTextButton = text !== page;
+
+    return (
+      <li key={title}>
+        <Action
+          title={"Page " + page}
+          onClick={() => this.ChangePage(page)}
+          disabled={disabled}
+          className={`page-button ${isTextButton ? "text-button" : ""}`}
+        >
+          {text.toString()}
+        </Action>
+      </li>
+    );
+  }
+
+  PageSpread() {
+    if(!this.props.count) { return; }
+
+    const totalPages = Math.ceil(this.props.count / this.state.perPage);
+    let start = 1;
+    let end = Math.min(10, totalPages);
+
+    if(this.state.page >= 5) {
+      start = this.state.page - 4;
+      end = start + 9;
+
+      if(end > totalPages) {
+        end = totalPages;
+        start = Math.max(totalPages - 9, 1);
+      }
+    }
+
+    const spread = (end - start) + 1;
+
+    return [...Array(spread).keys()].map(i => {
+      const page = start + i;
+      return this.PageButton("Page " + page, page, page, page === this.state.page);
+    });
+  }
+
+  PreviousPageButtons() {
+    const disabled = this.state.page <= 1;
+
+    return [
+      this.PageButton("First Page", "First", 1, disabled),
+      this.PageButton("Previous Page", "Previous", this.state.page - 1, disabled)
+    ];
+  }
+
+  NextPageButtons() {
+    const totalPages = Math.ceil(this.props.count / this.state.perPage);
+    const disabled = (this.state.page * this.state.perPage) >= this.props.count;
+
+    return [
+      this.PageButton("Next Page", "Next", this.state.page + 1, disabled),
+      this.PageButton("Last Page", "Last", totalPages, disabled)
+    ];
+  }
+
+  PaginationControls() {
+    if(!this.props.paginate) { return; }
+
+    return (
+      <ul className="page-controls">
+        { this.PreviousPageButtons() }
+        { this.PageSpread() }
+        { this.NextPageButtons() }
+      </ul>
+    );
+  }
+
+  Actions() {
     let switchViewButton;
     // No point in offering grid view if there is no icon
     if(!this.props.noIcon) {
@@ -156,64 +168,31 @@ class Listing extends React.Component {
 
     return (
       <div className="listing-actions">
-        <input className="filter" placeholder="Filter" value={this.state.filter} onChange={this.Filter} />
-        { switchViewButton }
-        <RequestElement requestId={this.state.requestId} requests={this.props.requests} loadingIcon="rotate" >
-          <IconButton className="request-icon" src={RefreshIcon} title="Refresh" onClick={() => this.Load()} />
-        </RequestElement>
+        <div className="controls">
+          { this.PaginationControls() }
+        </div>
+        <div className="controls">
+          <input className="filter" placeholder="Filter" value={this.state.filter} onChange={this.Filter} />
+          { switchViewButton }
+          <RequestElement requestId={this.state.requestId} requests={this.props.requests} loadingIcon="rotate" >
+            <IconButton className="request-icon" src={RefreshIcon} title="Refresh" onClick={this.Load} />
+          </RequestElement>
+        </div>
       </div>
     );
-  }
-
-  Content() {
-    const content = this.props.RenderContent();
-
-    if(!content || content.length === 0) {
-      return <h4>No Content Available</h4>;
-    }
-
-    let iconHeader;
-    if(!this.props.noIcon) {
-      iconHeader = <th className="icon-header" />;
-    }
-
-    if(this.state.display === "list") {
-      return (
-        <table>
-          <thead>
-            <tr>
-              { iconHeader }
-              <th className="title-header" />
-              <th className="description-header" />
-              <th className="status-header" />
-            </tr>
-          </thead>
-          <tbody>
-            { content.map(item =>
-              <ListingItem key={item.id} noIcon={this.props.noIcon} display={"list"} {...item} />)}
-          </tbody>
-        </table>
-      );
-    } else {
-      return (
-        <div className="grid-listing">
-          { content.map(item =>
-            <ListingItem key={item.id} noIcon={this.props.noIcon} display={"grid"} {...item} />)}
-        </div>
-      );
-    }
   }
 
   render() {
     return (
       <div className="listing">
-        { this.ActionBar() }
-        <RequestElement
-          requestId={this.state.requestId}
-          requests={this.props.requests}
-          render={this.Content}
-          loadingClassname="loading"
-        />
+        { this.Actions() }
+        <RequestElement requestId={this.state.requestId} requests={this.props.requests} loadingClassname="loading">
+          <ListingView
+            display={this.state.display}
+            noIcon={this.props.noIcon}
+            RenderContent={this.props.RenderContent}
+          />
+        </RequestElement>
       </div>
     );
   }
@@ -223,6 +202,8 @@ Listing.propTypes = {
   pageId: PropTypes.string.isRequired,
   noIcon: PropTypes.bool,
   requests: PropTypes.object.isRequired,
+  paginate: PropTypes.bool,
+  count: PropTypes.number,
   RenderContent: PropTypes.func.isRequired,
   LoadContent: PropTypes.func.isRequired
 };
