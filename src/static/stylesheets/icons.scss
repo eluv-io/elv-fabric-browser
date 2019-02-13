@@ -24,15 +24,20 @@
     width: auto;
   }
 
-  &:hover {
+  &:hover:enabled {
     .icon {
-      opacity: 0.8;
+      opacity: 0.8
     }
   }
 
-  &:active {
+  &:active:enabled {
     .icon {
-      opacity: 0.9;
+      opacity: 0.9
     }
+  }
+
+  &:disabled {
+    cursor: auto;
+    opacity: 0.5;
   }
 }

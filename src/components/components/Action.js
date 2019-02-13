@@ -2,7 +2,9 @@ import React from "react";
 import PropTypes from "prop-types";
 import Link from "react-router-dom/es/Link";
 
-const Action = ({title, type, to, onClick, className, children}) => {
+const Action = ({title, type, to, onClick, className, disabled=false, children}) => {
+  className = className || "";
+
   const text = children;
 
   if(!title) { title = text; }
@@ -30,6 +32,7 @@ const Action = ({title, type, to, onClick, className, children}) => {
         type={type}
         className={`action ${className}`}
         onClick={onClick}
+        disabled={disabled}
       >
         { text }
       </button>
@@ -43,7 +46,8 @@ Action.propTypes = {
   type: PropTypes.string,
   to: PropTypes.string,
   onClick: PropTypes.func,
-  className: PropTypes.string
+  className: PropTypes.string,
+  disabled: PropTypes.bool
 };
 
 export default Action;

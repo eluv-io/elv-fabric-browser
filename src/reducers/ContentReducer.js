@@ -5,7 +5,11 @@ const ContentReducer = (state = {}, action) => {
     case ActionTypes.content.libraries.list:
       return {
         ...state,
-        libraries: action.libraries
+        libraries: action.libraries,
+        count: {
+          ...state.count,
+          libraries: action.count
+        }
       };
 
     case ActionTypes.content.libraries.get:
@@ -45,8 +49,14 @@ const ContentReducer = (state = {}, action) => {
       return {
         ...state,
         objects: {
-          ...state.objects,
           ...action.objects
+        },
+        count: {
+          ...state.count,
+          objects: {
+            ...(state.count.objects || {}),
+            [action.libraryId]: action.count
+          }
         }
       };
 
@@ -90,7 +100,8 @@ const ContentReducer = (state = {}, action) => {
         ...state,
         libraries: state.libraries || {},
         objects: state.objects || {},
-        types: state.types || {}
+        types: state.types || {},
+        count: state.count || {libraries: 0, objects: {}}
       };
   }
 };

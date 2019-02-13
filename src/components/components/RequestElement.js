@@ -8,8 +8,14 @@ class RequestElement extends React.Component {
   }
 
   render() {
-    const request = this.props.requests[this.props.requestId];
-    if((request && request.loading) || (this.props.render && !request)) {
+    // Loading state can either be indicated by "loading" boolean or by observing a request
+    let loading = this.props.loading;
+    if(this.props.requests) {
+      const request = this.props.requests[this.props.requestId];
+      loading = (request && request.loading) || (this.props.render && !request);
+    }
+
+    if(loading) {
       if(this.props.noIndicator) { return null; }
 
       const loadingIcon = this.props.loadingIcon === "rotate" ? <BallClipRotate/> : <BallPulse/>;
@@ -30,7 +36,9 @@ class RequestElement extends React.Component {
 }
 
 RequestElement.propTypes = {
-  requests: PropTypes.object.isRequired,
+  loading: PropTypes.bool,
+  requestId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  requests: PropTypes.object,
   render: PropTypes.func,
   children: PropTypes.element,
   noIndicator: PropTypes.bool,
