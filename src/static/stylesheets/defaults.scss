@@ -4,7 +4,6 @@ body {
   font-size: 16px;
   height: 100%;
   margin: 0;
-  //font-family: Helvetica, sans-serif;
   padding: 0;
 }
 
@@ -28,8 +27,8 @@ h3 {
   &.header-with-loader {
     align-items: center;
     display: flex;
-    justify-content: space-between;
     height: 30px;
+    justify-content: space-between;
   }
 }
 
@@ -96,6 +95,17 @@ tr {
     &.item-path {
       max-width: 150px;
     }
+  }
+}
+
+ul {
+  display: flex;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    display: inline;
   }
 }
 

@@ -27,9 +27,9 @@ export const Icon = ({src, title, className=""}) => {
   return <InlineSVG className={"icon dark " + className} title={title} src={src} />;
 };
 
-export const IconButton = ({src, title, onClick}) => {
+export const IconButton = ({src, title, onClick, disabled=false}) => {
   return (
-    <button className="icon-button" type="button" role="button" title={title} onClick={onClick}>
+    <button className="icon-button" type="button" role="button" title={title} onClick={onClick} disabled={disabled}>
       <InlineSVG className="icon dark clickable" src={src} />
     </button>
   );

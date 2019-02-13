@@ -7,16 +7,17 @@ import {ToList} from "../utils/TypeSchema";
 import {DownloadFromUrl, FileInfo} from "../utils/Files";
 import Path from "path";
 
-export const ListContentLibraries = () => {
+export const ListContentLibraries = ({params}) => {
   return async (dispatch) => {
-    let libraries = await Fabric.ListContentLibraries();
+    let {libraries, count} = await Fabric.ListContentLibraries({params});
 
     // Exclude special content space library
     delete libraries[Fabric.contentSpaceLibraryId];
 
     dispatch({
       type: ActionTypes.content.libraries.list,
-      libraries
+      libraries,
+      count
     });
   };
 };
@@ -198,13 +199,15 @@ export const UpdateContentLibraryGroups = ({libraryId, groups, originalGroups}) 
   };
 };
 
-export const ListContentObjects = ({libraryId}) => {
+export const ListContentObjects = ({libraryId, params}) => {
   return async (dispatch) => {
-    const objects = await Fabric.ListContentObjects({libraryId});
+    const {objects, count} = await Fabric.ListContentObjects({libraryId, params});
 
     dispatch({
       type: ActionTypes.content.objects.list,
-      objects
+      libraryId,
+      objects,
+      count
     });
   };
 };

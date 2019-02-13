@@ -14,8 +14,8 @@ class ContentLibraries extends React.Component {
     this.ContentLibraries = this.ContentLibraries.bind(this);
   }
 
-  async LoadLibraries() {
-    await this.props.ListContentLibraries();
+  async LoadLibraries({params}) {
+    await this.props.ListContentLibraries({params});
   }
 
   ContentLibraries() {
@@ -48,6 +48,8 @@ class ContentLibraries extends React.Component {
         <div className="page-content">
           <ListingContainer
             pageId="ContentLibraries"
+            paginate={true}
+            count={this.props.count.libraries}
             LoadContent={this.LoadLibraries}
             RenderContent={this.ContentLibraries}
           />
