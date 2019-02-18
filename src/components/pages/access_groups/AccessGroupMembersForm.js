@@ -1,45 +1,17 @@
 import React from "react";
-import RequestForm from "../../forms/RequestForm";
-import RequestPage from "../RequestPage";
+import PropTypes from "prop-types";
 import Path from "path";
 import Id from "../../../utils/Id";
 import { FormatAddress } from "../../../utils/Helpers";
 import Action from "../../components/Action";
+import Form from "../../forms/Form";
 
 class AccessGroupMembersForm extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      name: "",
-      description: "",
-      submitRequestId: undefined,
-      loadRequestId: undefined,
-      contractAddress: this.props.match.params.contractAddress
-    };
-
-    this.PageContent = this.PageContent.bind(this);
-    this.RequestComplete = this.RequestComplete.bind(this);
-    this.HandleInputChange = this.HandleInputChange.bind(this);
-    this.HandleSubmit = this.HandleSubmit.bind(this);
-    this.AddMember = this.AddMember.bind(this);
-  }
-
-  componentDidMount() {
-    this.setState({
-      loadRequestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.ListAccessGroups();
-        }
-      })
-    });
-  }
-
-  RequestComplete() {
-    const accessGroup = this.props.accessGroups[this.state.contractAddress];
-
     let members = {};
-    Object.values(accessGroup.members).map(member => {
+    Object.values(props.accessGroup.members).map(member => {
       members[Id.next()] = {
         name: member.name,
         address: member.address,
@@ -47,14 +19,14 @@ class AccessGroupMembersForm extends React.Component {
       };
     });
 
-    this.setState({
-      accessGroup,
-      name: accessGroup.name,
-      description: accessGroup.description,
-      address: accessGroup.address,
+    this.state = {
       members,
-      originalMembers: accessGroup.members
-    });
+      originalMembers: props.accessGroup.members
+    };
+
+    this.HandleInputChange = this.HandleInputChange.bind(this);
+    this.HandleSubmit = this.HandleSubmit.bind(this);
+    this.AddMember = this.AddMember.bind(this);
   }
 
   HandleInputChange(memberId) {
@@ -72,7 +44,7 @@ class AccessGroupMembersForm extends React.Component {
     };
   }
 
-  HandleSubmit() {
+  async HandleSubmit() {
     let members = {};
     Object.values(this.state.members).map(member => {
       members[member.name] = {
@@ -82,16 +54,10 @@ class AccessGroupMembersForm extends React.Component {
       };
     });
 
-    this.setState({
-      submitRequestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.UpdateAccessGroupMembers({
-            address: this.state.contractAddress,
-            members: members,
-            originalMembers: this.state.originalMembers
-          });
-        }
-      })
+    await this.props.methods.Submit({
+      address: this.props.contractAddress,
+      members: members,
+      originalMembers: this.state.originalMembers
     });
   }
 
@@ -131,7 +97,7 @@ class AccessGroupMembersForm extends React.Component {
       );
 
       // Disallow non-owners from modifying managers
-      const disabled = !this.state.accessGroup.isOwner && member.manager;
+      const disabled = !this.props.accessGroup.isOwner && member.manager;
 
       return (
         <div key={"member-" + memberId}>
@@ -145,7 +111,7 @@ class AccessGroupMembersForm extends React.Component {
           </div>
           <div className="labelled-input labelled-checkbox-input">
             <label className="label" htmlFor="manager">Manager</label>
-            <input disabled={!this.state.accessGroup.isOwner} name="manager" type="checkbox" value={member.manager} checked={member.manager} onChange={this.HandleInputChange(memberId)} />
+            <input disabled={!this.props.accessGroup.isOwner} name="manager" type="checkbox" value={member.manager} checked={member.manager} onChange={this.HandleInputChange(memberId)} />
           </div>
           <div className="labelled-input">
             <label className="label" htmlFor="removeMember"></label>
@@ -171,34 +137,28 @@ class AccessGroupMembersForm extends React.Component {
     );
   }
 
-  PageContent() {
+  render() {
     return (
-      <RequestForm
-        requests={this.props.requests}
-        requestId={this.state.submitRequestId}
+      <Form
         legend={"Manage Access Group Members"}
         formContent={this.MembersForm()}
         redirectPath={Path.dirname(this.props.match.url)}
         cancelPath={Path.dirname(this.props.match.url)}
+        redirect={this.props.methodStatus.Submit.completed}
         OnSubmit={this.HandleSubmit}
+        submitting={this.props.methodStatus.Submit.loading}
       />
     );
   }
-
-  render() {
-    if (this.state.createForm) {
-      return this.PageContent();
-    } else {
-      return (
-        <RequestPage
-          requests={this.props.requests}
-          requestId={this.state.loadRequestId}
-          pageContent={this.PageContent}
-          OnRequestComplete={this.RequestComplete}
-        />
-      );
-    }
-  }
 }
+
+AccessGroupMembersForm.propTypes = {
+  accessGroup: PropTypes.object.isRequired,
+  contractAddress: PropTypes.string.isRequired,
+  createForm: PropTypes.bool.isRequired,
+  methods: PropTypes.shape({
+    Submit: PropTypes.func.isRequired
+  })
+};
 
 export default AccessGroupMembersForm;

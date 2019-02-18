@@ -1,6 +1,7 @@
 const ActionTypes = {
   accessGroups: {
     list: "LIST_ACCESS_GROUPS",
+    get: "GET_ACCESS_GROUP"
   },
   accounts: {
     get: {
@@ -17,7 +18,8 @@ const ActionTypes = {
     objects: {
       list: "LIST_OBJECTS",
       get: "GET_OBJECTS",
-      versions: "GET_OBJECT_VERSIONS"
+      versions: "GET_OBJECT_VERSIONS",
+      permissions: "GET_OBJECT_PERMISSIONS"
     },
     types: {
       get: "GET_TYPE",

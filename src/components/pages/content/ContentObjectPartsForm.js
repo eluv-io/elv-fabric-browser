@@ -1,15 +1,14 @@
 import React from "react";
+import PropTypes from "prop-types";
 import Path from "path";
-import RequestForm from "../../forms/RequestForm";
 import BrowseWidget from "../../components/BrowseWidget";
+import Form from "../../forms/Form";
 
-class ContentObjectUploadForm extends React.Component {
+class ContentObjectPartsForm extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      libraryId: this.props.libraryId || this.props.match.params.libraryId,
-      objectId: this.props.match.params.objectId,
       encrypt: true,
       progress: {}
     };
@@ -25,7 +24,7 @@ class ContentObjectUploadForm extends React.Component {
     });
   }
 
-  HandleSubmit() {
+  async HandleSubmit() {
     const callback = ({uploaded, total, filename}) => {
       this.setState({
         progress: {
@@ -35,18 +34,12 @@ class ContentObjectUploadForm extends React.Component {
       );
     };
 
-    this.setState({
-      submitRequestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.UploadParts({
-            libraryId: this.state.libraryId,
-            objectId: this.state.objectId,
-            files: this.state.files,
-            encrypt: this.state.encrypt,
-            callback
-          });
-        }
-      })
+    await this.props.methods.Submit({
+      libraryId: this.props.libraryId,
+      objectId: this.props.objectId,
+      files: this.state.files,
+      encrypt: this.state.encrypt,
+      callback
     });
   }
 
@@ -70,17 +63,25 @@ class ContentObjectUploadForm extends React.Component {
 
   render() {
     return (
-      <RequestForm
-        requests={this.props.requests}
-        requestId={this.state.submitRequestId}
+      <Form
         legend="Upload parts"
         formContent={this.FormContent()}
         redirectPath={Path.dirname(this.props.match.url)}
         cancelPath={Path.dirname(this.props.match.url)}
         OnSubmit={this.HandleSubmit}
+        submitting={this.props.methodStatus.Submit.loading}
+        redirect={this.props.methodStatus.Submit.completed}
       />
     );
   }
 }
 
-export default ContentObjectUploadForm;
+ContentObjectPartsForm.propTypes = {
+  libraryId: PropTypes.string.isRequired,
+  objectId: PropTypes.string.isRequired,
+  methods: PropTypes.shape({
+    Submit: PropTypes.func.isRequired
+  })
+};
+
+export default ContentObjectPartsForm;

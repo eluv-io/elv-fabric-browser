@@ -1,10 +1,10 @@
 import React from "react";
-import "browser-solc";
-import RequestForm from "../../forms/RequestForm";
+import PropTypes from "prop-types";
 import BrowseWidget from "../../components/BrowseWidget";
 import RadioSelect from "../../components/RadioSelect";
 import Path from "path";
 import {JsonTextArea} from "../../../utils/Input";
+import Form from "../../forms/Form";
 
 class CompileContractForm extends React.Component {
   constructor(props) {
@@ -37,27 +37,15 @@ class CompileContractForm extends React.Component {
     });
   }
 
-  HandleSubmit() {
+  async HandleSubmit() {
     if(this.state.compileFromSource) {
-      this.setState({
-        submitRequestId: this.props.WrapRequest({
-          todo: async () => {
-            await this.props.CompileContracts(this.state.files);
-          }
-        })
-      });
+      await this.props.methods.CompileContracts(this.state.files);
     } else {
-      this.setState({
-        submitRequestId: this.props.WrapRequest({
-          todo: async () => {
-            await this.props.SaveContract({
-              name: this.state.name,
-              description: this.state.description,
-              abi: this.state.abi,
-              bytecode: this.state.bytecode
-            });
-          }
-        })
+      await this.props.methods.Submit({
+        name: this.state.name,
+        description: this.state.description,
+        abi: this.state.abi,
+        bytecode: this.state.bytecode,
       });
     }
   }
@@ -149,18 +137,29 @@ class CompileContractForm extends React.Component {
       redirectPath = Path.join(Path.dirname(this.props.match.url), this.state.name);
     }
 
+    const status = this.state.compileFromSource ?
+      this.props.methodStatus.CompileContracts : this.props.methodStatus.Submit;
+
     return (
-      <RequestForm
-        requests={this.props.requests}
-        requestId={this.state.submitRequestId}
+      <Form
         legend={"Compile contracts"}
         formContent={this.ContractForm()}
         redirectPath={redirectPath}
         cancelPath="/contracts"
         OnSubmit={this.HandleSubmit}
+        submitting={status.loading}
+        redirect={status.completed}
       />
     );
   }
 }
+
+CompileContractForm.propTypes = {
+  errors: PropTypes.array,
+  methods: PropTypes.shape({
+    CompileContracts: PropTypes.func.isRequired,
+    Submit: PropTypes.func.isRequired
+  })
+};
 
 export default CompileContractForm;

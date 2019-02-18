@@ -129,6 +129,8 @@ export const UpdateContentLibrary = ({
       message: "Successfully updated content library '" + name + "'",
       redirect: true
     }));
+
+    return libraryId;
   };
 };
 
@@ -236,33 +238,55 @@ export const GetContentObjectVersions = ({libraryId, objectId}) => {
   };
 };
 
-export const GetContentObjectPermissions = async ({libraryId, objectId}) => {
-  return await Fabric.GetContentObjectPermissions({libraryId, objectId});
+export const GetContentObjectPermissions = ({libraryId, objectId}) => {
+  return async (dispatch) => {
+    const permissions = await Fabric.GetContentObjectPermissions({libraryId, objectId});
+
+    dispatch({
+      type: ActionTypes.content.objects.permissions,
+      objectId,
+      permissions
+    });
+  };
 };
 
-export const PublishContentObject = async ({objectId}) => {
-  return await Fabric.PublishContentObject({objectId});
+export const PublishContentObject = ({objectId}) => {
+  return async (dispatch) => {
+    await Fabric.PublishContentObject({objectId});
+
+    dispatch(SetNotificationMessage({
+      message: "Successfully updated content object",
+      redirect: true
+    }));
+  };
 };
 
-export const ReviewContentObject = async ({libraryId, objectId, approve, note}) => {
-  await Fabric.ReviewContentObject({libraryId, objectId, approve, note});
+export const ReviewContentObject = ({libraryId, objectId, approve, note}) => {
+  return async (dispatch) => {
+    await Fabric.ReviewContentObject({libraryId, objectId, approve, note});
 
-  const currentAccountAddress = await Fabric.CurrentAccountAddress();
+    const currentAccountAddress = await Fabric.CurrentAccountAddress();
 
-  await Fabric.EditAndFinalizeContentObject({
-    libraryId,
-    objectId,
-    todo: async (writeToken) => {
-      await Fabric.MergeMetadata({
-        libraryId,
-        writeToken,
-        metadata: {
-          "eluv.reviewer": currentAccountAddress,
-          "eluv.reviewNote": note
-        }
-      });
-    }
-  });
+    await Fabric.EditAndFinalizeContentObject({
+      libraryId,
+      objectId,
+      todo: async (writeToken) => {
+        await Fabric.MergeMetadata({
+          libraryId,
+          writeToken,
+          metadata: {
+            "eluv.reviewer": currentAccountAddress,
+            "eluv.reviewNote": note
+          }
+        });
+      }
+    });
+
+    dispatch(SetNotificationMessage({
+      message: "Successfully updated content object",
+      redirect: true
+    }));
+  };
 };
 
 export const CreateContentObject = ({libraryId, name, description, type, metadata}) => {

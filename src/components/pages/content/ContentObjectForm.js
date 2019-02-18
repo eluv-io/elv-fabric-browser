@@ -1,8 +1,7 @@
 import React from "react";
-import RequestForm from "../../forms/RequestForm";
+import PropTypes from "prop-types";
 import BrowseWidget from "../../components/BrowseWidget";
 import {JsonTextArea} from "../../../utils/Input";
-import RequestPage from "../RequestPage";
 import Path from "path";
 import {InitializeSchema, GetValue, SetValue, RemoveValue} from "../../../utils/TypeSchema";
 import RadioSelect from "../../components/RadioSelect";
@@ -15,6 +14,7 @@ import AppFrame from "../../components/AppFrame";
 import Redirect from "react-router/es/Redirect";
 import Action from "../../components/Action";
 import PageTabs from "../../components/PageTabs";
+import Form from "../../forms/Form";
 
 const defaultSchema = [
   {
@@ -36,17 +36,11 @@ class ContentObjectForm extends React.Component {
   constructor(props) {
     super(props);
 
-    const objectId = this.props.match.params.objectId;
     this.state = {
-      libraryId: this.props.libraryId || this.props.match.params.libraryId,
-      objectId,
-      createForm: !objectId,
-      metadata: "",
-      previewUrls: {}
+      completed: false,
+      metadata: ""
     };
 
-    this.RequestComplete = this.RequestComplete.bind(this);
-    this.PageContent = this.PageContent.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleFieldChange = this.HandleFieldChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
@@ -55,29 +49,8 @@ class ContentObjectForm extends React.Component {
     this.FrameCompleted = this.FrameCompleted.bind(this);
   }
 
-  // Load existing content object on edit
   componentDidMount() {
-    if(this.state.createForm) {
-      this.setState({
-        loadRequestId: this.props.WrapRequest({
-          todo: async () => {
-            await this.props.ListContentTypes({});
-            await this.props.ListLibraryContentTypes({libraryId: this.state.libraryId});
-          }
-        })
-      });
-    } else {
-      this.setState({
-        loadRequestId: this.props.WrapRequest({
-          todo: async () => {
-            await this.props.GetContentObject({
-              libraryId: this.state.libraryId,
-              objectId: this.state.objectId,
-            });
-          }
-        })
-      });
-    }
+    this.Initialize();
   }
 
   FormatType(type) {
@@ -94,7 +67,7 @@ class ContentObjectForm extends React.Component {
     };
   }
 
-  RequestComplete() {
+  Initialize() {
     let type = "";
     let types = {
       "": {
@@ -105,8 +78,8 @@ class ContentObjectForm extends React.Component {
 
     let metadata = "";
     let accessCharge = 0;
-    if(this.state.createForm) {
-      let allowedTypes = this.props.libraries[this.state.libraryId].types;
+    if(this.props.createForm) {
+      let allowedTypes = this.props.library.types;
       if(Object.keys(allowedTypes).length > 0) {
         // Allowed types specified on library - limit options to that list
         type = Object.values(allowedTypes)[0].hash;
@@ -121,7 +94,7 @@ class ContentObjectForm extends React.Component {
 
       Object.values(types).forEach(type => types[type.hash] = this.FormatType(type));
     } else {
-      const object = this.props.objects[this.state.objectId];
+      const object = this.props.object;
       metadata = JSON.stringify(object.meta, null, 2);
       accessCharge = object.baseAccessCharge;
       type = object.type;
@@ -144,7 +117,7 @@ class ContentObjectForm extends React.Component {
   }
 
   SwitchType(types, type) {
-    const object = this.props.objects[this.state.objectId];
+    const object = this.props.object;
     let typeOptions = type && types[type] || {};
 
     let manageAppUrl;
@@ -159,7 +132,7 @@ class ContentObjectForm extends React.Component {
     }
 
     const allowCustomMetadata = typeOptions.schema ? typeOptions.allowCustomMetadata : true;
-    const data = this.state.createForm ? undefined : this.props.objects[this.state.objectId].meta;
+    const data = this.props.createForm ? undefined : this.props.object.meta;
 
     const initialFields = InitializeSchema({schema, initialData: data});
 
@@ -191,25 +164,6 @@ class ContentObjectForm extends React.Component {
     let value = event.target.value;
     if(entry.type === "file") {
       value = event.target.files;
-
-      if(entry.preview) {
-        new Response(event.target.files[0]).blob()
-          .then(imageData => {
-            this.setState({
-              fields: SetValue({
-                data: this.state.fields,
-                subtree,
-                attr: entry.key,
-                value
-              }),
-              previewUrls: {
-                ...this.state.previewUrls,
-                [entry.key]: window.URL.createObjectURL(imageData)
-              }
-            });
-          });
-        return;
-      }
     } else if(entry.type === "boolean") {
       value = event.target.checked;
     }
@@ -234,40 +188,22 @@ class ContentObjectForm extends React.Component {
     });
   }
 
-  HandleSubmit() {
+  async HandleSubmit() {
     const type = this.state.type === "[none]" ? "" : this.state.type;
 
-    this.setState({
-      requestId: this.props.WrapRequest({
-        todo: async () => {
-          if(this.state.createForm) {
-            // Create
-            await this.props.CreateFromContentTypeSchema({
-              libraryId: this.state.libraryId,
-              type,
-              schema: this.state.schema,
-              fields: this.state.fields,
-              metadata: this.state.metadata,
-              accessCharge: this.state.accessCharge
-            });
-          } else {
-            // Update
-            await this.props.UpdateFromContentTypeSchema({
-              libraryId: this.state.libraryId,
-              objectId: this.state.objectId,
-              schema: this.state.schema,
-              fields: this.state.fields,
-              metadata: this.state.metadata,
-              accessCharge: this.state.accessCharge
-            });
-          }
-        }
-      })
+    await this.props.methods.Submit({
+      type,
+      libraryId: this.props.libraryId,
+      objectId: this.props.objectId,
+      schema: this.state.schema,
+      fields: this.state.fields,
+      metadata: this.state.metadata,
+      accessCharge: this.state.accessCharge
     });
   }
 
   TypeField() {
-    if(!this.state.createForm) { return; }
+    if(!this.props.createForm) { return; }
 
     const options = Object.values(this.state.types).map(({name, hash}) => {
       return <option key={"type-" + hash} name="type" value={hash}>{ name }</option>;
@@ -362,25 +298,19 @@ class ContentObjectForm extends React.Component {
         />;
         break;
       case "file":
-        const required = entry.required && this.state.createForm;
-        const browseWidget = <BrowseWidget key={key} accept={entry.accept} label={label} onChange={onChange} multiple={entry.multiple} required={required} />;
-        const previewUrl = this.state.previewUrls[entry.key];
-        let preview;
-        if(previewUrl) {
-          preview = (
-            <div className="labelled-input">
-              <label />
-              <div className="image-preview">
-                <img src={previewUrl} alt={`${label} Preview`} title={`${label} Preview`} />
-              </div>
-            </div>
-          );
-        }
+        const required = entry.required && this.props.createForm;
 
         return (
           <div key={"image-preview-" + key}>
-            { preview }
-            { browseWidget }
+            <BrowseWidget
+              key={key}
+              accept={entry.accept}
+              label={label}
+              onChange={onChange}
+              multiple={entry.multiple}
+              required={required}
+              preview={entry.preview}
+            />
           </div>
         );
       case "list":
@@ -491,8 +421,8 @@ class ContentObjectForm extends React.Component {
   AppFrame(legend) {
     const queryParams = {
       contentSpaceId: Fabric.contentSpaceId,
-      libraryId: this.state.libraryId,
-      objectId: this.state.objectId,
+      libraryId: this.props.libraryId,
+      objectId: this.props.objectId,
       type: this.state.type,
       action: "manage"
     };
@@ -530,27 +460,29 @@ class ContentObjectForm extends React.Component {
       </div>
     );
 
-    return <RequestForm
-      formContent={formContent}
-      legend={legend}
-      requests={this.props.requests}
-      requestId={this.state.requestId}
-      redirectPath={redirectPath}
-      cancelPath={cancelPath}
-      OnSubmit={this.HandleSubmit}
-    />;
+    return (
+      <Form
+        submitting={this.props.methodStatus.Submit.loading}
+        formContent={formContent}
+        legend={legend}
+        redirect={this.props.methodStatus.Submit.completed}
+        redirectPath={redirectPath}
+        cancelPath={cancelPath}
+        OnSubmit={this.HandleSubmit}
+      />
+    );
   }
 
-  PageContent() {
+  render() {
     if(!this.state.schema && !this.state.manageAppUrl) { return null; }
 
-    const legend = this.state.createForm ? "Contribute content" : "Manage content";
+    const legend = this.props.createForm ? "Contribute content" : "Manage content";
 
     let redirectPath = Path.dirname(this.props.match.url);
-    if(this.state.createForm) {
+    if(this.props.createForm) {
       // On creation, objectId won't exist until submission
-      redirectPath = this.state.objectId ?
-        Path.join(Path.dirname(this.props.match.url), this.state.objectId) : Path.dirname(this.props.match.url);
+      redirectPath = this.props.objectId ?
+        Path.join(Path.dirname(this.props.match.url), this.props.objectId) : Path.dirname(this.props.match.url);
     }
     const cancelPath = Path.dirname(this.props.match.url);
 
@@ -564,17 +496,18 @@ class ContentObjectForm extends React.Component {
       return this.FormContent(legend, redirectPath, cancelPath);
     }
   }
-
-  render() {
-    return (
-      <RequestPage
-        requestId={this.state.loadRequestId}
-        requests={this.props.requests}
-        pageContent={this.PageContent}
-        OnRequestComplete={this.RequestComplete}
-      />
-    );
-  }
 }
+
+ContentObjectForm.propTypes = {
+  libraryId: PropTypes.string.isRequired,
+  library: PropTypes.object.isRequired,
+  objectId: PropTypes.string,
+  object: PropTypes.object,
+  types: PropTypes.object.isRequired,
+  createForm: PropTypes.bool.isRequired,
+  methods: PropTypes.shape({
+    Submit: PropTypes.func.isRequired
+  })
+};
 
 export default ContentObjectForm;

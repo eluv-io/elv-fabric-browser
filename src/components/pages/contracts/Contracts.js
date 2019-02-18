@@ -1,9 +1,10 @@
 import React from "react";
+import PropTypes from "prop-types";
 import Path from "path";
 import {PageHeader} from "../../components/Page";
 import PageTabs from "../../components/PageTabs";
 import Action from "../../components/Action";
-import {ListingContainer} from "../../../containers/pages/Components";
+import Listing from "../../components/Listing";
 
 class Contracts extends React.Component {
   constructor(props) {
@@ -13,20 +14,12 @@ class Contracts extends React.Component {
       view: "deployed"
     };
 
-    this.LoadContracts = this.LoadContracts.bind(this);
     this.Contracts = this.Contracts.bind(this);
   }
 
-  async LoadContracts() {
-    await this.props.ListContracts();
-    await this.props.ListDeployedContracts();
-  }
-
-  Contracts(view) {
-    const contracts = view === "saved" ? this.props.contracts : this.props.deployedContracts;
-
-    const content = Object.keys(contracts).map(contractId => {
-      const link = view === "deployed" ?
+  Contracts(contracts) {
+    return Object.keys(contracts).map(contractId => {
+      const link = this.state.view === "deployed" ?
         Path.join("/contracts", "deployed", contractId) :
         Path.join("/contracts", contractId);
 
@@ -45,8 +38,36 @@ class Contracts extends React.Component {
         link
       };
     });
+  }
 
-    return content;
+  ContractsListing() {
+    if(this.state.view === "saved") {
+      return (
+        <Listing
+          key="contracts-listing"
+          pageId="Contracts"
+          paginate={true}
+          count={this.props.count.contracts}
+          loadingStatus={this.props.methodStatus.ListContracts}
+          LoadContent={(({params}) => this.props.methods.ListContracts({params}))}
+          RenderContent={() => this.Contracts(this.props.contracts)}
+          noIcon={true}
+        />
+      );
+    } else {
+      return (
+        <Listing
+          key="deployed-contracts-listing"
+          pageId="Contracts"
+          paginate={true}
+          count={this.props.count.deployedContracts}
+          loadingStatus={this.props.methodStatus.ListDeployedContracts}
+          LoadContent={(({params}) => this.props.methods.ListDeployedContracts({params}))}
+          RenderContent={() => this.Contracts(this.props.deployedContracts)}
+          noIcon={true}
+        />
+      );
+    }
   }
 
   render() {
@@ -70,15 +91,18 @@ class Contracts extends React.Component {
         </div>
         <PageHeader header="Contracts" />
         { tabs }
-        <ListingContainer
-          pageId="Contracts"
-          LoadContent={this.LoadContracts}
-          RenderContent={() => this.Contracts(this.state.view)}
-          noIcon={true}
-        />
+        { this.ContractsListing() }
       </div>
     );
   }
 }
+
+Contracts.propTypes = {
+  contracts: PropTypes.object.isRequired,
+  deployedContracts: PropTypes.object.isRequired,
+  methods: PropTypes.shape({
+    ListContracts: PropTypes.func.isRequired
+  })
+};
 
 export default Contracts;

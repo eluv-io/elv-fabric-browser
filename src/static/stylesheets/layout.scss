@@ -61,10 +61,7 @@
           "navbar notifications" 40px
           "navbar main-content" 1fr
   / 225px;
-
-  // sass-lint:disable-block indentation trailing-semicolon
   min-height: 100%;
-  overflow: hidden;
 
   &.navbar-hidden {
     grid-template:
@@ -78,4 +75,22 @@
   display: flex;
   height: 100%;
   justify-content: center;
+}
+
+.error-page {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-top: 100px;
+  width: 100%;
+
+  .error-message {
+    color: $color-mediumred;
+    margin: $spacing-m 0;
+  }
+
+  .actions-container {
+    height: 35px;
+  }
 }

@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import EventLogs from "../../components/EventLogs";
 
 class Logs extends React.Component {
@@ -9,15 +10,22 @@ class Logs extends React.Component {
           <h3 className="page-header">Ethereum Logs</h3>
         </div>
         <EventLogs
-          WrapRequest={this.props.WrapRequest}
-          RequestMethod={this.props.GetBlockchainEvents}
-          ClearMethod={this.props.ClearBlockchainEvents}
-          requests={this.props.requests}
           events={this.props.logs}
+          RequestMethod={this.props.methods.GetBlockchainEvents}
+          ClearMethod={this.props.methods.ClearBlockchainEvents}
+          loading={this.props.methodStatus.GetBlockchainEvents.loading}
         />
       </div>
     );
   }
 }
+
+Logs.propTypes = {
+  logs: PropTypes.array.isRequired,
+  methods: PropTypes.shape({
+    GetBlockchainEvents: PropTypes.func.isRequired,
+    ClearBlockchainEvents: PropTypes.func.isRequired
+  })
+};
 
 export default Logs;

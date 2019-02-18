@@ -1,25 +1,23 @@
 import React from "react";
-import RequestForm from "../../forms/RequestForm";
-import RequestPage from "../RequestPage";
+import PropTypes from "prop-types";
 import Path from "path";
 import {IconButton} from "../../components/Icons";
 import DeleteIcon from "../../../static/icons/trash.svg";
 import Action from "../../components/Action";
+import Form from "../../forms/Form";
 
 class ContentLibraryTypesForm extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      libraryId: this.props.libraryId || this.props.match.params.libraryId,
-      name: "",
-      description: "",
-      submitRequestId: undefined,
-      loadRequestId: undefined,
+      libraryTypes: {
+        ...props.library.types
+      },
+      selectedTypeIds: Object.values(props.library.types).map(type => type.id),
+      selectedTypeId: ""
     };
 
-    this.PageContent = this.PageContent.bind(this);
-    this.RequestComplete = this.RequestComplete.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleAddType = this.HandleAddType.bind(this);
     this.HandleRemoveType = this.HandleRemoveType.bind(this);
@@ -27,28 +25,7 @@ class ContentLibraryTypesForm extends React.Component {
   }
 
   componentDidMount() {
-    this.setState({
-      loadRequestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.GetContentLibrary({libraryId: this.state.libraryId});
-          await this.props.ListContentTypes({});
-        }
-      })
-    });
-  }
-
-  RequestComplete() {
-    const library = this.props.libraries[this.state.libraryId];
-    const contentTypes = Object.values(this.props.types);
-
-    this.setState({
-      contentTypes,
-      libraryTypes: {
-        ...library.types
-      },
-      selectedTypeIds: Object.values(library.types).map(type => type.id),
-      selectedTypeId: ""
-    }, this.SetSelectedType);
+    this.SetSelectedType();
   }
 
   SetSelectedType() {
@@ -76,21 +53,15 @@ class ContentLibraryTypesForm extends React.Component {
     }, this.SetSelectedType);
   }
 
-  HandleSubmit() {
-    this.setState({
-      submitRequestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.SetLibraryContentTypes({
-            libraryId: this.state.libraryId,
-            typeIds: this.state.selectedTypeIds
-          });
-        }
-      })
+  async HandleSubmit() {
+    await this.props.methods.Submit({
+      libraryId: this.props.libraryId,
+      typeIds: this.state.selectedTypeIds
     });
   }
 
   AvailableTypes() {
-    return this.state.contentTypes
+    return Object.values(this.props.types)
       .filter(type => !this.state.selectedTypeIds.includes(type.id));
   }
 
@@ -133,7 +104,8 @@ class ContentLibraryTypesForm extends React.Component {
     if(this.state.selectedTypeIds.length === 0) { return null; }
 
     const selectedTypes = this.state.selectedTypeIds.map(typeId => {
-      const type = this.state.contentTypes.find(type => type.id === typeId);
+      const type = Object.values(this.props.types).find(type => type.id === typeId);
+
       return (
         <div className="list-item" key={"added-type-" + type.id}>
           <span>{type.meta.name || type.id}</span>
@@ -166,34 +138,28 @@ class ContentLibraryTypesForm extends React.Component {
     );
   }
 
-  PageContent() {
+  render() {
     return (
-      <RequestForm
-        requests={this.props.requests}
-        requestId={this.state.submitRequestId}
+      <Form
         legend={"Manage Library groups"}
         formContent={this.FormContent()}
         redirectPath={Path.dirname(this.props.match.url)}
         cancelPath={Path.dirname(this.props.match.url)}
         OnSubmit={this.HandleSubmit}
+        submitting={this.props.methodStatus.Submit.loading}
+        redirect={this.props.methodStatus.Submit.completed}
       />
     );
   }
-
-  render() {
-    if (this.state.createForm) {
-      return this.PageContent();
-    } else {
-      return (
-        <RequestPage
-          requests={this.props.requests}
-          requestId={this.state.loadRequestId}
-          pageContent={this.PageContent}
-          OnRequestComplete={this.RequestComplete}
-        />
-      );
-    }
-  }
 }
+
+ContentLibraryTypesForm.propTypes = {
+  libraryId: PropTypes.string.isRequired,
+  library: PropTypes.object.isRequired,
+  types: PropTypes.object.isRequired,
+  methods: PropTypes.shape({
+    Submit: PropTypes.func.isRequired
+  })
+};
 
 export default ContentLibraryTypesForm;

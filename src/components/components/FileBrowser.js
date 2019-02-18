@@ -113,12 +113,11 @@ class FileBrowser extends React.Component {
       <Modal
         modalContent={
           <UploadWidget
+            loading={this.props.loading}
             path={this.state.path}
             displayPath={this.state.displayPath}
-            requests={this.props.requests}
             files={this.props.files}
             Upload={this.props.Upload}
-            WrapRequest={this.props.WrapRequest}
             OnComplete={() => {
               closeModal();
               this.props.Reload();
@@ -172,12 +171,11 @@ class FileBrowser extends React.Component {
 }
 
 FileBrowser.propTypes = {
-  requests: PropTypes.object.isRequired,
+  loading: PropTypes.bool.isRequired,
   files: PropTypes.object.isRequired,
   Reload: PropTypes.func.isRequired,
   Upload: PropTypes.func.isRequired,
   Download: PropTypes.func.isRequired,
-  WrapRequest: PropTypes.func.isRequired
 };
 
 export default FileBrowser;

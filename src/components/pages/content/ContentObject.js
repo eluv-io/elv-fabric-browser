@@ -1,16 +1,12 @@
 import React from "react";
+import PropTypes from "prop-types";
 import {Link} from "react-router-dom";
 import Path from "path";
-import RequestPage from "../RequestPage";
 import PrettyBytes from "pretty-bytes";
 import { LabelledField } from "../../components/LabelledField";
 import DashVideo from "../DashVideo";
 import Redirect from "react-router/es/Redirect";
 import ClippedText from "../../components/ClippedText";
-import {
-  GetContentObjectPermissions,
-  PublishContentObject
-} from "../../../actions/Content";
 import {PageHeader} from "../../components/Page";
 import {DownloadFromUrl} from "../../../utils/Files";
 import FileBrowser from "../../components/FileBrowser";
@@ -19,165 +15,78 @@ import Fabric from "../../../clients/Fabric";
 import PageTabs from "../../components/PageTabs";
 import Action from "../../components/Action";
 import {AccessChargeDisplay} from "../../../utils/Helpers";
+import RequestElement from "../../components/RequestElement";
 
 class ContentObject extends React.Component {
   constructor(props) {
     super(props);
 
-    const libraryId = this.props.libraryId || this.props.match.params.libraryId;
-    const objectId = this.props.match.params.objectId;
+    const typeInfo = props.object.typeInfo || {};
+
+    let initialView = "info";
+    const displayAppUrl = props.object.displayAppUrl || (typeInfo.displayAppUrl);
+
+    if(props.view) {
+      initialView = props.view;
+    } else if((displayAppUrl || props.object.videoUrl) && !props.object.isContentType) {
+      //initialView = "display";
+    }
 
     this.state = {
-      libraryId,
-      objectId,
       visibleVersions: {},
       appRef: React.createRef(),
-      view: "info"
+      view: initialView,
+      displayAppUrl,
+      typeHash: typeInfo.hash,
+      typeName: (typeInfo.meta && typeInfo.meta.name) ? typeInfo.meta.name : typeInfo.hash
     };
 
-    this.LoadObject = this.LoadObject.bind(this);
     this.PageContent = this.PageContent.bind(this);
-    this.RequestComplete = this.RequestComplete.bind(this);
     this.SubmitContentObject = this.SubmitContentObject.bind(this);
   }
 
-  componentDidMount() {
-    this.LoadObject();
-  }
-  
-  LoadObject() {
-    this.setState({
-      requestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.GetContentLibrary({libraryId: this.state.libraryId});
-
-          await this.props.GetContentObject({
-            libraryId: this.state.libraryId,
-            objectId: this.state.objectId
-          });
-
-          await this.props.GetContentObjectVersions({
-            libraryId: this.state.libraryId,
-            objectId: this.state.objectId
-          });
-
-          const object = this.props.objects[this.state.objectId];
-          const typeInfo = object.typeInfo;
-
-          const displayAppUrl = object.displayAppUrl || (typeInfo && typeInfo.displayAppUrl);
-          if((displayAppUrl || object.videoUrl) && !object.isContentType) {
-            this.setState({
-              displayAppUrl,
-              view: "display"
-            });
-          }
-
-          if(object.isNormalObject) {
-            // If object not yet published, need information about groups to determine
-            // what actions user can do
-            if(object.status !== 0) {
-              await this.props.ListContentLibraryGroups({libraryId: this.state.libraryId});
-            }
-
-            this.setState({
-              permissions: await GetContentObjectPermissions({
-                libraryId: this.state.libraryId,
-                objectId: this.state.objectId
-              })
-            });
-          }
-        }
-      })
-    });
-  }
-
-  RequestComplete() {
-    if(this.state.deleting && this.props.requests[this.state.requestId].completed) {
-      this.setState({
-        deleted: true
-      });
-    } else if(this.state.deletingVersion) {
-      this.setState({
-        deletingVersion: false
-      });
-      // Version deleted - reload object
-      this.LoadObject();
-    }
-
-    // Determine the name of the content type
-    const object = this.props.objects[this.state.objectId];
-    const typeInfo = object.typeInfo;
-    if(object.isNormalObject && typeInfo) {
-      this.setState({
-        typeHash: typeInfo.hash,
-        typeName: (typeInfo.meta && typeInfo.meta.name) ? typeInfo.meta.name : typeInfo.hash
-      });
-    }
-
-    this.setState({
-      library: this.props.libraries[this.state.libraryId],
-      object
-    });
-  }
-
-  SubmitContentObject(confirmationMessage) {
+  async SubmitContentObject(confirmationMessage) {
     if(confirm(confirmationMessage)) {
-      this.setState({
-        requestId: this.props.WrapRequest({
-          todo: async () => {
-            await PublishContentObject({objectId: this.state.objectId});
+      await this.props.methods.PublishContentObject({objectId: this.props.objectId});
 
-            this.LoadObject();
-          },
-        })
-      });
+      await this.props.Load({componentParams: {view: "info"}});
     }
   }
 
   DeleteContentObject() {
     if(confirm("Are you sure you want to delete this content object?")) {
-      this.setState({
-        requestId: this.props.WrapRequest({
-          todo: async () => {
-            await this.props.DeleteContentObject({
-              libraryId: this.state.libraryId,
-              objectId: this.state.objectId
-            });
-          },
-        }),
-        deleting: true
-      });
-    }
-  }
-
-  DeleteContentVersion(versionHash) {
-    if(confirm("Are you sure you want to delete this content version?")) {
-      this.setState({
-        requestId: this.props.WrapRequest({
-          todo: async () => {
-            await this.props.DeleteContentVersion({
-              libraryId: this.state.libraryId,
-              objectId: this.state.objectId,
-              versionHash
-            });
-          }
-        }),
-        deletingVersion: true
+      this.props.methods.DeleteContentObject({
+        libraryId: this.props.libraryId,
+        objectId: this.props.objectId
       });
     }
   }
 
   DeleteVersionButton(versionHash) {
     // Don't allow deleting of last version
-    if(this.state.object.versions.length === 1) { return null; }
+    if(this.props.object.versions.length === 1) { return null; }
+
+    const DeleteVersion = async () => {
+      if(confirm("Are you sure you want to delete this content version?")) {
+        await this.props.methods.DeleteContentVersion({
+          libraryId: this.props.libraryId,
+          objectId: this.props.objectId,
+          versionHash
+        });
+
+        await this.props.Load({componentParams: {view: "info"}});
+      }
+    };
 
     return (
       <div className="actions-container">
-        <Action
-          className="delete-action action-compact action-wide"
-          onClick={() => this.DeleteContentVersion(versionHash)}>
-          Delete Content Version
-        </Action>
+        <RequestElement loading={this.props.methodStatus.DeleteContentVersion.loading} loadingIcon="rotate" >
+          <Action
+            className="delete-action action-compact action-wide"
+            onClick={DeleteVersion}>
+            Delete Content Version
+          </Action>
+        </RequestElement>
       </div>
     );
   }
@@ -206,12 +115,12 @@ class ContentObject extends React.Component {
   }
 
   PublishButton() {
-    if(!this.state.object.isNormalObject) { return null; }
+    if(!this.props.object.isNormalObject) { return null; }
 
-    const reviewerGroups = this.state.library.groups.reviewer;
+    const reviewerGroups = this.props.library.groups.reviewer;
     const reviewRequired = reviewerGroups.length > 0;
 
-    if(this.state.object.status.code < 0 && this.state.object.isOwner) {
+    if(this.props.object.status.code < 0 && this.props.object.isOwner) {
       const actionText = reviewRequired ? "Submit for Review" : "Publish";
       const confirmationMessage = reviewRequired ?
         "Are you sure you want to submit this content object for review?" :
@@ -224,7 +133,7 @@ class ContentObject extends React.Component {
       );
     }
 
-    if(this.state.object.status.code > 0 && this.state.permissions.canReview) {
+    if(this.props.object.status.code > 0 && this.props.object.permissions.canReview) {
       return (
         <Action type="link" to={Path.join(this.props.match.url, "review")}>
           Review
@@ -259,18 +168,18 @@ class ContentObject extends React.Component {
     let image;
     let video;
 
-    if(this.state.object.imageUrl) {
+    if(this.props.object.imageUrl) {
       image = (
         <div className="object-image">
-          <img src={this.state.object.imageUrl} />
+          <img src={this.props.object.imageUrl} />
         </div>
       );
     }
 
-    if(this.state.object.meta["offering.en"]) {
+    if(this.props.object.meta["offering.en"]) {
       video = (
         <div className="object-video">
-          <DashVideo videoUrl={this.state.object.imageUrl} />
+          <DashVideo videoUrl={this.props.object.imageUrl} />
         </div>
       );
     }
@@ -290,6 +199,12 @@ class ContentObject extends React.Component {
   ObjectParts(version) {
     if(!version.parts || version.parts.length === 0) { return null; }
 
+    let partNames = this.props.object.meta["eluv-fb.parts"] || {};
+    let names = {};
+    Object.keys(partNames).forEach(name => {
+      names[partNames[name]] = name;
+    });
+
     const parts = (version.parts.map((part, partNumber) => {
       const downloadButton = (
         <div className="actions-container">
@@ -297,8 +212,8 @@ class ContentObject extends React.Component {
             className="action-compact tertiary"
             onClick={() => {
               this.props.DownloadPart({
-                libraryId: this.state.libraryId,
-                objectId: this.state.objectId,
+                libraryId: this.props.libraryId,
+                objectId: this.props.objectId,
                 versionHash: version.hash,
                 partHash: part.hash,
                 callback: async (url) => {
@@ -312,11 +227,14 @@ class ContentObject extends React.Component {
         </div>
       );
 
+      const name = names[part.hash] ? <LabelledField label="Name" value={names[part.hash]}/> : null;
+
       return (
         <div key={part.hash + "-" + partNumber} className="part-info">
-          <LabelledField label={"Hash"} value={part.hash} />
-          <LabelledField label={"Size"} value={PrettyBytes(part.size)} />
-          <LabelledField label={"Download"} value={downloadButton} />
+          { name }
+          <LabelledField label="Hash" value={part.hash} />
+          <LabelledField label="Size" value={PrettyBytes(part.size)} />
+          <LabelledField label="Download" value={downloadButton} />
         </div>
       );
     }));
@@ -332,16 +250,16 @@ class ContentObject extends React.Component {
   ObjectFiles() {
     const downloadMethod = async (filePath) => {
       await this.props.DownloadFile({
-        libraryId: this.state.libraryId,
-        objectId: this.state.objectId,
+        libraryId: this.props.libraryId,
+        objectId: this.props.objectId,
         filePath
       });
     };
 
     const uploadMethod = async (path, fileList) => {
-      await this.props.UploadFiles({
-        libraryId: this.state.libraryId,
-        objectId: this.state.objectId,
+      await this.props.methods.UploadFiles({
+        libraryId: this.props.libraryId,
+        objectId: this.props.objectId,
         path,
         fileList
       });
@@ -351,12 +269,11 @@ class ContentObject extends React.Component {
       <div className="object-files">
         <h3>Files</h3>
         <FileBrowser
-          requests={this.props.requests}
-          files={this.state.object.meta.files || {}}
-          Reload={this.LoadObject}
+          loading={this.props.methodStatus.UploadFiles.loading}
+          files={this.props.object.meta.files || {}}
+          Reload={() => this.props.Load({componentParams: {view: "files"}})}
           Upload={uploadMethod}
           Download={downloadMethod}
-          WrapRequest={this.props.WrapRequest}
         />
       </div>
     );
@@ -401,14 +318,14 @@ class ContentObject extends React.Component {
   }
 
   PreviousVersions() {
-    if(this.state.object.versions.length < 2) { return null; }
+    if(this.props.object.versions.length < 2) { return null; }
 
     return (
       <div>
         <h3>Previous Versions</h3>
 
-        { this.state.object.versions.slice(1).map((version, i) => {
-          const versionNumber = (i+1 - this.state.object.versions.length) * -1;
+        { this.props.object.versions.slice(1).map((version, i) => {
+          const versionNumber = (i+1 - this.props.object.versions.length) * -1;
           return this.ObjectVersion(version, versionNumber);
         })}
       </div>
@@ -419,18 +336,18 @@ class ContentObject extends React.Component {
     let contractInfo = [];
     contractInfo.push(
       <LabelledField
-        key={"contract-" + this.state.object.contractAddress}
+        key={"contract-" + this.props.object.contractAddress}
         label={"Contract Address"}
         value={
           <Link className="inline-link" to={Path.join(this.props.match.url, "contract")}>
-            {this.state.object.contractAddress}
+            {this.props.object.contractAddress}
           </Link>
         } />
 
     );
 
-    if(!this.state.object.isContentLibraryObject && this.state.object.customContractAddress) {
-      const customContractAddress = this.state.object.customContractAddress;
+    if(!this.props.object.isContentLibraryObject && this.props.object.customContractAddress) {
+      const customContractAddress = this.props.object.customContractAddress;
 
       contractInfo.push(
         <LabelledField
@@ -444,19 +361,19 @@ class ContentObject extends React.Component {
 
   // Display object status and review/submit/publish actions
   ObjectStatus() {
-    if(!this.state.object.isNormalObject) { return null; }
+    if(!this.props.object.isNormalObject) { return null; }
 
     let reviewNote, reviewer;
-    if(this.state.object.meta["eluv.reviewNote"]) {
-      reviewer = <LabelledField label="Reviewer" value={this.state.object.meta["eluv.reviewer"]} />;
-      const note = <ClippedText className="object-description" text={this.state.object.meta["eluv.reviewNote"]} />;
+    if(this.props.object.meta["eluv.reviewNote"]) {
+      reviewer = <LabelledField label="Reviewer" value={this.props.object.meta["eluv.reviewer"]} />;
+      const note = <ClippedText className="object-description" text={this.props.object.meta["eluv.reviewNote"]} />;
       reviewNote = <LabelledField
         label="Review Note" value={note} />;
     }
 
     return (
       <div>
-        <LabelledField label={"Status"} value={this.state.object.status.description} />
+        <LabelledField label={"Status"} value={this.props.object.status.description} />
         { reviewer }
         { reviewNote }
       </div>
@@ -464,33 +381,33 @@ class ContentObject extends React.Component {
   }
 
   ObjectInfo() {
-    const latestVersion = this.state.object.versions[0];
-    const description = <ClippedText className="object-description" text={this.state.object.description} />;
-    const header = this.state.object.isContentType ? "Content Type Info" : "Content Object Info";
+    const latestVersion = this.props.object.versions[0];
+    const description = <ClippedText className="object-description" text={this.props.object.description} />;
+    const header = this.props.object.isContentType ? "Content Type Info" : "Content Object Info";
     let accessCharge;
-    if(this.state.object.isNormalObject) {
-      accessCharge = <LabelledField label={"Access charge"} value={AccessChargeDisplay(this.state.object.baseAccessCharge)} />;
+    if(this.props.object.isNormalObject) {
+      accessCharge = <LabelledField label={"Access charge"} value={AccessChargeDisplay(this.props.object.baseAccessCharge)} />;
     }
 
     return (
       <div className="object-info label-box">
         <h3>{ header }</h3>
 
-        <LabelledField label={"Name"} value={this.state.object.name} />
-        <LabelledField label={"Type Name"} value={this.state.typeName} hidden={this.state.object.isContentType} />
-        <LabelledField label={"Type Hash"} value={this.state.typeHash} hidden={this.state.object.isContentType} />
+        <LabelledField label={"Name"} value={this.props.object.name} />
+        <LabelledField label={"Type Name"} value={this.state.typeName} hidden={this.props.object.isContentType} />
+        <LabelledField label={"Type Hash"} value={this.state.typeHash} hidden={this.props.object.isContentType} />
         <LabelledField label={"Description"} value={description} />
         { this.ObjectStatus() }
-        <LabelledField label={"Library ID"} value={this.state.libraryId} />
-        <LabelledField label={"Object ID"} value={this.state.objectId} />
-        <LabelledField label={"Owner"} value={this.state.object.owner} />
+        <LabelledField label={"Library ID"} value={this.props.libraryId} />
+        <LabelledField label={"Object ID"} value={this.props.objectId} />
+        <LabelledField label={"Owner"} value={this.props.object.owner} />
         { accessCharge }
         { this.ContractInfo() }
-        <LabelledField label={"Versions"} value={this.state.object.versions.length} />
+        <LabelledField label={"Versions"} value={this.props.object.versions.length} />
         <LabelledField label={"Parts"} value={latestVersion.parts.length} />
         <LabelledField label={"Total size"} value={this.VersionSize(latestVersion)} />
 
-        { this.ObjectVersion(this.state.object.versions[0], this.state.object.versions.length, true) }
+        { this.ObjectVersion(this.props.object.versions[0], this.props.object.versions.length, true) }
 
         { this.PreviousVersions() }
       </div>
@@ -499,7 +416,7 @@ class ContentObject extends React.Component {
 
   Actions() {
     let manageAppsLink;
-    if(this.state.object.isOwner) {
+    if(this.props.object.isOwner) {
       manageAppsLink = (
         <Action type="link" to={Path.join(this.props.match.url, "apps")}>
           Manage Apps
@@ -509,9 +426,9 @@ class ContentObject extends React.Component {
 
     let setContractButton;
     if(
-      !this.state.object.customContractAddress &&
-      (this.state.object.isNormalObject || this.state.object.isContentType) &&
-      this.state.object.isOwner
+      !this.props.object.customContractAddress &&
+      (this.props.object.isNormalObject || this.props.object.isContentType) &&
+      this.props.object.isOwner
     ) {
       setContractButton = (
         <Action type="link" to={Path.join(this.props.match.url, "deploy")}>
@@ -521,7 +438,7 @@ class ContentObject extends React.Component {
     }
 
     let deleteObjectButton;
-    if(!this.state.object.isContentLibraryObject) {
+    if(!this.props.object.isContentLibraryObject) {
       deleteObjectButton = (
         <Action className="delete-action" onClick={() => this.DeleteContentObject()}>
           Delete
@@ -545,8 +462,8 @@ class ContentObject extends React.Component {
   DisplayVideo() {
     return (
       <div className="video-player">
-        <video poster={this.state.object.imageUrl} controls={true}>
-          <source src={this.state.object.videoUrl} />
+        <video poster={this.props.object.imageUrl} controls={true}>
+          <source src={this.props.object.videoUrl} />
         </video>
       </div>
     );
@@ -557,9 +474,9 @@ class ContentObject extends React.Component {
 
     const queryParams = {
       contentSpaceId: Fabric.contentSpaceId,
-      libraryId: this.state.libraryId,
-      objectId: this.state.objectId,
-      type: this.props.objects[this.state.objectId].type,
+      libraryId: this.props.libraryId,
+      objectId: this.props.objectId,
+      type: this.state.typeHash,
       action: "display"
     };
 
@@ -580,7 +497,7 @@ class ContentObject extends React.Component {
       ["Files", "files"]
     ];
 
-    if(this.state.displayAppUrl || this.state.object.videoUrl) {
+    if(this.state.displayAppUrl || this.props.object.videoUrl) {
       tabOptions.unshift(["Display", "display"]);
     }
 
@@ -594,13 +511,13 @@ class ContentObject extends React.Component {
   }
 
   PageContent() {
-    if(this.state.deleted) {
+    if(this.props.methodStatus.DeleteContentObject.completed) {
       return <Redirect push to={Path.dirname(this.props.match.url)} />;
     }
 
-    const header = this.state.object.isContentLibraryObject ?
-      this.state.library.name + " > Library Object" :
-      this.state.library.name + " > " + this.state.object.name;
+    const header = this.props.object.isContentLibraryObject ?
+      this.props.library.name + " > Library Object" :
+      this.props.library.name + " > " + this.props.object.name;
 
     let pageContent;
     if(this.state.view === "display") {
@@ -623,7 +540,7 @@ class ContentObject extends React.Component {
     return (
       <div className="page-container content-page-container">
         { this.Actions() }
-        <PageHeader header={header} subHeader={this.state.object.description} />
+        <PageHeader header={header} subHeader={this.props.object.description} />
         { this.Tabs() }
         <div className="page-content">
           { pageContent }
@@ -633,15 +550,30 @@ class ContentObject extends React.Component {
   }
 
   render() {
+    const loading = this.props.methodStatus.DeleteContentObject.loading || this.props.methodStatus.PublishContentObject.loading;
+
     return (
-      <RequestPage
-        requestId={this.state.requestId}
-        requests={this.props.requests}
-        pageContent={this.PageContent}
-        OnRequestComplete={this.RequestComplete}
+      <RequestElement
+        fullPage={true}
+        loading={loading}
+        render={this.PageContent}
       />
     );
   }
 }
+
+ContentObject.propTypes = {
+  libraryId: PropTypes.string.isRequired,
+  library: PropTypes.object.isRequired,
+  objectId: PropTypes.string.isRequired,
+  object: PropTypes.object.isRequired,
+  methods: PropTypes.shape({
+    UploadFiles: PropTypes.func.isRequired,
+    DeleteContentObject: PropTypes.func.isRequired,
+    DeleteContentVersion: PropTypes.func.isRequired
+  }),
+  DownloadPart: PropTypes.func.isRequired,
+  DownloadFile: PropTypes.func.isRequired,
+};
 
 export default ContentObject;
