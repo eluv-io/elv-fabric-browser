@@ -6,7 +6,7 @@ const FrameRoutingReducer = (state = {}, action) => {
     case ActionTypes.routes.path:
       return {
         ...state,
-        path: action.path
+        path: decodeURI(action.path)
       };
     // Do not start synchronize routes until original route has loaded and app
     // has redirected, if necessary

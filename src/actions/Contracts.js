@@ -6,21 +6,30 @@ import { SetNotificationMessage } from "./Notifications";
 import "browser-solc";
 import { FormatAddress } from "../utils/Helpers";
 import { ParseInputJson } from "../utils/Input";
+import {ContractTypes} from "../utils/Contracts";
+import {GetContentLibrary, GetContentObject} from "./Content";
+import {ListAccessGroups} from "./AccessGroups";
 
-export const ListContracts = () => {
+export const ListContracts = ({params}) => {
   return async (dispatch) => {
+    const {contracts, count} = await Fabric.FabricBrowser.Contracts({params});
+
     dispatch({
       type: ActionTypes.contracts.list,
-      contracts: await Fabric.FabricBrowser.Contracts()
+      contracts,
+      count
     });
   };
 };
 
-export const ListDeployedContracts = () => {
+export const ListDeployedContracts = ({params}) => {
   return async (dispatch) => {
+    const {contracts, count} = await Fabric.FabricBrowser.DeployedContracts({params});
+
     dispatch({
       type: ActionTypes.contracts.deployed.list,
-      contracts: await Fabric.FabricBrowser.DeployedContracts()
+      contracts,
+      count
     });
   };
 };
@@ -44,6 +53,30 @@ export const RemoveDeployedContract = ({address}) => {
       message: "Successfully removed contract",
       redirect: true
     }));
+  };
+};
+
+export const RetrieveContractInfo = ({type, libraryId, objectId}) => {
+  return async (dispatch) => {
+    switch (type) {
+      case ContractTypes.library:
+        await dispatch(GetContentLibrary({libraryId}));
+        break;
+
+      case ContractTypes.object:
+      case ContractTypes.customObject:
+      case ContractTypes.contentType:
+        await dispatch(GetContentObject({libraryId, objectId}));
+        break;
+
+      case ContractTypes.accessGroup:
+        await dispatch(ListAccessGroups({params: {paginate: false}}));
+        break;
+
+      case ContractTypes.unknown:
+        await dispatch(ListDeployedContracts({params: {paginate: false}}));
+        break;
+    }
   };
 };
 
@@ -105,7 +138,7 @@ export const SaveContract = ({name, oldContractName, description, abi, bytecode}
     }
 
     await Fabric.FabricBrowser.AddContract({
-      name,
+      name: name.trim(),
       description,
       abi,
       bytecode
@@ -273,7 +306,7 @@ export const SetCustomContentContract = ({
       metadata: {
         name: contractName,
         description: contractDescription,
-        address: address,
+        address: FormatAddress(address),
         abi,
         factoryAbi: ParseInputJson(factoryAbi)
       }

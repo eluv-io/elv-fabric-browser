@@ -1,7 +1,7 @@
 import React from "react";
 import Path from "path";
-import RequestForm from "../../forms/RequestForm";
 import {JsonTextArea} from "../../../utils/Input";
+import Form from "../../forms/Form";
 
 class WatchContractForm extends React.Component {
   constructor(props) {
@@ -25,18 +25,12 @@ class WatchContractForm extends React.Component {
     });
   }
 
-  HandleSubmit() {
-    this.setState({
-      submitRequestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.WatchContract({
-            name: this.state.name,
-            description: this.state.description,
-            address: this.state.address,
-            abi: this.state.abi
-          });
-        }
-      })
+  async HandleSubmit() {
+    await this.props.methods.Submit({
+      name: this.state.name,
+      description: this.state.description,
+      address: this.state.address,
+      abi: this.state.abi
     });
   }
 
@@ -78,14 +72,14 @@ class WatchContractForm extends React.Component {
     const redirectPath = Path.join(Path.dirname(this.props.match.url), "deployed", this.state.address);
 
     return (
-      <RequestForm
-        requests={this.props.requests}
-        requestId={this.state.submitRequestId}
+      <Form
         legend={"Watch Deployed Contract"}
         formContent={this.FormContent()}
         redirectPath={redirectPath}
         cancelPath={Path.dirname(this.props.match.url)}
         OnSubmit={this.HandleSubmit}
+        submitting={this.props.methodStatus.Submit.loading}
+        redirect={this.props.methodStatus.Submit.completed}
       />
     );
   }

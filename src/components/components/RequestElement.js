@@ -19,9 +19,11 @@ class RequestElement extends React.Component {
       if(this.props.noIndicator) { return null; }
 
       const loadingIcon = this.props.loadingIcon === "rotate" ? <BallClipRotate/> : <BallPulse/>;
+      let className = "request-element "  + (this.props.loadingClassname || "");
+      if(this.props.fullPage) { className += "loading-page-container"; }
 
       return (
-        <div className={`request-element ${this.props.loadingClassname || ""}`}>
+        <div className={className}>
           { loadingIcon }
         </div>
       );
@@ -36,6 +38,7 @@ class RequestElement extends React.Component {
 }
 
 RequestElement.propTypes = {
+  fullPage: PropTypes.bool,
   loading: PropTypes.bool,
   requestId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   requests: PropTypes.object,

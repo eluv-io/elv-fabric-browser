@@ -1,43 +1,13 @@
 import React from "react";
-import RequestForm from "../../forms/RequestForm";
-import RequestPage from "../RequestPage";
+import PropTypes from "prop-types";
 import Path from "path";
 import Id from "../../../utils/Id";
 import Action from "../../components/Action";
+import Form from "../../forms/Form";
 
 class ContentLibraryGroupsForm extends React.Component {
   constructor(props) {
     super(props);
-
-    this.state = {
-      libraryId: this.props.libraryId || this.props.match.params.libraryId,
-      name: "",
-      description: "",
-      submitRequestId: undefined,
-      loadRequestId: undefined,
-    };
-
-    this.PageContent = this.PageContent.bind(this);
-    this.RequestComplete = this.RequestComplete.bind(this);
-    this.HandleInputChange = this.HandleInputChange.bind(this);
-    this.HandleSubmit = this.HandleSubmit.bind(this);
-    this.AddGroup = this.AddGroup.bind(this);
-  }
-
-  componentDidMount() {
-    this.setState({
-      loadRequestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.ListAccessGroups();
-          await this.props.GetContentLibrary({libraryId: this.state.libraryId});
-          await this.props.ListContentLibraryGroups({libraryId: this.state.libraryId});
-        }
-      })
-    });
-  }
-
-  RequestComplete() {
-    const library = this.props.libraries[this.state.libraryId];
 
     // Attach IDs to each existing group
     // Form:
@@ -46,10 +16,10 @@ class ContentLibraryGroupsForm extends React.Component {
     //    ...
     /// }
     let libraryGroups = {};
-    Object.keys(library.groups).map(groupType => {
+    Object.keys(props.library.groups).map(groupType => {
       let libraryGroup = {};
-      Object.values(library.groups[groupType]).forEach(group => {
-        const groupExists = Object.values(this.props.accessGroups.accessGroups)
+      Object.values(props.library.groups[groupType]).forEach(group => {
+        const groupExists = Object.values(this.props.accessGroups)
           .some(existingGroup => group.address === existingGroup.address);
 
         libraryGroup[Id.next()] = {
@@ -62,11 +32,14 @@ class ContentLibraryGroupsForm extends React.Component {
       libraryGroups[groupType] = libraryGroup;
     });
 
-    this.setState({
-      library,
+    this.state = {
       groups: libraryGroups,
-      originalGroups: library.groups
-    });
+      originalGroups: props.library.groups
+    };
+
+    this.HandleInputChange = this.HandleInputChange.bind(this);
+    this.HandleSubmit = this.HandleSubmit.bind(this);
+    this.AddGroup = this.AddGroup.bind(this);
   }
 
   HandleInputChange(groupType, groupId) {
@@ -92,7 +65,7 @@ class ContentLibraryGroupsForm extends React.Component {
     };
   }
 
-  HandleSubmit() {
+  async HandleSubmit() {
     let libraryGroups = {};
     Object.keys(this.state.groups).map(groupType => {
       libraryGroups[groupType] = Object.values(this.state.groups[groupType]).map(groupInfo => {
@@ -104,22 +77,16 @@ class ContentLibraryGroupsForm extends React.Component {
       });
     });
 
-    this.setState({
-      submitRequestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.UpdateContentLibraryGroups({
-            libraryId: this.state.libraryId,
-            groups: libraryGroups,
-            originalGroups: this.state.originalGroups
-          });
-        }
-      })
+    await this.props.methods.Submit({
+      libraryId: this.props.libraryId,
+      groups: libraryGroups,
+      originalGroups: this.state.originalGroups
     });
   }
 
   AddGroup(groupType) {
-    const initialAddress = Object.values(this.props.accessGroups.accessGroups).length > 0 ?
-      Object.values(this.props.accessGroups.accessGroups)[0].address : "";
+    const initialAddress = Object.values(this.props.accessGroups).length > 0 ?
+      Object.values(this.props.accessGroups)[0].address : "";
     return () => {
       this.setState({
         groups: {
@@ -149,7 +116,7 @@ class ContentLibraryGroupsForm extends React.Component {
 
   GroupSelection(groupType, groupId) {
     let options = (
-      Object.values(this.props.accessGroups.accessGroups).map(accessGroup => {
+      Object.values(this.props.accessGroups).map(accessGroup => {
         return (
           <option
             key={"option-" + accessGroup.address + "-" + groupId}
@@ -227,34 +194,28 @@ class ContentLibraryGroupsForm extends React.Component {
     );
   }
 
-  PageContent() {
+  render() {
     return (
-      <RequestForm
-        requests={this.props.requests}
-        requestId={this.state.submitRequestId}
+      <Form
         legend={"Manage Library Groups"}
         formContent={this.FormContent()}
         redirectPath={Path.dirname(this.props.match.url)}
         cancelPath={Path.dirname(this.props.match.url)}
         OnSubmit={this.HandleSubmit}
+        submitting={this.props.methodStatus.Submit.loading}
+        redirect={this.props.methodStatus.Submit.completed}
       />
     );
   }
-
-  render() {
-    if (this.state.createForm) {
-      return this.PageContent();
-    } else {
-      return (
-        <RequestPage
-          requests={this.props.requests}
-          requestId={this.state.loadRequestId}
-          pageContent={this.PageContent}
-          OnRequestComplete={this.RequestComplete}
-        />
-      );
-    }
-  }
 }
+
+ContentLibraryGroupsForm.propTypes = {
+  libraryId: PropTypes.string.isRequired,
+  library: PropTypes.object.isRequired,
+  accessGroups: PropTypes.object.isRequired,
+  methods: PropTypes.shape({
+    Submit: PropTypes.func.isRequired
+  })
+};
 
 export default ContentLibraryGroupsForm;

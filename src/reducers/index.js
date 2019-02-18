@@ -5,7 +5,6 @@ import AccountsReducer from "./AccountsReducer";
 import ContentReducer from "./ContentReducer";
 import ContractsReducer from "./ContractsReducer";
 import NotificationsReducer from "./NotificationsReducer";
-import RequestsReducer from "./RequestsReducer";
 import AccessGroupsReducer from "./AccessGroupsReducer";
 import FrameRoutingReducer from "./FrameRoutingReducer";
 import LogsReducer from "./LogsReducer";
@@ -34,6 +33,5 @@ export default (history) => {
     contracts: ContractsReducer,
     notifications: NotificationsReducer,
     logs: LogsReducer,
-    requests: RequestsReducer
   });
 };

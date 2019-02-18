@@ -1,10 +1,9 @@
 import React from "react";
-import RequestPage from "../pages/RequestPage";
 import EventCard from "./EventCard";
 import PropTypes from "prop-types";
 import {BallClipRotate} from "./AnimatedIcons";
-import RequestButton from "./RequestButton";
 import Action from "./Action";
+import RequestElement from "./RequestElement";
 
 class EventLogs extends React.Component {
   constructor(props) {
@@ -19,26 +18,19 @@ class EventLogs extends React.Component {
       watcher: undefined
     };
 
-    this.PageContent = this.PageContent.bind(this);
     this.FilterEvents = this.FilterEvents.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.LoadMoreEvents = this.LoadMoreEvents.bind(this);
     this.ToggleWatch = this.ToggleWatch.bind(this);
   }
 
-  componentDidMount() {
-    this.setState({
-      requestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.RequestEvents();
-        }
-      })
-    });
+  async componentDidMount() {
+    await this.RequestEvents();
   }
 
-  componentDidUpdate() {
+  async componentDidUpdate() {
     if(this.props.events.length > 0) {
-      this.UpdateBlockNumbers();
+      await this.UpdateBlockNumbers();
     }
   }
 
@@ -118,36 +110,27 @@ class EventLogs extends React.Component {
   }
 
   async FilterEvents() {
-    this.setState({
-      requestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.ClearMethod({contractAddress: this.props.contractAddress});
+    // Stop watching events
+    if(this.state.watchEvents) { this.ToggleWatch(); }
 
-          await this.props.RequestMethod({
-            contractAddress: this.props.contractAddress,
-            abi: this.props.abi,
-            toBlock: this.state.toBlock,
-            fromBlock: this.state.fromBlock
-          });
-        }
-      })
+    await this.props.ClearMethod({contractAddress: this.props.contractAddress});
+
+    await this.props.RequestMethod({
+      contractAddress: this.props.contractAddress,
+      abi: this.props.abi,
+      toBlock: this.state.toBlock,
+      fromBlock: this.state.fromBlock
     });
   }
 
   async LoadMoreEvents() {
     await this.UpdateBlockNumbers();
 
-    this.setState({
-      loadRequestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.RequestMethod({
-            contractAddress: this.props.contractAddress,
-            abi: this.props.abi,
-            toBlock: this.state.earliestBlock - 1,
-            fromBlock: this.state.earliestBlock - 10
-          });
-        }
-      })
+    await this.props.RequestMethod({
+      contractAddress: this.props.contractAddress,
+      abi: this.props.abi,
+      toBlock: this.state.earliestBlock - 1,
+      fromBlock: this.state.earliestBlock - 10
     });
   }
 
@@ -156,14 +139,11 @@ class EventLogs extends React.Component {
 
     return (
       <div className="actions-container full-width centered">
-        <RequestButton
-          requests={this.props.requests}
-          requestId={this.state.loadRequestId}
-          OnRequestComplete={this.RequestComplete}
-          onClick={this.LoadMoreEvents}
-          className="action"
-          text="Load More Events"
-        />
+        <RequestElement loading={this.props.loading}>
+          <Action onClick={this.LoadMoreEvents}>
+            Load More Events
+          </Action>
+        </RequestElement>
       </div>
     );
   }
@@ -173,7 +153,7 @@ class EventLogs extends React.Component {
 
     return (
       <div className="events-controls">
-        <form onSubmit={this.LoadMoreEvents} className="form-container event-actions-container">
+        <form className="form-container event-actions-container">
           <div className="labelled-input">
             <label htmlFor="toBlock">To Block</label>
             <input type="number" name="toBlock" value={this.state.toBlock} onChange={this.HandleInputChange} />
@@ -183,14 +163,11 @@ class EventLogs extends React.Component {
             <input type="number" name="fromBlock" value={this.state.fromBlock} onChange={this.HandleInputChange} />
           </div>
           <div className="actions-container">
-            <RequestButton
-              requests={this.props.requests}
-              requestId={this.state.loadRequestId}
-              OnRequestComplete={this.RequestComplete}
-              onClick={this.FilterEvents}
-              className="action"
-              text="Filter Events"
-            />
+            <RequestElement loading={this.props.loading && !this.state.watchEvents} loadingIcon="rotate">
+              <Action onClick={this.FilterEvents}>
+                Filter Events
+              </Action>
+            </RequestElement>
           </div>
         </form>
         <div className="actions-container">
@@ -208,7 +185,7 @@ class EventLogs extends React.Component {
     });
   }
 
-  PageContent() {
+  render() {
     const watchIcon = this.state.watchEvents ? <BallClipRotate /> : null;
 
     return (
@@ -225,24 +202,13 @@ class EventLogs extends React.Component {
       </div>
     );
   }
-
-  render() {
-    return (
-      <RequestPage
-        requests={this.props.requests}
-        requestId={this.state.requestId}
-        pageContent={this.PageContent}
-      />
-    );
-  }
 }
 
 EventLogs.propTypes = {
-  WrapRequest: PropTypes.func.isRequired,
-  requests: PropTypes.object.isRequired,
   events: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.object)).isRequired,
   RequestMethod: PropTypes.func.isRequired,
   ClearMethod: PropTypes.func.isRequired,
+  loading: PropTypes.bool.isRequired,
   contractAddress: PropTypes.string,
   abi: PropTypes.array
 };

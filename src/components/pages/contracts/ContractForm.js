@@ -1,44 +1,33 @@
 import React from "react";
+import PropTypes from "prop-types";
 import Redirect from "react-router/es/Redirect";
-import "browser-solc";
-import RequestForm from "../../forms/RequestForm";
-import RequestPage from "../RequestPage";
 import Path from "path";
+import Form from "../../forms/Form";
 
 class ContractForm extends React.Component {
   constructor(props) {
     super(props);
 
+    const contract = props.contract || Object.keys(this.props.contractData)[0] || {};
+
     this.state = {
-      contractName: this.props.match.params.contractName,
-      name: "",
-      description: "",
-      abi: "",
-      bytecode: "",
+      contract,
+      contractName: this.props.contractName,
+      name: contract.name || "",
+      description: contract.description || "",
+      abi: contract.abi || "",
+      bytecode: contract.bytecode || "",
       submitRequestId: undefined,
-      loadRequestId: undefined,
-      createForm: !this.props.location.pathname.endsWith("edit")
+      loadRequestId: undefined
     };
 
-    this.PageContent = this.PageContent.bind(this);
-    this.SetContract = this.SetContract.bind(this);
     this.SwitchContract = this.SwitchContract.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
   }
 
   componentDidMount() {
-    if(!this.state.createForm) {
-      this.setState({
-        loadRequestId: this.props.WrapRequest({
-          todo: async () => {
-            await this.props.ListContracts();
-          }
-        })
-      });
-    }
-
-    if(this.props.contractData) {
+    if(this.props.createForm && this.props.contractData) {
       const firstContractName = Object.keys(this.props.contractData)[0];
       this.SwitchContract(firstContractName);
     }
@@ -47,20 +36,6 @@ class ContractForm extends React.Component {
   HandleInputChange(event) {
     this.setState({
       [event.target.name]: event.target.value
-    });
-  }
-
-  SetContract() {
-    if(!this.props.contracts) { return; }
-
-    const contractInfo = this.props.contracts[this.state.contractName];
-
-    this.setState({
-      name: this.state.contractName,
-      description: contractInfo.description,
-      abi: contractInfo.abi,
-      bytecode: contractInfo.bytecode,
-      contract: contractInfo
     });
   }
 
@@ -79,19 +54,13 @@ class ContractForm extends React.Component {
     });
   }
 
-  HandleSubmit() {
-    this.setState({
-      submitRequestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.SaveContract({
-            name: this.state.name,
-            oldContractName: this.state.contractName || this.state.name,
-            description: this.state.description,
-            abi: this.state.contract.interface || this.state.contract.abi,
-            bytecode: this.state.contract.bytecode
-          });
-        }
-      })
+  async HandleSubmit() {
+    await this.props.methods.Submit({
+      name: this.state.name,
+      oldContractName: this.state.contractName || this.state.name,
+      description: this.state.description,
+      abi: this.state.contract.interface || this.state.contract.abi,
+      bytecode: this.state.contract.bytecode
     });
   }
 
@@ -108,7 +77,7 @@ class ContractForm extends React.Component {
   }
 
   ContractSelection() {
-    if(!this.state.createForm) { return null; }
+    if(!this.props.createForm) { return null; }
 
     return (
       <div className="labelled-input">
@@ -134,30 +103,8 @@ class ContractForm extends React.Component {
     );
   }
 
-  PageContent() {
-    // Keep redirect path synchronized with name changes
-    let redirectPath = Path.dirname(this.props.match.url);
-    if(this.state.createForm) {
-      redirectPath = Path.join(redirectPath, this.state.name);
-    } else {
-      redirectPath = redirectPath.replace(this.state.contractName, this.state.name);
-    }
-
-    return (
-      <RequestForm
-        requests={this.props.requests}
-        requestId={this.state.submitRequestId}
-        legend={"Save contract"}
-        formContent={this.ContractForm()}
-        redirectPath={redirectPath}
-        cancelPath={Path.dirname(this.props.match.url)}
-        OnSubmit={this.HandleSubmit}
-      />
-    );
-  }
-
   render() {
-    if (this.state.createForm) {
+    if(this.props.createForm) {
       // Ensure contract data is set from compilation
       if (!this.props.contractData) {
         this.props.SetErrorMessage({
@@ -167,18 +114,39 @@ class ContractForm extends React.Component {
 
         return <Redirect to="/contracts"/>;
       }
-      return this.PageContent();
-    } else {
-      return (
-        <RequestPage
-          requests={this.props.requests}
-          requestId={this.state.loadRequestId}
-          pageContent={this.PageContent}
-          OnRequestComplete={this.SetContract}
-        />
-      );
     }
+
+    // Keep redirect path synchronized with name changes
+    let redirectPath = Path.dirname(this.props.match.url);
+    if(this.state.createForm) {
+      redirectPath = Path.join(redirectPath, this.state.name);
+    } else {
+      redirectPath = redirectPath.replace(this.state.contractName, this.state.name);
+    }
+
+    return (
+      <Form
+        legend={"Save contract"}
+        formContent={this.ContractForm()}
+        redirectPath={redirectPath}
+        cancelPath={Path.dirname(this.props.match.url)}
+        OnSubmit={this.HandleSubmit}
+        submitting={this.props.methodStatus.Submit.loading}
+        redirect={this.props.methodStatus.Submit.completed}
+      />
+    );
   }
 }
+
+ContractForm.propTypes = {
+  contract: PropTypes.object,
+  contracts: PropTypes.object.isRequired,
+  contractData: PropTypes.object,
+  createForm: PropTypes.bool.isRequired,
+  contractName: PropTypes.string,
+  methods: PropTypes.shape({
+    Submit: PropTypes.func.isRequired
+  })
+};
 
 export default ContractForm;

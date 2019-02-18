@@ -34,7 +34,7 @@ class EventCard extends React.Component {
     });
 
     return (
-      <div>
+      <div className="transaction-input">
         <div className="section-label">
           Method Inputs
         </div>
