@@ -9,6 +9,7 @@ class Form extends React.Component {
     super(props);
 
     this.state = {
+      complete: false,
       redirect: false,
       cancelRedirect: false
     };
@@ -17,10 +18,24 @@ class Form extends React.Component {
     this.HandleCancel = this.HandleCancel.bind(this);
   }
 
-  HandleSubmit(event) {
+  async HandleSubmit(event) {
     event.preventDefault();
     if(!this.props.submitting) {
-      this.props.OnSubmit(event);
+      try {
+        await this.props.OnSubmit(event);
+
+        if(this.props.OnComplete) {
+          await this.props.OnComplete();
+        }
+
+        this.setState({
+          complete: true
+        });
+      } catch(error) {
+        if(this.props.OnError) {
+          await this.props.OnError(error);
+        }
+      }
     }
   }
 
@@ -65,7 +80,7 @@ class Form extends React.Component {
   }
 
   render() {
-    if((this.props.redirect || this.state.redirect) && this.props.redirectPath) {
+    if(this.state.complete && (this.props.redirect || this.state.redirect) && this.props.redirectPath) {
       return (
         <Redirect push to={ this.props.redirectPath } />
       );
@@ -91,15 +106,17 @@ class Form extends React.Component {
 
 Form.propTypes = {
   formContent: PropTypes.node.isRequired,
-  OnSubmit: PropTypes.func.isRequired,
-  OnCancel: PropTypes.func,
   legend: PropTypes.string,
   submitText: PropTypes.string,
   cancelText: PropTypes.string,
   redirect: PropTypes.bool,
   redirectPath: PropTypes.string,
   cancelPath: PropTypes.string,
-  submitting: PropTypes.bool
+  submitting: PropTypes.bool,
+  OnSubmit: PropTypes.func.isRequired,
+  OnCancel: PropTypes.func,
+  OnComplete: PropTypes.func,
+  OnError: PropTypes.func
 };
 
 export default Form;

@@ -81,6 +81,18 @@ const ContentReducer = (state = {}, action) => {
         }
       };
 
+    case ActionTypes.content.objects.permissions:
+      return {
+        ...state,
+        objects: {
+          ...state.objects,
+          [action.objectId]: {
+            ...state.objects[action.objectId],
+            permissions: action.permissions
+          }
+        }
+      };
+
     case ActionTypes.content.types.list:
       return {
         ...state,

@@ -1,11 +1,10 @@
 import React from "react";
-import Path from "path";
-import RequestForm from "../../../forms/RequestForm";
-import RadioSelect from "../../../components/RadioSelect";
-import DeployedContractWrapper from "./DeployedContractWrapper";
 import PropTypes from "prop-types";
+import Path from "path";
+import RadioSelect from "../../../components/RadioSelect";
 import { PageHeader } from "../../../components/Page";
 import Action from "../../../components/Action";
+import Form from "../../../forms/Form";
 
 class DeployedContractFundsForm extends React.Component {
   constructor(props) {
@@ -18,7 +17,6 @@ class DeployedContractFundsForm extends React.Component {
 
     this.HandleSubmit = this.HandleSubmit.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
-    this.HandleError = this.HandleError.bind(this);
   }
   
   HandleInputChange(event) {
@@ -27,44 +25,28 @@ class DeployedContractFundsForm extends React.Component {
     });
   }
 
-  HandleSubmit() {
+  async HandleSubmit() {
     if(this.state.direction === "deposit") {
-      // Send funds to contract
-      this.setState({
-        submitRequestId: this.props.WrapRequest({
-          todo: async () => {
-            await this.props.SendFunds({
-              recipient: this.props.contract.address,
-              ether: this.state.amount
-            });
-          }
-        })
+      await this.props.methods.SendFunds({
+        recipient: this.props.contract.address,
+        ether: this.state.amount
       });
     } else {
-      // Transfer funds from contract
-      this.setState({
-        submitRequestId: this.props.WrapRequest({
-          todo: async () => {
-            await this.props.WithdrawContractFunds({
-              contractAddress: this.props.contract.address,
-              abi: this.props.contract.abi,
-              ether: this.state.amount
-            });
-          }
-        })
+      await this.props.methods.WithdrawContractFunds({
+        contractAddress: this.props.contract.address,
+        abi: this.props.contract.abi,
+        ether: this.state.amount
       });
     }
-  }
-
-  HandleError() {
-    this.setState({
-      submitRequestId: undefined
-    });
   }
 
   ContractMethodForm() {
     return (
       <div>
+        <div className="labelled-input">
+          <label>Current Balance</label>
+          <span>{this.props.deployedContract.balance}</span>
+        </div>
         <RadioSelect
           name="direction"
           label="Action"
@@ -81,21 +63,23 @@ class DeployedContractFundsForm extends React.Component {
   }
 
   render() {
+    const status = this.state.direction === "deposit" ?
+      this.props.methodStatus.SendFunds : this.props.methodStatus.WithdrawContractFunds;
+
     return (
       <div className="page-container">
         <div className="actions-container">
           <Action type="link" className="secondary" to={Path.dirname(this.props.match.url)}>Back</Action>
         </div>
         <PageHeader header={this.props.contract.name} subHeader={this.props.contract.description} />
-        <RequestForm
-          requests={this.props.requests}
-          requestId={this.state.submitRequestId}
+        <Form
           legend="Transfer Contract Funds"
           formContent={this.ContractMethodForm()}
           redirectPath={Path.dirname(this.props.match.url)}
           cancelPath={Path.dirname(this.props.match.url)}
           OnSubmit={this.HandleSubmit}
-          OnError={this.HandleError}
+          submitting={status.loading}
+          redirect={status.completed}
         />
       </div>
     );
@@ -103,7 +87,12 @@ class DeployedContractFundsForm extends React.Component {
 }
 
 DeployedContractFundsForm.propTypes = {
-  contract: PropTypes.object.isRequired
+  contract: PropTypes.object.isRequired,
+  deployedContracts: PropTypes.object.isRequired,
+  methods: PropTypes.shape({
+    SendFunds: PropTypes.func.isRequired,
+    WithdrawContractFunds: PropTypes.func.isRequired
+  })
 };
 
-export default DeployedContractWrapper(DeployedContractFundsForm);
+export default DeployedContractFundsForm;

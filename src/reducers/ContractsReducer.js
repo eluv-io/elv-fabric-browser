@@ -11,7 +11,11 @@ const ContractsReducer = (state = {}, action) => {
     case ActionTypes.contracts.list:
       return {
         ...state,
-        contracts: action.contracts
+        contracts: action.contracts,
+        count: {
+          ...state.count,
+          contracts: action.count
+        }
       };
 
     case ActionTypes.contracts.compile:
@@ -31,7 +35,11 @@ const ContractsReducer = (state = {}, action) => {
     case ActionTypes.contracts.deployed.list:
       return {
         ...state,
-        deployedContracts: action.contracts
+        deployedContracts: action.contracts,
+        count: {
+          ...state.count,
+          deployedContracts: action.count
+        }
       };
 
     case ActionTypes.contracts.deployed.balance:
@@ -94,6 +102,7 @@ const ContractsReducer = (state = {}, action) => {
     default:
       return {
         ...state,
+        count: state.count || {},
         contracts: state.contracts || {},
         deployedContracts: state.deployedContracts || {},
         logs: state.logs || {}

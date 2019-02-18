@@ -1,51 +1,22 @@
 import React from "react";
-import RequestForm from "../../forms/RequestForm";
-import RequestPage from "../RequestPage";
+import PropTypes from "prop-types";
 import Path from "path";
+import Form from "../../forms/Form";
 
 class AccessGroupForm extends React.Component {
   constructor(props) {
     super(props);
 
-    const contractAddress = this.props.match.params.contractAddress;
+    const accessGroup = props.accessGroup || {};
 
     this.state = {
-      name: "",
-      description: "",
-      members: {},
-      submitRequestId: undefined,
-      loadRequestId: undefined,
-      createForm: (!contractAddress),
-      contractAddress
+      name: accessGroup.name || "",
+      description: accessGroup.description || "",
+      members: accessGroup.members || {}
     };
 
-    this.PageContent = this.PageContent.bind(this);
-    this.RequestComplete = this.RequestComplete.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
-  }
-
-  componentDidMount() {
-    if(!this.state.createForm) {
-      this.setState({
-        loadRequestId: this.props.WrapRequest({
-          todo: async () => {
-            await this.props.ListAccessGroups();
-          }
-        })
-      });
-    }
-  }
-
-  RequestComplete() {
-    const accessGroup = this.props.accessGroups[this.state.contractAddress];
-
-    this.setState({
-      name: accessGroup.name,
-      description: accessGroup.description,
-      address: accessGroup.address,
-      members: accessGroup.members
-    });
   }
 
   HandleInputChange(event) {
@@ -54,21 +25,15 @@ class AccessGroupForm extends React.Component {
     });
   }
 
-  HandleSubmit() {
-    this.setState({
-      submitRequestId: this.props.WrapRequest({
-        todo: async () => {
-          const contractAddress = await this.props.SaveAccessGroup({
-            name: this.state.name,
-            description: this.state.description,
-            address: this.state.address,
-            members: this.state.members
-          });
-
-          this.setState({contractAddress});
-        }
-      })
+  async HandleSubmit() {
+    const contractAddress = await this.props.methods.Submit({
+      address: this.props.contractAddress,
+      name: this.state.name,
+      description: this.state.description,
+      members: this.state.members
     });
+
+    this.setState({contractAddress});
   }
 
   AccessGroupForm() {
@@ -86,41 +51,38 @@ class AccessGroupForm extends React.Component {
     );
   }
 
-  PageContent() {
+  render() {
+    const contractAddress = this.props.contractAddress || this.state.contractAddress;
+    const completed = this.props.methodStatus.Submit.completed && !!contractAddress;
+    
     let redirectPath = Path.dirname(this.props.match.url);
-    if(this.state.createForm) {
+    if(this.props.createForm) {
       // On creation, contract address won't exist until submission
-      redirectPath = this.state.contractAddress ?
-        Path.join(Path.dirname(this.props.match.url), this.state.contractAddress) : Path.dirname(this.props.match.url);
+      redirectPath = contractAddress ?
+        Path.join(Path.dirname(this.props.match.url), contractAddress) : Path.dirname(this.props.match.url);
     }
 
     return (
-      <RequestForm
-        requests={this.props.requests}
-        requestId={this.state.submitRequestId}
-        legend={this.state.createForm ? "Create Access Group" : "Manage Access Group"}
+      <Form
+        legend={this.props.createForm ? "Create Access Group" : "Manage Access Group"}
         formContent={this.AccessGroupForm()}
         redirectPath={redirectPath}
         cancelPath={Path.dirname(this.props.match.url)}
+        redirect={completed}
         OnSubmit={this.HandleSubmit}
+        submitting={this.props.methodStatus.Submit.loading}
       />
     );
   }
-
-  render() {
-    if (this.state.createForm) {
-      return this.PageContent();
-    } else {
-      return (
-        <RequestPage
-          requests={this.props.requests}
-          requestId={this.state.loadRequestId}
-          pageContent={this.PageContent}
-          OnRequestComplete={this.RequestComplete}
-        />
-      );
-    }
-  }
 }
+
+AccessGroupForm.propTypes = {
+  accessGroup: PropTypes.object,
+  contractAddress: PropTypes.string,
+  createForm: PropTypes.bool.isRequired,
+  methods: PropTypes.shape({
+    Submit: PropTypes.func.isRequired
+  })
+};
 
 export default AccessGroupForm;

@@ -3,12 +3,27 @@ import Fabric from "../clients/Fabric";
 import {SetNotificationMessage} from "./Notifications";
 import { FormatAddress } from "../utils/Helpers";
 
-export const ListAccessGroups = () => {
+export const ListAccessGroups = ({params}) => {
   return async (dispatch) => {
-    const accessGroups = await Fabric.FabricBrowser.AccessGroups();
+    const {accessGroups, count} = await Fabric.FabricBrowser.AccessGroups({params});
+
     dispatch({
       type: ActionTypes.accessGroups.list,
-      accessGroups
+      accessGroups,
+      count
+    });
+  };
+};
+
+// TODO: Add sorting / filtering of access group members
+export const GetAccessGroup = ({contractAddress}) => {
+  return async (dispatch) => {
+    const accessGroup = await Fabric.FabricBrowser.GetAccessGroup({contractAddress});
+
+    dispatch({
+      type: ActionTypes.accessGroups.get,
+      contractAddress,
+      accessGroup
     });
   };
 };
@@ -69,7 +84,7 @@ const UpdateMembers = async ({contractAddress, members, originalMembers}) => {
 
 export const UpdateAccessGroupMembers = ({address, members, originalMembers}) => {
   return async (dispatch) => {
-    const accessGroup = (await Fabric.FabricBrowser.AccessGroups())[address];
+    const accessGroup = await Fabric.FabricBrowser.GetAccessGroup({contractAddress: address});
 
     if(!accessGroup) { throw Error("Access group not found"); }
 

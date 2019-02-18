@@ -141,7 +141,7 @@ const Fabric = {
     const count = filteredLibraries.length;
 
     // Paginate libraries
-    const page = params.page - 1;
+    const page = (params.page || 1) - 1;
     const perPage = params.perPage || 10;
 
     filteredLibraries = filteredLibraries.slice(page * perPage, (page+1) * perPage);
@@ -305,7 +305,7 @@ const Fabric = {
       };
     }
 
-    const knownGroups = await Fabric.FabricBrowser.AccessGroups();
+    const knownGroups = await Fabric.FabricBrowser.AccessGroups({params: {}});
     return {
       accessor: await Fabric.CollectLibraryGroups({libraryId, type: "accessor", knownGroups}),
       contributor: await Fabric.CollectLibraryGroups({libraryId, type: "contributor", knownGroups}),
@@ -377,7 +377,7 @@ const Fabric = {
     libraryObjects = libraryObjects.sort((a, b) => {
       const name1 = a.versions[0].meta.name|| "zz";
       const name2 = b.versions[0].meta.name || "zz";
-      return name1.toLowerCase() < name2.toLowerCase() ? -1 : 1;
+      return name1.toLowerCase() > name2.toLowerCase() ? -1 : 1;
     });
 
     // Paginate objects
@@ -413,7 +413,7 @@ const Fabric = {
           // Pull latest version info up to top level
           ...latestVersion,
           ...object,
-          name: latestVersion.meta.name || object.id,
+          name: latestVersion.meta.name,
           description: latestVersion.meta["eluv.description"],
           imageUrl,
           contractAddress: client.utils.HashToAddress(object.id),
@@ -537,7 +537,7 @@ const Fabric = {
       return metadata.custom_contract && metadata.custom_contract.address;
     }
 
-    return await client.CustomContractAddress({libraryId, objectId});
+    return FormatAddress(await client.CustomContractAddress({libraryId, objectId}));
   },
 
   GetContentObjectOwner: async ({objectId}) => {
@@ -703,6 +703,8 @@ const Fabric = {
   },
 
   AppUrls: async ({object}) => {
+    if(!object || !object.meta) { return {}; }
+
     const apps = ["display", "manage", "review"];
 
     const appUrls = {};
@@ -1062,15 +1064,65 @@ const Fabric = {
 
     /* Access Groups */
 
-    async AccessGroups() {
+    async AccessGroups({params}) {
       let accessGroups = await Fabric.FabricBrowser.Info("accessGroups");
       const currentAccountAddress = await Fabric.CurrentAccountAddress();
 
-      Object.keys(accessGroups).map(address => {
-        accessGroups[address].isOwner = EqualAddress(accessGroups[address].owner, currentAccountAddress);
+      let filteredAccessGroups = Object.values(accessGroups);
+
+      filteredAccessGroups = filteredAccessGroups.map(accessGroup =>
+        ({
+          ...accessGroup,
+          isOwner: EqualAddress(accessGroup.owner, currentAccountAddress),
+          isManager: Object.values(accessGroup.members)
+            .some(member => member.manager && EqualAddress(member.address, currentAccountAddress))
+        })
+      );
+
+      // Filter
+      if(params.filter) {        
+        filteredAccessGroups = filteredAccessGroups.filter(accessGroup => {
+          try {
+            return accessGroup.name.toLowerCase().includes(params.filter.toLowerCase());
+          } catch(e) {
+            return false;
+          }
+        });
+      }
+
+      // Sort
+      filteredAccessGroups = filteredAccessGroups.sort((a, b) => {
+        const name1 = a.name || "zz";
+        const name2 = b.name || "zz";
+        return name1.toLowerCase() < name2.toLowerCase() ? -1 : 1;
       });
 
-      return accessGroups;
+      const count = filteredAccessGroups.length;
+
+      if(params.paginate) {
+        // Paginate
+        const page = (params.page || 1) - 1;
+        const perPage = params.perPage || 10;
+
+        filteredAccessGroups = filteredAccessGroups.slice(page * perPage, (page + 1) * perPage);
+      }
+
+      // Convert back to map
+      accessGroups = {};
+      filteredAccessGroups.forEach(accessGroup => accessGroups[accessGroup.address] = accessGroup);
+
+      return {accessGroups, count};
+    },
+
+    async GetAccessGroup({contractAddress}) {
+      const currentAccountAddress = await Fabric.CurrentAccountAddress();
+      const accessGroup = (await Fabric.FabricBrowser.Info("accessGroups"))[contractAddress];
+
+      accessGroup.isOwner = EqualAddress(accessGroup.owner, currentAccountAddress);
+      accessGroup.isManager = Object.values(accessGroup.members)
+        .some(member => member.manager && EqualAddress(member.address, currentAccountAddress));
+
+      return accessGroup;
     },
 
     async AddAccessGroup({name, description, address, members={}}) {
@@ -1094,13 +1146,57 @@ const Fabric = {
     },
 
     /* Contracts */
+    
+    FilterContracts({contracts, params}) {
+      let filteredContracts = Object.values(contracts);
 
-    async Contracts() {
-      return await Fabric.FabricBrowser.Info("contracts");
+      // Filter
+      if(params.filter) {
+        filteredContracts = filteredContracts.filter(contract => {
+          try {
+            return contract.name.toLowerCase().includes(params.filter.toLowerCase());
+          } catch(e) {
+            return false;
+          }
+        });
+      }
+
+      // Sort
+      filteredContracts = filteredContracts.sort((a, b) => {
+        const name1 = a.name || "zz";
+        const name2 = b.name || "zz";
+        return name1.toLowerCase() < name2.toLowerCase() ? -1 : 1;
+      });
+
+      const count = filteredContracts.length;
+
+      if(params.paginate) {
+        // Paginate
+        const page = (params.page || 1) - 1;
+        const perPage = params.perPage || 10;
+
+        filteredContracts = filteredContracts.slice(page * perPage, (page + 1) * perPage);
+      }
+
+      // Convert back to map
+      contracts = {};
+      filteredContracts.forEach(contract => contracts[contract.address || contract.name] = contract);
+
+      return {contracts, count};
     },
 
-    async DeployedContracts() {
-      return await Fabric.FabricBrowser.Info("deployedContracts");
+    async Contracts({params}) {
+      return Fabric.FabricBrowser.FilterContracts({
+        contracts: await Fabric.FabricBrowser.Info("contracts"),
+        params
+      });
+    },
+
+    async DeployedContracts({params}) {
+      return Fabric.FabricBrowser.FilterContracts({
+        contracts: await Fabric.FabricBrowser.Info("deployedContracts"),
+        params
+      });
     },
 
     async AddContract({name, description, abi, bytecode}) {

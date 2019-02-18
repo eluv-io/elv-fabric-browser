@@ -15,53 +15,73 @@ class BrowseWidget extends React.Component {
 
     this.state = {
       fileInfo: "",
-      browseButtonRef: React.createRef()
+      browseButtonRef: React.createRef(),
+      previewUrl: ""
     };
 
     this.HandleChange = this.HandleChange.bind(this);
   }
 
-  HandleChange(event) {
-    FileInfo("/", event.target.files, true).then(fileInfo => {
-      if(!this.props.directories || fileInfo.length === 0) {
-        this.setState({
-          dirname: "",
-          fileInfo
-        });
-      } else {
-        // Format file info:
-        // Directory information must be determined by looking at file paths
-        // Only display top level directories
-        let dirname = "";
-        const files = {};
-        fileInfo.forEach(file => {
-          const parts = file.path.split(Path.sep);
+  async HandlePreviewChange(file) {
+    if(!this.props.preview || !file) { return; }
+    const data = await new Response(file).blob();
+    return window.URL.createObjectURL(data);
+  }
 
-          if(!dirname) { dirname = parts[0]; }
+  async HandleChange(event) {
+    const name = event.target.name;
+    const value = event.target.value;
+    const files = event.target.files || [];
 
-          if(parts.length > 2) {
-            const dirInfo = files[parts[1]] || {};
-            files[parts[1]] = {
-              path: parts[1],
-              type: "directory",
-              size: (dirInfo.size || 0) + file.size
-            };
-          } else {
-            files[parts[1]] = {
-              ...file,
-              path: parts[1]
-            };
-          }
-        });
+    const fileInfo = await FileInfo("/", files, true);
 
-        this.setState({
-          dirname,
-          fileInfo: Object.values(files)
-        });
+    if(!this.props.directories || fileInfo.length === 0) {
+      const previewUrl = await this.HandlePreviewChange(files[0]);
+
+      this.setState({
+        dirname: "",
+        fileInfo,
+        previewUrl
+      });
+    } else {
+      // Format file info:
+      // Directory information must be determined by looking at file paths
+      // Only display top level directories
+      let dirname = "";
+      const files = {};
+      fileInfo.forEach(file => {
+        const parts = file.path.split(Path.sep);
+
+        if(!dirname) { dirname = parts[0]; }
+
+        if(parts.length > 2) {
+          const dirInfo = files[parts[1]] || {};
+          files[parts[1]] = {
+            path: parts[1],
+            type: "directory",
+            size: (dirInfo.size || 0) + file.size
+          };
+        } else {
+          files[parts[1]] = {
+            ...file,
+            path: parts[1]
+          };
+        }
+      });
+
+      this.setState({
+        dirname,
+        fileInfo: Object.values(files)
+      });
+    }
+
+    this.props.onChange({
+      target: {
+        name,
+        value,
+        files
       }
     });
-
-    this.props.onChange(event);
   }
 
   ItemRow(item) {
@@ -122,6 +142,16 @@ class BrowseWidget extends React.Component {
     );
   }
 
+  Preview() {
+    if(!this.props.preview || !this.state.previewUrl) { return null; }
+
+    return (
+      <div className="image-preview">
+        <img src={this.state.previewUrl}/>
+      </div>
+    );
+  }
+
   render() {
     const inputName = "browse-" + this.props.label;
     const accept = Array.isArray(this.props.accept) ? this.props.accept.join(", ") : this.props.accept;
@@ -159,6 +189,7 @@ class BrowseWidget extends React.Component {
               Browse
             </Action>
           </div>
+          { this.Preview() }
           { this.FileSelections() }
         </div>
       </div>
@@ -175,6 +206,7 @@ BrowseWidget.propTypes = {
     PropTypes.string,
     PropTypes.arrayOf(PropTypes.string)
   ]),
+  preview: PropTypes.bool,
   directories: PropTypes.bool,
   progress: PropTypes.object
 };

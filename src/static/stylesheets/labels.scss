@@ -32,6 +32,11 @@
     .inline-link {
       color: $color-mediumblue;
     }
+
+    div {
+      @include ellipsis;
+      max-width: 500px;
+    }
   }
 
   .indented {

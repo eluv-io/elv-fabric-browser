@@ -19,8 +19,8 @@ class Listing extends React.Component {
 
     this.state = {
       display: savedOptions.display || "list",
-      perPage: 1,
-      page: 10,
+      perPage: 10,
+      page: 1,
       filter: "",
       filterTimeout: undefined
     };
@@ -34,18 +34,13 @@ class Listing extends React.Component {
   }
 
   Load() {
-    this.setState({
-      requestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.LoadContent({
-            params: {
-              page: this.state.page,
-              perPage: this.state.perPage,
-              filter: this.state.filter
-            }
-          });
-        }
-      })
+    this.props.LoadContent({
+      params: {
+        paginate: true,
+        page: this.state.page,
+        perPage: this.state.perPage,
+        filter: this.state.filter
+      }
     });
   }
 
@@ -89,7 +84,7 @@ class Listing extends React.Component {
           title={"Page " + page}
           onClick={() => this.ChangePage(page)}
           disabled={disabled}
-          className={`page-button ${isTextButton ? "text-button" : ""}`}
+          className={`page-button ${isTextButton ? "text-button" : ""} ${!isTextButton && disabled ? "selected" : ""}`}
         >
           {text.toString()}
         </Action>
@@ -174,7 +169,7 @@ class Listing extends React.Component {
         <div className="controls">
           <input className="filter" placeholder="Filter" value={this.state.filter} onChange={this.Filter} />
           { switchViewButton }
-          <RequestElement requestId={this.state.requestId} requests={this.props.requests} loadingIcon="rotate" >
+          <RequestElement loading={this.props.loadingStatus.loading} loadingIcon="rotate" >
             <IconButton className="request-icon" src={RefreshIcon} title="Refresh" onClick={this.Load} />
           </RequestElement>
         </div>
@@ -183,10 +178,24 @@ class Listing extends React.Component {
   }
 
   render() {
+    if(this.props.loadingStatus.error) {
+      return (
+        <div className="error-page">
+          <div>There was a problem loading this page:</div>
+          <div className="error-message">{this.props.loadingStatus.errorMessage}</div>
+          <div className="actions-container">
+            <RequestElement loading={this.props.loadingStatus.loading} loadingIcon="rotate">
+              <Action className="action-wide" onClick={this.Load}>Try Again</Action>
+            </RequestElement>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="listing">
         { this.Actions() }
-        <RequestElement requestId={this.state.requestId} requests={this.props.requests} loadingClassname="loading">
+        <RequestElement loading={this.props.loadingStatus.loading} loadingClassname="loading">
           <ListingView
             display={this.state.display}
             noIcon={this.props.noIcon}
@@ -201,9 +210,9 @@ class Listing extends React.Component {
 Listing.propTypes = {
   pageId: PropTypes.string.isRequired,
   noIcon: PropTypes.bool,
-  requests: PropTypes.object.isRequired,
   paginate: PropTypes.bool,
   count: PropTypes.number,
+  loadingStatus: PropTypes.object.isRequired,
   RenderContent: PropTypes.func.isRequired,
   LoadContent: PropTypes.func.isRequired
 };

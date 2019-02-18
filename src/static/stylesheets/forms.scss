@@ -122,6 +122,10 @@ form {
       min-height: 1em;
       width: 100%;
     }
+
+    & > span {
+      color: $color-mediumgray;
+    }
   }
 
   .list {

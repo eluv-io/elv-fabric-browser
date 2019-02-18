@@ -1,10 +1,10 @@
 import React from "react";
-import RequestForm from "../../../forms/RequestForm";
 import {LabelledField} from "../../../components/LabelledField";
 
 import PropTypes from "prop-types";
 import {Bytes32ToUtf8} from "../../../../utils/Helpers";
 import EventCard from "../../../components/EventCard";
+import Form from "../../../forms/Form";
 
 class DeployedContractMethodForm extends React.Component {
   constructor(props) {
@@ -18,7 +18,6 @@ class DeployedContractMethodForm extends React.Component {
     this.HandleSubmit = this.HandleSubmit.bind(this);
     this.HandleMethodChange = this.HandleMethodChange.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
-    this.HandleError = this.HandleError.bind(this);
     this.HandleComplete = this.HandleComplete.bind(this);
   }
 
@@ -64,7 +63,7 @@ class DeployedContractMethodForm extends React.Component {
     });
   }
 
-  HandleSubmit() {
+  async HandleSubmit() {
     if(!this.state.method) { return; }
 
     // Determine funds and remove from inputs, if present
@@ -75,29 +74,22 @@ class DeployedContractMethodForm extends React.Component {
 
     const methodArgs = Object.values(inputs);
 
-    this.setState({
-      submitRequestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.CallContractMethod({
-            contractAddress: this.props.contract.address,
-            abi: this.props.contract.abi,
-            methodName: this.state.method,
-            methodArgs,
-            value: funds
-          });
-        }
-      })
+    await this.props.methods.CallContractMethod({
+      contractAddress: this.props.contract.address,
+      abi: this.props.contract.abi,
+      methodName: this.state.method,
+      methodArgs,
+      value: funds
     });
-  }
 
-  HandleError() {
-    this.setState({
-      submitRequestId: undefined
+    await this.props.methods.GetContractBalance({
+      contractAddress: this.props.contract.address
     });
   }
 
   HandleComplete() {
-    const contractState = this.props.deployedContracts[this.props.contract.address];
+    const contractState = this.props.deployedContract;
+
     // Ensure results are set
     if(!contractState || !contractState.methodResults || contractState.methodResults[this.state.method] === undefined) {
       return;
@@ -251,14 +243,12 @@ class DeployedContractMethodForm extends React.Component {
   render() {
     return (
       <div className="contract-method-form">
-        <RequestForm
-          requests={this.props.requests}
-          requestId={this.state.submitRequestId}
+        <Form
           legend="Call Contract Method"
+          submitting={this.props.methodStatus.CallContractMethod.loading}
           formContent={this.ContractMethodForm()}
           OnSubmit={this.HandleSubmit}
           OnComplete={this.HandleComplete}
-          OnError={this.HandleError}
         />
         { this.MethodResults() }
       </div>
@@ -267,7 +257,12 @@ class DeployedContractMethodForm extends React.Component {
 }
 
 DeployedContractMethodForm.propTypes = {
-  contract: PropTypes.object.isRequired
+  contract: PropTypes.object.isRequired,
+  deployedContract: PropTypes.object.isRequired,
+  methods: PropTypes.shape({
+    CallContractMethod: PropTypes.func.isRequired,
+    GetContractBalance: PropTypes.func.isRequired
+  })
 };
 
 export default DeployedContractMethodForm;

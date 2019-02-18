@@ -5,13 +5,24 @@ const AccessGroupsReducer = (state = {}, action) => {
     case ActionTypes.accessGroups.list:
       return {
         ...state,
-        accessGroups: action.accessGroups
+        accessGroups: action.accessGroups,
+        count: action.count
+      };
+
+    case ActionTypes.accessGroups.get:
+      return {
+        ...state,
+        accessGroups: {
+          ...state.accessGroups,
+          [action.contractAddress]: action.accessGroup
+        }
       };
 
     default:
       return {
         ...state,
-        accessGroups: state.accessGroups || {}
+        accessGroups: state.accessGroups || {},
+        count: state.count || 0
       };
   }
 };

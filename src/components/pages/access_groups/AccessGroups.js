@@ -1,9 +1,10 @@
 import React from "react";
+import PropTypes from "prop-types";
 import Path from "path";
 import AccessGroupIcon from "../../../static/icons/groups.svg";
 import {PageHeader} from "../../components/Page";
 import Action from "../../components/Action";
-import {ListingContainer} from "../../../containers/pages/Components";
+import Listing from "../../components/Listing";
 
 class AccessGroups extends React.Component {
   constructor(props) {
@@ -11,11 +12,6 @@ class AccessGroups extends React.Component {
     this.state = {};
 
     this.AccessGroups = this.AccessGroups.bind(this);
-    this.LoadAccessGroups = this.LoadAccessGroups.bind(this);
-  }
-
-  async LoadAccessGroups() {
-    await this.props.ListAccessGroups();
   }
 
   AccessGroups() {
@@ -36,9 +32,12 @@ class AccessGroups extends React.Component {
 
   AccessGroupsListing() {
     return (
-      <ListingContainer
+      <Listing
         pageId="AccessGroups"
-        LoadContent={this.LoadAccessGroups}
+        paginate={true}
+        count={this.props.count}
+        loadingStatus={this.props.methodStatus.ListAccessGroups}
+        LoadContent={({params}) => this.props.methods.ListAccessGroups(params)}
         RenderContent={this.AccessGroups}
         noIcon={true}
       />
@@ -57,5 +56,14 @@ class AccessGroups extends React.Component {
     );
   }
 }
+
+AccessGroups.propTypes = {
+  accessGroups: PropTypes.object.isRequired,
+  count: PropTypes.number.isRequired,
+  methods: PropTypes.shape({
+    ListAccessGroups: PropTypes.func.isRequired
+  })
+};
+
 
 export default AccessGroups;

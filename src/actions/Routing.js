@@ -5,7 +5,7 @@ export const GetFramePath = () => {
   return async (dispatch) => {
     dispatch({
       type: ActionTypes.routes.path,
-      path: await Fabric.GetFramePath() || "/"
+      path: decodeURI(await Fabric.GetFramePath() || "/")
     });
   };
 };
