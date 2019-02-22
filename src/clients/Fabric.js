@@ -1149,6 +1149,54 @@ const Fabric = {
       await Fabric.FabricBrowser.RemoveEntry({type: "accessGroups", name: FormatAddress(address)});
     },
 
+    async AccessGroupMembers({contractAddress, params}) {
+      const accessGroup = await Fabric.FabricBrowser.GetAccessGroup({contractAddress});
+      const currentAccountAddress = await Fabric.CurrentAccountAddress();
+      
+      let filteredMembers = Object.values(accessGroup.members);
+
+      filteredMembers = filteredMembers.map(member =>
+        ({
+          ...member,
+          isCurrentAccount: EqualAddress(member.address, currentAccountAddress)
+        })
+      );
+
+      // Filter
+      if(params.filter) {
+        filteredMembers = filteredMembers.filter(member => {
+          try {
+            return member.name.toLowerCase().includes(params.filter.toLowerCase());
+          } catch(e) {
+            return false;
+          }
+        });
+      }
+
+      // Sort
+      filteredMembers = filteredMembers.sort((a, b) => {
+        const name1 = a.name || "zz";
+        const name2 = b.name || "zz";
+        return name1.toLowerCase() < name2.toLowerCase() ? -1 : 1;
+      });
+
+      const count = filteredMembers.length;
+
+      if(params.paginate) {
+        // Paginate
+        const page = (params.page || 1) - 1;
+        const perPage = params.perPage || 10;
+
+        filteredMembers = filteredMembers.slice(page * perPage, (page + 1) * perPage);
+      }
+
+      // Convert back to map
+      let members = {};
+      filteredMembers.forEach(member => members[member.address] = member);
+
+      return {members, count};
+    },
+
     /* Contracts */
     
     FilterContracts({contracts, params}) {

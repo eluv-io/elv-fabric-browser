@@ -8,7 +8,7 @@ import AccessGroups from "../../../components/pages/access_groups/AccessGroups";
 
 const mapStateToProps = (state) => ({
   accessGroups: state.accessGroups.accessGroups,
-  count: state.accessGroups.count
+  count: state.accessGroups.count.accessGroups
 });
 
 const mapDispatchToProps = dispatch =>

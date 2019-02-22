@@ -29,10 +29,11 @@ class AccessGroup extends React.Component {
   }
 
   AccessGroupMembers() {
-    return Object.values(this.props.accessGroup.members).map(member => {
+    const members = Object.values(this.props.accessGroup.members).map(member => {
       const type = member.manager ? "Manager" : "Member";
       return {
         id: member.address,
+        sortKey: member.name || "zz",
         key: `${type}-${member.address}`,
         title: member.name,
         description: member.address,
@@ -40,6 +41,8 @@ class AccessGroup extends React.Component {
         link: "/"
       };
     });
+
+    return members.sort((a, b) => a.sortKey > b.sortKey ? 1 : -1);
   }
 
   AccessGroupMembersListing() {
@@ -47,9 +50,10 @@ class AccessGroup extends React.Component {
       <Listing
         pageId="AccessGroupMembers"
         paginate={true}
-        count={10}
+        count={this.props.membersCount}
         loadingStatus={this.props.methodStatus.ListAccessGroupMembers}
-        LoadContent={this.props.methods.ListAccessGroupMembers}
+        LoadContent={({params}) =>
+          this.props.methods.ListAccessGroupMembers({contractAddress: this.props.contractAddress, params})}
         RenderContent={this.AccessGroupMembers}
         noIcon={true}
       />
@@ -120,6 +124,7 @@ class AccessGroup extends React.Component {
 
 AccessGroup.propTypes = {
   accessGroup: PropTypes.object.isRequired,
+  membersCount: PropTypes.number.isRequired,
   contractAddress: PropTypes.string.isRequired,
   methods: PropTypes.shape({
     RemoveAccessGroup: PropTypes.func.isRequired
