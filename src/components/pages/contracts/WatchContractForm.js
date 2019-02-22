@@ -11,8 +11,7 @@ class WatchContractForm extends React.Component {
       name: "",
       description: "",
       abi: "",
-      address: "",
-      submitRequestId: undefined
+      address: ""
     };
 
     this.HandleInputChange = this.HandleInputChange.bind(this);
@@ -77,9 +76,8 @@ class WatchContractForm extends React.Component {
         formContent={this.FormContent()}
         redirectPath={redirectPath}
         cancelPath={Path.dirname(this.props.match.url)}
+        status={this.props.methodStatus.Submit}
         OnSubmit={this.HandleSubmit}
-        submitting={this.props.methodStatus.Submit.loading}
-        redirect={this.props.methodStatus.Submit.completed}
       />
     );
   }

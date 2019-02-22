@@ -1,7 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
 import Path from "path";
-import { FormatAddress } from "../../../utils/Helpers";
 import RadioSelect from "../../components/RadioSelect";
 import Fabric from "../../../clients/Fabric";
 import {JsonTextArea} from "../../../utils/Input";
@@ -13,21 +12,25 @@ class DeployContractForm extends React.Component {
 
     const selectedContractParam = this.props.match.params.contractName;
     const isContentTypeContract = Fabric.contentSpaceLibraryId === props.libraryId;
+    const fixedContract = !!selectedContractParam;
+
+    let redirectPath = Path.dirname(this.props.match.url);
+    // Go back one extra path if deploying specific contract
+    if(fixedContract) { redirectPath = Path.dirname(redirectPath); }
 
     this.state = {
       name: "",
       description: "",
       funds: 0,
+      redirectPath,
       // If object ID exists in route, this form is for deploying a custom content object contract
       isContentObjectContract: !!(this.props.objectId),
       isContentTypeContract,
       selectedContract: selectedContractParam,
-      fixedContract: !!selectedContractParam,
+      fixedContract,
       contractSource: "saved",
       contracts: {},
-      currentContractFunds: 0,
-      loadRequestId: undefined,
-      submitRequestId: undefined
+      currentContractFunds: 0
     };
 
     this.HandleInputChange = this.HandleInputChange.bind(this);
@@ -157,7 +160,18 @@ class DeployContractForm extends React.Component {
       });
     }
 
-    this.setState({contractAddress});
+    let redirectPath = this.state.redirectPath;
+    if(!this.state.isContentObjectContract) {
+      // Contract address won't exist until submission
+      redirectPath = Path.join(redirectPath, "deployed", contractAddress);
+    }
+
+    // Ensure redirect path is updated before completion
+    await new Promise(resolve =>
+      this.setState({
+        redirectPath
+      }, resolve)
+    );
   }
 
   // Automatically generated fields for constructor inputs based on ABI description
@@ -335,16 +349,6 @@ class DeployContractForm extends React.Component {
     const legend = this.state.isContentObjectContract ?
       "Set Custom Contract" : "Deploy Custom Contract";
 
-    let redirectPath = Path.dirname(this.props.match.url);
-
-    // Go back one extra path if deploying specific contract
-    if(this.state.fixedContract) { redirectPath = Path.dirname(redirectPath); }
-
-    if(!this.state.isContentObjectContract && this.state.contractAddress) {
-      // Contract address won't exist until submission
-      redirectPath = Path.join(redirectPath, "deployed", FormatAddress(this.state.contractAddress));
-    }
-
     const status = this.state.isContentObjectContract ?
       this.props.methodStatus.SetCustomContentContract : this.props.methodStatus.DeployContract;
 
@@ -352,11 +356,10 @@ class DeployContractForm extends React.Component {
       <Form
         legend={legend}
         formContent={this.ContractForm()}
-        redirectPath={redirectPath}
+        redirectPath={this.state.redirectPath}
         cancelPath={Path.dirname(this.props.match.url)}
+        status={status}
         OnSubmit={this.HandleSubmit}
-        submitting={status.loading}
-        redirect={status.completed && this.state.contractAddress}
       />
     );
   }

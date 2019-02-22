@@ -10,7 +10,7 @@ import DownloadIcon from "../../static/icons/download.svg";
 import UploadIcon from "../../static/icons/upload.svg";
 import BackIcon from "../../static/icons/directory_back.svg";
 import Modal from "../modals/Modal";
-import UploadWidget from "./UploadWidget";
+import FileUploadWidget from "./FileUploadWidget";
 import {Icon, IconButton} from "./Icons";
 
 class FileBrowser extends React.Component {
@@ -112,11 +112,11 @@ class FileBrowser extends React.Component {
     return (
       <Modal
         modalContent={
-          <UploadWidget
-            loading={this.props.loading}
+          <FileUploadWidget
             path={this.state.path}
             displayPath={this.state.displayPath}
             files={this.props.files}
+            uploadStatus={this.props.uploadStatus}
             Upload={this.props.Upload}
             OnComplete={() => {
               closeModal();
@@ -171,11 +171,11 @@ class FileBrowser extends React.Component {
 }
 
 FileBrowser.propTypes = {
-  loading: PropTypes.bool.isRequired,
   files: PropTypes.object.isRequired,
-  Reload: PropTypes.func.isRequired,
+  uploadStatus: PropTypes.object.isRequired,
   Upload: PropTypes.func.isRequired,
   Download: PropTypes.func.isRequired,
+  Reload: PropTypes.func.isRequired
 };
 
 export default FileBrowser;

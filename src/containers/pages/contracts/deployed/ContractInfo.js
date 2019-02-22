@@ -72,52 +72,66 @@ const ContractInfoContainer = (Component, componentStateToProps, componentDispat
 
     // Load any additional information needed for the contract type
     async componentDidMount() {
-      await this.props.RetrieveContractInfo({
-        type: this.state.contract.type,
-        libraryId: this.state.libraryId,
-        objectId: this.state.objectId
-      });
-
-      if(this.state.contract.address && this.state.contract.abi) {
-        await this.props.GetContractBalance({
-          contractAddress: this.state.contract.address
+      try {
+        await this.props.RetrieveContractInfo({
+          type: this.state.contract.type,
+          libraryId: this.state.libraryId,
+          objectId: this.state.objectId
         });
 
-        this.setState({
-          loaded: true
-        });
+        if (this.state.contract.address && this.state.contract.abi) {
+          await this.props.GetContractBalance({
+            contractAddress: this.state.contract.address
+          });
+
+          this.setState({
+            loaded: true
+          });
+        }
+      } catch(error) {
+        /* eslint-disable no-console */
+        console.error("Failed to load contract info:");
+        console.error(error);
+        /* eslint-enable no-console */
       }
     }
 
     // Some contract types require waiting for other information (e.g. object metadata) to load
     async componentDidUpdate() {
-      if(!this.state.loaded) {
-        let contract = this.state.contract;
+      try {
+        if (!this.state.loaded) {
+          let contract = this.state.contract;
 
-        // Add additional information about the contract if necessary
-        if (contract.type === ContractTypes.customObject) {
-          contract = {
-            ...contract,
-            ...(this.props.object.meta.custom_contract || this.props.object.typeInfo.meta.custom_contract)
-          };
-        } else if (contract.type === ContractTypes.unknown) {
-          contract = {
-            ...contract,
-            ...(this.props.deployedContracts[contract.address])
-          };
+          // Add additional information about the contract if necessary
+          if (contract.type === ContractTypes.customObject) {
+            contract = {
+              ...contract,
+              ...(this.props.object.meta.custom_contract || this.props.object.typeInfo.meta.custom_contract)
+            };
+          } else if (contract.type === ContractTypes.unknown) {
+            contract = {
+              ...contract,
+              ...(this.props.deployedContracts[contract.address])
+            };
+          }
+
+          // Preserve contract type description
+          contract.description = this.state.contract.description;
+
+          await this.props.GetContractBalance({
+            contractAddress: contract.address
+          });
+
+          this.setState({
+            contract,
+            loaded: true
+          });
         }
-
-        // Preserve contract type description
-        contract.description = this.state.contract.description;
-
-        await this.props.GetContractBalance({
-          contractAddress: contract.address
-        });
-
-        this.setState({
-          contract,
-          loaded: true
-        });
+      } catch(error) {
+        /* eslint-disable no-console */
+        console.error("Failed to load contract info:");
+        console.error(error);
+        /* eslint-enable no-console */
       }
     }
 

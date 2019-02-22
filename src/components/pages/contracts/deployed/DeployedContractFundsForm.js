@@ -77,9 +77,8 @@ class DeployedContractFundsForm extends React.Component {
           formContent={this.ContractMethodForm()}
           redirectPath={Path.dirname(this.props.match.url)}
           cancelPath={Path.dirname(this.props.match.url)}
+          status={status}
           OnSubmit={this.HandleSubmit}
-          submitting={status.loading}
-          redirect={status.completed}
         />
       </div>
     );

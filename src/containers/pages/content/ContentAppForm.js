@@ -10,7 +10,7 @@ import Container from "../../Container";
 import ContentAppForm from "../../../components/pages/content/ContentAppForm";
 
 const mapStateToProps = (state, props) => ({
-  library: state.content.libraries[props.libraryId || props.match.params.objectId],
+  library: state.content.libraries[props.libraryId || props.match.params.libraryId],
   object: state.content.objects[props.match.params.objectId]
 });
 

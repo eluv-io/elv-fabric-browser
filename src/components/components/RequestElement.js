@@ -10,10 +10,6 @@ class RequestElement extends React.Component {
   render() {
     // Loading state can either be indicated by "loading" boolean or by observing a request
     let loading = this.props.loading;
-    if(this.props.requests) {
-      const request = this.props.requests[this.props.requestId];
-      loading = (request && request.loading) || (this.props.render && !request);
-    }
 
     if(loading) {
       if(this.props.noIndicator) { return null; }
@@ -40,8 +36,6 @@ class RequestElement extends React.Component {
 RequestElement.propTypes = {
   fullPage: PropTypes.bool,
   loading: PropTypes.bool,
-  requestId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  requests: PropTypes.object,
   render: PropTypes.func,
   children: PropTypes.element,
   noIndicator: PropTypes.bool,

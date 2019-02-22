@@ -15,7 +15,8 @@ class ContentTypeForm extends React.Component {
       name: object.name || "",
       description: object.description || "",
       metadata: JSON.stringify(object.meta, null, 2),
-      isContentLibraryObject: object.isContentLibraryObject || false
+      isContentLibraryObject: object.isContentLibraryObject || false,
+      redirectPath: Path.dirname(this.props.match.url)
     };
 
     this.FormContent = this.FormContent.bind(this);
@@ -46,11 +47,18 @@ class ContentTypeForm extends React.Component {
       bitcode: this.state.bitcode
     });
 
-    this.setState({objectId});
+    if(this.props.createForm) {
+      // Ensure redirect path is updated before completion
+      await new Promise(resolve =>
+        this.setState({
+          redirectPath: Path.join(this.state.redirectPath, objectId)
+        }, resolve)
+      );
+    }
   }
 
   BitcodeSelection() {
-    if(!this.state.createForm) { return null; }
+    if(!this.props.createForm) { return null; }
 
     return (
       <BrowseWidget
@@ -94,21 +102,15 @@ class ContentTypeForm extends React.Component {
     const submitted = this.props.methodStatus.Submit.completed && objectId;
     const legend = this.props.createForm ? "Create content type" : "Manage content type";
 
-    let redirectPath = Path.dirname(this.props.match.url);
-    if(this.props.createForm) {
-      redirectPath = objectId ?
-        Path.join(Path.dirname(this.props.match.url), objectId) : Path.dirname(this.props.match.url);
-    }
-
     return (
       <Form
         legend={legend}
         formContent={this.FormContent()}
         redirect={submitted}
-        redirectPath={redirectPath}
-        cancelPath={redirectPath}
+        redirectPath={this.state.redirectPath}
+        cancelPath={Path.dirname(this.props.match.url)}
+        status={this.props.methodStatus.Submit}
         OnSubmit={this.HandleSubmit}
-        submitting={this.props.methodStatus.Submit.loading}
       />
     );
   }

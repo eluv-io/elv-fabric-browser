@@ -462,12 +462,11 @@ class ContentObjectForm extends React.Component {
 
     return (
       <Form
-        submitting={this.props.methodStatus.Submit.loading}
         formContent={formContent}
         legend={legend}
-        redirect={this.props.methodStatus.Submit.completed}
         redirectPath={redirectPath}
         cancelPath={cancelPath}
+        status={this.props.methodStatus.Submit}
         OnSubmit={this.HandleSubmit}
       />
     );
