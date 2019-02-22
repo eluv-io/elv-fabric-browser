@@ -15,7 +15,6 @@ export const ListAccessGroups = ({params}) => {
   };
 };
 
-// TODO: Add sorting / filtering of access group members
 export const GetAccessGroup = ({contractAddress}) => {
   return async (dispatch) => {
     const accessGroup = await Fabric.FabricBrowser.GetAccessGroup({contractAddress});
@@ -50,6 +49,19 @@ export const SaveAccessGroup = ({address, name, description, members}) => {
     }
 
     return FormatAddress(address);
+  };
+};
+
+export const ListAccessGroupMembers = ({contractAddress, params}) => {
+  return async (dispatch) => {
+    const {members, count} = await Fabric.FabricBrowser.AccessGroupMembers({contractAddress, params});
+
+    dispatch({
+      type: ActionTypes.accessGroups.members.list,
+      contractAddress,
+      members,
+      count
+    });
   };
 };
 
