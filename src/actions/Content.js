@@ -250,251 +250,6 @@ export const GetContentObjectPermissions = ({libraryId, objectId}) => {
   };
 };
 
-export const PublishContentObject = ({objectId}) => {
-  return async (dispatch) => {
-    await Fabric.PublishContentObject({objectId});
-
-    dispatch(SetNotificationMessage({
-      message: "Successfully updated content object",
-      redirect: true
-    }));
-  };
-};
-
-export const ReviewContentObject = ({libraryId, objectId, approve, note}) => {
-  return async (dispatch) => {
-    await Fabric.ReviewContentObject({libraryId, objectId, approve, note});
-
-    const currentAccountAddress = await Fabric.CurrentAccountAddress();
-
-    await Fabric.EditAndFinalizeContentObject({
-      libraryId,
-      objectId,
-      todo: async (writeToken) => {
-        await Fabric.MergeMetadata({
-          libraryId,
-          writeToken,
-          metadata: {
-            "eluv.reviewer": currentAccountAddress,
-            "eluv.reviewNote": note
-          }
-        });
-      }
-    });
-
-    dispatch(SetNotificationMessage({
-      message: "Successfully updated content object",
-      redirect: true
-    }));
-  };
-};
-
-export const CreateContentObject = ({libraryId, name, description, type, metadata}) => {
-  return async (dispatch) => {
-    metadata = ParseInputJson(metadata);
-    metadata.name = name;
-    metadata["eluv.description"] = description;
-
-    const objectInfo = await Fabric.CreateAndFinalizeContentObject({
-      libraryId,
-      type,
-      metadata,
-    });
-
-    dispatch(SetNotificationMessage({
-      message: "Successfully created content object",
-      redirect: true
-    }));
-
-    return objectInfo.id;
-  };
-};
-
-export const DeleteContentObject = ({ libraryId, objectId }) => {
-  return async (dispatch) => {
-    await Fabric.DeleteContentObject({libraryId, objectId});
-
-    dispatch(SetNotificationMessage({
-      message: "Successfully deleted content object",
-      redirect: true
-    }));
-  };
-};
-
-export const DeleteContentVersion = ({ libraryId, objectId, versionHash }) => {
-  return async (dispatch) => {
-    await Fabric.DeleteContentVersion({libraryId, objectId, versionHash});
-
-    dispatch(SetNotificationMessage({
-      message: "Successfully deleted content version",
-      redirect: true
-    }));
-  };
-};
-
-export const UpdateContentObject = ({libraryId, objectId, name, description, type, metadata}) => {
-  return async (dispatch) => {
-    let contentDraft = await Fabric.EditContentObject({
-      libraryId,
-      objectId,
-      options: {
-        type
-      }
-    });
-
-    metadata = ParseInputJson(metadata);
-    metadata.name = name;
-    metadata["eluv.description"] = description;
-
-    await Fabric.ReplaceMetadata({
-      libraryId,
-      objectId,
-      writeToken: contentDraft.write_token,
-      metadata
-    });
-
-    await Fabric.FinalizeContentObject({
-      libraryId,
-      objectId,
-      writeToken: contentDraft.write_token
-    });
-
-    dispatch(SetNotificationMessage({
-      message: "Successfully updated content object",
-      redirect: true
-    }));
-  };
-};
-
-export const CreateContentType = ({name, description, metadata, bitcode}) => {
-  return async (dispatch) => {
-    bitcode = await new Response(bitcode).blob();
-
-    const objectId = await Fabric.CreateContentType({
-      name,
-      description,
-      metadata: ParseInputJson(metadata),
-      bitcode
-    });
-
-    dispatch(SetNotificationMessage({
-      message: "Successfully created content type",
-      redirect: true
-    }));
-
-    return objectId;
-  };
-};
-
-export const ListContentTypes = ({latestOnly=true}) => {
-  return async (dispatch) => {
-    dispatch({
-      type: ActionTypes.content.types.list,
-      types: await Fabric.ListContentTypes({latestOnly})
-    });
-  };
-};
-
-export const GetContentType = ({versionHash}) => {
-  return async (dispatch) => {
-    dispatch({
-      type: ActionTypes.content.types.get,
-      contentType: await Fabric.GetContentType({versionHash})
-    });
-  };
-};
-
-export const UploadParts = ({libraryId, objectId, files, callback, encrypt}) => {
-  return async (dispatch) => {
-    let parts = {};
-    let contentDraft = await Fabric.EditContentObject({libraryId, objectId});
-
-    await Promise.all(Array.from(files).map(async file => {
-      const data = await new Response(file).blob();
-
-      let partCallback;
-      if(callback) {
-        partCallback = ({uploaded, total}) => callback({uploaded, total, filename: file.name});
-      }
-
-      parts[file.name] = (
-        await Fabric.UploadPart({
-          libraryId,
-          objectId,
-          writeToken: contentDraft.write_token,
-          data,
-          chunkSize: 10000000,
-          callback: partCallback,
-          encrypted: encrypt
-        })
-      ).part.hash;
-    }));
-
-    await Fabric.MergeMetadata({
-      libraryId,
-      objectId,
-      writeToken: contentDraft.write_token,
-      metadataSubtree: "eluv-fb.parts",
-      metadata: parts
-    });
-
-    await Fabric.FinalizeContentObject({
-      libraryId,
-      objectId,
-      writeToken: contentDraft.write_token
-    });
-
-    const partsText = files.length > 1 ? "parts" : "part";
-
-    dispatch(SetNotificationMessage({
-      message: "Successfully uploaded " + partsText,
-      redirect: true
-    }));
-  };
-};
-
-export const DownloadPart = ({libraryId, objectId, versionHash, partHash, callback}) => {
-  return async (dispatch) => {
-    let blob = await Fabric.DownloadPart({libraryId, objectId, versionHash, partHash, encrypted: false});
-    let url = window.URL.createObjectURL(blob);
-
-    await callback(url);
-  };
-};
-
-export const UploadFiles = ({libraryId, objectId, path, fileList}) => {
-  return async (dispatch) => {
-    await Fabric.EditAndFinalizeContentObject({
-      libraryId,
-      objectId,
-      todo: async (writeToken) => {
-        const fileInfo = await FileInfo(path, fileList);
-
-        await Fabric.UploadFiles({libraryId, objectId, writeToken, fileInfo});
-      }
-    });
-
-    dispatch(SetNotificationMessage({
-      message: "Successfully uploaded files"
-    }));
-  };
-};
-
-export const DownloadFile = ({libraryId, objectId, versionHash, filePath}) => {
-  return async (dispatch) => {
-    let blob = await Fabric.DownloadFile({libraryId, objectId, versionHash, filePath});
-    let url = window.URL.createObjectURL(blob);
-
-    await DownloadFromUrl(url, Path.basename(filePath));
-  };
-};
-
-export const FileUrl = ({libraryId, objectId, versionHash, filePath}) => {
-  return async (dispatch) => {
-    return await Fabric.FileUrl({libraryId, objectId, versionHash, filePath});
-  };
-};
-
 const CollectMetadata = async ({libraryId, writeToken, schema, fields}) => {
   let metadata = {};
 
@@ -610,6 +365,221 @@ export const UpdateFromContentTypeSchema = ({libraryId, objectId, metadata, acce
       message: "Successfully updated content",
       redirect: true
     }));
+  };
+};
+
+export const PublishContentObject = ({objectId}) => {
+  return async (dispatch) => {
+    await Fabric.PublishContentObject({objectId});
+
+    dispatch(SetNotificationMessage({
+      message: "Successfully updated content object",
+      redirect: true
+    }));
+  };
+};
+
+export const ReviewContentObject = ({libraryId, objectId, approve, note}) => {
+  return async (dispatch) => {
+    await Fabric.ReviewContentObject({libraryId, objectId, approve, note});
+
+    const currentAccountAddress = await Fabric.CurrentAccountAddress();
+
+    await Fabric.EditAndFinalizeContentObject({
+      libraryId,
+      objectId,
+      todo: async (writeToken) => {
+        await Fabric.MergeMetadata({
+          libraryId,
+          writeToken,
+          metadata: {
+            "eluv.reviewer": currentAccountAddress,
+            "eluv.reviewNote": note
+          }
+        });
+      }
+    });
+
+    dispatch(SetNotificationMessage({
+      message: "Successfully updated content object",
+      redirect: true
+    }));
+  };
+};
+
+export const DeleteContentObject = ({ libraryId, objectId }) => {
+  return async (dispatch) => {
+    await Fabric.DeleteContentObject({libraryId, objectId});
+
+    dispatch(SetNotificationMessage({
+      message: "Successfully deleted content object",
+      redirect: true
+    }));
+  };
+};
+
+export const DeleteContentVersion = ({ libraryId, objectId, versionHash }) => {
+  return async (dispatch) => {
+    await Fabric.DeleteContentVersion({libraryId, objectId, versionHash});
+
+    dispatch(SetNotificationMessage({
+      message: "Successfully deleted content version",
+      redirect: true
+    }));
+  };
+};
+
+export const UpdateContentObject = ({libraryId, objectId, name, description, type, metadata}) => {
+  return async (dispatch) => {
+    let contentDraft = await Fabric.EditContentObject({
+      libraryId,
+      objectId,
+      options: {
+        type
+      }
+    });
+
+    metadata = ParseInputJson(metadata);
+    metadata.name = name;
+    metadata["eluv.description"] = description;
+
+    await Fabric.ReplaceMetadata({
+      libraryId,
+      objectId,
+      writeToken: contentDraft.write_token,
+      metadata
+    });
+
+    await Fabric.FinalizeContentObject({
+      libraryId,
+      objectId,
+      writeToken: contentDraft.write_token
+    });
+
+    dispatch(SetNotificationMessage({
+      message: "Successfully updated content object",
+      redirect: true
+    }));
+  };
+};
+
+export const CreateContentType = ({name, description, metadata, bitcode}) => {
+  return async (dispatch) => {
+    bitcode = await new Response(bitcode).blob();
+
+    const objectId = await Fabric.CreateContentType({
+      name,
+      description,
+      metadata: ParseInputJson(metadata),
+      bitcode
+    });
+
+    dispatch(SetNotificationMessage({
+      message: "Successfully created content type",
+      redirect: true
+    }));
+
+    return objectId;
+  };
+};
+
+export const ListContentTypes = ({latestOnly=true}) => {
+  return async (dispatch) => {
+    dispatch({
+      type: ActionTypes.content.types.list,
+      types: await Fabric.ListContentTypes({latestOnly})
+    });
+  };
+};
+
+export const UploadParts = ({libraryId, objectId, files, callback, encrypt}) => {
+  return async (dispatch) => {
+    let parts = {};
+    let contentDraft = await Fabric.EditContentObject({libraryId, objectId});
+
+    await Promise.all(Array.from(files).map(async file => {
+      const data = await new Response(file).blob();
+
+      let partCallback;
+      if(callback) {
+        partCallback = ({uploaded, total}) => callback({uploaded, total, filename: file.name});
+      }
+
+      parts[file.name] = (
+        await Fabric.UploadPart({
+          libraryId,
+          objectId,
+          writeToken: contentDraft.write_token,
+          data,
+          chunkSize: 10000000,
+          callback: partCallback,
+          encrypted: encrypt
+        })
+      ).part.hash;
+    }));
+
+    await Fabric.MergeMetadata({
+      libraryId,
+      objectId,
+      writeToken: contentDraft.write_token,
+      metadataSubtree: "eluv-fb.parts",
+      metadata: parts
+    });
+
+    await Fabric.FinalizeContentObject({
+      libraryId,
+      objectId,
+      writeToken: contentDraft.write_token
+    });
+
+    const partsText = files.length > 1 ? "parts" : "part";
+
+    dispatch(SetNotificationMessage({
+      message: "Successfully uploaded " + partsText,
+      redirect: true
+    }));
+  };
+};
+
+export const DownloadPart = ({libraryId, objectId, versionHash, partHash, callback}) => {
+  return async () => {
+    let blob = await Fabric.DownloadPart({libraryId, objectId, versionHash, partHash, encrypted: false});
+    let url = window.URL.createObjectURL(blob);
+
+    await callback(url);
+  };
+};
+
+export const UploadFiles = ({libraryId, objectId, path, fileList}) => {
+  return async (dispatch) => {
+    await Fabric.EditAndFinalizeContentObject({
+      libraryId,
+      objectId,
+      todo: async (writeToken) => {
+        const fileInfo = await FileInfo(path, fileList);
+
+        await Fabric.UploadFiles({libraryId, objectId, writeToken, fileInfo});
+      }
+    });
+
+    dispatch(SetNotificationMessage({
+      message: "Successfully uploaded files"
+    }));
+  };
+};
+
+export const DownloadFile = ({libraryId, objectId, versionHash, filePath}) => {
+  return async () => {
+    let blob = await Fabric.DownloadFile({libraryId, objectId, versionHash, filePath});
+    let url = window.URL.createObjectURL(blob);
+
+    await DownloadFromUrl(url, Path.basename(filePath));
+  };
+};
+
+export const FileUrl = ({libraryId, objectId, versionHash, filePath}) => {
+  return async () => {
+    return await Fabric.FileUrl({libraryId, objectId, versionHash, filePath});
   };
 };
 

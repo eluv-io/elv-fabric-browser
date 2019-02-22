@@ -152,8 +152,10 @@ const Fabric = {
         try {
           libraries[libraryId] = await Fabric.GetContentLibrary({libraryId});
         } catch(error) {
+          /* eslint-disable no-console */
           console.error("Failed to get content library:");
           console.error(error);
+          /* eslint-enable no-console */
         }
       })
     );
@@ -426,8 +428,10 @@ const Fabric = {
           isNormalObject
         };
       } catch(error) {
+        /* eslint-disable no-console */
         console.error("Failed to list content object " + object.id);
         console.error(error);
+        /* eslint-enable no-console */
       }
     }
 

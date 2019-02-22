@@ -1,6 +1,4 @@
 form {
-  @include no-select;
-
   display: inline-block;
 
   fieldset {
@@ -16,6 +14,15 @@ form {
     img {
       width: 100%;
     }
+  }
+
+  .form-error {
+    background: $color-mediumred;
+    color: $color-text-white;
+    margin-bottom: $spacing-xs;
+    padding: $spacing-xs 0;
+    text-align: center;
+    width: 100%;
   }
 
   .labelled-input {
@@ -36,6 +43,8 @@ form {
     }
 
     label {
+      @include no-select;
+
       align-items: center;
       display: flex;
       margin-right: 10px;

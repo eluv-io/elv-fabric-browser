@@ -4,7 +4,7 @@ import BrowseWidget from "./BrowseWidget";
 import RadioSelect from "./RadioSelect";
 import Form from "../forms/Form";
 
-class UploadWidget extends React.Component {
+class FileUploadWidget extends React.Component {
   constructor(props) {
     super(props);
 
@@ -47,10 +47,10 @@ class UploadWidget extends React.Component {
       <div className="upload-widget">
         <div className="modal-error">{this.state.error}</div>
         <Form
-          submitting={this.props.loading}
           legend={"Upload files to " + this.props.displayPath}
           formContent={this.FormContent()}
-          redirect={false}
+          noRedirect={true}
+          status={this.props.uploadStatus}
           OnSubmit={this.HandleSubmit}
           OnCancel={this.props.OnCancel}
           OnError={(error) => this.setState({error})}
@@ -61,14 +61,14 @@ class UploadWidget extends React.Component {
   }
 }
 
-UploadWidget.propTypes = {
-  loading: PropTypes.bool.isRequired,
+FileUploadWidget.propTypes = {
   path: PropTypes.string.isRequired,
   displayPath: PropTypes.string.isRequired,
   progress: PropTypes.object,
+  uploadStatus: PropTypes.object,
   Upload: PropTypes.func.isRequired,
   OnComplete: PropTypes.func.isRequired,
   OnCancel: PropTypes.func
 };
 
-export default UploadWidget;
+export default FileUploadWidget;

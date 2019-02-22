@@ -18,7 +18,8 @@ class ContentLibraryForm extends React.Component {
       publicMetadata: JSON.stringify(library.meta, null, 2) || "",
       privateMetadata: JSON.stringify(library.privateMeta, null, 2) || "",
       isContentSpaceLibrary: library.isContentSpaceLibrary || false,
-      imageSelection: ""
+      imageSelection: "",
+      redirectPath: Path.dirname(this.props.match.url)
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -52,7 +53,14 @@ class ContentLibraryForm extends React.Component {
       image: this.state.imageSelection
     });
 
-    this.setState({libraryId});
+    if(this.props.createForm) {
+      // Ensure redirect path is updated before completion
+      await new Promise(resolve =>
+        this.setState({
+          redirectPath: Path.join(this.state.redirectPath, libraryId)
+        }, resolve)
+      );
+    }
   }
 
   Image() {
@@ -78,7 +86,7 @@ class ContentLibraryForm extends React.Component {
       <div className="form-content">
         <div className="labelled-input">
           <label htmlFor="name">Name</label>
-          <input name="name" value={this.state.name} onChange={this.HandleInputChange} readOnly={this.state.isContentSpaceLibrary} />
+          <input name="name" value={this.state.name} required={true} onChange={this.HandleInputChange} readOnly={this.state.isContentSpaceLibrary} />
         </div>
         { this.Image() }
         <div className="labelled-input">
@@ -110,23 +118,14 @@ class ContentLibraryForm extends React.Component {
   PageContent() {
     const legend = this.props.createForm ? "Create content library" : "Manage content library";
 
-    let redirectPath = Path.dirname(this.props.match.url);
-    if(this.props.createForm) {
-      // On creation, libraryId won't exist until submission
-      const libraryId = this.props.libraryId || this.state.libraryId;
-      redirectPath = libraryId ?
-        Path.join(Path.dirname(this.props.match.url), libraryId) : Path.dirname(this.props.match.url);
-    }
-
     return (
       <Form
         legend={legend}
         formContent={this.FormContent()}
-        redirectPath={redirectPath}
+        redirectPath={this.state.redirectPath}
         cancelPath={Path.dirname(this.props.match.url)}
+        status={this.props.methodStatus.Submit}
         OnSubmit={this.HandleSubmit}
-        submitting={this.props.methodStatus.Submit.loading}
-        redirect={this.props.methodStatus.Submit.completed && !!this.state.libraryId}
       />
     );
   }
@@ -137,7 +136,7 @@ class ContentLibraryForm extends React.Component {
 }
 
 ContentLibraryForm.propTypes = {
-  libraryId: PropTypes.string.isRequired,
+  libraryId: PropTypes.string,
   library: PropTypes.object,
   createForm: PropTypes.bool.isRequired,
   methods: PropTypes.shape({
