@@ -82,7 +82,7 @@ class Contract extends React.Component {
     return (
       <div className="page-container contracts-page-container">
         <div className="actions-container">
-          <Action type="link" to={Path.dirname(this.props.match.url)}>Back</Action>
+          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
           <Action type="link" to={Path.join(this.props.match.url, "edit")}>Edit Contract</Action>
           <Action type="link" to={Path.join(this.props.match.url, "deploy")}>Deploy Contract</Action>
           <Action className="delete-action" onClick={this.DeleteContract}>Delete Contract</Action>

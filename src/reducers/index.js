@@ -9,6 +9,7 @@ import AccessGroupsReducer from "./AccessGroupsReducer";
 import FrameRoutingReducer from "./FrameRoutingReducer";
 import LogsReducer from "./LogsReducer";
 
+/*
 // Collect all dispatched actions
 const DebugReducer = (state = {}, action) => {
   let actions = state.actions || [];
@@ -22,6 +23,7 @@ const DebugReducer = (state = {}, action) => {
     actions
   };
 };
+*/
 
 export default (history) => {
   return combineReducers({

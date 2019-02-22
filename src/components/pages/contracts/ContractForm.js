@@ -9,7 +9,10 @@ class ContractForm extends React.Component {
     super(props);
 
     const contract = props.contract || Object.keys(this.props.contractData)[0] || {};
+    const redirectPath = this.props.createForm ?
+      Path.dirname(this.props.match.url) : Path.dirname(Path.dirname(this.props.match.url));
 
+    // Keep redirect path synchronized with name changes
     this.state = {
       contract,
       contractName: this.props.contractName,
@@ -17,8 +20,7 @@ class ContractForm extends React.Component {
       description: contract.description || "",
       abi: contract.abi || "",
       bytecode: contract.bytecode || "",
-      submitRequestId: undefined,
-      loadRequestId: undefined
+      redirectPath
     };
 
     this.SwitchContract = this.SwitchContract.bind(this);
@@ -62,6 +64,13 @@ class ContractForm extends React.Component {
       abi: this.state.contract.interface || this.state.contract.abi,
       bytecode: this.state.contract.bytecode
     });
+
+    // Ensure redirect path is updated before completion
+    await new Promise(resolve =>
+      this.setState({
+        redirectPath: Path.join(this.state.redirectPath, this.state.name),
+      }, resolve)
+    );
   }
 
   AvailableContracts() {
@@ -116,23 +125,14 @@ class ContractForm extends React.Component {
       }
     }
 
-    // Keep redirect path synchronized with name changes
-    let redirectPath = Path.dirname(this.props.match.url);
-    if(this.state.createForm) {
-      redirectPath = Path.join(redirectPath, this.state.name);
-    } else {
-      redirectPath = redirectPath.replace(this.state.contractName, this.state.name);
-    }
-
     return (
       <Form
         legend={"Save contract"}
         formContent={this.ContractForm()}
-        redirectPath={redirectPath}
+        redirectPath={this.state.redirectPath}
         cancelPath={Path.dirname(this.props.match.url)}
+        status={this.props.methodStatus.Submit}
         OnSubmit={this.HandleSubmit}
-        submitting={this.props.methodStatus.Submit.loading}
-        redirect={this.props.methodStatus.Submit.completed}
       />
     );
   }

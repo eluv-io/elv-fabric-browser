@@ -12,12 +12,12 @@ class CompileContractForm extends React.Component {
 
     this.state = {
       compileFromSource: true,
-      submitRequestId: undefined,
       files: [],
       name: "",
       description: "",
       abi: "",
-      bytecode: ""
+      bytecode: "",
+      redirectPath: Path.dirname(this.props.match.url)
     };
 
     this.HandleFileSelect = this.HandleFileSelect.bind(this);
@@ -48,6 +48,16 @@ class CompileContractForm extends React.Component {
         bytecode: this.state.bytecode,
       });
     }
+
+    // Ensure redirect path is updated before completion
+    await new Promise(resolve =>
+      this.setState({
+        redirectPath: Path.join(
+          this.state.redirectPath,
+          this.state.compileFromSource ? "save" : this.state.name
+        ),
+      }, resolve)
+    );
   }
 
   Errors() {
@@ -128,15 +138,6 @@ class CompileContractForm extends React.Component {
   }
 
   render() {
-    let redirectPath;
-    if(this.state.compileFromSource) {
-      // If compiling from source, must go to "save" form to finish
-      redirectPath = Path.join(Path.dirname(this.props.match.url), "save");
-    } else {
-      // Otherwise, redirect to newly saved contract
-      redirectPath = Path.join(Path.dirname(this.props.match.url), this.state.name);
-    }
-
     const status = this.state.compileFromSource ?
       this.props.methodStatus.CompileContracts : this.props.methodStatus.Submit;
 
@@ -144,11 +145,10 @@ class CompileContractForm extends React.Component {
       <Form
         legend={"Compile contracts"}
         formContent={this.ContractForm()}
-        redirectPath={redirectPath}
+        redirectPath={this.state.redirectPath}
         cancelPath="/contracts"
+        status={status}
         OnSubmit={this.HandleSubmit}
-        submitting={status.loading}
-        redirect={status.completed}
       />
     );
   }

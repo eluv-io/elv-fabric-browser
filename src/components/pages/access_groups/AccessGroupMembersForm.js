@@ -144,9 +144,8 @@ class AccessGroupMembersForm extends React.Component {
         formContent={this.MembersForm()}
         redirectPath={Path.dirname(this.props.match.url)}
         cancelPath={Path.dirname(this.props.match.url)}
-        redirect={this.props.methodStatus.Submit.completed}
+        status={this.props.methodStatus.Submit}
         OnSubmit={this.HandleSubmit}
-        submitting={this.props.methodStatus.Submit.loading}
       />
     );
   }

@@ -70,6 +70,7 @@ class Listing extends React.Component {
     }
 
     this.setState({
+      page: 1,
       filter: value,
       filterTimeout: setTimeout(this.Load, 500)
     });

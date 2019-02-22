@@ -269,9 +269,9 @@ class ContentObject extends React.Component {
       <div className="object-files">
         <h3>Files</h3>
         <FileBrowser
-          loading={this.props.methodStatus.UploadFiles.loading}
           files={this.props.object.meta.files || {}}
           Reload={() => this.props.Load({componentParams: {view: "files"}})}
+          uploadStatus={this.props.methodStatus.UploadFiles}
           Upload={uploadMethod}
           Download={downloadMethod}
         />

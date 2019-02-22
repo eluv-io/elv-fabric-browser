@@ -201,9 +201,8 @@ class ContentLibraryGroupsForm extends React.Component {
         formContent={this.FormContent()}
         redirectPath={Path.dirname(this.props.match.url)}
         cancelPath={Path.dirname(this.props.match.url)}
+        status={this.props.methodStatus.Submit}
         OnSubmit={this.HandleSubmit}
-        submitting={this.props.methodStatus.Submit.loading}
-        redirect={this.props.methodStatus.Submit.completed}
       />
     );
   }

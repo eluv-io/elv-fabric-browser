@@ -12,7 +12,8 @@ class AccessGroupForm extends React.Component {
     this.state = {
       name: accessGroup.name || "",
       description: accessGroup.description || "",
-      members: accessGroup.members || {}
+      members: accessGroup.members || {},
+      redirectPath: Path.dirname(this.props.match.url)
     };
 
     this.HandleInputChange = this.HandleInputChange.bind(this);
@@ -33,7 +34,12 @@ class AccessGroupForm extends React.Component {
       members: this.state.members
     });
 
-    this.setState({contractAddress});
+    // Ensure redirect path is updated before completion
+    await new Promise(resolve =>
+      this.setState({
+        redirectPath: Path.join(Path.dirname(this.props.match.url), contractAddress)
+      }, resolve)
+    );
   }
 
   AccessGroupForm() {
@@ -52,25 +58,14 @@ class AccessGroupForm extends React.Component {
   }
 
   render() {
-    const contractAddress = this.props.contractAddress || this.state.contractAddress;
-    const completed = this.props.methodStatus.Submit.completed && !!contractAddress;
-    
-    let redirectPath = Path.dirname(this.props.match.url);
-    if(this.props.createForm) {
-      // On creation, contract address won't exist until submission
-      redirectPath = contractAddress ?
-        Path.join(Path.dirname(this.props.match.url), contractAddress) : Path.dirname(this.props.match.url);
-    }
-
     return (
       <Form
         legend={this.props.createForm ? "Create Access Group" : "Manage Access Group"}
         formContent={this.AccessGroupForm()}
-        redirectPath={redirectPath}
+        redirectPath={this.state.redirectPath}
         cancelPath={Path.dirname(this.props.match.url)}
-        redirect={completed}
+        status={this.props.methodStatus.Submit}
         OnSubmit={this.HandleSubmit}
-        submitting={this.props.methodStatus.Submit.loading}
       />
     );
   }

@@ -61,7 +61,9 @@ export default (Component) => {
           ...componentParams
         });
       } catch (error) {
+        /* eslint-disable no-console */
         console.error(error);
+        /* eslint-enable no-console */
 
         this.setState({
           loading: false,
@@ -101,7 +103,9 @@ export default (Component) => {
 
         return result;
       } catch (error) {
+        /* eslint-disable no-console */
         console.error(error);
+        /* eslint-enable no-console */
 
         this.setState({
           methodStatus: {
