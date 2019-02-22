@@ -1,7 +1,10 @@
 const ActionTypes = {
   accessGroups: {
     list: "LIST_ACCESS_GROUPS",
-    get: "GET_ACCESS_GROUP"
+    get: "GET_ACCESS_GROUP",
+    members: {
+      list: "LIST_ACCESS_GROUP_MEMBERS"
+    }
   },
   accounts: {
     get: {
