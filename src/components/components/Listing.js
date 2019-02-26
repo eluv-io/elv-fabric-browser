@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import {IconButton} from "./Icons";
 import GridIcon from "../../static/icons/grid.svg";
 import ListIcon from "../../static/icons/list.svg";
-import RequestElement from "./RequestElement";
+import LoadingElement from "./LoadingElement";
 import RefreshIcon from "../../static/icons/refresh.svg";
 import ListingView from "./ListingView";
 import Action from "./Action";
@@ -170,9 +170,9 @@ class Listing extends React.Component {
         <div className="controls">
           <input className="filter" placeholder="Filter" value={this.state.filter} onChange={this.Filter} />
           { switchViewButton }
-          <RequestElement loading={this.props.loadingStatus.loading} loadingIcon="rotate" >
+          <LoadingElement loading={this.props.loadingStatus.loading} loadingIcon="rotate" >
             <IconButton className="request-icon" src={RefreshIcon} title="Refresh" onClick={this.Load} />
-          </RequestElement>
+          </LoadingElement>
         </div>
       </div>
     );
@@ -184,11 +184,9 @@ class Listing extends React.Component {
         <div className="error-page">
           <div>There was a problem loading this page:</div>
           <div className="error-message">{this.props.loadingStatus.errorMessage}</div>
-          <div className="actions-container">
-            <RequestElement loading={this.props.loadingStatus.loading} loadingIcon="rotate">
-              <Action className="action-wide" onClick={this.Load}>Try Again</Action>
-            </RequestElement>
-          </div>
+          <LoadingElement loading={this.props.loadingStatus.loading} loadingIcon="rotate">
+            <Action className="action-wide" onClick={this.Load}>Try Again</Action>
+          </LoadingElement>
         </div>
       );
     }
@@ -196,13 +194,13 @@ class Listing extends React.Component {
     return (
       <div className="listing">
         { this.Actions() }
-        <RequestElement loading={this.props.loadingStatus.loading} loadingClassname="loading">
+        <LoadingElement loading={this.props.loadingStatus.loading} loadingClassname="loading">
           <ListingView
             display={this.state.display}
             noIcon={this.props.noIcon}
             RenderContent={this.props.RenderContent}
           />
-        </RequestElement>
+        </LoadingElement>
       </div>
     );
   }

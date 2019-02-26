@@ -1,27 +1,28 @@
 import React from "react";
 import PropTypes from "prop-types";
-import Action from "./Action";
 
 const PageTabs = ({options, selected, onChange, className=""}) => {
   const tabs = options.map(([label, value]) => {
     return (
-      <Action
+      <li
+        tabIndex={0}
         className={
-          "action action-compact action-wide action-inline " +
-          (selected === value ? "tertiary" : "secondary")
+          "tab " + className +
+          (selected === value ? " selected" : "")
         }
         onClick={() => onChange(value)}
+        onKeyPress={() => onChange(value)}
         key={"tab-" + value}
       >
         { label }
-      </Action>
+      </li>
     );
   });
 
   return (
-    <div className={"actions-container tab-container " + className}>
+    <ul className={"tab-container " + className}>
       { tabs }
-    </div>
+    </ul>
   );
 };
 

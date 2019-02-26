@@ -2,7 +2,7 @@ import React from "react";
 import {BallClipRotate, BallPulse} from "./AnimatedIcons";
 import PropTypes from "prop-types";
 
-class RequestElement extends React.Component {
+class LoadingElement extends React.Component {
   constructor(props) {
     super(props);
   }
@@ -15,7 +15,7 @@ class RequestElement extends React.Component {
       if(this.props.noIndicator) { return null; }
 
       const loadingIcon = this.props.loadingIcon === "rotate" ? <BallClipRotate/> : <BallPulse/>;
-      let className = "request-element "  + (this.props.loadingClassname || "");
+      let className = "loading-element "  + (this.props.loadingClassname || "");
       if(this.props.fullPage) { className += "loading-page-container"; }
 
       return (
@@ -33,14 +33,17 @@ class RequestElement extends React.Component {
   }
 }
 
-RequestElement.propTypes = {
+LoadingElement.propTypes = {
   fullPage: PropTypes.bool,
   loading: PropTypes.bool,
   render: PropTypes.func,
-  children: PropTypes.element,
+  children: PropTypes.oneOfType([
+    PropTypes.element,
+    PropTypes.arrayOf(PropTypes.element)
+  ]),
   noIndicator: PropTypes.bool,
   loadingClassname: PropTypes.string,
   loadingIcon: PropTypes.string
 };
 
-export default RequestElement;
+export default LoadingElement;

@@ -153,7 +153,7 @@ class BrowseWidget extends React.Component {
   }
 
   render() {
-    const inputName = "browse-" + this.props.label;
+    const inputName = "browse-" + this.props.name;
     const accept = Array.isArray(this.props.accept) ? this.props.accept.join(", ") : this.props.accept;
     let directoryAttributes = {};
     if(this.props.directories) {
@@ -167,38 +167,33 @@ class BrowseWidget extends React.Component {
     }
 
     return (
-      <div className="labelled-input">
-        <label className="textarea-label" htmlFor={inputName}>{ this.props.label }</label>
-        <div className="browse-widget">
-          <div className="actions-container">
-            <input
-              className="browse-button"
-              ref={this.state.browseButtonRef}
-              name={inputName}
-              type="file"
-              required={this.props.required}
-              multiple={this.props.multiple}
-              accept={accept}
-              onChange={this.HandleChange}
-              {...directoryAttributes}
-            />
-            <Action
-              className="action-compact action-full-width"
-              onClick={() => this.state.browseButtonRef.current.click()}
-            >
-              Browse
-            </Action>
-          </div>
-          { this.Preview() }
-          { this.FileSelections() }
-        </div>
+      <div className="browse-widget">
+        <input
+          hidden={true}
+          ref={this.state.browseButtonRef}
+          name={inputName}
+          type="file"
+          required={this.props.required}
+          multiple={this.props.multiple}
+          accept={accept}
+          onChange={this.HandleChange}
+          {...directoryAttributes}
+        />
+        <Action
+          className="action-compact action-full-width"
+          onClick={() => this.state.browseButtonRef.current.click()}
+        >
+          Browse
+        </Action>
+        { this.Preview() }
+        { this.FileSelections() }
       </div>
     );
   }
 }
 
 BrowseWidget.propTypes = {
-  label: PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
   required: PropTypes.bool,
   multiple: PropTypes.bool,

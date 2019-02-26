@@ -74,28 +74,23 @@ class CompileContractForm extends React.Component {
     if(this.state.compileFromSource) { return null; }
 
     return (
-      <div className="contracts-form-data">
-        <div className="labelled-input">
-          <label className="label" htmlFor="name">Name</label>
-          <input name="name" required={true} value={this.state.name} onChange={this.HandleInputChange} />
-        </div>
-        <div className="labelled-input">
-          <label className="label" htmlFor="description">Description</label>
-          <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
-        </div>
-        <div className="labelled-input">
-          <label className="label" htmlFor="abi">ABI</label>
-          <JsonTextArea
-            name="abi"
-            value={this.state.abi}
-            onChange={this.HandleInputChange}
-            UpdateValue={formattedAbi => this.setState({abi: formattedAbi})}
-          />
-        </div>
-        <div className="labelled-input">
-          <label className="label" htmlFor="bytecode">Bytecode</label>
-          <textarea name="bytecode" value={this.state.bytecode} onChange={this.HandleInputChange} />
-        </div>
+      <div className="form-content">
+        <label htmlFor="name">Name</label>
+        <input name="name" required={true} value={this.state.name} onChange={this.HandleInputChange} />
+
+        <label className="align-top" htmlFor="description">Description</label>
+        <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
+
+        <label className="align-top" htmlFor="abi">ABI</label>
+        <JsonTextArea
+          name="abi"
+          value={this.state.abi}
+          onChange={this.HandleInputChange}
+          UpdateValue={formattedAbi => this.setState({abi: formattedAbi})}
+        />
+
+        <label className="align-top" htmlFor="bytecode">Bytecode</label>
+        <textarea name="bytecode" value={this.state.bytecode} onChange={this.HandleInputChange} />
       </div>
     );
   }
@@ -104,35 +99,39 @@ class CompileContractForm extends React.Component {
     if(!this.state.compileFromSource) { return null; }
 
     return (
-      <div>
+      <div className="form-content">
+        <label htmlFor="contractFiles" className="align-top">Contract File(s)</label>
         <BrowseWidget
-          label="Contract File(s)"
+          name="contractFiles"
           onChange={this.HandleFileSelect}
           required={true}
           multiple={true}
           accept=".sol"
         />
-        { this.Errors() }
       </div>
     );
   }
 
   ContractForm() {
     return (
-      <div className="contracts-form-data">
-        <RadioSelect
-          name="compileFromSource"
-          label="Source"
-          options={[
-            ["Solidity", true],
-            ["ABI and Bytecode", false]
-          ]}
-          inline={true}
-          selected={this.state.compileFromSource}
-          onChange={this.HandleInputChange}
-        />
+      <div>
+        <div className="form-content">
+          <label htmlFor="source">Source</label>
+          <RadioSelect
+            name="compileFromSource"
+            options={[
+              ["Solidity", true],
+              ["ABI and Bytecode", false]
+            ]}
+            inline={true}
+            selected={this.state.compileFromSource}
+            onChange={this.HandleInputChange}
+          />
+        </div>
+
         { this.FileSelection() }
         { this.AbiForm() }
+        { this.Errors() }
       </div>
     );
   }

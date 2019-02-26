@@ -75,27 +75,22 @@ class ContentLibraryTypesForm extends React.Component {
     const disabled = typeOptions.length === 0;
 
     return (
-      <div className="labelled-input">
-        <label htmlFor={"typeId"}>Content Types</label>
-        <div className="inline-input">
-          <select
-            name="selectedTypeId"
-            value={this.state.selectedTypeId}
-            onChange={this.HandleInputChange}
-            disabled={disabled}
-          >
-            { typeOptions }
-          </select>
-          <div className="actions-container compact">
-            <Action
-              className="action-compact"
-              onClick={this.HandleAddType}
-              disabled={disabled}
-            >
-              Add
-            </Action>
-          </div>
-        </div>
+      <div className="inline-inputs">
+        <select
+          name="selectedTypeId"
+          value={this.state.selectedTypeId}
+          onChange={this.HandleInputChange}
+          disabled={disabled}
+        >
+          { typeOptions }
+        </select>
+        <Action
+          className="action-compact"
+          onClick={this.HandleAddType}
+          disabled={disabled}
+        >
+          Add
+        </Action>
       </div>
     );
   }
@@ -103,7 +98,7 @@ class ContentLibraryTypesForm extends React.Component {
   SelectedTypes() {
     if(this.state.selectedTypeIds.length === 0) { return null; }
 
-    const selectedTypes = this.state.selectedTypeIds.map(typeId => {
+    return this.state.selectedTypeIds.map(typeId => {
       const type = Object.values(this.props.types).find(type => type.id === typeId);
 
       return (
@@ -116,24 +111,20 @@ class ContentLibraryTypesForm extends React.Component {
         </div>
       );
     });
-
-    return (
-      <div className="labelled-input">
-        <label />
-        <div className="list bordered-list">
-          { selectedTypes }
-        </div>
-      </div>
-    );
   }
 
   FormContent() {
     if(!this.state.libraryTypes) { return null; }
 
     return (
-      <div>
+      <div className="form-content">
+        <label htmlFor={"typeId"}>Content Types</label>
         { this.TypeSelector() }
-        { this.SelectedTypes() }
+
+        <label />
+        <div className="list bordered-list">
+          { this.SelectedTypes() }
+        </div>
       </div>
     );
   }

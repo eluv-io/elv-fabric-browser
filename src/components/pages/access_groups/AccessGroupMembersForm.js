@@ -89,34 +89,27 @@ class AccessGroupMembersForm extends React.Component {
     return Object.keys(this.state.members).map(memberId => {
       const member = this.state.members[memberId];
       const removeMemberButton = (
-        <div className="actions-container compact">
-          <Action className="action-compact action-wide delete-action" onClick={this.RemoveMember(memberId)}>
-            Remove Member
-          </Action>
-        </div>
+        <Action className="delete-action" onClick={this.RemoveMember(memberId)}>
+          Remove Member
+        </Action>
       );
 
       // Disallow non-owners from modifying managers
       const disabled = !this.props.accessGroup.isOwner && member.manager;
 
       return (
-        <div key={"member-" + memberId}>
-          <div className="labelled-input">
-            <label className="label" htmlFor="name" >Name</label>
-            <input disabled={disabled} name="name" value={member.name} onChange={this.HandleInputChange(memberId)} />
-          </div>
-          <div className="labelled-input">
-            <label className="label" htmlFor="address">Address</label>
-            <input disabled={disabled} name="address" value={member.address} onChange={this.HandleInputChange(memberId)} />
-          </div>
-          <div className="labelled-input labelled-checkbox-input">
-            <label className="label" htmlFor="manager">Manager</label>
-            <input disabled={!this.props.accessGroup.isOwner} name="manager" type="checkbox" value={member.manager} checked={member.manager} onChange={this.HandleInputChange(memberId)} />
-          </div>
-          <div className="labelled-input">
-            <label className="label" htmlFor="removeMember"></label>
-            { removeMemberButton }
-          </div>
+        <div key={"member-" + memberId} className="form-content">
+          <label htmlFor="name" >Name</label>
+          <input disabled={disabled} name="name" value={member.name} onChange={this.HandleInputChange(memberId)} />
+
+          <label htmlFor="address">Address</label>
+          <input disabled={disabled} name="address" value={member.address} onChange={this.HandleInputChange(memberId)} />
+
+          <label htmlFor="manager">Manager</label>
+          <input disabled={!this.props.accessGroup.isOwner} name="manager" type="checkbox" value={member.manager} checked={member.manager} onChange={this.HandleInputChange(memberId)} />
+
+          <label htmlFor="removeMember" />
+          { removeMemberButton }
         </div>
       );
     });
@@ -124,14 +117,11 @@ class AccessGroupMembersForm extends React.Component {
 
   MembersForm() {
     return (
-      <div className="access-group-form-data">
-        <div className="labelled-input">
-          <label className="label" htmlFor="addMember" />
-          <div className="actions-container left">
-            <Action type="button" className="action-compact action-full-width" onClick={this.AddMember}>Add Member</Action>
-          </div>
+      <div className="form">
+        <div className="form-content">
+          <label htmlFor="addMember" />
+          <Action type="button" onClick={this.AddMember}>Add Member</Action>
         </div>
-
         { this.Members() }
       </div>
     );

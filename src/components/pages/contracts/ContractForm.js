@@ -8,7 +8,7 @@ class ContractForm extends React.Component {
   constructor(props) {
     super(props);
 
-    const contract = props.contract || Object.keys(this.props.contractData)[0] || {};
+    const contract = props.contract || this.props.contractData && Object.keys(this.props.contractData)[0] || {};
     const redirectPath = this.props.createForm ?
       Path.dirname(this.props.match.url) : Path.dirname(Path.dirname(this.props.match.url));
 
@@ -79,7 +79,7 @@ class ContractForm extends React.Component {
     });
 
     return (
-      <select name="selectedContract" onChange={(event) => this.SwitchContract(event.target.value)}>
+      <select key={"contract-options"} name="selectedContract" onChange={(event) => this.SwitchContract(event.target.value)}>
         { options }
       </select>
     );
@@ -88,26 +88,22 @@ class ContractForm extends React.Component {
   ContractSelection() {
     if(!this.props.createForm) { return null; }
 
-    return (
-      <div className="labelled-input">
-        <label className="label" htmlFor="selectedContract">Contract</label>
-        { this.AvailableContracts() }
-      </div>
-    );
+    return [
+      <label key="selected-contract-label" htmlFor="selectedContract">Contract</label>,
+      this.AvailableContracts()
+    ];
   }
 
   ContractForm() {
     return (
-      <div className="contracts-form-data">
-        <div className="labelled-input">
-          <label className="label" htmlFor="name">Name</label>
-          <input name="name" required={true} value={this.state.name} onChange={this.HandleInputChange} />
-        </div>
+      <div className="form-content">
+        <label htmlFor="name">Name</label>
+        <input name="name" required={true} value={this.state.name} onChange={this.HandleInputChange} />
+
         { this.ContractSelection() }
-        <div className="labelled-input">
-          <label className="label" htmlFor="description">Description</label>
-          <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
-        </div>
+
+        <label htmlFor="description" className="align-top">Description</label>
+        <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
       </div>
     );
   }

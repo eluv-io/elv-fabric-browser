@@ -60,38 +60,37 @@ class ContentTypeForm extends React.Component {
   BitcodeSelection() {
     if(!this.props.createForm) { return null; }
 
-    return (
+    return [
+      <label key="bitcode-selection-label" htmlFor="bitcode">Bitcode</label>,
       <BrowseWidget
-        label="Bitcode"
+        key="bitcode-selection"
+        name="bitcode"
         required={false}
         multiple={false}
         accept=".bc"
         onChange={this.HandleBitcodeChange}
       />
-    );
+    ];
   }
 
   FormContent() {
     return (
       <div className="form-content">
-        <div className="labelled-input">
-          <label className="label" htmlFor="name">Name</label>
-          <input name="name" value={this.state.name} onChange={this.HandleInputChange} readOnly={this.state.isContentLibraryObject} />
-        </div>
+        <label htmlFor="name">Name</label>
+        <input name="name" value={this.state.name} onChange={this.HandleInputChange} readOnly={this.state.isContentLibraryObject} />
+
         { this.BitcodeSelection() }
-        <div className="labelled-input">
-          <label className="textarea-label" htmlFor="description">Description</label>
-          <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
-        </div>
-        <div className="labelled-input">
-          <label className="textarea-label" htmlFor="metadata">Metadata</label>
-          <JsonTextArea
-            name={"metadata"}
-            value={this.state.metadata}
-            onChange={this.HandleInputChange}
-            UpdateValue={formattedMetadata => this.setState({metadata: formattedMetadata})}
-          />
-        </div>
+
+        <label className="align-top" htmlFor="description">Description</label>
+        <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
+
+        <label className="align-top" htmlFor="metadata">Metadata</label>
+        <JsonTextArea
+          name={"metadata"}
+          value={this.state.metadata}
+          onChange={this.HandleInputChange}
+          UpdateValue={formattedMetadata => this.setState({metadata: formattedMetadata})}
+        />
       </div>
     );
   }

@@ -1,161 +1,20 @@
-.clickable {
-  cursor: pointer;
+@import "elv-styles/buttons";
 
-  &:hover {
-    opacity: 0.7;
-  }
-
-  &:active {
-    opacity: 0.9;
-  }
-}
-
-.actions-container {
-  display: flex;
-
-  &.centered {
-    justify-content: center;
-  }
-
-  &.tab-container {
-    margin-bottom: $spacing-s;
-    width: auto;
-
-    &.compact {
-      margin: 0;
-    }
-  }
-
-  :first-child {
-    &.action,
-    &.action-loading {
-      margin-left: 0;
-    }
-  }
-
-  :last-child {
-    &.action,
-    &.action-loading {
-      margin-right: 0;
-    }
-  }
-
-  &.loading {
-    justify-content: center;
-    padding: 14px;
-  }
-
-  .action,
-  .action-loading {
-    @include no-select;
-    align-items: center;
-    box-sizing: border-box;
-    display: flex;
-    justify-content: center;
-    margin: $spacing-xs $spacing-xs $spacing-xs 0;
-  }
-
-  // sass-lint:disable no-vendor-prefixes
-  .action {
-    -moz-appearance: none;
-    -webkit-appearance: none;
-    background: $color-action-primary;
-    border: 1px solid $color-action-primary;
-    color: $color-text-white;
-    cursor: pointer;
-    flex-basis: available;
-    flex-basis: -moz-available;
-    flex-grow: 1;
-    font-family: Lato, sans-serif;
-    font-size: 13px;
-    height: 2.25em;
-    justify-content: center;
-    line-height: 1;
-    max-width: 171px;
-    padding: $spacing-xs $spacing-s;
-    // sass-lint:enable no-vendor-prefixes
-
-    // sass-lint:disable force-pseudo-nesting
-    &:disabled,
-    &:disabled:hover {
-      background: $color-action-disabled;
-      border: 1px solid $color-action-disabled;
-      box-shadow: none;
-      color: $color-text-light;
-      cursor: auto;
-    }
-    // sass-lint:enable force-pseudo-nesting
-
-    &:focus {
-      box-shadow: $color-lightblue 0 0 5px;
-      outline: $color-mediumblue;
-    }
-
-    &:hover {
-      background: $color-lightblue;
-      border: 1px solid $color-lightblue;
-    }
+.elv-button {
+  // Increase specificity
+  &.elv-button {
+    @include elv-button;
 
     &.secondary {
-      background: $color-action-secondary;
-      border: 1px solid $color-action-secondary;
-      color: $color-text-dark;
-
-      &:hover {
-        background: $color-lightgray;
-        border: 1px solid $color-lightgray;
-      }
+      @include elv-button-secondary;
     }
 
     &.tertiary {
-      background: $color-action-tertiary;
-      border: 1px solid $color-action-secondary;
-      color: $color-text-dark;
-
-      &:hover {
-        border: 1px solid $color-darkgray;
-      }
-    }
-
-    &.required {
-      box-shadow: $color-red 0 0 7px;
-      outline: 1px solid $color-red;
+      @include elv-button-tertiary;
     }
 
     &.delete-action {
-      background: $color-bg-white;
-      border: 1px solid $color-action-delete;
-      color: $color-action-delete;
-
-      &:hover {
-        background: $color-action-delete;
-        color: $color-text-white;
-      }
+      @include elv-button-danger;
     }
-
-    &.action-compact {
-      font-size: 12px;
-      margin: 0;
-      min-width: 75px;
-      padding: $spacing-xxs;
-    }
-
-    &.action-wide {
-      min-width: 140px;
-    }
-
-    &.action-full-width {
-      max-width: 100%;
-      width: 100%;
-    }
-
-    &.action-inline {
-      margin-right: $spacing-xs;
-    }
-  }
-
-  .action-loading {
-    color: $color-mediumgray;
-    margin: 0;
   }
 }

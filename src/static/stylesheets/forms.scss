@@ -1,152 +1,23 @@
+@import "elv-styles/forms";
+
 form {
-  display: inline-block;
-
-  fieldset {
-    border: 1px solid $color-gray;
-    padding: 30px 50px 20px;
-    width: 500px;
-  }
-
-  .image-preview {
-    margin-top: $spacing-s;
-    width: 100%;
-
-    img {
-      width: 100%;
-    }
-  }
-
-  .form-error {
-    background: $color-mediumred;
-    color: $color-text-white;
-    margin-bottom: $spacing-xs;
-    padding: $spacing-xs 0;
-    text-align: center;
-    width: 100%;
-  }
-
-  .labelled-input {
-    display: flex;
-    padding: 5px 0;
-
-    &.labelled-checkbox-input {
-      align-items: center;
-      justify-content: flex-start;
-
-      input {
-        flex-grow: 0;
-        height: 1.25em;
-        margin: 2px 0 0 -3px;
-        padding: 0;
-        width: 1.5em;
-      }
-    }
-
-    label {
-      @include no-select;
-
-      align-items: center;
-      display: flex;
-      margin-right: 10px;
-      min-width: 140px;
-
-      &.textarea-label,
-      &.text-label,
-      &.radio-label {
-        align-items: flex-start;
-      }
-
-      &.radio-label {
-        margin-top: 7px;
-      }
-
-      &.bold {
-        font-weight: bold;
-      }
-    }
-
-    .inline-input {
-      display: flex;
-      width: 100%;
-
-      * {
-        flex-grow: 1;
-      }
-
-      .actions-container {
-        flex-grow: 0;
-        margin: 0 0 0 $spacing-xxs;
-        width: auto;
-      }
-    }
-
-    input {
-      border: 1px solid $color-mediumgray;
-      flex-grow: 1;
-      font-size: 16px;
-      height: 1.8em;
-      padding: 0 $spacing-xxs;
-
-      &[type="checkbox"] {
-        flex-grow: 0;
-        //width: 100%;
-        font-size: 12px;
-        margin: 0;
-      }
-
-      &:read-only {
-        background: $color-lightergray;
-        color: $color-darkgray;
-      }
-    }
-
-    textarea {
-      border: 1px solid $color-mediumgray;
-      flex-grow: 1;
-      font-family: Lato, sans-serif;
-      font-size: 14px;
-      height: 10em;
-      padding: 0 $spacing-xxs;
-    }
-
-    select {
-      background: $color-bg-white;
-      border: 1px solid $color-mediumgray;
-      border-radius: 0;
-      flex-grow: 1;
-      font-size: 16px;
-      height: 2em;
-      padding: 0;
-      width: 100%;
-    }
-
-    .checkbox-container {
-      align-items: center;
-      display: flex;
-      width: 100%;
-    }
-
-    .form-text {
-      color: $color-text-light;
-      min-height: 1em;
-      width: 100%;
-    }
-
-    & > span {
-      color: $color-mediumgray;
-    }
-  }
+  @include elv-form;
 
   .list {
     display: flex;
     flex-direction: column;
+    margin-top: $elv-spacing-xs;
     width: 100%;
 
     .list-item {
       align-items: center;
       display: flex;
-      margin-bottom: 5px;
+      margin-bottom: $elv-spacing-xs;
       position: relative;
+
+      input {
+        width: 100%;
+      }
 
       .icon-button {
         height: 20px;
@@ -155,98 +26,6 @@ form {
         position: absolute;
         right: 5px;
         width: 20px;
-      }
-    }
-  }
-
-  .bordered-list {
-    .list-item {
-      border: 1px solid $color-lightgray;
-      border-bottom: 0;
-      margin: 0;
-      padding: $spacing-xs;
-    }
-
-    &:last-child {
-      border-bottom: 1px solid $color-lightgray;
-    }
-  }
-
-  .actions-container {
-    justify-content: flex-end;
-    margin-top: 20px;
-    width: 100%;
-
-    &.left {
-      justify-content: flex-start;
-      margin: $spacing-xs 0;
-    }
-
-    &.compact {
-      margin: 0 0 $spacing-xs;
-    }
-  }
-
-  .subsection {
-    border: 1px solid $color-lightergray;
-    margin: 0 0 $spacing-xs;
-    min-width: 350px;
-    padding: $spacing-xs $spacing-s;
-    width: 100%;
-  }
-
-  .browse-widget {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-
-    .actions-container {
-      justify-content: flex-start;
-      margin: 0;
-      width: 100%;
-    }
-
-    // Hide real browse button behind fake one so required popup shows
-    .browse-button {
-      height: 0;
-      margin: $spacing-s 0 0 $spacing-s;
-      padding: 0;
-      position: absolute;
-      width: 0;
-      z-index: -1;
-
-      &:focus {
-        box-shadow: none;
-        outline: none;
-      }
-    }
-
-    .selected-files {
-      box-shadow: $color-gray 2px 2px 5px;
-      margin: $spacing-s 0 $spacing-xs;
-
-      .selected-file {
-        background: $color-bg-light;
-        border: 1px solid $color-gray;
-        border-bottom: 0;
-        display: flex;
-        justify-content: space-between;
-        padding: $spacing-xxs $spacing-xs;
-
-        .filename {
-          @include ellipsis;
-          max-width: 225px;
-          overflow: hidden;
-        }
-
-        .file-size {
-          min-width: 75px;
-          text-align: right;
-        }
-
-        &:last-child {
-          border-bottom: 1px solid $color-gray;
-        }
       }
     }
   }

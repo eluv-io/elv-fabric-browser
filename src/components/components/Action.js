@@ -18,7 +18,7 @@ const Action = ({title, type, to, onClick, className, disabled=false, children})
         to={to}
         title={title}
         tabIndex={0}
-        className={`action ${className}`}
+        className={`elv-button ${className}`}
       >
         { text }
       </Link>
@@ -30,7 +30,7 @@ const Action = ({title, type, to, onClick, className, disabled=false, children})
         title={title}
         tabIndex={0}
         type={type}
-        className={`action ${className}`}
+        className={`elv-button ${className}`}
         onClick={onClick}
         disabled={disabled}
       >

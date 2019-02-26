@@ -137,6 +137,7 @@ class ContentObjectForm extends React.Component {
     const initialFields = InitializeSchema({schema, initialData: data});
 
     this.setState({
+      type,
       fields: initialFields,
       schema: schema,
       allowCustomMetadata,
@@ -152,12 +153,7 @@ class ContentObjectForm extends React.Component {
   }
 
   HandleTypeChange(event) {
-    // Update type, then initialize the schema for that type
-    const type = event.target.value;
-
-    this.setState({
-      type,
-    }, () => this.SwitchType(this.state.types, type));
+    this.SwitchType(this.state.types, event.target.value);
   }
 
   HandleFieldChange(event, entry, subtree=[]) {
@@ -209,20 +205,18 @@ class ContentObjectForm extends React.Component {
       return <option key={"type-" + hash} name="type" value={hash}>{ name }</option>;
     });
 
-    return (
-      <div className="labelled-input">
-        <label className="label" htmlFor="type">Content Type</label>
-        <select name="type" value={this.state.type} onChange={this.HandleTypeChange}>
-          { options }
-        </select>
-      </div>
-    );
+    return [
+      <label key="type-field-label" htmlFor="type">Content Type</label>,
+      <select key="type-field" name="type" value={this.state.type} onChange={this.HandleTypeChange}>
+        { options }
+      </select>
+    ];
   }
 
   BuildField(entry, subtree=[]) {
     const onChange = (event) => this.HandleFieldChange(event, entry, subtree);
 
-    const key = `field-${subtree.join("-")}-${entry.key}`;
+    const key = `field-${this.state.type}-${subtree.join("-")}-${entry.key}`;
     const value = GetValue({data: this.state.fields, subtree, attr: entry.key});
 
     // Compare with undefined to allow blank labels
@@ -231,52 +225,49 @@ class ContentObjectForm extends React.Component {
     let field;
     switch(entry.type) {
       case "label":
-        field = <div className="form-text">{entry.text}</div>;
+        field = <div key={key} className="form-text">{entry.text}</div>;
         break;
       case "attachedFile":
         field = (
-          <div className="actions-container compact full-width">
-            <Action
-              className="action-compact secondary action-full-width"
-              onClick={
-                async () => {
-                  const type = this.state.types[this.state.type];
-                  if(entry.hash) {
-                    await this.props.DownloadPart({
-                      libraryId: Fabric.contentSpaceLibraryId,
-                      objectId: type.id,
-                      versionHash: type.hash,
-                      partHash: entry.hash,
-                      callback: async (url) => {
-                        await DownloadFromUrl(url, entry.filename || label);
-                      }
-                    });
-                  }
+          <Action
+            key={key}
+            className="action-compact secondary action-full-width"
+            onClick={
+              async () => {
+                const type = this.state.types[this.state.type];
+                if(entry.hash) {
+                  await this.props.DownloadPart({
+                    libraryId: Fabric.contentSpaceLibraryId,
+                    objectId: type.id,
+                    versionHash: type.hash,
+                    partHash: entry.hash,
+                    callback: async (url) => {
+                      await DownloadFromUrl(url, entry.filename || label);
+                    }
+                  });
                 }
               }
-            >
-              Download
-            </Action>
-          </div>
+            }
+          >
+            Download
+          </Action>
         );
         break;
       case "string":
-        field = <input name={entry.key} required={entry.required} value={value} onChange={onChange} />;
+        field = <input key={key} name={entry.key} required={entry.required} value={value} onChange={onChange} />;
         break;
       case "text":
-        field = <textarea name={entry.key} required={entry.required} value={value} onChange={onChange} />;
+        field = <textarea key={key} name={entry.key} required={entry.required} value={value} onChange={onChange} />;
         break;
       case "integer":
-        field = <input name={entry.key} required={entry.required} value={value} type="number" step={1} onChange={onChange} />;
+        field = <input key={key} name={entry.key} required={entry.required} value={value} type="number" step={1} onChange={onChange} />;
         break;
       case "number":
-        field = <input name={entry.key} required={entry.required} value={value} type="number" step={0.000000000001} onChange={onChange} />;
+        field = <input key={key} name={entry.key} required={entry.required} value={value} type="number" step={0.000000000001} onChange={onChange} />;
         break;
       case "boolean":
         field = (
-          <div className="checkbox-container">
-            <input name={entry.key} required={entry.required} checked={value} type="checkbox" onChange={onChange} />
-          </div>
+          <input key={key} name={entry.key} required={entry.required} checked={value} type="checkbox" onChange={onChange} />
         );
         break;
       case "choice":
@@ -291,6 +282,7 @@ class ContentObjectForm extends React.Component {
         />;
       case "json":
         field = <JsonTextArea
+          key={key}
           UpdateValue={formattedMetadata => this.HandleFieldChange({target: {value: formattedMetadata}}, entry, subtree) }
           onChange={onChange}
           name={entry.key}
@@ -300,19 +292,19 @@ class ContentObjectForm extends React.Component {
       case "file":
         const required = entry.required && this.props.createForm;
 
-        return (
-          <div key={"image-preview-" + key}>
-            <BrowseWidget
-              key={key}
-              accept={entry.accept}
-              label={label}
-              onChange={onChange}
-              multiple={entry.multiple}
-              required={required}
-              preview={entry.preview}
-            />
-          </div>
+        field = (
+          <BrowseWidget
+            key={key}
+            accept={entry.accept}
+            name={entry.key}
+            onChange={onChange}
+            multiple={entry.multiple}
+            required={required}
+            preview={entry.preview}
+          />
         );
+        break;
+
       case "list":
         const elements = Object.keys(value).map(index => {
           const element = {
@@ -322,15 +314,12 @@ class ContentObjectForm extends React.Component {
           return this.BuildField(element, subtree.concat(entry.key));
         });
         field = (
-          <div className="full-width">
-            <div className="actions-container compact left">
-              <Action
-                className="action-compact action-full-width"
-                onClick={() => this.HandleFieldChange({target: {value: ""}}, {key: Id.next()}, subtree.concat(entry.key))}
-              >
-                Add Element
-              </Action>
-            </div>
+          <div key={key} className="full-width">
+            <Action
+              onClick={() => this.HandleFieldChange({target: {value: ""}}, {key: Id.next()}, subtree.concat(entry.key))}
+            >
+              Add Element
+            </Action>
             <div className="list">
               {elements}
             </div>
@@ -355,19 +344,17 @@ class ContentObjectForm extends React.Component {
           return fields;
         } else {
           field = (
-            <div className="subsection">
+            <div key={key} className="form-content no-margins">
               {fields}
             </div>
           );
         }
     }
 
-    return (
-      <div className="labelled-input" key={key}>
-        <label className={["label", "list", "text", "json", "object"].includes(entry.type) ? "textarea-label" : "label"} htmlFor={name}>{label}</label>
-        { field }
-      </div>
-    );
+    return [
+      <label key={key + "-label"} className={["label", "list", "text", "json", "object", "file"].includes(entry.type) ? "align-top" : ""} htmlFor={name}>{label}</label>,
+      field
+    ];
   }
 
   BuildType(schema, subtree=[]) {
@@ -376,26 +363,23 @@ class ContentObjectForm extends React.Component {
 
   MetadataField() {
     //if(!this.state.allowCustomMetadata) { return null; }
-    return (
-      <div className="labelled-input">
-        <label className="textarea-label">Metadata</label>
-        <JsonTextArea
-          UpdateValue={formattedMetadata => this.setState({metadata: formattedMetadata}) }
-          onChange={this.HandleInputChange}
-          name="metadata"
-          value={this.state.metadata}
-        />
-      </div>
-    );
+    return [
+      <label key="metadata-input-label" className="align-top">Metadata</label>,
+      <JsonTextArea
+        key="metadata-input"
+        UpdateValue={formattedMetadata => this.setState({metadata: formattedMetadata}) }
+        onChange={this.HandleInputChange}
+        name="metadata"
+        value={this.state.metadata}
+      />
+    ];
   }
 
   AccessChargeField() {
-    return (
-      <div className="labelled-input">
-        <label htmlFor="accessCharge">Access Charge</label>
-        <input type="number" name="accessCharge" value={this.state.accessCharge} onChange={this.HandleInputChange} />
-      </div>
-    );
+    return [
+      <label key="access-charge-label" htmlFor="accessCharge">Access Charge</label>,
+      <input key="access-charge" type="number" name="accessCharge" value={this.state.accessCharge} onChange={this.HandleInputChange} />
+    ];
   }
 
   FrameCompleted() {
@@ -406,15 +390,12 @@ class ContentObjectForm extends React.Component {
     if(!this.state.manageAppUrl) { return null; }
 
     return (
-      <div className="labelled-input">
-        <label>Form</label>
-        <PageTabs
-          className="compact"
-          selected={this.state.showManageApp}
-          onChange={(value) => this.setState({showManageApp: value})}
-          options={[["App", true], ["Default", false]]}
-        />
-      </div>
+      <PageTabs
+        className="compact"
+        selected={this.state.showManageApp}
+        onChange={(value) => this.setState({showManageApp: value})}
+        options={[["App", true], ["Form", false]]}
+      />
     );
   }
 
@@ -441,7 +422,7 @@ class ContentObjectForm extends React.Component {
             onCancel={this.FrameCompleted}
             className="form-frame"
           />
-          <div className="actions-container">
+          <div className="form-actions">
             <Action className="secondary" onClick={this.FrameCompleted}>Cancel</Action>
           </div>
         </fieldset>
@@ -453,10 +434,12 @@ class ContentObjectForm extends React.Component {
     const formContent = (
       <div>
         {this.AppFormSelection()}
-        {this.TypeField()}
-        {this.BuildType(this.state.schema)}
-        {this.MetadataField()}
-        {this.AccessChargeField()}
+        <div className="form-content">
+          {this.TypeField()}
+          {this.BuildType(this.state.schema)}
+          {this.MetadataField()}
+          {this.AccessChargeField()}
+        </div>
       </div>
     );
 

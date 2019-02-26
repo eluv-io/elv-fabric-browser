@@ -8,7 +8,7 @@ import Redirect from "react-router/es/Redirect";
 import {PageHeader} from "../../components/Page";
 import Action from "../../components/Action";
 import Listing from "../../components/Listing";
-import RequestElement from "../../components/RequestElement";
+import LoadingElement from "../../components/LoadingElement";
 
 class AccessGroup extends React.Component {
   constructor(props) {
@@ -64,13 +64,13 @@ class AccessGroup extends React.Component {
     let editButton;
     let deleteButton;
     if(this.props.accessGroup.isOwner) {
-      editButton = <Action type="link" to={Path.join(this.props.match.url, "edit")}>Manage Group</Action>;
+      editButton = <Action type="link" to={Path.join(this.props.match.url, "edit")}>Manage</Action>;
       deleteButton = <Action className="delete-action" onClick={this.DeleteAccessGroup}>Delete</Action>;
     }
 
     let manageButton;
     if(this.props.accessGroup.isOwner || this.props.accessGroup.isManager) {
-      manageButton = <Action type="link" to={Path.join(this.props.match.url, "members")}>Manage Members</Action>;
+      manageButton = <Action type="link" to={Path.join(this.props.match.url, "members")}>Members</Action>;
     }
 
     return (
@@ -113,7 +113,7 @@ class AccessGroup extends React.Component {
 
   render() {
     return (
-      <RequestElement
+      <LoadingElement
         fullPage={true}
         loading={this.props.methodStatus.RemoveAccessGroup.loading}
         render={this.PageContent}
@@ -124,8 +124,8 @@ class AccessGroup extends React.Component {
 
 AccessGroup.propTypes = {
   accessGroup: PropTypes.object.isRequired,
-  membersCount: PropTypes.number.isRequired,
   contractAddress: PropTypes.string.isRequired,
+  membersCount: PropTypes.number,
   methods: PropTypes.shape({
     RemoveAccessGroup: PropTypes.func.isRequired
   })
