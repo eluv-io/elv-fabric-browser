@@ -11,16 +11,26 @@ const Configuration = require("../../configuration.json");
 let client;
 let isFrameClient = false;
 
-if(window.self === window.top) {
-  client = ElvClient.FromConfiguration({configuration: Configuration});
+/* Undocumented feature: If privateKey param is set, use that to intialize the client */
+let privateKey;
+let queryParams = window.location.search.split("?")[1];
 
-  let wallet = client.GenerateWallet();
-  let signer = wallet.AddAccount({
-    accountName: "Alice",
-    //privateKey: "0x0000000000000000000000000000000000000000000000000000000000000000"
-    privateKey: "0x0000000000000000000000000000000000000000000000000000000000000000"
+if(queryParams) {
+  queryParams = queryParams.split("&");
+
+  queryParams.forEach(param => {
+    const key = param.split("=")[0];
+    if(key === "privateKey") {
+      privateKey = param.split("=")[1];
+    }
   });
-  client.SetSigner({signer});
+}
+
+if(privateKey || window.self === window.top) {
+  if(!privateKey) { privateKey = "0x0000000000000000000000000000000000000000000000000000000000000000"; }
+
+  client = ElvClient.FromConfiguration({configuration: Configuration});
+  client.SetSigner({signer: client.GenerateWallet().AddAccount({privateKey})});
 } else {
   // Contained in IFrame
   client = new FrameClient({
