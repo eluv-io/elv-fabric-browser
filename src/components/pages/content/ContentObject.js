@@ -15,7 +15,7 @@ import Fabric from "../../../clients/Fabric";
 import PageTabs from "../../components/PageTabs";
 import Action from "../../components/Action";
 import {AccessChargeDisplay} from "../../../utils/Helpers";
-import RequestElement from "../../components/RequestElement";
+import LoadingElement from "../../components/LoadingElement";
 
 class ContentObject extends React.Component {
   constructor(props) {
@@ -79,15 +79,13 @@ class ContentObject extends React.Component {
     };
 
     return (
-      <div className="actions-container">
-        <RequestElement loading={this.props.methodStatus.DeleteContentVersion.loading} loadingIcon="rotate" >
-          <Action
-            className="delete-action action-compact action-wide"
-            onClick={DeleteVersion}>
-            Delete Content Version
-          </Action>
-        </RequestElement>
-      </div>
+      <LoadingElement loading={this.props.methodStatus.DeleteContentVersion.loading} loadingIcon="rotate" >
+        <Action
+          className="delete-action action-compact action-wide"
+          onClick={DeleteVersion}>
+          Delete Content Version
+        </Action>
+      </LoadingElement>
     );
   }
 
@@ -106,11 +104,9 @@ class ContentObject extends React.Component {
     const toggleButtonText = (visible ? "Hide " : "Show ") + label;
 
     return (
-      <div className="actions-container">
-        <Action className={"action-compact action-wide " + (visible ? "" : "secondary")} onClick={toggleVisible}>
-          { toggleButtonText }
-        </Action>
-      </div>
+      <Action className={"action-compact action-wide " + (visible ? "" : "secondary")} onClick={toggleVisible}>
+        { toggleButtonText }
+      </Action>
     );
   }
 
@@ -207,24 +203,22 @@ class ContentObject extends React.Component {
 
     const parts = (version.parts.map((part, partNumber) => {
       const downloadButton = (
-        <div className="actions-container">
-          <Action
-            className="action-compact tertiary"
-            onClick={() => {
-              this.props.DownloadPart({
-                libraryId: this.props.libraryId,
-                objectId: this.props.objectId,
-                versionHash: version.hash,
-                partHash: part.hash,
-                callback: async (url) => {
-                  await DownloadFromUrl(url, part.hash);
-                }
-              });
-            }}
-          >
-            Download
-          </Action>
-        </div>
+        <Action
+          className="action-compact tertiary"
+          onClick={() => {
+            this.props.DownloadPart({
+              libraryId: this.props.libraryId,
+              objectId: this.props.objectId,
+              versionHash: version.hash,
+              partHash: part.hash,
+              callback: async (url) => {
+                await DownloadFromUrl(url, part.hash);
+              }
+            });
+          }}
+        >
+          Download
+        </Action>
       );
 
       const name = names[part.hash] ? <LabelledField label="Name" value={names[part.hash]}/> : null;
@@ -553,7 +547,7 @@ class ContentObject extends React.Component {
     const loading = this.props.methodStatus.DeleteContentObject.loading || this.props.methodStatus.PublishContentObject.loading;
 
     return (
-      <RequestElement
+      <LoadingElement
         fullPage={true}
         loading={loading}
         render={this.PageContent}

@@ -22,7 +22,8 @@ class FileUploadWidget extends React.Component {
 
   FormContent() {
     return (
-      <div>
+      <div className="form-content">
+        <label htmlFor="directories">Type</label>
         <RadioSelect
           name="directories"
           label="Type"
@@ -31,8 +32,10 @@ class FileUploadWidget extends React.Component {
           selected={this.state.directories}
           onChange={(event) => this.setState({directories: event.target.value})}
         />
+
+        <label htmlFor="files"/>
         <BrowseWidget
-          label="Files"
+          name="files"
           onChange={(event) => this.setState({files: event.target.files})}
           directories={this.state.directories}
           multiple={true}

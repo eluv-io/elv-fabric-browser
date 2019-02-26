@@ -145,23 +145,17 @@ class ContentLibraryGroupsForm extends React.Component {
       const group = this.state.groups[groupType][groupId];
 
       return (
-        <div key={"group-" + groupId}>
-          <div className="labelled-input">
-            <label className="label" htmlFor="accessGroup"></label>
-            { this.GroupSelection(groupType, groupId) }
-          </div>
-          <div className={"labelled-input" + (group.hideAddress ? " hidden" : "")}>
-            <label className="label" htmlFor="address">Address</label>
-            <input name="address" value={group.address} onChange={this.HandleInputChange(groupType, groupId)} />
-          </div>
-          <div className="labelled-input">
-            <label className="label" htmlFor="removeGroup" />
-            <div className="actions-container compact">
-              <Action className="action-compact action-wide delete-action" onClick={this.RemoveGroup(groupType, groupId)}>
-                Remove Group
-              </Action>
-            </div>
-          </div>
+        <div key={"group-" + groupId} className="form-content">
+          <label htmlFor="accessGroup">Group</label>
+          { this.GroupSelection(groupType, groupId) }
+
+          <label htmlFor="address">Address</label>
+          <input name="address" value={group.address} onChange={this.HandleInputChange(groupType, groupId)} />
+
+          <label htmlFor="removeGroup" />
+          <Action className="action-compact action-wide delete-action" onClick={this.RemoveGroup(groupType, groupId)}>
+            Remove Group
+          </Action>
         </div>
       );
     });
@@ -169,14 +163,12 @@ class ContentLibraryGroupsForm extends React.Component {
 
   GroupsForm(groupType) {
     return (
-      <div className="library-group-form-data">
-        <div className="labelled-input">
-          <label className="label bold" htmlFor="addGroup" >{groupType.capitalize() + "s"}</label>
-          <div className="actions-container left">
-            <Action className="action-compact action-full-width" onClick={this.AddGroup(groupType)}>
-              { `Add ${groupType.capitalize()} Group` }
-            </Action>
-          </div>
+      <div>
+        <div className="form-content">
+          <label htmlFor="addGroup" className="bold">{groupType.capitalize() + "s"}</label>
+          <Action onClick={this.AddGroup(groupType)}>
+            { `Add ${groupType.capitalize()} Group` }
+          </Action>
         </div>
 
         { this.Groups(groupType) }

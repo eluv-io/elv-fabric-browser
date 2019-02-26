@@ -179,45 +179,42 @@ class DeployContractForm extends React.Component {
     if(!this.state.constructor || !this.state.constructor.inputs) { return null; }
 
     return this.state.constructor.inputs.map((input) => {
-      return (
-        <div className="labelled-input" key={"constructor-input-" + input.name}>
-          <label className="label" htmlFor={input.name}>{input.name}</label>
-          <input
-            name={input.name}
-            value={this.state.constructorInputs[input.name]}
-            onChange={this.HandleConstructorInputChange} />
-        </div>
-      );
+      return [
+        <label key={"contract-constructor-param-label-" + input.name} htmlFor={input.name}>{input.name}</label>,
+        <input
+          key={"contract-constructor-param-" + input.name}
+          name={input.name}
+          value={this.state.constructorInputs[input.name]}
+          onChange={this.HandleConstructorInputChange}
+        />
+      ];
     });
   }
 
   ContractSelection() {
     if(this.state.fixedContract) {
-      return (
-        <div className="labelled-input">
-          <label className="label text-label">Contract</label>
-          <div className="form-text">{this.state.selectedContract}</div>
-        </div>
-      );
+      return [
+        <label key="contract-selection-label">Contract</label>,
+        <div key="contract-selection" className="form-text">{this.state.selectedContract}</div>
+      ];
     }
 
     const options = Object.keys(this.Contracts()).map(contractKey => {
       return <option key={contractKey} value={contractKey}>{this.Contracts()[contractKey].name}</option>;
     });
 
-    return (
-      <div className="labelled-input">
-        <label className="label" htmlFor="selectedContract">Contract</label>
-        <select
-          name="selectedContract"
-          onChange={this.HandleContractChange}
-          value={this.state.selectedContract}
-          disabled={this.state.fixedContract}
-        >
-          { options }
-        </select>
-      </div>
-    );
+    return [
+      <label key={"contract-selection-label"} htmlFor="selectedContract">Contract</label>,
+      <select
+        key={"contract-selection"}
+        name="selectedContract"
+        onChange={this.HandleContractChange}
+        value={this.state.selectedContract}
+        disabled={this.state.fixedContract}
+      >
+        { options }
+      </select>
+    ];
   }
 
   ContractSourceSelection() {
@@ -225,10 +222,11 @@ class DeployContractForm extends React.Component {
       return null;
     }
 
-    return (
+    return [
+      <label key="contract-source-label" htmlFor="contractSource">Contract Source</label>,
       <RadioSelect
+        key="contract-source"
         name="contractSource"
-        label="Contract Source"
         options={[
           ["Saved", "saved"],
           ["Deployed", "deployed"]
@@ -237,73 +235,59 @@ class DeployContractForm extends React.Component {
         selected={this.state.contractSource}
         onChange={this.HandleContractSourceChange}
       />
-    );
+    ];
   }
 
   // Name and description when deploying arbitrary (non-content-object) contracts
   ContractInfoFields() {
     if(this.state.isContentObjectContract) { return null; }
 
-    return (
-      <div className="contracts-form-data">
-        <div className="labelled-input">
-          <label className="label" htmlFor="name">Name</label>
-          <input name="name" value={this.state.name} onChange={this.HandleInputChange} />
-        </div>
-        <div className="labelled-input">
-          <label className="textarea-label" htmlFor="description">Description</label>
-          <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
-        </div>
-      </div>
-    );
+    return [
+      <label key="contract-name-label" htmlFor="name">Name</label>,
+      <input key="contract-name" name="name" value={this.state.name} onChange={this.HandleInputChange} />,
+
+      <label key="contract-description-label" className="align-top" htmlFor="description">Description</label>,
+      <textarea key="contract-description" name="description" value={this.state.description} onChange={this.HandleInputChange} />
+    ];
   }
 
   ContractFunds(balance) {
-    let currentFunds;
+    let currentFunds = [];
     let label = "Funds";
     if(this.state.contractSource === "deployed") {
       label = "Additional Funds";
-      currentFunds = (
-        <div className="labelled-input">
-          <label className="label text-label">Current Balance</label>
-          <div className="form-text">{balance}</div>
-        </div>
-      );
+      currentFunds = [
+        <label key="contract-balance-label">Current Balance</label>,
+        <div key="contract-balance" className="form-text">{balance}</div>
+      ];
     }
 
-    return (
-      <div>
-        { currentFunds }
-        <div className="labelled-input">
-          <label htmlFor="funds">{label}</label>
-          <input name="funds" value={this.state.funds} type="number" step={"0.00000001"} onChange={this.HandleInputChange} />
-        </div>
-      </div>
-    );
+    return [
+      ...currentFunds,
+
+      <label key="contract-funds-label" htmlFor="funds">{label}</label>,
+      <input key="contract-funds" name="funds" value={this.state.funds} type="number" step={"0.00000001"} onChange={this.HandleInputChange} />
+    ];
   }
 
   // Request ABI for content type factory contracts
   FactoryAbi() {
     if(this.state.isContentTypeContract) {
-      return (
-        <div>
-          <div className="labelled-input">
-            <label className="label text-label">Factory ABI</label>
-            <div className="form-text">
-              If this contract is a factory, specify the ABI of the contract that will be applied to the content objects of this type
-            </div>
-          </div>
-          <div className="labelled-input">
-            <label className="textarea-label" htmlFor="factoryAbi" />
-            <JsonTextArea
-              name="factoryAbi"
-              value={this.state.factoryAbi}
-              onChange={this.HandleInputChange}
-              UpdateValue={formattedAbi => this.setState({factoryAbi: formattedAbi})}
-            />
-          </div>
-        </div>
-      );
+      return [
+        <label key="contract-factory-abi-info-label">Factory ABI</label>,
+        <div key="contract-factory-abi-info" className="form-text">
+          If this contract is a factory, specify the ABI of the contract that will be applied to the content objects of this type
+        </div>,
+
+        <label key="contract-factory-abi-label" className="align-top" htmlFor="factoryAbi"/>,
+        <JsonTextArea
+          key="contract-factory-abi"
+          name="factoryAbi"
+          value={this.state.factoryAbi}
+          onChange={this.HandleInputChange}
+          UpdateValue={formattedAbi => this.setState({factoryAbi: formattedAbi})}
+        />
+      ];
     }
   }
 
@@ -311,11 +295,12 @@ class DeployContractForm extends React.Component {
     if(Object.keys(this.Contracts()).length === 0) {
       return (
         <div>
-          {this.ContractSourceSelection()}
-          <div className="labelled-input">
-            <label className="label text-label"/>
-            <div className="form-text">{`No ${this.state.contractSource} contracts available`}</div>
+          <div className="form-content">
+            {this.ContractSourceSelection()}
           </div>
+
+          <label/>
+          <div className="form-text">{`No ${this.state.contractSource} contracts available`}</div>
         </div>
       );
     }
@@ -324,23 +309,23 @@ class DeployContractForm extends React.Component {
 
     let contractDescription;
     if(selectedContract.description) {
-      contractDescription = (
-        <div className="labelled-input">
-          <label className="label text-label" htmlFor="selectedContractDescription" />
-          <div className="form-text">{selectedContract.description}</div>
-        </div>
-      );
+      contractDescription = [
+        <label key="contract-description-label" htmlFor="selectedContractDescription" />,
+        <div key="contract-description" className="form-text">{selectedContract.description}</div>
+      ];
     }
 
     return (
-      <div className="contracts-form-data">
-        { this.ContractSourceSelection() }
-        { this.ContractSelection() }
-        { this.FactoryAbi() }
-        { this.ContractInfoFields() }
-        { contractDescription }
-        { this.ConstructorForm() }
-        { this.ContractFunds(selectedContract.balance) }
+      <div>
+        <div className="form-content">
+          { this.ContractSourceSelection() }
+          { this.ContractSelection() }
+          { this.FactoryAbi() }
+          { this.ContractInfoFields() }
+          { contractDescription }
+          { this.ConstructorForm() }
+          { this.ContractFunds(selectedContract.balance) }
+        </div>
       </div>
     );
   }

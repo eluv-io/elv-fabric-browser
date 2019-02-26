@@ -24,6 +24,7 @@ class Contracts extends React.Component {
         Path.join("/contracts", contractId);
 
       const contract = contracts[contractId];
+
       let eventCount = Object.values(contract.abi).filter(element => element.type === "event").length;
       eventCount = eventCount === 1 ? eventCount + " event" : eventCount + " events";
 
@@ -74,8 +75,8 @@ class Contracts extends React.Component {
     const tabs = (
       <PageTabs
         options={[
-          ["Deployed Contracts", "deployed"],
-          ["Saved Contracts", "saved"]
+          ["Deployed", "deployed"],
+          ["Saved", "saved"]
         ]}
         selected={this.state.view}
         onChange={(value) => this.setState({view: value})}

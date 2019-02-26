@@ -4,7 +4,7 @@ import Path from "path";
 import {PageHeader} from "../../components/Page";
 import {LabelledField} from "../../components/LabelledField";
 import Action from "../../components/Action";
-import RequestElement from "../../components/RequestElement";
+import LoadingElement from "../../components/LoadingElement";
 
 class ContentApps extends React.Component {
   constructor(props) {
@@ -80,11 +80,7 @@ class ContentApps extends React.Component {
         <div className="indented">
           { info }
           <LabelledField
-            value={
-              <div className="actions-container">
-                { action }
-              </div>
-            }
+            value={action}
           />
         </div>
       </div>
@@ -113,7 +109,7 @@ class ContentApps extends React.Component {
 
   render() {
     return (
-      <RequestElement
+      <LoadingElement
         fullPage={true}
         render={this.PageContent}
         loading={this.props.methodStatus.RemoveApp.loading}
