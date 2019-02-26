@@ -44,15 +44,12 @@ class AccessGroupForm extends React.Component {
 
   AccessGroupForm() {
     return (
-      <div className="access-group-form-data">
-        <div className="labelled-input">
-          <label className="label" htmlFor="name">Name</label>
-          <input name="name" value={this.state.name} onChange={this.HandleInputChange} />
-        </div>
-        <div className="labelled-input">
-          <label className="label" htmlFor="description">Description</label>
-          <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
-        </div>
+      <div className="form-content">
+        <label htmlFor="name">Name</label>
+        <input name="name" value={this.state.name} onChange={this.HandleInputChange} />
+
+        <label htmlFor="description">Description</label>
+        <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
       </div>
     );
   }

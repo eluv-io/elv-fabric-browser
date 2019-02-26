@@ -2,7 +2,7 @@ import React from "react";
 import Redirect from "react-router-dom/es/Redirect";
 import PropTypes from "prop-types";
 import Action from "../components/Action";
-import RequestElement from "../components/RequestElement";
+import LoadingElement from "../components/LoadingElement";
 
 class Form extends React.Component {
   constructor(props) {
@@ -71,12 +71,12 @@ class Form extends React.Component {
     }
 
     return (
-      <RequestElement loading={this.props.status.loading}>
-        <div className="actions-container">
+      <div className="form-actions">
+        <LoadingElement loading={this.props.status.loading}>
           { cancelButton }
           <Action type="submit">{this.props.submitText || "Submit"}</Action>
-        </div>
-      </RequestElement>
+        </LoadingElement>
+      </div>
     );
   }
 

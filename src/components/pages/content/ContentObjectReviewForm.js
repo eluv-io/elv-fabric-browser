@@ -42,6 +42,7 @@ class ContentObjectReviewForm extends React.Component {
   FormContent() {
     return (
       <div className="form-content">
+        <label htmlFor="approve">Approve</label>
         <RadioSelect
           name="approve"
           label="Approve"
@@ -49,10 +50,9 @@ class ContentObjectReviewForm extends React.Component {
           selected={this.state.approve}
           onChange={this.HandleInputChange}
         />
-        <div className="labelled-input">
-          <label className="textarea-label" htmlFor="note">Note</label>
-          <textarea name="note" value={this.state.note} onChange={this.HandleInputChange} />
-        </div>
+
+        <label className="align-top" htmlFor="note">Note</label>
+        <textarea name="note" value={this.state.note} onChange={this.HandleInputChange} />
       </div>
     );
   }

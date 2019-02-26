@@ -166,51 +166,44 @@ class DeployedContractMethodForm extends React.Component {
   }
 
   ContractMethodForm() {
-    let formInputs, methodType, fundsInput;
+    let formInputs, fundsInput, methodType;
 
     if(this.state.methodInterface) {
       formInputs = this.state.methodInterface.inputs.map(input => {
         const type = input.type;
         const inputType = type === "bool" ? "checkbox" : "text";
 
-        return (
-          <div className="labelled-input" key={"input-" + input.name}>
-            <label htmlFor={input.name}>{input.name}</label>
-            <input
-              name={input.name}
-              value={this.state.inputs[input.name]}
-              type={inputType}
-              placeholder={type}
-              maxLength={256}
-              onChange={this.HandleInputChange}
-            />
-          </div>
-        );
+        return [
+          <label key={"contract-method-input-label-" + input.name} htmlFor={input.name}>{input.name}</label>,
+          <input
+            key={"contract-method-input-" + input.name}
+            name={input.name}
+            value={this.state.inputs[input.name]}
+            type={inputType}
+            placeholder={type}
+            maxLength={256}
+            onChange={this.HandleInputChange}
+          />
+        ];
       });
 
-      methodType = (
-        <div className="labelled-input">
-          <label>Type</label>
-          <div className="form-text">{this.state.methodInterface.constant ? "Constant" : "Transaction"}</div>
-        </div>
-      );
+      methodType = [
+        <label key="contract-method-type-label">Type</label>,
+        <div key="contract-method-type" className="form-text">{this.state.methodInterface.constant ? "Constant" : "Transaction"}</div>
+      ];
 
       if(this.state.methodInterface.payable) {
-        fundsInput = (
-          <div className="labelled-input">
-            <label htmlFor="__funds">Funds</label>
-            <input type="number" step={0.0000000001} name="__funds" value={this.state.inputs["__funds"]} onChange={this.HandleInputChange} />
-          </div>
-        );
+        fundsInput = [
+          <label key="contract-method-funds-label" htmlFor="__funds">Funds</label>,
+          <input key="contract-method-funds" type="number" step={0.0000000001} name="__funds" value={this.state.inputs["__funds"]} onChange={this.HandleInputChange} />
+        ];
       }
     }
 
     return (
-      <div className="form-contents">
-        <div className="labelled-input">
-          <label>Method</label>
-          <div className="form-text">{this.ContractMethodSelection()}</div>
-        </div>
+      <div className="form-content">
+        <label>Method</label>
+        <div className="form-text">{this.ContractMethodSelection()}</div>
         { methodType }
         { fundsInput }
         { formInputs }

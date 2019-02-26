@@ -36,13 +36,16 @@ class ContentAppForm extends React.Component {
 
   FormContent() {
     return (
-      <BrowseWidget
-        label="App"
-        onChange={this.HandleFileSelect}
-        accept={"text/html"}
-        multiple={false}
-        required={true}
-      />
+      <div className="form-content">
+        <label htmlFor="app" className="align-top">App</label>
+        <BrowseWidget
+          name="app"
+          onChange={this.HandleFileSelect}
+          accept={"text/html"}
+          multiple={false}
+          required={true}
+        />
+      </div>
     );
   }
 

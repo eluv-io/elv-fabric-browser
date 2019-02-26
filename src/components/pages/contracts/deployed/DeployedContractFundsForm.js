@@ -42,22 +42,20 @@ class DeployedContractFundsForm extends React.Component {
 
   ContractMethodForm() {
     return (
-      <div>
-        <div className="labelled-input">
-          <label>Current Balance</label>
-          <span>{this.props.deployedContract.balance}</span>
-        </div>
+      <div className="form-content">
+        <label>Current Balance</label>
+        <span>{this.props.deployedContract.balance}</span>
+
+        <label htmlFor="direction">Direction</label>
         <RadioSelect
           name="direction"
-          label="Action"
           options={[["Deposit", "deposit"], ["Withdraw", "withdraw"]]}
           selected={this.state.direction}
           onChange={this.HandleInputChange}
         />
-        <div className="labelled-input">
-          <label htmlFor="amount">Amount</label>
-          <input name="amount" type="number" step={0.0000000001} value={this.state.amount} onChange={this.HandleInputChange} />
-        </div>
+
+        <label htmlFor="amount">Amount</label>
+        <input name="amount" type="number" step={0.0000000001} value={this.state.amount} onChange={this.HandleInputChange} />
       </div>
     );
   }

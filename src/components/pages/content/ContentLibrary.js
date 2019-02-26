@@ -10,7 +10,7 @@ import {PageHeader} from "../../components/Page";
 import PageTabs from "../../components/PageTabs";
 import Action from "../../components/Action";
 import {AccessChargeDisplay} from "../../../utils/Helpers";
-import RequestElement from "../../components/RequestElement";
+import LoadingElement from "../../components/LoadingElement";
 import Listing from "../../components/Listing";
 
 class ContentLibrary extends React.Component {
@@ -58,14 +58,12 @@ class ContentLibrary extends React.Component {
     const toggleButtonText = (visible ? "Hide " : "Show ") + label;
 
     return (
-      <div className="actions-container">
-        <button
-          className={"action action-compact action-wide " + (visible ? "" : "secondary")}
-          onClick={toggleVisible}
-        >
-          { toggleButtonText }
-        </button>
-      </div>
+      <Action
+        className={visible ? "" : "secondary"}
+        onClick={toggleVisible}
+      >
+        { toggleButtonText }
+      </Action>
     );
   }
 
@@ -242,14 +240,14 @@ class ContentLibrary extends React.Component {
     let manageGroupsButton;
     let manageTypesButton;
     if(this.props.library.isOwner && !this.props.library.isContentSpaceLibrary) {
-      manageGroupsButton = <Action type="link" to={Path.join(this.props.match.url, "groups")}>Manage Groups</Action>;
-      manageTypesButton = <Action type="link" to={Path.join(this.props.match.url, "types")}>Manage Types</Action>;
+      manageGroupsButton = <Action type="link" to={Path.join(this.props.match.url, "groups")}>Groups</Action>;
+      manageTypesButton = <Action type="link" to={Path.join(this.props.match.url, "types")}>Types</Action>;
     }
 
     return (
       <div className="actions-container">
         <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
-        <Action type="link" to={Path.join(this.props.match.url, "edit")}>Manage Library</Action>
+        <Action type="link" to={Path.join(this.props.match.url, "edit")}>Manage</Action>
         { manageGroupsButton }
         { manageTypesButton }
         <Action type="link" to={Path.join(this.props.match.url, "create")}>
@@ -290,7 +288,7 @@ class ContentLibrary extends React.Component {
 
   render() {
     return (
-      <RequestElement
+      <LoadingElement
         fullPage={true}
         loading={this.props.methodStatus.DeleteContentLibrary.loading}
         render={this.PageContent}

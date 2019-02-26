@@ -45,18 +45,24 @@ class ContentObjectPartsForm extends React.Component {
 
   FormContent() {
     return (
-      <div className="upload-form">
-        <BrowseWidget label="Files" onChange={this.HandleFileSelect} required={true} multiple={true} progress={this.state.progress}/>
-        <div className="labelled-input">
-          <label htmlFor="encrypt">Encrypt Parts</label>
-          <input
-            type="checkbox"
-            name="encrypt"
-            value={this.state.encrypt}
-            checked={this.state.encrypt}
-            onChange={() => { this.setState({encrypt: !this.state.encrypt}); }}
-          />
-        </div>
+      <div className="form-content">
+        <label htmlFor="files" className="align-top">Files</label>
+        <BrowseWidget
+          name="files"
+          onChange={this.HandleFileSelect}
+          required={true}
+          multiple={true}
+          progress={this.state.progress}
+        />
+
+        <label htmlFor="encrypt">Encrypt Parts</label>
+        <input
+          type="checkbox"
+          name="encrypt"
+          value={this.state.encrypt}
+          checked={this.state.encrypt}
+          onChange={() => { this.setState({encrypt: !this.state.encrypt}); }}
+        />
       </div>
     );
   }

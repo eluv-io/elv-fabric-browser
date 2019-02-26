@@ -6,7 +6,7 @@ import ClippedText from "../../components/ClippedText";
 import Redirect from "react-router/es/Redirect";
 import {PageHeader} from "../../components/Page";
 import Action from "../../components/Action";
-import RequestElement from "../../components/RequestElement";
+import LoadingElement from "../../components/LoadingElement";
 
 class Contract extends React.Component {
   constructor(props) {
@@ -34,9 +34,9 @@ class Contract extends React.Component {
     const toggleButtonText = (visible ? "Hide " : "Show ") + label;
 
     return (
-      <div className="actions-container">
-        <button className={"action action-compact action-wide " + (visible ? "" : "secondary")} onClick={toggleVisible}>{ toggleButtonText }</button>
-      </div>
+      <Action className={visible ? "" : "secondary"} onClick={toggleVisible}>
+        { toggleButtonText }
+      </Action>
     );
   }
   
@@ -112,7 +112,7 @@ class Contract extends React.Component {
 
   render() {
     return (
-      <RequestElement
+      <LoadingElement
         fullPage={true}
         loading={this.props.methodStatus.RemoveContract.loading}
         render={this.PageContent}

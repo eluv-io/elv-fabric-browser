@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { JsonTextArea } from "../../../utils/Input";
 import Path from "path";
 import BrowseWidget from "../../components/BrowseWidget";
-import RequestElement from "../../components/RequestElement";
+import LoadingElement from "../../components/LoadingElement";
 import Form from "../../forms/Form";
 
 class ContentLibraryForm extends React.Component {
@@ -67,50 +67,45 @@ class ContentLibraryForm extends React.Component {
     // Content Space library can't have an image
     if(this.state.isContentSpaceLibrary) { return null; }
 
-    return (
-      <div>
-        <BrowseWidget
-          label="Image"
-          required={false}
-          multiple={false}
-          accept="image/*"
-          preview={true}
-          onChange={this.HandleImageChange}
-        />
-      </div>
-    );
+    return [
+      <label key="image-selection-label" htmlFor="imageSelection">Image</label>,
+      <BrowseWidget
+        key="image-selection"
+        name="image"
+        required={false}
+        multiple={false}
+        accept="image/*"
+        preview={true}
+        onChange={this.HandleImageChange}
+      />
+    ];
   }
 
   FormContent() {
     return (
       <div className="form-content">
-        <div className="labelled-input">
-          <label htmlFor="name">Name</label>
-          <input name="name" value={this.state.name} required={true} onChange={this.HandleInputChange} readOnly={this.state.isContentSpaceLibrary} />
-        </div>
+        <label htmlFor="name">Name</label>
+        <input name="name" value={this.state.name} required={true} onChange={this.HandleInputChange} readOnly={this.state.isContentSpaceLibrary} />
+
         { this.Image() }
-        <div className="labelled-input">
-          <label className="textarea-label" htmlFor="description">Description</label>
-          <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
-        </div>
-        <div className="labelled-input">
-          <label className="textarea-label" htmlFor="publicMetadata">Public Metadata</label>
-          <JsonTextArea
-            name="publicMetadata"
-            value={this.state.publicMetadata}
-            onChange={this.HandleInputChange}
-            UpdateValue={formattedMetadata => this.setState({publicMetadata: formattedMetadata})}
-          />
-        </div>
-        <div className="labelled-input">
-          <label className="textarea-label" htmlFor="privateMetadata">Private Metadata</label>
-          <JsonTextArea
-            name="privateMetadata"
-            value={this.state.privateMetadata}
-            onChange={this.HandleInputChange}
-            UpdateValue={formattedMetadata => this.setState({privateMetadata: formattedMetadata})}
-          />
-        </div>
+
+        <label className="align-top" htmlFor="description">Description</label>
+        <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
+
+        <label className="align-top" htmlFor="publicMetadata">Public Metadata</label>
+        <JsonTextArea
+          name="publicMetadata"
+          value={this.state.publicMetadata}
+          onChange={this.HandleInputChange}
+          UpdateValue={formattedMetadata => this.setState({publicMetadata: formattedMetadata})}
+        />
+        <label className="align-top" htmlFor="privateMetadata">Private Metadata</label>
+        <JsonTextArea
+          name="privateMetadata"
+          value={this.state.privateMetadata}
+          onChange={this.HandleInputChange}
+          UpdateValue={formattedMetadata => this.setState({privateMetadata: formattedMetadata})}
+        />
       </div>
     );
   }
@@ -131,7 +126,7 @@ class ContentLibraryForm extends React.Component {
   }
 
   render() {
-    return <RequestElement fullPage={true} loading={this.props.loading} render={this.PageContent} />;
+    return <LoadingElement fullPage={true} loading={this.props.loading} render={this.PageContent} />;
   }
 }
 

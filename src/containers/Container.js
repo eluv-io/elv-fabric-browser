@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import Action from "../components/components/Action";
-import RequestElement from "../components/components/RequestElement";
+import LoadingElement from "../components/components/LoadingElement";
 import Path from "path";
 
 export default (Component) => {
@@ -141,16 +141,16 @@ export default (Component) => {
             <div>There was a problem loading this page:</div>
             <div className="error-message">{this.state.errorMessage}</div>
             <div className="actions-container">
-              <RequestElement loading={this.state.loading} loadingIcon="rotate">
+              <LoadingElement loading={this.state.loading} loadingIcon="rotate">
                 <Action type="link" to={Path.dirname(this.props.match.url)} className="action-wide secondary">Back</Action>
                 <Action className="action-wide" onClick={this.Load}>Try Again</Action>
-              </RequestElement>
+              </LoadingElement>
             </div>
           </div>
         );
       }
 
-      return <RequestElement fullPage={true} loading={this.state.loading} render={this.Content} />;
+      return <LoadingElement fullPage={true} loading={this.state.loading} render={this.Content} />;
     }
   }
 

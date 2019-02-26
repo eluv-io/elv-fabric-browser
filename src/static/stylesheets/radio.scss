@@ -1,37 +1,39 @@
+@import "./elv-styles/spacing";
+
 .radio-options {
   width: 100%;
 
   &.inline {
     display: flex;
-    justify-content: space-between;
   }
 
   .radio-option {
     display: flex;
 
+    label,
+    input {
+      cursor: pointer;
+    }
+
+    label {
+      min-width: 100px;
+    }
+
     &.inline {
+      align-items: center;
+      margin-right: $elv-spacing-l;
+
+      &:last-child {
+        margin-right: 0;
+      }
+
       input {
-        margin-right: $spacing-xs;
+        margin-right: $elv-spacing-xs;
       }
 
       label {
         min-width: 0;
       }
-    }
-
-    label,
-    input {
-      flex-grow: 0;
-      width: auto;
-    }
-
-    input {
-      cursor: pointer;
-      padding: 0 10px;
-    }
-
-    label {
-      cursor: pointer;
     }
   }
 }

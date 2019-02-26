@@ -62,11 +62,8 @@ class RadioSelect extends React.Component {
 
   render() {
     return (
-      <div className="labelled-input">
-        <label className="radio-label" htmlFor={this.props.name}>{this.props.label}</label>
-        <div className={`radio-options ${this.props.inline ? "inline": ""}`}>
-          { this.props.options.map((option, index) => this.RadioOption(option, index)) }
-        </div>
+      <div className={`radio-options ${this.props.inline ? "inline": ""}`}>
+        { this.props.options.map((option, index) => this.RadioOption(option, index)) }
       </div>
     );
   }
@@ -81,7 +78,6 @@ const allowedOptionTypes = PropTypes.oneOfType([
 // Options is a list of label+name pairs
 RadioSelect.propTypes = {
   name: PropTypes.string.isRequired,
-  label: PropTypes.string.isRequired,
   inline: PropTypes.bool,
   options: PropTypes.arrayOf(
     PropTypes.arrayOf(

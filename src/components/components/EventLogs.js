@@ -3,7 +3,7 @@ import EventCard from "./EventCard";
 import PropTypes from "prop-types";
 import {BallClipRotate} from "./AnimatedIcons";
 import Action from "./Action";
-import RequestElement from "./RequestElement";
+import LoadingElement from "./LoadingElement";
 
 class EventLogs extends React.Component {
   constructor(props) {
@@ -138,13 +138,11 @@ class EventLogs extends React.Component {
     if(this.state.contractAddress || this.state.earliestBlock <= 0 || this.props.events.length === 0) { return null; }
 
     return (
-      <div className="actions-container full-width centered">
-        <RequestElement loading={this.props.loading}>
-          <Action onClick={this.LoadMoreEvents}>
-            Load More Events
-          </Action>
-        </RequestElement>
-      </div>
+      <LoadingElement loading={this.props.loading}>
+        <Action onClick={this.LoadMoreEvents}>
+          Load More Events
+        </Action>
+      </LoadingElement>
     );
   }
 
@@ -153,26 +151,25 @@ class EventLogs extends React.Component {
 
     return (
       <div className="events-controls">
-        <form className="form-container event-actions-container">
-          <div className="labelled-input">
+        <form>
+          <div className="form-content">
             <label htmlFor="toBlock">To Block</label>
             <input type="number" name="toBlock" value={this.state.toBlock} onChange={this.HandleInputChange} />
-          </div>
-          <div className="labelled-input">
+
             <label htmlFor="fromBlock">From Block</label>
             <input type="number" name="fromBlock" value={this.state.fromBlock} onChange={this.HandleInputChange} />
           </div>
-          <div className="actions-container">
-            <RequestElement loading={this.props.loading && !this.state.watchEvents} loadingIcon="rotate">
+          <div className="form-actions">
+            <LoadingElement loading={this.props.loading && !this.state.watchEvents} loadingIcon="rotate">
+              <Action className="secondary" onClick={this.ToggleWatch}>
+                {watchButtonText}
+              </Action>
               <Action onClick={this.FilterEvents}>
                 Filter Events
               </Action>
-            </RequestElement>
+            </LoadingElement>
           </div>
         </form>
-        <div className="actions-container">
-          <Action className="action action-wide" onClick={this.ToggleWatch}>{watchButtonText}</Action>
-        </div>
       </div>
     );
   }

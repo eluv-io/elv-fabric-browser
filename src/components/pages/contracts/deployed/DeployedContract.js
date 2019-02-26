@@ -7,7 +7,7 @@ import Redirect from "react-router/es/Redirect";
 import {PageHeader} from "../../../components/Page";
 import DeployedContractMethodForm from "./DeployedContractMethodForm";
 import Action from "../../../components/Action";
-import RequestElement from "../../../components/RequestElement";
+import LoadingElement from "../../../components/LoadingElement";
 
 class DeployedContract extends React.Component {
   constructor(props) {
@@ -61,12 +61,12 @@ class DeployedContract extends React.Component {
     const toggleButtonText = (visible ? "Hide " : "Show ") + label;
 
     return (
-      <button
+      <Action
         key={"toggle-" + label}
-        className={"action action-compact action-wide " + (visible ? "" : "secondary")}
+        className={visible ? "" : "secondary"}
         onClick={toggleVisible}>
         { toggleButtonText }
-      </button>
+      </Action>
     );
   }
 
@@ -80,11 +80,7 @@ class DeployedContract extends React.Component {
       <LabelledField
         key="abi-label"
         label="ABI"
-        value={
-          <div className="actions-container">
-            { this.ToggleButton("ABI", "__abi") }
-          </div>
-        }
+        value={this.ToggleButton("ABI", "__abi")}
       />,
       abiDisplayInfo
     ];
@@ -132,7 +128,7 @@ class DeployedContract extends React.Component {
     }
 
     return (
-      <RequestElement
+      <LoadingElement
         fullPage={true}
         loading={this.props.methodStatus.RemoveDeployedContract.loading}
         render={this.PageContent}
