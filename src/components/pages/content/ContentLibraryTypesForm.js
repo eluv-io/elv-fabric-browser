@@ -1,10 +1,10 @@
 import React from "react";
 import PropTypes from "prop-types";
 import Path from "path";
-import {IconButton} from "../../components/Icons";
+import {IconButton} from "elv-components-js/src/components/Icons";
 import DeleteIcon from "../../../static/icons/trash.svg";
-import Action from "../../components/Action";
-import Form from "../../forms/Form";
+import Action from "elv-components-js/src/components/Action";
+import Form from "elv-components-js/src/components/Form";
 
 class ContentLibraryTypesForm extends React.Component {
   constructor(props) {
@@ -105,7 +105,7 @@ class ContentLibraryTypesForm extends React.Component {
         <div className="list-item" key={"added-type-" + type.id}>
           <span>{type.meta.name || type.id}</span>
           <IconButton
-            src={DeleteIcon}
+            icon={DeleteIcon}
             onClick={() => this.HandleRemoveType(type.id)}
           />
         </div>

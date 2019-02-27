@@ -1,11 +1,11 @@
 .navbar-container {
-  background: $color-bg-dark;
+  background: $elv-color-bg-dark;
   z-index: 99;
 }
 
 .navbar-links-container {
-  margin-top: $spacing-s;
-  padding: 0 $spacing-xs;
+  margin-top: $elv-spacing-s;
+  padding: 0 $elv-spacing-xs;
 
   .navbar-link-container {
     display: block;
@@ -14,21 +14,21 @@
   }
 
   .navbar-link {
-    color: $color-darkgray;
+    color: $elv-color-darkgray;
     font-size: 16px;
-    padding: $spacing-xs 0;
+    padding: $elv-spacing-xs 0;
 
     &:hover {
-      background: $color-lightergray;
+      background: $elv-color-lightergray;
     }
 
     &.active,
     &:hover {
-      color: $color-black;
+      color: $elv-color-black;
       font-weight: bold;
 
       .icon {
-        color: $color-mediumblue;
+        color: $elv-color-mediumblue;
       }
     }
   }
@@ -42,10 +42,11 @@
   }
 
   .navbar-link-icon {
-    color: $color-darkergray;
+    color: $elv-color-darkergray;
     display: inline-block;
     height: 20px;
-    margin-right: $spacing-xs;
+    margin-right: $elv-spacing-xs;
+    padding: $elv-spacing-xs;
     width: 20px;
   }
 

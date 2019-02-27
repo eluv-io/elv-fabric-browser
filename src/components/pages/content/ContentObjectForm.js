@@ -1,20 +1,20 @@
 import React from "react";
 import PropTypes from "prop-types";
-import BrowseWidget from "../../components/BrowseWidget";
+import BrowseWidget from "elv-components-js/src/components/BrowseWidget";
 import {JsonTextArea} from "../../../utils/Input";
 import Path from "path";
 import {InitializeSchema, GetValue, SetValue, RemoveValue} from "../../../utils/TypeSchema";
-import RadioSelect from "../../components/RadioSelect";
+import RadioSelect from "elv-components-js/src/components/RadioSelect";
 import Id from "../../../utils/Id";
 import TrashIcon from "../../../static/icons/trash.svg";
 import {DownloadFromUrl} from "../../../utils/Files";
 import Fabric from "../../../clients/Fabric";
-import {IconButton} from "../../components/Icons";
+import {IconButton} from "elv-components-js/src/components/Icons";
 import AppFrame from "../../components/AppFrame";
 import Redirect from "react-router/es/Redirect";
-import Action from "../../components/Action";
-import PageTabs from "../../components/PageTabs";
-import Form from "../../forms/Form";
+import Action from "elv-components-js/src/components/Action";
+import Tabs from "elv-components-js/src/components/Tabs";
+import Form from "elv-components-js/src/components/Form";
 
 const defaultSchema = [
   {
@@ -331,7 +331,7 @@ class ContentObjectForm extends React.Component {
           <div key={key} className="list-item">
             <input name={entry.key} required={entry.required} value={value} onChange={onChange} />
             <IconButton
-              src={TrashIcon}
+              icon={TrashIcon}
               title="Remove Element"
               onClick={() => this.RemoveElement(subtree, entry.key)}
             />
@@ -378,7 +378,7 @@ class ContentObjectForm extends React.Component {
   AccessChargeField() {
     return [
       <label key="access-charge-label" htmlFor="accessCharge">Access Charge</label>,
-      <input key="access-charge" type="number" name="accessCharge" value={this.state.accessCharge} onChange={this.HandleInputChange} />
+      <input key="access-charge" type="number" name="accessCharge" value={this.state.accessCharge || 0} onChange={this.HandleInputChange} />
     ];
   }
 
@@ -390,7 +390,7 @@ class ContentObjectForm extends React.Component {
     if(!this.state.manageAppUrl) { return null; }
 
     return (
-      <PageTabs
+      <Tabs
         className="compact"
         selected={this.state.showManageApp}
         onChange={(value) => this.setState({showManageApp: value})}

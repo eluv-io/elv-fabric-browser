@@ -1,6 +1,6 @@
 const webpack = require("webpack");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
-const path = require("path");
+const Path = require("path");
 const autoprefixer = require("autoprefixer");
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 const HtmlWebpackPlugin = require("html-webpack-plugin");
@@ -10,7 +10,7 @@ module.exports = {
   entry: "./src/index.js",
   target: "web",
   output: {
-    path: path.resolve(__dirname, "dist"),
+    path: Path.resolve(__dirname, "dist"),
     filename: "index.js",
   },
   devServer: {
@@ -25,7 +25,7 @@ module.exports = {
   },
   resolve: {
     alias: {
-      configuration: path.join(__dirname, "configuration.json")
+      configuration: Path.join(__dirname, "configuration.json")
     }
   },
   node: {
@@ -40,7 +40,7 @@ module.exports = {
     }),
     new HtmlWebpackPlugin({
       title: "Eluvio Fabric Browser",
-      template: path.join(__dirname, "src", "index.html"),
+      template: Path.join(__dirname, "src", "index.html"),
       inject: "body",
       cache: false,
       filename: "index.html",
@@ -51,8 +51,27 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.scss$/,
+        use: [
+          "style-loader",
+          {
+            loader: "css-loader",
+            options: {
+              importLoaders: 2
+            }
+          },
+          {
+            loader: "postcss-loader",
+            options: {
+              plugins: () => [autoprefixer({ grid: true })]
+            }
+          },
+          "sass-loader"
+        ]
+      },
+      {
         test: /\.(js|mjs)$/,
-        exclude: /node_modules/,
+        exclude: /node_modules\/(?!elv-components-js)/,
         loader: "babel-loader",
         options: {
           presets: ['@babel/preset-env', "@babel/preset-react"],
@@ -75,20 +94,6 @@ module.exports = {
             loader: 'image-webpack-loader'
           },
         ],
-      },
-      {
-        test: /\.scss$/,
-        use: [
-          { loader: "style-loader" },
-          { loader: "css-loader" },
-          {
-            loader: "postcss-loader",
-            options: {
-              plugins: () => [autoprefixer({ grid: true })]
-            }
-          },
-          { loader: "sass-loader" }
-        ]
       },
       {
         test: /\.(txt|bin|abi)$/i,

@@ -1,9 +1,9 @@
 import React from "react";
 import PropTypes from "prop-types";
 import Path from "path";
-import BrowseWidget from "../../components/BrowseWidget";
-import Form from "../../forms/Form";
-import Action from "../../components/Action";
+import BrowseWidget from "elv-components-js/src/components/BrowseWidget";
+import Form from "elv-components-js/src/components/Form";
+import Action from "elv-components-js/src/components/Action";
 import {PageHeader} from "../../components/Page";
 
 class ContentAppForm extends React.Component {

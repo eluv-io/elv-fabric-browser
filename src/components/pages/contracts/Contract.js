@@ -5,8 +5,8 @@ import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
 import Redirect from "react-router/es/Redirect";
 import {PageHeader} from "../../components/Page";
-import Action from "../../components/Action";
-import LoadingElement from "../../components/LoadingElement";
+import Action from "elv-components-js/src/components/Action";
+import LoadingElement from "elv-components-js/src/components/LoadingElement";
 
 class Contract extends React.Component {
   constructor(props) {

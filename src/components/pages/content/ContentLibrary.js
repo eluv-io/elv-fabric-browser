@@ -7,10 +7,11 @@ import { LabelledField } from "../../components/LabelledField";
 import Redirect from "react-router/es/Redirect";
 import ClippedText from "../../components/ClippedText";
 import {PageHeader} from "../../components/Page";
-import PageTabs from "../../components/PageTabs";
-import Action from "../../components/Action";
+import Tabs from "elv-components-js/src/components/Tabs";
+import Action from "elv-components-js/src/components/Action";
+
 import {AccessChargeDisplay} from "../../../utils/Helpers";
-import LoadingElement from "../../components/LoadingElement";
+import LoadingElement from "elv-components-js/src/components/LoadingElement";
 import Listing from "../../components/Listing";
 
 class ContentLibrary extends React.Component {
@@ -162,10 +163,11 @@ class ContentLibrary extends React.Component {
     return (
       <div className="object-info label-box">
         { this.LibraryImage() }
-        <h3>Content Library Info</h3>
+        <LabelledField label={"Name"} value={this.props.library.name} />
+        <LabelledField label={"Description"} value={description} />
+        <br />
         <LabelledField label={"Library ID"} value={this.props.libraryId} />
         <LabelledField label={"Owner"} value={this.props.library.owner} />
-        <LabelledField label={"Description"} value={description} />
         <LabelledField
           label={"Library Object"}
           value={
@@ -183,6 +185,7 @@ class ContentLibrary extends React.Component {
           }
         />
         <LabelledField label={"Content Objects"} value={this.props.library.objects.length} />
+        <br />
         { this.ToggleSection("Content Types", "content-types", this.props.library.types, true) }
         { this.ToggleSection("Public Metadata", "public-metadata", this.props.library.meta, true) }
         { this.ToggleSection("Private Metadata", "private-metadata", this.props.library.privateMeta, true) }
@@ -264,7 +267,7 @@ class ContentLibrary extends React.Component {
     }
 
     const tabs = (
-      <PageTabs
+      <Tabs
         options={[
           ["Content", "content"],
           ["Library Info", "info"]

@@ -1,3 +1,5 @@
+@import "~elv-components-js/src/stylesheets/mixins";
+
 .listing {
   height: 100%;
   width: 100%;
@@ -28,11 +30,11 @@
       height: 100%;
 
       &:last-child {
-        border-right: 1px solid $color-lightgray;
+        border-right: 1px solid $elv-color-lightgray;
       }
 
       li {
-        border: 1px solid $color-lightgray;
+        border: 1px solid $elv-color-lightgray;
         border-right: 0;
         height: 100%;
 
@@ -49,15 +51,15 @@
           min-width: 30px;
 
           &:hover {
-            background: $color-lightgray;
+            background: $elv-color-lightgray;
           }
 
           &:active {
-            background: $color-lightergray;
+            background: $elv-color-lightergray;
           }
 
           &:disabled {
-            color: $color-black;
+            color: $elv-color-black;
             font-weight: bold;
 
             &:hover,
@@ -67,14 +69,14 @@
             }
 
             &.selected {
-              background: $color-lightestgray;
+              background: $elv-color-lightestgray;
             }
           }
         }
 
         .text-button {
           &:disabled {
-            color: $color-mediumgray;
+            color: $elv-color-mediumgray;
             font-weight: normal;
 
             &:hover,
@@ -87,21 +89,25 @@
       }
     }
 
-    .icon-button {
-      margin: 0 $spacing-xxs;
-      padding: $spacing-xxs;
+    .listing-action {
+      margin: 0 $elv-spacing-xxs;
+      padding: $elv-spacing-xxs;
 
-      .icon {
+      i {
         height: 25px;
         width: 25px;
       }
     }
 
+    .loading-action {
+      width: 41px;
+    }
+
     .filter {
       font-size: 16px;
       height: 30px;
-      margin: 0 $spacing-xs;
-      padding: 0 $spacing-xs;
+      margin: 0 $elv-spacing-xs;
+      padding: 0 $elv-spacing-xs;
       width: 300px;
     }
   }
@@ -111,48 +117,48 @@
   .grid-listing {
     display: flex;
     flex-wrap: wrap;
-    margin-top: $spacing-m;
+    margin-top: $elv-spacing-m;
   }
 
   .grid-listing-element {
-    color: $color-text-light;
+    color: $elv-color-text-light;
     cursor: pointer;
     display: flex;
     flex-direction: column;
     flex-grow: 1;
     flex-shrink: 1;
-    height: 300px;
+    height: 225px;
     justify-content: space-between;
-    max-height: 300px;
-    max-width: 300px;
-    padding: $spacing-s $spacing-xs;
+    max-height: 225px;
+    max-width: 225px;
+    padding: $elv-spacing-s $elv-spacing-xs;
     width: 40%;
 
     &:hover {
-      background: $color-lightergray;
+      background: $elv-color-lightergray;
     }
 
     .icon-container {
-      $image-size: 190px;
-      @include cropped-image($image-size, $image-size, 0%, $image-size, $image-size);
+      $image-size: 120px;
+      @include elv-cropped-image($image-size, $image-size, 0%, $image-size, $image-size);
     }
 
     .title {
-      color: $color-text-black;
+      color: $elv-color-text-black;
       font-size: 18px;
     }
 
     .description {
       font-size: 14px;
       height: 2.5em;
-      margin-bottom: $spacing-xs;
+      margin-bottom: $elv-spacing-xs;
       max-height: 80px;
       overflow: hidden;
     }
 
     .title,
     .status {
-      @include ellipsis;
+      @include elv-ellipsis;
     }
 
     .title,
@@ -165,7 +171,10 @@
   // Table view
 
   table {
+    border-collapse: collapse;
     max-width: 100%;
+    table-layout: fixed;
+    width: 100%;
 
     * {
       border: 0;
@@ -197,36 +206,36 @@
 
   tbody {
     tr {
-      height: 85px;
+      height: 80px;
 
       &:hover {
-        background: $color-lightergray;
+        background: $elv-color-lightergray;
         cursor: pointer;
       }
 
       td {
-        @include ellipsis;
-        color: $color-text-light;
-
+        @include elv-ellipsis;
+        color: $elv-color-text-light;
         margin: 0;
         max-height: 100px;
-        padding: 0 0 0 $spacing-s;
+        padding: 0 0 0 $elv-spacing-s;
         word-wrap: break-word;
 
         &.icon-cell {
-          padding: $spacing-xs $spacing-xxs;
+          padding: $elv-spacing-xs 0;
         }
 
         &.title-cell {
-          color: $color-text-black;
+          color: $elv-color-text-black;
           font-size: 18px;
         }
 
         &.description-cell {
           .description-text {
             height: auto;
-            max-height: 75px;
+            max-height: 60px;
             overflow-x: visible;
+            overflow-y: hidden;
             white-space: normal;
           }
         }
@@ -236,8 +245,8 @@
         }
 
         .icon-container {
-          $image-size: 80px;
-          @include cropped-image($image-size, $image-size, 0%, $image-size, $image-size);
+          $image-size: 70px;
+          @include elv-cropped-image($image-size, $image-size, 0%, $image-size, $image-size);
         }
 
         a {

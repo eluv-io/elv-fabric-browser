@@ -1,12 +1,12 @@
 import React from "react";
 import PropTypes from "prop-types";
-import {IconButton} from "./Icons";
+import {IconButton} from "elv-components-js/src/components/Icons";
 import GridIcon from "../../static/icons/grid.svg";
 import ListIcon from "../../static/icons/list.svg";
-import LoadingElement from "./LoadingElement";
+import LoadingElement from "elv-components-js/src/components/LoadingElement";
 import RefreshIcon from "../../static/icons/refresh.svg";
 import ListingView from "./ListingView";
-import Action from "./Action";
+import Action from "elv-components-js/src/components/Action";
 
 let ListingOptions = {};
 
@@ -81,14 +81,14 @@ class Listing extends React.Component {
 
     return (
       <li key={title}>
-        <Action
+        <button
           title={"Page " + page}
           onClick={() => this.ChangePage(page)}
           disabled={disabled}
           className={`page-button ${isTextButton ? "text-button" : ""} ${!isTextButton && disabled ? "selected" : ""}`}
         >
           {text.toString()}
-        </Action>
+        </button>
       </li>
     );
   }
@@ -155,10 +155,10 @@ class Listing extends React.Component {
     if(!this.props.noIcon) {
       if (this.state.display === "list") {
         switchViewButton =
-          <IconButton src={GridIcon} title="Switch to grid view" onClick={() => this.SwitchView("grid")}/>;
+          <IconButton className="listing-action" icon={GridIcon} title="Switch to grid view" onClick={() => this.SwitchView("grid")}/>;
       } else {
         switchViewButton =
-          <IconButton src={ListIcon} title="Switch to list view" onClick={() => this.SwitchView("list")}/>;
+          <IconButton className="listing-action" icon={ListIcon} title="Switch to list view" onClick={() => this.SwitchView("list")}/>;
       }
     }
 
@@ -170,8 +170,8 @@ class Listing extends React.Component {
         <div className="controls">
           <input className="filter" placeholder="Filter" value={this.state.filter} onChange={this.Filter} />
           { switchViewButton }
-          <LoadingElement loading={this.props.loadingStatus.loading} loadingIcon="rotate" >
-            <IconButton className="request-icon" src={RefreshIcon} title="Refresh" onClick={this.Load} />
+          <LoadingElement loadingClassname="loading-action" loading={this.props.loadingStatus.loading} loadingIcon="rotate" >
+            <IconButton className="listing-action" icon={RefreshIcon} title="Refresh" onClick={this.Load} />
           </LoadingElement>
         </div>
       </div>
@@ -185,7 +185,7 @@ class Listing extends React.Component {
           <div>There was a problem loading this page:</div>
           <div className="error-message">{this.props.loadingStatus.errorMessage}</div>
           <LoadingElement loading={this.props.loadingStatus.loading} loadingIcon="rotate">
-            <Action className="action-wide" onClick={this.Load}>Try Again</Action>
+            <Action onClick={this.Load}>Try Again</Action>
           </LoadingElement>
         </div>
       );
