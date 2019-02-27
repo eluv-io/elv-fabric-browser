@@ -33,19 +33,11 @@
     margin: $elv-spacing-m 0;
 
     .page-subheader {
+      @include elv-ellipsis;
       color: $elv-color-text-light;
-      font-size: 16px;
-      margin-top: 5px;
-      min-height: 3.5em;
-      z-index: 1000;
 
-      &.hide {
-        height: 3.5em;
-      }
-
-      &.show {
-        height: auto;
-      }
+      font-size: 14px;
+      width: 70vw;
     }
   }
 
