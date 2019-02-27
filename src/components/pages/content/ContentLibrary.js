@@ -164,7 +164,7 @@ class ContentLibrary extends React.Component {
       <div className="object-info label-box">
         { this.LibraryImage() }
         <LabelledField label={"Name"} value={this.props.library.name} />
-        <LabelledField label={"Description"} value={description} />
+        <LabelledField label={"Description"} value={description} alignTop={true} />
         <br />
         <LabelledField label={"Library ID"} value={this.props.libraryId} />
         <LabelledField label={"Owner"} value={this.props.library.owner} />

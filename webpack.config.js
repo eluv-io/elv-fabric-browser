@@ -63,7 +63,7 @@ module.exports = {
           {
             loader: "postcss-loader",
             options: {
-              plugins: () => [autoprefixer({ grid: true })]
+              plugins: () => [autoprefixer({})]
             }
           },
           "sass-loader"

@@ -17,13 +17,18 @@
     "react"
   ],
   "rules": {
+
     "no-case-declarations": "off",
     "no-undef": "off",
     "no-useless-escape": "off",
+    "template-curly-spacing" : "off",
     "indent": [
       "error",
       2,
-      { "SwitchCase": 1 }
+      {
+        "SwitchCase": 1,
+        "ignoredNodes": ["TemplateLiteral"]
+      }
     ],
     "linebreak-style": [
       "error",

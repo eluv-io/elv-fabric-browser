@@ -385,7 +385,8 @@ class ContentObject extends React.Component {
     return (
       <div className="object-info label-box">
         <LabelledField label={"Name"} value={this.props.object.name} />
-        <LabelledField label={"Description"} value={description} />
+        <LabelledField label={"Description"} value={description} alignTop={true} />
+        <br />
         { this.ObjectStatus() }
         { accessCharge }
         <br />
