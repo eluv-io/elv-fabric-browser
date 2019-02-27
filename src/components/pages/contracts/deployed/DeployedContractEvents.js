@@ -3,7 +3,7 @@ import Path from "path";
 import PropTypes from "prop-types";
 import {PageHeader} from "../../../components/Page";
 import EventLogs from "../../../components/EventLogs";
-import Action from "../../../components/Action";
+import Action from "elv-components-js/src/components/Action";
 
 class DeployedContractEvents extends React.Component {
   render() {

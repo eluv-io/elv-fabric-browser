@@ -2,7 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import Redirect from "react-router/es/Redirect";
 import Path from "path";
-import Form from "../../forms/Form";
+import Form from "elv-components-js/src/components/Form";
 
 class ContractForm extends React.Component {
   constructor(props) {

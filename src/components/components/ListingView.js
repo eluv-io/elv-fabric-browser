@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import {CroppedIcon} from "./Icons";
+import {CroppedIcon} from "elv-components-js/src/components/Icons";
 import Redirect from "react-router/es/Redirect";
 import Link from "react-router-dom/es/Link";
 import RedirectElement from "./RedirectElement";
@@ -23,7 +23,7 @@ class ListingItem extends React.Component {
     if(!this.props.noIcon) {
       iconCell = (
         <td className="icon-cell">
-          <CroppedIcon containerClassname="icon-container" className="dark" icon={this.props.icon}/>
+          <CroppedIcon className="icon-container" icon={this.props.icon}/>
         </td>
       );
     }
@@ -32,15 +32,15 @@ class ListingItem extends React.Component {
       <RedirectElement to={this.props.link}>
         <tr title={this.props.title}>
           {iconCell}
-          <td className="title-cell" title={this.props.title} tabIndex={0}>
+          <td className="title-cell" title={this.props.title}>
             {this.props.title}
           </td>
-          <td className="description-cell" title={this.props.description} tabIndex={0}>
-            <div className="description-text">
+          <td className="description-cell" title={this.props.description}>
+            <div className="description-text" tabIndex={-1}>
               {this.props.description}
             </div>
           </td>
-          <td className="status-cell" title={this.props.status} tabIndex={0}>
+          <td className="status-cell" title={this.props.status}>
             {this.props.status}
           </td>
         </tr>
@@ -51,7 +51,7 @@ class ListingItem extends React.Component {
   AsGridElement() {
     return (
       <Link to={this.props.link} title={this.props.title} className="grid-listing-element">
-        <CroppedIcon containerClassname="icon-container" className="dark" icon={this.props.icon}/>
+        <CroppedIcon className="icon-container" icon={this.props.icon}/>
         <div className="title">
           {this.props.title}
         </div>

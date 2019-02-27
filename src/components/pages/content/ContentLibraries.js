@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import Path from "path";
 import LibraryIcon from "../../../static/icons/content.svg";
 import {PageHeader} from "../../components/Page";
-import Action from "../../components/Action";
+import Action from "elv-components-js/src/components/Action";
 import Listing from "../../components/Listing";
 
 class ContentLibraries extends React.Component {

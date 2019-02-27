@@ -2,8 +2,8 @@ import React from "react";
 import PropTypes from "prop-types";
 import Path from "path";
 import {PageHeader} from "../../components/Page";
-import PageTabs from "../../components/PageTabs";
-import Action from "../../components/Action";
+import Tabs from "elv-components-js/src/components/Tabs";
+import Action from "elv-components-js/src/components/Action";
 import Listing from "../../components/Listing";
 
 class Contracts extends React.Component {
@@ -73,7 +73,7 @@ class Contracts extends React.Component {
 
   render() {
     const tabs = (
-      <PageTabs
+      <Tabs
         options={[
           ["Deployed", "deployed"],
           ["Saved", "saved"]

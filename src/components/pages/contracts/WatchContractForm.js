@@ -1,7 +1,7 @@
 import React from "react";
 import Path from "path";
 import {JsonTextArea} from "../../../utils/Input";
-import Form from "../../forms/Form";
+import Form from "elv-components-js/src/components/Form";
 
 class WatchContractForm extends React.Component {
   constructor(props) {

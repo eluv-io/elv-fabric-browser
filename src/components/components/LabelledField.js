@@ -8,7 +8,7 @@ export const LabelledField = ({label, value, wideLabel=false, hidden=false}) => 
   return (
     <div className={"labelled-field" + (hidden ? " hidden" : "")}>
       <label htmlFor={label} className={wideLabel ? "wide" : ""}>{ label }</label>
-      <div name={label}>{ value }</div>
+      <div title={value}>{ value }</div>
     </div>
   );
 };

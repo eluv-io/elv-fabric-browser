@@ -1,50 +1,74 @@
 .upload-widget {
-  padding: $spacing-s;
+  padding: $elv-spacing-s;
 }
 
-.browse-widget-files,
 .file-browser {
-  border: 1px solid $color-lightgray;
-  margin: $spacing-s 0;
-  max-height: 450px;
+  border: 1px solid $elv-color-lightgray;
+  margin: $elv-spacing-s 0;
+  max-height: 50vh;
   overflow-y: auto;
-  padding-top: $spacing-s 0;
+  padding-top: $elv-spacing-s 0;
   width: 100%;
 
+  i,
+  .download-button {
+    height: 20px;
+    margin: 0;
+    padding: 0;
+    width: 20px;
+  }
+
+  table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 100%;
+  }
+
   th {
-    &.type-header,
-    &.actions-header {
+    padding: $elv-spacing-xs;
+    text-align: left;
+
+    &.type-header {
       width: 20px;
+    }
+
+    &.actions-header {
+      text-align: center;
+      width: 125px;
     }
 
     &.size-header {
       width: 5em;
     }
-
-    .icon {
-      height: 20px;
-      margin: 0;
-      padding: 0;
-      width: 20px;
-    }
   }
 
   tr {
+    border-top: 1px solid $elv-color-lightergray;
+
     &.directory {
       cursor: pointer;
+
+      &:hover {
+        background-color: $elv-color-lightestgray;
+      }
     }
 
     td {
+      @include elv-ellipsis;
+      padding: $elv-spacing-xs;
+
+      &.info-cell {
+        text-align: right;
+      }
+
+      &.actions-cell {
+        text-align: center;
+      }
+
       .item-path {
         max-width: 150px;
       }
     }
-
-    .icon {
-      height: 20px;
-      margin: 0;
-      padding: 0;
-      width: 20px;
-    }
   }
 }
+

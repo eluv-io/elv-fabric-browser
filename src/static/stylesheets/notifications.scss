@@ -1,14 +1,18 @@
 .notification-container {
+  font-size: 14px;
   position: relative;
 
   .notification-message-container {
-    background: $color-mediumblue;
-    color: $color-text-white;
+    animation: FadeInOut 8s linear;
+    animation-fill-mode: forwards;
+    background: $elv-color-mediumblue;
+    color: $elv-color-text-white;
+    opacity: 0;
   }
 
   .error-message-container {
-    background: $color-mediumred;
-    color: $color-text-white;
+    background: $elv-color-mediumred;
+    color: $elv-color-text-white;
   }
 
   .notification-message-container,
@@ -23,33 +27,37 @@
 
   .clear-notification {
     align-items: center;
-    color: $color-text-white;
     cursor: pointer;
     display: flex;
-    font-weight: bold;
     height: 100%;
-    padding: 10px;
     position: absolute;
-    right: 15px;
+    right: 1vw;
 
-    &:hover {
-      color: $color-darkergray;
+    svg {
+      color: $elv-color-text-white;
+      height: 20px;
+      padding-top: 2px;
+      width: 20px;
+
+      &:hover {
+        color: $elv-color-lightgray;
+      }
     }
   }
 }
 
-@keyframes FadeAnimation {
+@keyframes FadeInOut {
   0% {
-    opacity: 1;
-    visibility: visible;
+    opacity: 0;
   }
 
-  90% {
+  5%,
+  95% {
     opacity: 1;
   }
+
 
   100% {
     opacity: 0;
-    visibility: hidden;
   }
 }

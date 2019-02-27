@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
-import Action from "../components/components/Action";
-import LoadingElement from "../components/components/LoadingElement";
+import Action from "elv-components-js/src/components/Action";
+import LoadingElement from "elv-components-js/src/components/LoadingElement";
 import Path from "path";
 
 export default (Component) => {
