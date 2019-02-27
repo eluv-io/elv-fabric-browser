@@ -33,10 +33,10 @@ h3 {
 }
 
 h4 {
-  color: $color-text-black;
+  color: $elv-color-text-black;
   font-size: 16px;
   font-weight: normal;
-  margin: $spacing-xs 0 $spacing-xxs;
+  margin: $elv-spacing-xs 0 $elv-spacing-xxs;
 }
 
 a {
@@ -44,7 +44,7 @@ a {
 
   &,
   &:visited {
-    color: $color-darkgray;
+    color: $elv-color-darkgray;
   }
 
   &.link {
@@ -63,39 +63,14 @@ input {
 }
 
 pre {
-  background: $color-lightergray;
-  border: 1px solid $color-gray;
+  background-color: $elv-color-white;
+  border: 1px solid $elv-color-gray;
   margin: 0;
   overflow: auto;
 
   padding: 10px;
   white-space: pre-wrap;
   word-wrap: break-word;
-}
-
-table {
-  border-collapse: collapse;
-  table-layout: fixed;
-  width: 100%;
-}
-
-th {
-  padding: $spacing-xs;
-  text-align: left;
-}
-
-tr {
-  border-top: 1px solid $color-lightergray;
-  margin: 0 $spacing-s;
-
-  td {
-    @include ellipsis;
-    padding: $spacing-xs 0 $spacing-xs $spacing-xs;
-
-    &.item-path {
-      max-width: 150px;
-    }
-  }
 }
 
 ul {
@@ -120,4 +95,8 @@ ul {
 
 .full-width {
   width: 100%;
+}
+
+.clickable {
+  cursor: pointer;
 }

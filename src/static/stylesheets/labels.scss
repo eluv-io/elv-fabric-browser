@@ -4,20 +4,22 @@
   h2 {
     font-size: 20px;
     font-weight: 400;
-    margin: $spacing-m 0 $spacing-s;
+    margin: $elv-spacing-m 0 $elv-spacing-s;
   }
 
   h3 {
     font-size: 18px;
-    margin: $spacing-m 0 $spacing-s;
+    margin: $elv-spacing-m 0 $elv-spacing-s;
   }
 
   .labelled-field {
     display: flex;
-    padding: $spacing-xxs $spacing-s $spacing-xxs 0;
+    padding: $elv-spacing-xxs $elv-spacing-s $elv-spacing-xxs 0;
 
     label {
-      color: $color-text-light;
+      align-items: center;
+      color: $elv-color-text-light;
+      display: flex;
       min-width: 150px;
 
       &.wide {
@@ -30,20 +32,31 @@
     }
 
     .inline-link {
-      color: $color-mediumblue;
+      color: $elv-color-mediumblue;
     }
 
     div {
-      @include ellipsis;
+      @include elv-ellipsis;
       max-width: 500px;
+    }
+
+    // Increase specificity
+    &.labelled-field {
+      button {
+        font-size: 12px;
+        width: 200px;
+      }
     }
   }
 
   .indented {
-    padding-left: $spacing-m;
+    padding-left: $elv-spacing-m;
   }
 
   pre {
+    max-width: 75vw;
+    white-space: pre-wrap;
+
     &.event-log {
       max-height: 500px;
     }

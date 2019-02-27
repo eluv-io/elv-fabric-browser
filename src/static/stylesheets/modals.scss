@@ -1,7 +1,7 @@
 .modal {
   align-items: flex-start;
-  background: $color-bg-modal;
-  color: $color-black;
+  background: $elv-color-bg-modal;
+  color: $elv-color-black;
   display: flex;
   height: 100%;
   justify-content: center;
@@ -12,10 +12,10 @@
   z-index: 1000;
 
   .modal-content {
-    background: $color-bg-white;
-    border: 1px solid $color-darkergray;
+    background: $elv-color-bg-white;
+    border: 1px solid $elv-color-darkergray;
     border-radius: 2px;
-    margin-top: $spacing-xxl;
+    margin-top: $elv-spacing-xxl;
 
     max-height: 75%;
     overflow-y: auto;
@@ -26,8 +26,8 @@
   .modal-error {
     align-content: center;
     align-items: center;
-    background: $color-mediumred;
-    color: $color-text-white;
+    background: $elv-color-mediumred;
+    color: $elv-color-text-white;
     display: flex;
     margin-bottom: 10px;
     padding: 10px;

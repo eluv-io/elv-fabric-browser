@@ -1,9 +1,9 @@
 import React from "react";
 import EventCard from "./EventCard";
 import PropTypes from "prop-types";
-import {BallClipRotate} from "./AnimatedIcons";
-import Action from "./Action";
-import LoadingElement from "./LoadingElement";
+import {BallClipRotate} from "elv-components-js/src/components/AnimatedIcons";
+import Action from "elv-components-js/src/components/Action";
+import LoadingElement from "elv-components-js/src/components/LoadingElement";
 
 class EventLogs extends React.Component {
   constructor(props) {
@@ -195,7 +195,9 @@ class EventLogs extends React.Component {
         <div className="events-container">
           { this.Events() }
         </div>
-        { this.LoadMoreEventsButton() }
+        <div className="load-more">
+          { this.LoadMoreEventsButton() }
+        </div>
       </div>
     );
   }

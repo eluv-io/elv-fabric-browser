@@ -3,15 +3,14 @@ import PropTypes from "prop-types";
 import PrettyBytes from "pretty-bytes";
 import Path from "path";
 import { SafeTraverse } from "../../utils/Helpers";
-
+import Modal from "elv-components-js/src/components/Modal";
 import DirectoryIcon from "../../static/icons/directory.svg";
 import FileIcon from "../../static/icons/file.svg";
 import DownloadIcon from "../../static/icons/download.svg";
-import UploadIcon from "../../static/icons/upload.svg";
 import BackIcon from "../../static/icons/directory_back.svg";
-import Modal from "../modals/Modal";
 import FileUploadWidget from "./FileUploadWidget";
-import {Icon, IconButton} from "./Icons";
+import {ImageIcon, IconButton} from "elv-components-js/src/components/Icons";
+import Action from "elv-components-js/src/components/Action";
 
 class FileBrowser extends React.Component {
   constructor(props) {
@@ -41,44 +40,44 @@ class FileBrowser extends React.Component {
     return (
       <tr key={`entry-${this.state.path}-${name}`}>
         <td className="item-icon">
-          <Icon src={FileIcon} title="File" />
+          <ImageIcon icon={FileIcon} title="File"/>
         </td>
-        <td title={name} tabIndex="0">{ name }</td>
-        <td title={size} tabIndex="0">{ size }</td>
-        <td>
+        <td title={name}>{ name }</td>
+        <td title={size} className="info-cell">{ size }</td>
+        <td className="actions-cell">
           <IconButton
-            src={DownloadIcon}
+            icon={DownloadIcon}
             title={"Download " + name}
             onClick={() => this.props.Download(Path.join(this.state.path, name))}
+            className="download-button"
           />
         </td>
       </tr>
     );
   }
 
-  Directory(name) {
-    const changeDirectory = () => this.ChangeDirectory(Path.join(this.state.path, name));
+  Directory(item) {
+    const changeDirectory = () => this.ChangeDirectory(Path.join(this.state.path, item.name));
     return (
-      <tr key={`entry-${this.state.path}-${name}`} className="clickable" onClick={changeDirectory} onKeyPress={changeDirectory}>
+      <tr key={`entry-${this.state.path}-${item.name}`} className="directory" onClick={changeDirectory} onKeyPress={changeDirectory}>
         <td className="item-icon">
-          <Icon src={DirectoryIcon} title="Directory" />
+          <ImageIcon icon={DirectoryIcon} title="Directory" />
         </td>
-        <td tabIndex="0">{ name }</td>
-        <td />
+        <td tabIndex="0" title={item.name}>{item.name}</td>
+        <td className="info-cell">{(Object.keys(item.item).length - 1) + " Items"}</td>
         <td />
       </tr>
     );
   }
 
   Items() {
-    // TODO: Sort by name
     const items = Object.keys(this.state.currentDir)
       .filter(name => name !== ".")
       .map(name => {
         return {
           name,
           item: this.state.currentDir[name],
-          info: this.state.currentDir[name]["."]
+          info: this.state.currentDir[name]["."],
         };
       });
 
@@ -100,7 +99,7 @@ class FileBrowser extends React.Component {
         } else {
           return item1.name.toLowerCase() > item2.name.toLowerCase();
         }
-      }).map(item => item.info.type === "directory" ? this.Directory(item.name): this.File(item.name, item.info))
+      }).map(item => item.info.type === "directory" ? this.Directory(item): this.File(item.name, item.info))
     );
   }
 
@@ -136,7 +135,7 @@ class FileBrowser extends React.Component {
     if(this.state.path && this.state.path !== Path.dirname(this.state.path)) {
       backButton = (
         <IconButton
-          src={BackIcon}
+          icon={BackIcon}
           title={"Back"}
           onClick={() => this.ChangeDirectory(Path.dirname(this.state.path))}
         />
@@ -153,11 +152,11 @@ class FileBrowser extends React.Component {
               <th title={"Current Directory: " + this.state.displayPath} tabIndex="0">{this.state.displayPath}</th>
               <th className="size-header" />
               <th className="actions-header">
-                <IconButton
-                  src={UploadIcon}
-                  title={"Upload to " + this.state.displayPath}
+                <Action
                   onClick={() => this.setState({showUpload: true})}
-                />
+                >
+                  Upload
+                </Action>
               </th>
             </tr>
           </thead>

@@ -2,8 +2,8 @@
   float: right;
 
   img {
-    border: 1px solid $color-gray;
-    box-shadow: $color-gray 5px 5px 8px;
+    border: 1px solid $elv-color-gray;
+    box-shadow: $elv-color-gray 5px 5px 8px;
     max-height: 20vw;
     max-width: 20vw;
   }
@@ -22,13 +22,13 @@
 }
 
 .app-frame {
-  border: 1px solid $color-lightergray;
+  border: 1px solid $elv-color-lightergray;
   display: block;
   height: 50vh;
   width: 100%;
 
   &.display-frame {
-    margin-bottom: $spacing-m;
+    margin-bottom: $elv-spacing-m;
   }
 }
 

@@ -1,8 +1,8 @@
 import React from "react";
 import PropTypes from "prop-types";
-import BrowseWidget from "./BrowseWidget";
-import RadioSelect from "./RadioSelect";
-import Form from "../forms/Form";
+import BrowseWidget from "elv-components-js/src/components/BrowseWidget";
+import RadioSelect from "elv-components-js/src/components/RadioSelect";
+import Form from "elv-components-js/src/components/Form";
 
 class FileUploadWidget extends React.Component {
   constructor(props) {

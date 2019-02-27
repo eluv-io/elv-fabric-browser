@@ -12,10 +12,10 @@ import {DownloadFromUrl} from "../../../utils/Files";
 import FileBrowser from "../../components/FileBrowser";
 import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
-import PageTabs from "../../components/PageTabs";
-import Action from "../../components/Action";
+import Tabs from "elv-components-js/src/components/Tabs";
+import Action from "elv-components-js/src/components/Action";
 import {AccessChargeDisplay} from "../../../utils/Helpers";
-import LoadingElement from "../../components/LoadingElement";
+import LoadingElement from "elv-components-js/src/components/LoadingElement";
 
 class ContentObject extends React.Component {
   constructor(props) {
@@ -228,7 +228,7 @@ class ContentObject extends React.Component {
           { name }
           <LabelledField label="Hash" value={part.hash} />
           <LabelledField label="Size" value={PrettyBytes(part.size)} />
-          <LabelledField label="Download" value={downloadButton} />
+          <LabelledField label="" value={downloadButton} />
         </div>
       );
     }));
@@ -305,7 +305,7 @@ class ContentObject extends React.Component {
 
           <br/>
 
-          { this.DeleteVersionButton(version.hash)}
+          <LabelledField label="" value={this.DeleteVersionButton(version.hash)}/>
         </div>
       </div>
     );
@@ -377,7 +377,6 @@ class ContentObject extends React.Component {
   ObjectInfo() {
     const latestVersion = this.props.object.versions[0];
     const description = <ClippedText className="object-description" text={this.props.object.description} />;
-    const header = this.props.object.isContentType ? "Content Type Info" : "Content Object Info";
     let accessCharge;
     if(this.props.object.isNormalObject) {
       accessCharge = <LabelledField label={"Access charge"} value={AccessChargeDisplay(this.props.object.baseAccessCharge)} />;
@@ -385,18 +384,18 @@ class ContentObject extends React.Component {
 
     return (
       <div className="object-info label-box">
-        <h3>{ header }</h3>
-
         <LabelledField label={"Name"} value={this.props.object.name} />
-        <LabelledField label={"Type Name"} value={this.state.typeName} hidden={this.props.object.isContentType} />
-        <LabelledField label={"Type Hash"} value={this.state.typeHash} hidden={this.props.object.isContentType} />
         <LabelledField label={"Description"} value={description} />
         { this.ObjectStatus() }
+        { accessCharge }
+        <br />
         <LabelledField label={"Library ID"} value={this.props.libraryId} />
         <LabelledField label={"Object ID"} value={this.props.objectId} />
-        <LabelledField label={"Owner"} value={this.props.object.owner} />
-        { accessCharge }
+        <LabelledField label={"Type"} value={this.state.typeName} hidden={this.props.object.isContentType} />
+        <LabelledField label={"Type Hash"} value={this.state.typeHash} hidden={this.props.object.isContentType} />
         { this.ContractInfo() }
+        <LabelledField label={"Owner"} value={this.props.object.owner} />
+        <br />
         <LabelledField label={"Versions"} value={this.props.object.versions.length} />
         <LabelledField label={"Parts"} value={latestVersion.parts.length} />
         <LabelledField label={"Total size"} value={this.VersionSize(latestVersion)} />
@@ -413,7 +412,7 @@ class ContentObject extends React.Component {
     if(this.props.object.isOwner) {
       manageAppsLink = (
         <Action type="link" to={Path.join(this.props.match.url, "apps")}>
-          Manage Apps
+          Apps
         </Action>
       );
     }
@@ -496,7 +495,7 @@ class ContentObject extends React.Component {
     }
 
     return (
-      <PageTabs
+      <Tabs
         options={tabOptions}
         selected={this.state.view}
         onChange={(value) => this.setState({view: value})}

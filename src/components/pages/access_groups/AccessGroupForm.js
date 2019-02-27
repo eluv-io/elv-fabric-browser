@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import Path from "path";
-import Form from "../../forms/Form";
+import Form from "elv-components-js/src/components/Form";
 
 class AccessGroupForm extends React.Component {
   constructor(props) {

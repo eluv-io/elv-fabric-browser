@@ -1,10 +1,10 @@
 import React from "react";
 import PropTypes from "prop-types";
 import Path from "path";
-import RadioSelect from "../../../components/RadioSelect";
+import RadioSelect from "elv-components-js/src/components/RadioSelect";
 import { PageHeader } from "../../../components/Page";
-import Action from "../../../components/Action";
-import Form from "../../../forms/Form";
+import Action from "elv-components-js/src/components/Action";
+import Form from "elv-components-js/src/components/Form";
 
 class DeployedContractFundsForm extends React.Component {
   constructor(props) {

@@ -3,16 +3,16 @@
     align-items: center;
     display: flex;
     justify-content: flex-start;
-    margin: $spacing-xs 0 $spacing-xxs;
+    margin: $elv-spacing-xs 0 $elv-spacing-xxs;
 
     .actions-container {
-      margin: 0 0 0 $spacing-xs;
+      margin: 0 0 0 $elv-spacing-xs;
       padding: 0;
       width: auto;
     }
 
     .labelled-input {
-      margin-right: $spacing-xs;
+      margin-right: $elv-spacing-xs;
 
       label {
         min-width: max-content;
@@ -33,9 +33,17 @@
   }
 
   .events-container {
-    max-height: 70vh;
+    border: 1px solid $elv-color-lightergray;
+    max-height: 55vh;
     overflow-y: auto;
-    padding: 0 $spacing-xs 0 0;
+    padding: $elv-spacing-s;
+  }
+
+  .load-more {
+    display: flex;
+    justify-content: center;
+    margin-top: $elv-spacing-s;
+    width: 100%;
   }
 }
 
@@ -45,10 +53,10 @@
     align-items: center;
     display: flex;
     justify-content: space-between;
-    margin-bottom: $spacing-xs;
+    margin-bottom: $elv-spacing-xs;
 
     .info {
-      color: $color-text-light;
+      color: $elv-color-text-light;
       font-family: monospace;
       font-size: 12px;
     }
@@ -56,16 +64,16 @@
 }
 
 .transaction {
-  border: 1px solid $color-darkgray;
-  font-size: 14px;
-  margin-bottom: $spacing-s;
-  padding: $spacing-s;
+  border: 1px solid $elv-color-darkgray;
+  font-size: 12px;
+  margin-bottom: $elv-spacing-s;
+  padding: $elv-spacing-s;
 }
 
 .event {
-  border: 1px solid $color-gray;
-  margin-bottom: $spacing-xs;
-  padding: $spacing-s;
+  border: 1px solid $elv-color-gray;
+  margin-bottom: $elv-spacing-xs;
+  padding: $elv-spacing-s;
 
   .labelled-field {
     align-items: baseline;
@@ -77,14 +85,15 @@
     }
 
     .value {
-      @include ellipsis;
+      @include elv-ellipsis;
       font-family: monospace;
       font-size: 12px;
+      max-width: 50vw;
     }
   }
 
   .section-label {
     font-weight: 600;
-    margin: $spacing-s 0 $spacing-xxs;
+    margin: $elv-spacing-s 0 $elv-spacing-xxs;
   }
 }

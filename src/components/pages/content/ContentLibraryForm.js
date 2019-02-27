@@ -2,9 +2,9 @@ import React from "react";
 import PropTypes from "prop-types";
 import { JsonTextArea } from "../../../utils/Input";
 import Path from "path";
-import BrowseWidget from "../../components/BrowseWidget";
-import LoadingElement from "../../components/LoadingElement";
-import Form from "../../forms/Form";
+import BrowseWidget from "elv-components-js/src/components/BrowseWidget";
+import LoadingElement from "elv-components-js/src/components/LoadingElement";
+import Form from "elv-components-js/src/components/Form";
 
 class ContentLibraryForm extends React.Component {
   constructor(props) {
@@ -68,7 +68,7 @@ class ContentLibraryForm extends React.Component {
     if(this.state.isContentSpaceLibrary) { return null; }
 
     return [
-      <label key="image-selection-label" htmlFor="imageSelection">Image</label>,
+      <label key="image-selection-label" htmlFor="imageSelection" className="align-top">Image</label>,
       <BrowseWidget
         key="image-selection"
         name="image"

@@ -1,8 +1,8 @@
 import React from "react";
 import PropTypes from "prop-types";
 import Path from "path";
-import BrowseWidget from "../../components/BrowseWidget";
-import Form from "../../forms/Form";
+import BrowseWidget from "elv-components-js/src/components/BrowseWidget";
+import Form from "elv-components-js/src/components/Form";
 
 class ContentObjectPartsForm extends React.Component {
   constructor(props) {
