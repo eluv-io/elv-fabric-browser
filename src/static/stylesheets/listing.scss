@@ -21,7 +21,12 @@
     .controls {
       align-items: center;
       display: flex;
-      height: 34px;
+      height: 35px;
+
+      input {
+        border: 1px solid $elv-color-lightgray;
+        height: 100%;
+      }
     }
 
     .page-controls {

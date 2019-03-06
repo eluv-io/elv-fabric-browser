@@ -53,13 +53,22 @@ const Fabric = {
 
   async GetFramePath() {
     if(Fabric.isFrameClient) {
-      return await client.GetFramePath();
+      return await client.SendMessage({
+        options: {
+          operation: "GetFramePath"
+        }
+      });
     }
   },
 
   async SetFramePath({path}) {
     if(Fabric.isFrameClient) {
-      await client.SetFramePath({path});
+      return await client.SendMessage({
+        options: {
+          operation: "SetFramePath",
+          path
+        }
+      });
     }
   },
 
@@ -143,9 +152,12 @@ const Fabric = {
 
     // Sort libraries
     filteredLibraries = filteredLibraries.sort((a, b) => {
+      // todo: this should be done in client
+      a.meta = a.meta || {};
+      b.meta = b.meta || {};
       const name1 = a.meta.name || "zz";
       const name2 = b.meta.name || "zz";
-      return name1.toLowerCase() < name2.toLowerCase() ? -1 : 1;
+      return name1.toLowerCase() > name2.toLowerCase() ? 1 : -1;
     });
 
     const count = filteredLibraries.length;
@@ -389,7 +401,7 @@ const Fabric = {
     libraryObjects = libraryObjects.sort((a, b) => {
       const name1 = a.versions[0].meta.name|| "zz";
       const name2 = b.versions[0].meta.name || "zz";
-      return name1.toLowerCase() > name2.toLowerCase() ? -1 : 1;
+      return name1.toLowerCase() > name2.toLowerCase() ? 1 : -1;
     });
 
     // Paginate objects
@@ -521,7 +533,7 @@ const Fabric = {
       versions.map(async (version, index) => {
         const metadata = await Fabric.GetContentObjectMetadata({libraryId, objectId, versionHash: version.hash});
         const verification = await Fabric.VerifyContentObject({libraryId, objectId, versionHash: version.hash});
-        const parts = (await Fabric.ListParts({libraryId, objectId, versionHash: version.hash})).parts;
+        const parts = (await Fabric.ListParts({libraryId, objectId, versionHash: version.hash}));
 
         // Must keep versions in order from newest to oldest
         fullVersions[index] = {
@@ -1108,7 +1120,7 @@ const Fabric = {
       filteredAccessGroups = filteredAccessGroups.sort((a, b) => {
         const name1 = a.name || "zz";
         const name2 = b.name || "zz";
-        return name1.toLowerCase() < name2.toLowerCase() ? -1 : 1;
+        return name1.toLowerCase() > name2.toLowerCase() ? 1 : -1;
       });
 
       const count = filteredAccessGroups.length;
@@ -1187,7 +1199,7 @@ const Fabric = {
       filteredMembers = filteredMembers.sort((a, b) => {
         const name1 = a.name || "zz";
         const name2 = b.name || "zz";
-        return name1.toLowerCase() < name2.toLowerCase() ? -1 : 1;
+        return name1.toLowerCase() > name2.toLowerCase() ? 1 : -1;
       });
 
       const count = filteredMembers.length;
@@ -1227,7 +1239,7 @@ const Fabric = {
       filteredContracts = filteredContracts.sort((a, b) => {
         const name1 = a.name || "zz";
         const name2 = b.name || "zz";
-        return name1.toLowerCase() < name2.toLowerCase() ? -1 : 1;
+        return name1.toLowerCase() > name2.toLowerCase() ? 1 : -1;
       });
 
       const count = filteredContracts.length;
