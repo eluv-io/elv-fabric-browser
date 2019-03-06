@@ -3,6 +3,10 @@
 form {
   @include elv-form;
 
+  input {
+    height: 2em;
+  }
+
   .list {
     display: flex;
     flex-direction: column;

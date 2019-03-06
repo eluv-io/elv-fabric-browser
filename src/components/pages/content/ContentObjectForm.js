@@ -38,7 +38,8 @@ class ContentObjectForm extends React.Component {
 
     this.state = {
       completed: false,
-      metadata: ""
+      metadata: "",
+      uploadStatus: {}
     };
 
     this.HandleInputChange = this.HandleInputChange.bind(this);
@@ -47,6 +48,7 @@ class ContentObjectForm extends React.Component {
     this.HandleTypeChange = this.HandleTypeChange.bind(this);
     this.RemoveElement = this.RemoveElement.bind(this);
     this.FrameCompleted = this.FrameCompleted.bind(this);
+    this.UploadStatusCallback = this.UploadStatusCallback.bind(this);
   }
 
   componentDidMount() {
@@ -184,6 +186,18 @@ class ContentObjectForm extends React.Component {
     });
   }
 
+  UploadStatusCallback({key, uploaded, total, filename}) {
+    this.setState({
+      uploadStatus: {
+        ...this.state.uploadStatus,
+        [key]: {
+          ...(this.state.uploadStatus || {})[key],
+          [filename]: (uploaded * 100 / total).toFixed(1)
+        }
+      }
+    });
+  }
+
   async HandleSubmit() {
     const type = this.state.type === "[none]" ? "" : this.state.type;
 
@@ -194,7 +208,8 @@ class ContentObjectForm extends React.Component {
       schema: this.state.schema,
       fields: this.state.fields,
       metadata: this.state.metadata,
-      accessCharge: this.state.accessCharge
+      accessCharge: this.state.accessCharge,
+      callback: this.UploadStatusCallback
     });
   }
 
@@ -301,6 +316,7 @@ class ContentObjectForm extends React.Component {
             multiple={entry.multiple}
             required={required}
             preview={entry.preview}
+            progress={this.state.uploadStatus[entry.key] || {}}
           />
         );
         break;

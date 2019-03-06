@@ -10,10 +10,14 @@
 }
 
 .video-player {
+  display: flex;
+  justify-content: center;
   width: 100%;
 
   video {
-    max-width: 90%;
+    cursor: pointer;
+    max-height: 60vh;
+    max-width: 85%;
   }
 }
 
