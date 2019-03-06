@@ -250,7 +250,7 @@ export const GetContentObjectPermissions = ({libraryId, objectId}) => {
   };
 };
 
-const CollectMetadata = async ({libraryId, writeToken, schema, fields}) => {
+const CollectMetadata = async ({libraryId, writeToken, schema, fields, callback}) => {
   let metadata = {};
 
   for(const entry of schema) {
@@ -272,12 +272,19 @@ const CollectMetadata = async ({libraryId, writeToken, schema, fields}) => {
         for (const file of files) {
           const data = await new Response(file).blob();
 
+          let uploadCallback;
+          if(callback) {
+            uploadCallback = ({uploaded, total}) => callback({key: entry.key, uploaded, total, filename: file.name});
+          }
+
           partResponses.push(
             await Fabric.UploadPart({
               libraryId,
               writeToken,
               data,
-              encrypted: !!(entry.encrypted)
+              encrypted: !!(entry.encrypted),
+              chunkSize: 30000000,
+              callback: uploadCallback
             })
           );
         }
@@ -314,7 +321,7 @@ const CollectMetadata = async ({libraryId, writeToken, schema, fields}) => {
   return metadata;
 };
 
-export const CreateFromContentTypeSchema = ({libraryId, type, metadata, accessCharge, schema, fields}) => {
+export const CreateFromContentTypeSchema = ({libraryId, type, metadata, accessCharge, schema, fields, callback}) => {
   return async (dispatch) => {
     const createResponse = await Fabric.CreateAndFinalizeContentObject({
       libraryId,
@@ -325,7 +332,7 @@ export const CreateFromContentTypeSchema = ({libraryId, type, metadata, accessCh
           writeToken,
           metadata: {
             ...ParseInputJson(metadata),
-            ...(await CollectMetadata({libraryId, writeToken, schema, fields})),
+            ...(await CollectMetadata({libraryId, writeToken, schema, fields, callback})),
           }
         });
       }
@@ -342,7 +349,7 @@ export const CreateFromContentTypeSchema = ({libraryId, type, metadata, accessCh
   };
 };
 
-export const UpdateFromContentTypeSchema = ({libraryId, objectId, metadata, accessCharge, schema, fields}) => {
+export const UpdateFromContentTypeSchema = ({libraryId, objectId, metadata, accessCharge, schema, fields, callback}) => {
   return async (dispatch) => {
     await Fabric.EditAndFinalizeContentObject({
       libraryId,
@@ -353,7 +360,7 @@ export const UpdateFromContentTypeSchema = ({libraryId, objectId, metadata, acce
           writeToken,
           metadata: {
             ...ParseInputJson(metadata),
-            ...(await CollectMetadata({libraryId, writeToken, schema, fields}))
+            ...(await CollectMetadata({libraryId, writeToken, schema, fields, callback}))
           }
         });
       }

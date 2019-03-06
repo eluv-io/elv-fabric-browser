@@ -196,7 +196,7 @@ class ContentLibrary extends React.Component {
 
   ContentObjects() {
     let objects = [];
-    for(const objectId of this.props.library.objects) {
+    for(const objectId of Object.keys(this.props.objects)) {
       const object = this.props.objects[objectId];
 
       if(!object) { continue; }

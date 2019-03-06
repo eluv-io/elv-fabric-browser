@@ -25,7 +25,7 @@
     "bignumber.js": "^8.1.1",
     "browser-solc": "^1.0.0",
     "connected-react-router": "^6.3.1",
-    "elv-client-js": "git+https://github.com/eluv-io/elv-client-js.git",
+    "elv-client-js": "git+https://github.com/eluv-io/elv-client-js.git#develop",
     "elv-components-js": "git+https://github.com/eluv-io/elv-components-js.git",
     "node-fetch": "^2.3.0",
     "path": "^0.12.7",
