@@ -7,7 +7,6 @@
   margin: $elv-spacing-s 0;
   max-height: 50vh;
   overflow-y: auto;
-  padding-top: $elv-spacing-s 0;
   width: 100%;
 
   i,
@@ -18,23 +17,46 @@
     width: 20px;
   }
 
+  button {
+    &:hover {
+      svg {
+        color: $elv-color-mediumgray;
+      }
+    }
+  }
+
   table {
     border-collapse: collapse;
     table-layout: fixed;
     width: 100%;
   }
 
+  thead {
+    height: 45px;
+  }
+
   th {
-    padding: $elv-spacing-xs;
     text-align: left;
 
     &.type-header {
-      width: 20px;
+      width: 40px;
+
+      button {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        i {
+          width: 20px;
+        }
+      }
     }
 
     &.actions-header {
       text-align: center;
-      width: 125px;
+      width: 140px;
     }
 
     &.size-header {
@@ -44,6 +66,7 @@
 
   tr {
     border-top: 1px solid $elv-color-lightergray;
+    height: 35px;
 
     &.directory {
       cursor: pointer;
@@ -55,7 +78,13 @@
 
     td {
       @include elv-ellipsis;
-      padding: $elv-spacing-xs;
+      height: 35px;
+
+      &.item-icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
 
       &.info-cell {
         text-align: right;
