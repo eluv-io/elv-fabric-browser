@@ -1,215 +1,167 @@
 import React from "react";
-import EventCard from "./EventCard";
 import PropTypes from "prop-types";
-import {BallClipRotate} from "elv-components-js/src/components/AnimatedIcons";
-import Action from "elv-components-js/src/components/Action";
-import LoadingElement from "elv-components-js/src/components/LoadingElement";
+import {FormatAddress, ParseBytes32} from "../../utils/Helpers";
+import Fabric from "../../clients/Fabric";
 
-class EventLogs extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      latestBlock: 0,
-      earliestBlock: Number.MAX_SAFE_INTEGER,
-      fromBlock: 0,
-      toBlock: 0,
-      watchEvents: false,
-      watcher: undefined
-    };
-
-    this.FilterEvents = this.FilterEvents.bind(this);
-    this.HandleInputChange = this.HandleInputChange.bind(this);
-    this.LoadMoreEvents = this.LoadMoreEvents.bind(this);
-    this.ToggleWatch = this.ToggleWatch.bind(this);
+class EventLogs extends React.PureComponent {
+  Key(log) {
+    return `log-${log.transactionHash}-${log.logIndex}`;
   }
 
-  async componentDidMount() {
-    await this.RequestEvents();
-  }
-
-  async componentDidUpdate() {
-    if(this.props.events.length > 0) {
-      await this.UpdateBlockNumbers();
-    }
-  }
-
-  componentWillUnmount() {
-    clearTimeout(this.state.watcher);
-  }
-
-  HandleInputChange(event) {
-    this.setState({
-      [event.target.name]: parseInt(event.target.value)
-    });
-  }
-
-  Watch() {
-    this.setState({
-      watcher: setTimeout(async () => {
-        await this.RequestEvents();
-
-        this.Watch();
-      }, 5000)
-    });
-  }
-
-  ToggleWatch() {
-    if(this.state.watchEvents) {
-      if(this.state.watcher) {
-        clearTimeout(this.state.watcher);
-      }
-    } else {
-      this.Watch();
-    }
-
-    this.setState({
-      watchEvents: !this.state.watchEvents
-    });
-  }
-
-  async UpdateBlockNumbers() {
-    const n = this.props.events.length;
-    const latestBlock = n > 0 ? this.props.events[0][0].blockNumber : 0;
-    let earliestBlock = this.state.earliestBlock;
-    if(this.props.contractAddress) {
-      earliestBlock = 0;
-    } else if(n > 0) {
-      earliestBlock = this.props.events[n - 1][0].blockNumber;
-    }
-
-    if(this.state.latestBlock !== latestBlock || this.state.earliestBlock !== earliestBlock) {
-      await new Promise((resolve) => {
-        this.setState({
-          latestBlock,
-          earliestBlock,
-          toBlock: latestBlock,
-          fromBlock: earliestBlock
-        }, resolve);
+  Inputs(log) {
+    const inputs = Object.entries(log.values)
+      .filter(([key]) => key !== "length" && parseInt(key).toString() !== key)
+      .map(([key, value]) => {
+        if(typeof value === "object" && value._hex) {
+          return [key, `${parseInt(value._hex, 16)} (${value._hex})`];
+        } else if(value.length === 66) {
+          // bytes32
+          return [key, ParseBytes32(value), value];
+        } else {
+          return [key, value];
+        }
       });
-    }
-  }
 
-  async RequestEvents() {
-    await this.UpdateBlockNumbers();
+    if(inputs.length === 0) { return null; }
 
-    if(this.props.contractAddress && this.props.events.length === 0) {
-      // On initial request of contract events, get all events starting from block 0
-      this.props.RequestMethod({
-        contractAddress: this.props.contractAddress,
-        abi: this.props.abi,
-        fromBlock: 0
-      });
-    } else {
-      this.props.RequestMethod({
-        contractAddress: this.props.contractAddress,
-        abi: this.props.abi,
-        fromBlock: this.state.latestBlock && (this.state.latestBlock + 1)
-      });
-    }
-  }
-
-  async FilterEvents() {
-    // Stop watching events
-    if(this.state.watchEvents) { this.ToggleWatch(); }
-
-    await this.props.ClearMethod({contractAddress: this.props.contractAddress});
-
-    await this.props.RequestMethod({
-      contractAddress: this.props.contractAddress,
-      abi: this.props.abi,
-      toBlock: this.state.toBlock,
-      fromBlock: this.state.fromBlock
+    const inputFields = inputs.map(([key, value]) => {
+      return (
+        <div className="labelled-field" key={"input-" + key}>
+          <label>{key}</label>
+          <div className="value" title={value.toString()}>{value}</div>
+        </div>
+      );
     });
-  }
-
-  async LoadMoreEvents() {
-    await this.UpdateBlockNumbers();
-
-    await this.props.RequestMethod({
-      contractAddress: this.props.contractAddress,
-      abi: this.props.abi,
-      toBlock: this.state.earliestBlock - 1,
-      fromBlock: this.state.earliestBlock - 10
-    });
-  }
-
-  LoadMoreEventsButton() {
-    if(this.state.contractAddress || this.state.earliestBlock <= 0 || this.props.events.length === 0) { return null; }
 
     return (
-      <LoadingElement loading={this.props.loading}>
-        <Action onClick={this.LoadMoreEvents}>
-          Load More Events
-        </Action>
-      </LoadingElement>
-    );
-  }
-
-  FilterForm() {
-    const watchButtonText = this.state.watchEvents ? "Stop Watching" : "Start Watching";
-
-    return (
-      <div className="events-controls">
-        <form>
-          <div className="form-content">
-            <label htmlFor="toBlock">To Block</label>
-            <input type="number" name="toBlock" value={this.state.toBlock} onChange={this.HandleInputChange} />
-
-            <label htmlFor="fromBlock">From Block</label>
-            <input type="number" name="fromBlock" value={this.state.fromBlock} onChange={this.HandleInputChange} />
-          </div>
-          <div className="form-actions">
-            <LoadingElement loading={this.props.loading && !this.state.watchEvents} loadingIcon="rotate">
-              <Action className="secondary" onClick={this.ToggleWatch}>
-                {watchButtonText}
-              </Action>
-              <Action onClick={this.FilterEvents}>
-                Filter Events
-              </Action>
-            </LoadingElement>
-          </div>
-        </form>
+      <div className="transaction-input">
+        <div className="section-label">
+          Method Inputs
+        </div>
+        { inputFields }
       </div>
     );
   }
 
-  Events() {
-    if(this.props.events.length === 0) { return <h4>No events found</h4>; }
+  ParsedLog(log) {
+    const eventName = log.contract ? `${log.contract} :: ${log.name}` : log.name;
+    const value = log.value ? Fabric.utils.WeiToEther(parseInt(log.value._hex, 16)) : 0;
+    return (
+      <div className="log" key={this.Key(log)} title={JSON.stringify(log, null, 2)}>
+        <div className="header">
+          <div className="title bold">{eventName}</div>
+          <div className="info">{log.logIndex}</div>
+        </div>
+        <div className="inputs indented">
+          <div className="labelled-field">
+            <label>Transaction Hash</label>
+            <div className="value">{Fabric.utils.AddressToHash(log.transactionHash)}</div>
+          </div>
+          <div className="labelled-field">
+            <label>ID</label>
+            <div className="value">{Fabric.utils.AddressToHash(log.address)}</div>
+          </div>
+          <div className="labelled-field">
+            <label>Contract Address</label>
+            <div className="value">{log.address}</div>
+          </div>
+          <div className="labelled-field">
+            <label>From</label>
+            <div className="value">{log.from}</div>
+          </div>
+          <div className="labelled-field">
+            <label>Value</label>
+            <div className="value">{"φ" + value}</div>
+          </div>
+          { this.Inputs(log) }
+        </div>
+      </div>
+    );
+  }
 
-    return this.props.events.map(block => {
-      return <EventCard events={block} key={"block-" + block[0].blockNumber} />;
-    });
+  RawLog(log) {
+    const to = FormatAddress(log.to);
+    const from = FormatAddress(log.from);
+    const value = log.value ? Fabric.utils.WeiToEther(parseInt(log.value._hex, 16)) : 0;
+    return (
+      <div className="log" key={this.Key(log)} title={JSON.stringify(log, null, 2)}>
+        <div className="header">
+          <div className="title" />
+          <div className="info">{log.logIndex}</div>
+        </div>
+        <div className="indented">
+          <div className="labelled-field">
+            <label>From</label>
+            <div className="value">{from}</div>
+          </div>
+          <div className="labelled-field">
+            <label>To</label>
+            <div className="value">{to}</div>
+          </div>
+          <div className="labelled-field">
+            <label>Value</label>
+            <div className="value">{"φ" + value}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  RenderEvent(event) {
+    const blockNumber = event && event[0] ? event[0].blockNumber : "unknown";
+    return (
+      <div className="event" key={"event-" + blockNumber}>
+        <div className="header">
+          <div className="title">{"Block " + blockNumber}</div>
+          <div className="info">{blockNumber}</div>
+        </div>
+        <div className="logs">
+          { event.map(log => log.name ? this.ParsedLog(log) : this.RawLog(log)) }
+        </div>
+      </div>
+    );
   }
 
   render() {
-    const watchIcon = this.state.watchEvents ? <BallClipRotate /> : null;
+    let filteredEvents = this.props.events;
+
+    if(this.props.filter) {
+      const filter = this.props.filter.toLowerCase();
+
+      filteredEvents = filteredEvents.filter(event =>
+        event.find(log =>
+          (log.contract || "").toLowerCase().includes(filter) ||
+          (log.name || "").toLowerCase().includes(filter) ||
+          (log.address || "").toLowerCase().includes(filter)
+        )
+      );
+    }
+
+    if(filteredEvents.length === 0) { return <h4>No events found</h4>; }
 
     return (
-      <div className="events">
-        <h3 className="header-with-loader">
-          Event Logs
-          { watchIcon }
-        </h3>
-        { this.FilterForm() }
-        <div className="events-container">
-          { this.Events() }
-        </div>
-        <div className="load-more">
-          { this.LoadMoreEventsButton() }
-        </div>
+      <div className="events-container">
+        { filteredEvents.map(event => this.RenderEvent(event)) }
+        <div
+          ref={(bottom)=> {
+            if(bottom && this.props.scrollToBottom) {
+              bottom.scrollIntoView();
+            }
+          }}
+        />
       </div>
     );
   }
 }
 
 EventLogs.propTypes = {
-  events: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.object)).isRequired,
-  RequestMethod: PropTypes.func.isRequired,
-  ClearMethod: PropTypes.func.isRequired,
-  loading: PropTypes.bool.isRequired,
-  contractAddress: PropTypes.string,
-  abi: PropTypes.array
+  events: PropTypes.arrayOf(
+    PropTypes.arrayOf(
+      PropTypes.object
+    )
+  ).isRequired,
+  filter: PropTypes.string,
+  scrollToBottom: PropTypes.bool
 };
 
 export default EventLogs;

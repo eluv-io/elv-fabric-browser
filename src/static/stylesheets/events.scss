@@ -1,40 +1,71 @@
 .events {
-  .event-actions-container {
+  max-width: 1200px;
+
+  h4 {
     align-items: center;
     display: flex;
-    justify-content: flex-start;
-    margin: $elv-spacing-xs 0 $elv-spacing-xxs;
+    font-size: 18px;
+    font-weight: bold;
+    height: 50vh;
+    justify-content: center;
+    width: 100%;
+  }
 
-    .actions-container {
-      margin: 0 0 0 $elv-spacing-xs;
-      padding: 0;
-      width: auto;
+  .event-controls {
+    display: flex;
+    height: 32px;
+    justify-content: space-between;
+    margin-bottom: $elv-spacing-ss;
+    width: 100%;
+
+    input {
+      font-size: 14px;
+      height: 100%;
+      width: 400px;
+
+      &[type="number"] {
+        margin-right: $elv-spacing-s;
+        width: 100px;
+      }
     }
 
-    .labelled-input {
-      margin-right: $elv-spacing-xs;
+    button {
+      height: 100%;
+      margin-right: $elv-spacing-s;
+    }
 
-      label {
-        min-width: max-content;
+    label {
+      margin-right: $elv-spacing-s;
+    }
+
+    .watch-icon {
+      margin-left: $elv-spacing-s;
+      width: 35px;
+
+      &.watching {
+        svg {
+          animation: watch-pulse 3s infinite normal;
+          color: $elv-color-mediumred;
+        }
       }
 
-      input {
-        &[type="number"] {
-          width: 10em;
+      &:hover {
+        svg {
+          color: $elv-color-mediumblue;
         }
       }
     }
-  }
 
-  .events-controls {
-    align-items: center;
-    display: flex;
-    justify-content: space-between;
+    .controls {
+      align-items: center;
+      display: flex;
+      justify-content: flex-start;
+    }
   }
 
   .events-container {
-    border: 1px solid $elv-color-lightergray;
-    max-height: 55vh;
+    height: 70vh;
+    max-height: 70vh;
     overflow-y: auto;
     padding: $elv-spacing-s;
   }
@@ -47,8 +78,8 @@
   }
 }
 
-.transaction,
-.event {
+.event,
+.log {
   .header {
     align-items: center;
     display: flex;
@@ -63,14 +94,14 @@
   }
 }
 
-.transaction {
+.event {
   border: 1px solid $elv-color-darkgray;
   font-size: 12px;
-  margin-bottom: $elv-spacing-s;
+  margin-bottom: $elv-spacing-m;
   padding: $elv-spacing-s;
 }
 
-.event {
+.log {
   border: 1px solid $elv-color-gray;
   margin-bottom: $elv-spacing-xs;
   padding: $elv-spacing-s;
@@ -95,5 +126,15 @@
   .section-label {
     font-weight: 600;
     margin: $elv-spacing-s 0 $elv-spacing-xxs;
+  }
+}
+
+@keyframes watch-pulse {
+  from {
+    color: $elv-color-red;
+  }
+
+  to {
+    color: $elv-color-mediumred;
   }
 }
