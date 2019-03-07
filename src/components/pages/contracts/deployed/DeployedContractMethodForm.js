@@ -3,7 +3,7 @@ import {LabelledField} from "../../../components/LabelledField";
 
 import PropTypes from "prop-types";
 import {Bytes32ToUtf8} from "../../../../utils/Helpers";
-import EventCard from "../../../components/EventCard";
+import EventLogs from "../../../components/EventLogs";
 import Form from "elv-components-js/src/components/Form";
 
 class DeployedContractMethodForm extends React.Component {
@@ -227,7 +227,7 @@ class DeployedContractMethodForm extends React.Component {
       return (
         <div className="label-box">
           <h3>Result: </h3>
-          <EventCard events={this.state.transactionResults} />
+          <EventLogs events={this.state.transactionResults} />
         </div>
       );
     }

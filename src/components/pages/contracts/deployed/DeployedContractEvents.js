@@ -2,7 +2,7 @@ import React from "react";
 import Path from "path";
 import PropTypes from "prop-types";
 import {PageHeader} from "../../../components/Page";
-import EventLogs from "../../../components/EventLogs";
+import Events from "../../../components/Events";
 import Action from "elv-components-js/src/components/Action";
 
 class DeployedContractEvents extends React.Component {
@@ -16,7 +16,7 @@ class DeployedContractEvents extends React.Component {
         <div className="page-content">
           <div className="label-box">
             <div className="contract-events">
-              <EventLogs
+              <Events
                 events={this.props.deployedContract.events || []}
                 RequestMethod={this.props.methods.GetContractEvents}
                 ClearMethod={this.props.methods.ClearContractEvents}
