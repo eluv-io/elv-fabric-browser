@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import EventLogs from "../../components/EventLogs";
+import Events from "../../components/Events";
 
 class Logs extends React.Component {
   render() {
@@ -9,7 +9,7 @@ class Logs extends React.Component {
         <div className="page-header-container">
           <h3 className="page-header">Ethereum Logs</h3>
         </div>
-        <EventLogs
+        <Events
           events={this.props.logs}
           RequestMethod={this.props.methods.GetBlockchainEvents}
           ClearMethod={this.props.methods.ClearBlockchainEvents}
