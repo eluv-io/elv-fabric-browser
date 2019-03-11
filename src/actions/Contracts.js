@@ -276,9 +276,40 @@ export const SetCustomContentContract = ({
     // Content types don't have a hook to associate custom contracts
     if(!isContentType) {
       await Fabric.SetCustomContentContract({
+        libraryId,
         objectId,
+        name: contractName,
+        description: contractDescription,
         customContractAddress: address,
+        abi,
+        factoryAbi,
         overrides: {gasLimit: 60000000, gasPrice: 1000000},
+      });
+    } else {
+      // Set contract info in metadata for content type
+      const editResponse = await Fabric.EditContentObject({
+        libraryId,
+        objectId
+      });
+
+      await Fabric.ReplaceMetadata({
+        libraryId,
+        objectId,
+        writeToken: editResponse.write_token,
+        metadataSubtree: "custom_contract",
+        metadata: {
+          name: contractName,
+          description: contractDescription,
+          address: FormatAddress(address),
+          abi,
+          factoryAbi: ParseInputJson(factoryAbi)
+        }
+      });
+
+      await Fabric.FinalizeContentObject({
+        libraryId,
+        objectId,
+        writeToken: editResponse.write_token
       });
     }
 
@@ -291,32 +322,6 @@ export const SetCustomContentContract = ({
         });
       }
     }
-
-    // Custom contract successfully deployed and set - update metadata
-    const editResponse = await Fabric.EditContentObject({
-      libraryId,
-      objectId
-    });
-
-    await Fabric.ReplaceMetadata({
-      libraryId,
-      objectId,
-      writeToken: editResponse.write_token,
-      metadataSubtree: "custom_contract",
-      metadata: {
-        name: contractName,
-        description: contractDescription,
-        address: FormatAddress(address),
-        abi,
-        factoryAbi: ParseInputJson(factoryAbi)
-      }
-    });
-
-    await Fabric.FinalizeContentObject({
-      libraryId,
-      objectId,
-      writeToken: editResponse.write_token
-    });
 
     dispatch(SetNotificationMessage({
       message: "Successfully deployed custom contract",

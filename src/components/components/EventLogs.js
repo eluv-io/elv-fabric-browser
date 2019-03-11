@@ -108,6 +108,8 @@ class EventLogs extends React.PureComponent {
   }
 
   RenderEvent(event) {
+    if(!Array.isArray(event)) { event = [event]; }
+
     const blockNumber = event && event[0] ? event[0].blockNumber : "unknown";
     return (
       <div className="event" key={"event-" + blockNumber}>
