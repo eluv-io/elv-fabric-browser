@@ -27,23 +27,6 @@ class ContentLibrary extends React.Component {
     this.ContentObjects = this.ContentObjects.bind(this);
   }
 
-  DeleteContentLibraryButton() {
-    // Don't allow deletion of special content space library
-    if(this.props.library.isContentSpaceLibrary) { return null; }
-
-    const Delete = async () => {
-      if(confirm("Are you sure you want to delete this library?")) {
-        await this.props.methods.DeleteContentLibrary({libraryId: this.props.libraryId});
-      }
-    };
-
-    return (
-      <Action className="delete-action" onClick={Delete}>
-        Delete
-      </Action>
-    );
-  }
-
   ToggleVisible(id) {
     this.setState({
       visibleItems: {
@@ -240,11 +223,19 @@ class ContentLibrary extends React.Component {
   }
 
   Actions() {
-    let manageGroupsButton;
-    let manageTypesButton;
+    const contributeButton = <Action type="link" to={Path.join(this.props.match.url, "create")}>{this.props.library.isContentSpaceLibrary ? "New Content Type" : "Contribute"}</Action>
+
+    let manageGroupsButton, manageTypesButton, deleteLibraryButton;
     if(this.props.library.isOwner && !this.props.library.isContentSpaceLibrary) {
+      const Delete = async () => {
+        if(confirm("Are you sure you want to delete this library?")) {
+          await this.props.methods.DeleteContentLibrary({libraryId: this.props.libraryId});
+        }
+      };
+
       manageGroupsButton = <Action type="link" to={Path.join(this.props.match.url, "groups")}>Groups</Action>;
       manageTypesButton = <Action type="link" to={Path.join(this.props.match.url, "types")}>Types</Action>;
+      deleteLibraryButton = <Action className="delete-action" onClick={Delete}>Delete</Action>;
     }
 
     return (
@@ -253,10 +244,8 @@ class ContentLibrary extends React.Component {
         <Action type="link" to={Path.join(this.props.match.url, "edit")}>Manage</Action>
         { manageGroupsButton }
         { manageTypesButton }
-        <Action type="link" to={Path.join(this.props.match.url, "create")}>
-          { this.props.library.isContentSpaceLibrary ? "New Content Type" : "Contribute" }
-        </Action>
-        { this.DeleteContentLibraryButton() }
+        { contributeButton }
+        { deleteLibraryButton }
       </div>
     );
   }
