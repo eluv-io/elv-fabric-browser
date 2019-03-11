@@ -223,7 +223,7 @@ class ContentLibrary extends React.Component {
   }
 
   Actions() {
-    const contributeButton = <Action type="link" to={Path.join(this.props.match.url, "create")}>{this.props.library.isContentSpaceLibrary ? "New Content Type" : "Contribute"}</Action>
+    const contributeButton = <Action type="link" to={Path.join(this.props.match.url, "create")}>{this.props.library.isContentSpaceLibrary ? "New Content Type" : "Contribute"}</Action>;
 
     let manageGroupsButton, manageTypesButton, deleteLibraryButton;
     if(this.props.library.isOwner && !this.props.library.isContentSpaceLibrary) {
