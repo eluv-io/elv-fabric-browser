@@ -933,10 +933,24 @@ const Fabric = {
     return client.CallContractMethodAndWait({contractAddress, abi, methodName, methodArgs, value});
   },
 
-  SetCustomContentContract: ({objectId, customContractAddress, overrides={}}) => {
+  SetCustomContentContract: ({
+    libraryId,
+    objectId,
+    name,
+    description,
+    customContractAddress,
+    abi,
+    factoryAbi,
+    overrides={}
+  }) => {
     return client.SetCustomContentContract({
+      libraryId,
       objectId,
+      name,
+      description,
       customContractAddress,
+      abi,
+      factoryAbi,
       overrides
     });
   },
@@ -945,8 +959,8 @@ const Fabric = {
     return client.ContractEvent({abi, transactionHash});
   },
 
-  ContractEvents: ({contractAddress, abi, fromBlock, toBlock}) => {
-    return client.ContractEvents({contractAddress, abi, fromBlock, toBlock, includeTransaction: true});
+  ContractEvents: async ({contractAddress, abi, fromBlock, toBlock}) => {
+    return await client.ContractEvents({contractAddress, abi, fromBlock, toBlock, includeTransaction: true});
   },
 
   WithdrawContractFunds: ({contractAddress, abi, ether}) => {
@@ -955,46 +969,6 @@ const Fabric = {
 
   GetBlockchainEvents: ({toBlock, fromBlock, count=10}) => {
     return client.Events({toBlock, fromBlock, count, includeTransaction: true});
-  },
-
-  /* Naming */
-
-  async GetByName({name}) {
-    try {
-      return await client.GetByName({name});
-    } catch(error) {
-      if(error.status === 404) {
-        return undefined;
-      }
-
-      throw error;
-    }
-  },
-
-  SetByName({name, target}) {
-    return client.SetByName({name, target});
-  },
-
-  async GetObjectByName({name}) {
-    try {
-      let objectData = await client.GetObjectByName({name});
-
-      return objectData;
-    } catch(error) {
-      if(error.status === 404) {
-        return undefined;
-      }
-
-      throw error;
-    }
-  },
-
-  SetObjectByName({name, libraryId, objectId}) {
-    return client.SetObjectByName({name, libraryId, objectId});
-  },
-
-  DeleteName({name}) {
-    return client.DeleteName({name});
   },
 
   VerifyContentObject: ({
