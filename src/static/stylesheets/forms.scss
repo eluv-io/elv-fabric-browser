@@ -15,7 +15,6 @@ form {
 
     .list-item {
       align-items: center;
-      display: flex;
       margin-bottom: $elv-spacing-xs;
       position: relative;
 
@@ -23,7 +22,7 @@ form {
         width: 100%;
       }
 
-      .icon-button {
+      .-elv-icon-button {
         height: 20px;
         margin: 0;
         padding: 0;
