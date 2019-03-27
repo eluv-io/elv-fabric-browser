@@ -10,7 +10,8 @@
   width: 100%;
 
   i,
-  .download-button {
+  .download-button,
+  .copy-button {
     height: 20px;
     margin: 0;
     padding: 0;
@@ -92,6 +93,10 @@
 
       &.actions-cell {
         text-align: center;
+
+        button {
+          margin-right: $elv-spacing-xs;
+        }
       }
 
       .item-path {

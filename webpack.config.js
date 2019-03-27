@@ -4,7 +4,6 @@ const Path = require("path");
 const autoprefixer = require("autoprefixer");
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const HtmlWebpackInlineSourcePlugin = require("html-webpack-inline-source-plugin");
 
 module.exports = {
   entry: "./src/index.js",
@@ -45,8 +44,7 @@ module.exports = {
       cache: false,
       filename: "index.html",
       inlineSource: ".(js|css)$"
-    }),
-    new HtmlWebpackInlineSourcePlugin()
+    })
   ],
   module: {
     rules: [

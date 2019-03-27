@@ -104,3 +104,9 @@ ul {
 .clickable {
   cursor: pointer;
 }
+
+.actions-container {
+  .-elv-button {
+    margin-right: $elv-spacing-xs;
+  }
+}
