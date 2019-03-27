@@ -4,13 +4,16 @@ import PrettyBytes from "pretty-bytes";
 import Path from "path";
 import { SafeTraverse } from "../../utils/Helpers";
 import Modal from "elv-components-js/src/components/Modal";
+import FileUploadWidget from "./FileUploadWidget";
+import {ImageIcon, IconButton} from "elv-components-js/src/components/Icons";
+import Action from "elv-components-js/src/components/Action";
+import AsyncCopy from "elv-components-js/src/components/AsyncCopy";
+
 import DirectoryIcon from "../../static/icons/directory.svg";
 import FileIcon from "../../static/icons/file.svg";
 import DownloadIcon from "../../static/icons/download.svg";
 import BackIcon from "../../static/icons/directory_back.svg";
-import FileUploadWidget from "./FileUploadWidget";
-import {ImageIcon, IconButton} from "elv-components-js/src/components/Icons";
-import Action from "elv-components-js/src/components/Action";
+import LinkIcon from "../../static/icons/link.svg";
 
 class FileBrowser extends React.Component {
   constructor(props) {
@@ -51,6 +54,13 @@ class FileBrowser extends React.Component {
             onClick={() => this.props.Download(Path.join(this.state.path, name))}
             className="download-button"
           />
+          <AsyncCopy Load={async () => await this.props.FileUrl(Path.join(this.state.path, name))}>
+            <IconButton
+              icon={LinkIcon}
+              title={"Copy direct link to " + name}
+              className="copy-button"
+            />
+          </AsyncCopy>
         </td>
       </tr>
     );
@@ -174,6 +184,7 @@ FileBrowser.propTypes = {
   uploadStatus: PropTypes.object.isRequired,
   Upload: PropTypes.func.isRequired,
   Download: PropTypes.func.isRequired,
+  FileUrl: PropTypes.func.isRequired,
   Reload: PropTypes.func.isRequired
 };
 

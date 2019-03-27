@@ -6,6 +6,7 @@ import {
   DeleteContentVersion,
   DownloadFile,
   DownloadPart,
+  FileUrl,
   GetContentLibrary,
   GetContentObject,
   GetContentObjectPermissions,
@@ -37,6 +38,7 @@ const mapDispatchToProps = dispatch =>
       DownloadPart,
       DownloadFile,
       UploadFiles,
+      FileUrl,
       PublishContentObject
     ]
   );

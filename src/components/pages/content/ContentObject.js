@@ -259,6 +259,14 @@ class ContentObject extends React.Component {
       });
     };
 
+    const urlMethod = async (filePath) => {
+      return await this.props.FileUrl({
+        libraryId: this.props.libraryId,
+        objectId: this.props.objectId,
+        filePath
+      });
+    };
+
     return(
       <div className="object-files">
         <h3>Files</h3>
@@ -268,6 +276,7 @@ class ContentObject extends React.Component {
           uploadStatus={this.props.methodStatus.UploadFiles}
           Upload={uploadMethod}
           Download={downloadMethod}
+          FileUrl={urlMethod}
         />
       </div>
     );
