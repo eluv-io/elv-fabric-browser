@@ -52,7 +52,6 @@ class FileUploadWidget extends React.Component {
         <Form
           legend={"Upload files to " + this.props.displayPath}
           formContent={this.FormContent()}
-          noRedirect={true}
           status={this.props.uploadStatus}
           OnSubmit={this.HandleSubmit}
           OnCancel={this.props.OnCancel}
