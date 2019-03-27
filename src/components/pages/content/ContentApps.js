@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import UrlJoin from "url-join";
 import Path from "path";
 import {PageHeader} from "../../components/Page";
 import {LabelledField} from "../../components/LabelledField";
@@ -60,7 +61,7 @@ class ContentApps extends React.Component {
     } else {
       // App not set for this role - add button
       action = (
-        <Action type="link" to={Path.join(this.props.match.url, role, "add")} className="action-compact action-wide">
+        <Action type="link" to={UrlJoin(this.props.match.url, role, "add")} className="action-compact action-wide">
           {`Add ${role.capitalize()} App`}
         </Action>
       );

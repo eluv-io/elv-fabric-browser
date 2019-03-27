@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import Path from "path";
+import UrlJoin from "url-join";
 import AccessGroupIcon from "../../../static/icons/groups.svg";
 import {PageHeader} from "../../components/Page";
 import Action from "elv-components-js/src/components/Action";
@@ -25,7 +25,7 @@ class AccessGroups extends React.Component {
         description: accessGroup.description,
         status: members,
         icon: AccessGroupIcon,
-        link: Path.join(this.props.match.url, accessGroup.address)
+        link: UrlJoin(this.props.match.url, accessGroup.address)
       };
     });
   }

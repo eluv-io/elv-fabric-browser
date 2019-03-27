@@ -1,6 +1,6 @@
 import { FrameClient } from "elv-client-js/src/FrameClient";
 import { ElvClient } from "elv-client-js/src/ElvClient";
-import Path from "path";
+import UrlJoin from "url-join";
 
 import BaseLibraryContract from "elv-client-js/src/contracts/BaseLibrary";
 import BaseContentContract from "elv-client-js/src/contracts/BaseContent";
@@ -1019,7 +1019,7 @@ const Fabric = {
       const info = await Fabric.GetContentObjectMetadata({
         libraryId: Fabric.contentSpaceLibraryId,
         objectId: Fabric.contentSpaceObjectId,
-        metadataSubtree: Path.join("elv-fabric-browser", subtree)
+        metadataSubtree: UrlJoin("elv-fabric-browser", subtree)
       });
 
       if(!info && ["contracts", "deployedContracts", "accessGroups"].includes(subtree)) {
@@ -1039,7 +1039,7 @@ const Fabric = {
             libraryId: Fabric.contentSpaceLibraryId,
             objectId: Fabric.contentSpaceObjectId,
             writeToken,
-            metadataSubtree: Path.join("elv-fabric-browser", type, name),
+            metadataSubtree: UrlJoin("elv-fabric-browser", type, name),
             metadata
           });
         }
@@ -1056,7 +1056,7 @@ const Fabric = {
             libraryId: Fabric.contentSpaceLibraryId,
             objectId: Fabric.contentSpaceObjectId,
             writeToken,
-            metadataSubtree: Path.join("elv-fabric-browser", type, name),
+            metadataSubtree: UrlJoin("elv-fabric-browser", type, name),
           });
         }
       });

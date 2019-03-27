@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { JsonTextArea } from "../../../utils/Input";
+import UrlJoin from "url-join";
 import Path from "path";
 import BrowseWidget from "elv-components-js/src/components/BrowseWidget";
 import LoadingElement from "elv-components-js/src/components/LoadingElement";
@@ -57,7 +58,7 @@ class ContentLibraryForm extends React.Component {
       // Ensure redirect path is updated before completion
       await new Promise(resolve =>
         this.setState({
-          redirectPath: Path.join(this.state.redirectPath, libraryId)
+          redirectPath: UrlJoin(this.state.redirectPath, libraryId)
         }, resolve)
       );
     }

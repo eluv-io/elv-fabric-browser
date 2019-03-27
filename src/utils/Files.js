@@ -1,4 +1,4 @@
-import Path from "path";
+import UrlJoin from "url-join";
 
 export const DownloadFromUrl = async (url, filename) => {
   let element = document.createElement("a");
@@ -21,7 +21,7 @@ export const FileInfo = async (path, fileList, noData=false) => {
       const data = noData ? undefined : await new Response(file).blob();
       const filePath = file.overrideName || file.webkitRelativePath || file.name;
       return {
-        path: Path.join(path, filePath).replace(/^\/+/g, ""),
+        path: UrlJoin(path, filePath).replace(/^\/+/g, ""),
         type: "file",
         size: file.size,
         data

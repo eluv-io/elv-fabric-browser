@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import UrlJoin from "url-join";
 import Path from "path";
 import {LabelledField} from "../../../components/LabelledField";
 import {ContractTypes} from "../../../../utils/Contracts";
@@ -101,8 +102,8 @@ class DeployedContract extends React.Component {
       <div className="page-container contracts-page-container">
         <div className="actions-container">
           <Action type="link" to={backPath} className="secondary" >Back</Action>
-          <Action type="link" to={Path.join(this.props.match.url, "funds")}>Transfer Funds</Action>
-          <Action type="link" to={Path.join(this.props.match.url, "logs")}>Contract Logs</Action>
+          <Action type="link" to={UrlJoin(this.props.match.url, "funds")}>Transfer Funds</Action>
+          <Action type="link" to={UrlJoin(this.props.match.url, "logs")}>Contract Logs</Action>
           { this.DeleteButton() }
         </div>
         <PageHeader header={this.props.contract.name} subHeader={this.props.contract.description} />
