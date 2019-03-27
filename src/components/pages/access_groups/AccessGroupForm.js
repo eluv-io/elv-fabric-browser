@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import UrlJoin from "url-join";
 import Path from "path";
 import Form from "elv-components-js/src/components/Form";
 
@@ -37,7 +38,7 @@ class AccessGroupForm extends React.Component {
     // Ensure redirect path is updated before completion
     await new Promise(resolve =>
       this.setState({
-        redirectPath: Path.join(Path.dirname(this.props.match.url), contractAddress)
+        redirectPath: UrlJoin(Path.dirname(this.props.match.url), contractAddress)
       }, resolve)
     );
   }

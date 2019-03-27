@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import Path from "path";
+import UrlJoin from "url-join";
 import {PageHeader} from "../../components/Page";
 import Tabs from "elv-components-js/src/components/Tabs";
 import Action from "elv-components-js/src/components/Action";
@@ -20,8 +20,8 @@ class Contracts extends React.Component {
   Contracts(contracts) {
     return Object.keys(contracts).map(contractId => {
       const link = this.state.view === "deployed" ?
-        Path.join("/contracts", "deployed", contractId) :
-        Path.join("/contracts", contractId);
+        UrlJoin("/contracts", "deployed", contractId) :
+        UrlJoin("/contracts", contractId);
 
       const contract = contracts[contractId];
 

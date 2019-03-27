@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import BrowseWidget from "elv-components-js/src/components/BrowseWidget";
 import RadioSelect from "elv-components-js/src/components/RadioSelect";
+import UrlJoin from "url-join";
 import Path from "path";
 import {JsonTextArea} from "../../../utils/Input";
 import Form from "elv-components-js/src/components/Form";
@@ -52,7 +53,7 @@ class CompileContractForm extends React.Component {
     // Ensure redirect path is updated before completion
     await new Promise(resolve =>
       this.setState({
-        redirectPath: Path.join(
+        redirectPath: UrlJoin(
           this.state.redirectPath,
           this.state.compileFromSource ? "save" : this.state.name
         ),

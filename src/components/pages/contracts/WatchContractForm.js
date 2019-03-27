@@ -1,4 +1,5 @@
 import React from "react";
+import UrlJoin from "url-join";
 import Path from "path";
 import {JsonTextArea} from "../../../utils/Input";
 import Form from "elv-components-js/src/components/Form";
@@ -63,7 +64,7 @@ class WatchContractForm extends React.Component {
   }
 
   render() {
-    const redirectPath = Path.join(Path.dirname(this.props.match.url), "deployed", this.state.address);
+    const redirectPath = UrlJoin(Path.dirname(this.props.match.url), "deployed", this.state.address);
 
     return (
       <Form

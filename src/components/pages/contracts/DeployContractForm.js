@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import UrlJoin from "url-join";
 import Path from "path";
 import RadioSelect from "elv-components-js/src/components/RadioSelect";
 import Fabric from "../../../clients/Fabric";
@@ -163,7 +164,7 @@ class DeployContractForm extends React.Component {
     let redirectPath = this.state.redirectPath;
     if(!this.state.isContentObjectContract) {
       // Contract address won't exist until submission
-      redirectPath = Path.join(redirectPath, "deployed", contractAddress);
+      redirectPath = UrlJoin(redirectPath, "deployed", contractAddress);
     }
 
     // Ensure redirect path is updated before completion
