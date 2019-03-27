@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import PrettyBytes from "pretty-bytes";
+import UrlJoin from "url-join";
 import Path from "path";
 import { SafeTraverse } from "../../utils/Helpers";
 import Modal from "elv-components-js/src/components/Modal";
@@ -51,10 +52,10 @@ class FileBrowser extends React.Component {
           <IconButton
             icon={DownloadIcon}
             title={"Download " + name}
-            onClick={() => this.props.Download(Path.join(this.state.path, name))}
+            onClick={() => this.props.Download(UrlJoin(this.state.path, name))}
             className="download-button"
           />
-          <AsyncCopy Load={async () => await this.props.FileUrl(Path.join(this.state.path, name))}>
+          <AsyncCopy Load={async () => await this.props.FileUrl(UrlJoin(this.state.path, name))}>
             <IconButton
               icon={LinkIcon}
               title={"Copy direct link to " + name}
@@ -67,7 +68,7 @@ class FileBrowser extends React.Component {
   }
 
   Directory(item) {
-    const changeDirectory = () => this.ChangeDirectory(Path.join(this.state.path, item.name));
+    const changeDirectory = () => this.ChangeDirectory(UrlJoin(this.state.path, item.name));
     return (
       <tr key={`entry-${this.state.path}-${item.name}`} className="directory" onClick={changeDirectory} onKeyPress={changeDirectory}>
         <td className="item-icon">

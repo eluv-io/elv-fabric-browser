@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import Redirect from "react-router/es/Redirect";
+import UrlJoin from "url-join";
 import Path from "path";
 import Form from "elv-components-js/src/components/Form";
 
@@ -68,7 +69,7 @@ class ContractForm extends React.Component {
     // Ensure redirect path is updated before completion
     await new Promise(resolve =>
       this.setState({
-        redirectPath: Path.join(this.state.redirectPath, this.state.name),
+        redirectPath: UrlJoin(this.state.redirectPath, this.state.name),
       }, resolve)
     );
   }

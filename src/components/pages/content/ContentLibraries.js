@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import Path from "path";
+import UrlJoin from "url-join";
 import LibraryIcon from "../../../static/icons/content.svg";
 import {PageHeader} from "../../components/Page";
 import Action from "elv-components-js/src/components/Action";
@@ -27,7 +27,7 @@ class ContentLibraries extends React.Component {
         description: library.description,
         status: library.objects.length + " Content Objects",
         icon: library.imageUrl || LibraryIcon,
-        link: Path.join("/content", libraryId)
+        link: UrlJoin("/content", libraryId)
       });
     }
 
@@ -39,7 +39,7 @@ class ContentLibraries extends React.Component {
     return (
       <div className="page-container contents-page-container">
         <div className="actions-container">
-          <Action type="link" to={Path.join("/content", "create")}>New Library</Action>
+          <Action type="link" to={UrlJoin("/content", "create")}>New Library</Action>
         </div>
         <PageHeader header="Content Libraries" />
         <div className="page-content">

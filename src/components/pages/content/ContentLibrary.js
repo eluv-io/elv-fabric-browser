@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
+import UrlJoin from "url-join";
 import Path from "path";
 import ContentIcon from "../../../static/icons/content.svg";
 import { LabelledField } from "../../components/LabelledField";
@@ -92,7 +93,7 @@ class ContentLibrary extends React.Component {
                 <h4>{groupType.capitalize()}</h4>
                 {
                   groups.map(group => {
-                    const accessGroupLink = Path.join("/access-groups", group.address);
+                    const accessGroupLink = UrlJoin("/access-groups", group.address);
 
                     let groupInfo = <h4>Unknown Group</h4>;
                     if(this.props.accessGroups[group.address]) {
@@ -112,7 +113,7 @@ class ContentLibrary extends React.Component {
                         />
                         <LabelledField
                           label="Address"
-                          value={<Link className="inline-link" to={Path.join(accessGroupLink, "contract")}>{group.address}</Link>}
+                          value={<Link className="inline-link" to={UrlJoin(accessGroupLink, "contract")}>{group.address}</Link>}
                         />
                       </div>
                     );
@@ -141,7 +142,7 @@ class ContentLibrary extends React.Component {
 
   LibraryInfo() {
     const description = <ClippedText className="object-description" text={this.props.library.description} />;
-    const libraryObjectPath = Path.join(this.props.match.url, this.props.library.libraryObjectId);
+    const libraryObjectPath = UrlJoin(this.props.match.url, this.props.library.libraryObjectId);
 
     return (
       <div className="object-info label-box">
@@ -162,7 +163,7 @@ class ContentLibrary extends React.Component {
         <LabelledField
           label={"Contract Address"}
           value={
-            <Link className="inline-link" to={Path.join(libraryObjectPath, "contract")}>
+            <Link className="inline-link" to={UrlJoin(libraryObjectPath, "contract")}>
               {this.props.library.contractAddress}
             </Link>
           }
@@ -202,7 +203,7 @@ class ContentLibrary extends React.Component {
         description: object.description,
         status: status,
         icon: object.imageUrl || ContentIcon,
-        link: Path.join(this.props.match.url, objectId)
+        link: UrlJoin(this.props.match.url, objectId)
       });
     }
 
@@ -223,7 +224,7 @@ class ContentLibrary extends React.Component {
   }
 
   Actions() {
-    const contributeButton = <Action type="link" to={Path.join(this.props.match.url, "create")}>{this.props.library.isContentSpaceLibrary ? "New Content Type" : "Contribute"}</Action>;
+    const contributeButton = <Action type="link" to={UrlJoin(this.props.match.url, "create")}>{this.props.library.isContentSpaceLibrary ? "New Content Type" : "Contribute"}</Action>;
 
     let manageGroupsButton, manageTypesButton, deleteLibraryButton;
     if(this.props.library.isOwner && !this.props.library.isContentSpaceLibrary) {
@@ -233,15 +234,15 @@ class ContentLibrary extends React.Component {
         }
       };
 
-      manageGroupsButton = <Action type="link" to={Path.join(this.props.match.url, "groups")}>Groups</Action>;
-      manageTypesButton = <Action type="link" to={Path.join(this.props.match.url, "types")}>Types</Action>;
+      manageGroupsButton = <Action type="link" to={UrlJoin(this.props.match.url, "groups")}>Groups</Action>;
+      manageTypesButton = <Action type="link" to={UrlJoin(this.props.match.url, "types")}>Types</Action>;
       deleteLibraryButton = <Action className="delete-action" onClick={Delete}>Delete</Action>;
     }
 
     return (
       <div className="actions-container">
         <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
-        <Action type="link" to={Path.join(this.props.match.url, "edit")}>Manage</Action>
+        <Action type="link" to={UrlJoin(this.props.match.url, "edit")}>Manage</Action>
         { manageGroupsButton }
         { manageTypesButton }
         { contributeButton }

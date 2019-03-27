@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import UrlJoin from "url-join";
 import Path from "path";
 import { JsonTextArea } from "../../../utils/Input";
 import BrowseWidget from "elv-components-js/src/components/BrowseWidget";
@@ -51,7 +52,7 @@ class ContentTypeForm extends React.Component {
       // Ensure redirect path is updated before completion
       await new Promise(resolve =>
         this.setState({
-          redirectPath: Path.join(this.state.redirectPath, objectId)
+          redirectPath: UrlJoin(this.state.redirectPath, objectId)
         }, resolve)
       );
     }

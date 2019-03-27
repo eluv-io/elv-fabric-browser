@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import BrowseWidget from "elv-components-js/src/components/BrowseWidget";
 import {JsonTextArea} from "../../../utils/Input";
+import UrlJoin from "url-join";
 import Path from "path";
 import {InitializeSchema, GetValue, SetValue, RemoveValue} from "../../../utils/TypeSchema";
 import RadioSelect from "elv-components-js/src/components/RadioSelect";
@@ -480,7 +481,7 @@ class ContentObjectForm extends React.Component {
     if(this.props.createForm) {
       // On creation, objectId won't exist until submission
       redirectPath = this.props.objectId ?
-        Path.join(Path.dirname(this.props.match.url), this.props.objectId) : Path.dirname(this.props.match.url);
+        UrlJoin(Path.dirname(this.props.match.url), this.props.objectId) : Path.dirname(this.props.match.url);
     }
     const cancelPath = Path.dirname(this.props.match.url);
 

@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
+import UrlJoin from "url-join";
 import Path from "path";
 import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
@@ -64,13 +65,13 @@ class AccessGroup extends React.Component {
     let editButton;
     let deleteButton;
     if(this.props.accessGroup.isOwner) {
-      editButton = <Action type="link" to={Path.join(this.props.match.url, "edit")}>Manage</Action>;
+      editButton = <Action type="link" to={UrlJoin(this.props.match.url, "edit")}>Manage</Action>;
       deleteButton = <Action className="delete-action" onClick={this.DeleteAccessGroup}>Delete</Action>;
     }
 
     let manageButton;
     if(this.props.accessGroup.isOwner || this.props.accessGroup.isManager) {
-      manageButton = <Action type="link" to={Path.join(this.props.match.url, "members")}>Members</Action>;
+      manageButton = <Action type="link" to={UrlJoin(this.props.match.url, "members")}>Members</Action>;
     }
 
     return (
@@ -99,7 +100,7 @@ class AccessGroup extends React.Component {
             <LabelledField label="Description" value={description} />
             <LabelledField label="Owner" value={this.props.accessGroup.owner} />
             <LabelledField label="Contract Address" value={
-              <Link className="inline-link" to={Path.join(this.props.match.url, "contract")}>
+              <Link className="inline-link" to={UrlJoin(this.props.match.url, "contract")}>
                 { this.props.accessGroup.address }
               </Link>
             } />

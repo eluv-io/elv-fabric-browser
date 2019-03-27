@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import {Link} from "react-router-dom";
+import UrlJoin from "url-join";
 import Path from "path";
 import PrettyBytes from "pretty-bytes";
 import { LabelledField } from "../../components/LabelledField";
@@ -131,7 +132,7 @@ class ContentObject extends React.Component {
 
     if(this.props.object.status.code > 0 && this.props.object.permissions.canReview) {
       return (
-        <Action type="link" to={Path.join(this.props.match.url, "review")}>
+        <Action type="link" to={UrlJoin(this.props.match.url, "review")}>
           Review
         </Action>
       );
@@ -342,7 +343,7 @@ class ContentObject extends React.Component {
         key={"contract-" + this.props.object.contractAddress}
         label={"Contract Address"}
         value={
-          <Link className="inline-link" to={Path.join(this.props.match.url, "contract")}>
+          <Link className="inline-link" to={UrlJoin(this.props.match.url, "contract")}>
             {this.props.object.contractAddress}
           </Link>
         } />
@@ -356,7 +357,7 @@ class ContentObject extends React.Component {
         <LabelledField
           key={"contract-" + customContractAddress}
           label={"Custom Contract"}
-          value={<Link className="inline-link" to={Path.join(this.props.match.url, "custom-contract")}>{customContractAddress}</Link>} />);
+          value={<Link className="inline-link" to={UrlJoin(this.props.match.url, "custom-contract")}>{customContractAddress}</Link>} />);
     }
 
     return contractInfo;
@@ -421,7 +422,7 @@ class ContentObject extends React.Component {
     let manageAppsLink;
     if(this.props.object.isOwner) {
       manageAppsLink = (
-        <Action type="link" to={Path.join(this.props.match.url, "apps")}>
+        <Action type="link" to={UrlJoin(this.props.match.url, "apps")}>
           Apps
         </Action>
       );
@@ -434,7 +435,7 @@ class ContentObject extends React.Component {
       this.props.object.isOwner
     ) {
       setContractButton = (
-        <Action type="link" to={Path.join(this.props.match.url, "deploy")}>
+        <Action type="link" to={UrlJoin(this.props.match.url, "deploy")}>
           Custom Contract
         </Action>
       );
@@ -452,10 +453,10 @@ class ContentObject extends React.Component {
     return (
       <div className="actions-container">
         <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
-        <Action type="link" to={Path.join(this.props.match.url, "edit")}>Manage</Action>
+        <Action type="link" to={UrlJoin(this.props.match.url, "edit")}>Manage</Action>
         { this.PublishButton() }
         { setContractButton }
-        <Action type="link" to={Path.join(this.props.match.url, "upload")}>Upload Parts</Action>
+        <Action type="link" to={UrlJoin(this.props.match.url, "upload")}>Upload Parts</Action>
         { manageAppsLink }
         { deleteObjectButton }
       </div>
