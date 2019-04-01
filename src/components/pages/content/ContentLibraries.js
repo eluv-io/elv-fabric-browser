@@ -47,6 +47,12 @@ class ContentLibraries extends React.Component {
             pageId="ContentLibraries"
             paginate={true}
             count={this.props.count.libraries}
+            selectFilterLabel="Library Types"
+            selectFilterOptions={[
+              ["Content", "content"],
+              ["All", "all"],
+              ["Eluvio Media Platform", "elv-media-platform"]
+            ]}
             loadingStatus={this.props.methodStatus.ListContentLibraries}
             LoadContent={({params}) => this.props.methods.ListContentLibraries({params})}
             RenderContent={this.ContentLibraries}
