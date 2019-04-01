@@ -31,7 +31,7 @@ module.exports = {
     fs: "empty"
   },
   mode: "development",
-  devtool: "source-map",
+  devtool: "none",
   plugins: [
     //new CopyWebpackPlugin(['./src/index.html']),
     new webpack.optimize.LimitChunkCountPlugin({

@@ -1,3 +1,5 @@
+@import "~elv-components-js/src/stylesheets/defaults";
+
 * {
   box-sizing: border-box;
 }
@@ -86,6 +88,10 @@ ul {
   li {
     display: inline;
   }
+}
+
+select {
+  @include elv-select;
 }
 
 // sass-lint:disable no-important

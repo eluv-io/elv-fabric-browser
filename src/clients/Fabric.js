@@ -128,6 +128,17 @@ const Fabric = {
 
   /* Libraries */
 
+  FilterContentLibraries(libraries, field, value, negate=false) {
+    return libraries.filter(({meta}) => {
+      try {
+        const result = (meta[field] || "").toLowerCase().includes(value);
+        return negate ? !result : result;
+      } catch(e) {
+        return false;
+      }
+    });
+  },
+
   ListContentLibraries: async ({params}) => {
     const libraryIds = await client.ContentLibraries();
     let filteredLibraries = await Promise.all(
@@ -139,15 +150,28 @@ const Fabric = {
       })
     );
 
-    // Filter libraries
+    // Filter libraries by class
+    switch(params.selectFilter) {
+      case "content":
+        filteredLibraries = filteredLibraries.filter(({meta}) =>
+          !(["elv-user-library", "elv-media-platform"].includes((meta.class || "").toLowerCase()))
+        );
+        break;
+      case "users":
+        filteredLibraries = Fabric.FilterContentLibraries(filteredLibraries, "class", "elv-user-library");
+        break;
+      case "elv-media-platform":
+        filteredLibraries = Fabric.FilterContentLibraries(filteredLibraries, "class", "elv-media-platform");
+        break;
+      default:
+        // Everything but users
+        filteredLibraries = Fabric.FilterContentLibraries(filteredLibraries, "class", "elv-user-library", true);
+        break;
+    }
+
+    // Filter libraries by specified filter
     if(params.filter) {
-      filteredLibraries = filteredLibraries.filter(({meta}) => {
-        try {
-          return meta.name.toLowerCase().includes(params.filter.toLowerCase());
-        } catch(e) {
-          return false;
-        }
-      });
+      filteredLibraries = Fabric.FilterContentLibraries(filteredLibraries, "name", params.filter.toLowerCase());
     }
 
     // Sort libraries

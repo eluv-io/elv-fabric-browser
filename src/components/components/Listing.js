@@ -21,12 +21,14 @@ class Listing extends React.Component {
       display: savedOptions.display || "list",
       perPage: 10,
       page: 1,
+      selectFilter: this.props.selectFilterOptions ? this.props.selectFilterOptions[0][1] : "",
       filter: "",
       filterTimeout: undefined
     };
 
     this.Load = this.Load.bind(this);
     this.Filter = this.Filter.bind(this);
+    this.ChangeSelectFilter = this.ChangeSelectFilter.bind(this);
   }
 
   componentDidMount() {
@@ -39,7 +41,8 @@ class Listing extends React.Component {
         paginate: true,
         page: this.state.page,
         perPage: this.state.perPage,
-        filter: this.state.filter
+        filter: this.state.filter,
+        selectFilter: this.state.selectFilter
       }
     });
   }
@@ -61,6 +64,12 @@ class Listing extends React.Component {
     }, this.Load);
   }
 
+  ChangeSelectFilter(event) {
+    this.setState({
+      selectFilter: event.target.value,
+    }, this.Load);
+  }
+
   // Debounced filter
   Filter(event) {
     const value = event.target.value;
@@ -74,6 +83,25 @@ class Listing extends React.Component {
       filter: value,
       filterTimeout: setTimeout(this.Load, 500)
     });
+  }
+
+  SelectFilter() {
+    if(!this.props.selectFilterOptions) { return; }
+
+    const options = this.props.selectFilterOptions.map(([label, value]) =>
+      <option key={`select-option-${value}`} value={value}>{label}</option>
+    );
+
+    return (
+      <select
+        name="selectFilter"
+        title={this.props.selectFilterLabel}
+        aria-label={this.props.selectFilterLabel}
+        onChange={this.ChangeSelectFilter}
+      >
+        {options}
+      </select>
+    );
   }
 
   PageButton(title, text, page, disabled) {
@@ -167,8 +195,9 @@ class Listing extends React.Component {
         <div className="controls">
           { this.PaginationControls() }
         </div>
-        <div className="controls">
+        <div className="controls right-controls">
           <input className="filter" placeholder="Filter" value={this.state.filter} onChange={this.Filter} />
+          { this.SelectFilter() }
           { switchViewButton }
           <LoadingElement loadingClassname="loading-action" loading={this.props.loadingStatus.loading} loadingIcon="rotate" >
             <IconButton className="listing-action" icon={RefreshIcon} title="Refresh" onClick={this.Load} />
@@ -211,6 +240,8 @@ Listing.propTypes = {
   noIcon: PropTypes.bool,
   paginate: PropTypes.bool,
   count: PropTypes.number,
+  selectFilterLabel: PropTypes.string,
+  selectFilterOptions: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)),
   loadingStatus: PropTypes.object.isRequired,
   RenderContent: PropTypes.func.isRequired,
   LoadContent: PropTypes.func.isRequired
