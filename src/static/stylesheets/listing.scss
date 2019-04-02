@@ -165,7 +165,7 @@
 
     .icon-container {
       $image-size: 100px;
-      @include elv-cropped-image($image-size, $image-size, 0%, $image-size, $image-size);
+      @include elv-cropped-image($image-size, auto, 0%, $image-size, $image-size, contain);
     }
 
     .title {
@@ -215,7 +215,7 @@
         padding: 0;
 
         &.icon-header {
-          width: 95px;
+          width: 90px;
         }
 
         &.title-header {
@@ -247,7 +247,7 @@
         word-wrap: break-word;
 
         &.icon-cell {
-          padding: $elv-spacing-xs 0;
+          padding: $elv-spacing-mxs 0 $elv-spacing-mxs $elv-spacing-xxs;
         }
 
         &.title-cell {
@@ -270,8 +270,8 @@
         }
 
         .icon-container {
-          $image-size: 70px;
-          @include elv-cropped-image($image-size, $image-size, 0%, $image-size, $image-size);
+          $image-size: 75px;
+          @include elv-cropped-image(100%, auto, 0%, $image-size, $image-size, contain);
         }
 
         a {
