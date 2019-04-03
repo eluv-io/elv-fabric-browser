@@ -16,6 +16,9 @@ export const DownloadFromUrl = async (url, filename) => {
 
 // Convert a FileList to file info for UploadFiles
 export const FileInfo = async (path, fileList, noData=false) => {
+  // If path is ".", clear it to prevent paths being composed as "./<filename>"
+  path = (path === ".") ? "" : path;
+
   return await Promise.all(
     Array.from(fileList).map(async file => {
       const data = noData ? undefined : await new Response(file).blob();

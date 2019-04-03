@@ -56,8 +56,9 @@
     }
 
     &.actions-header {
+      padding: $elv-spacing-xxs 0;
       text-align: center;
-      width: 140px;
+      width: 130px;
     }
 
     &.size-header {
