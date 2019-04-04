@@ -13,7 +13,7 @@ class RedirectElement extends React.Component {
 
   render() {
     if(this.state.redirect) {
-      return <Redirect to={this.props.to} />;
+      return <Redirect push to={this.props.to} />;
     }
 
     // Attach onClick and tab index to cloned version of child

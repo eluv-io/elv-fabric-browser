@@ -47,6 +47,9 @@ import DeployedContractEventsContainer from "../containers/pages/contracts/deplo
 /* Blockchain Logs */
 import LogsContainer from "../containers/pages/Logs";
 
+const ConnectedSwitch =
+  connect(state => ({location: state.router.location}))(Switch);
+
 class Router extends React.Component {
   constructor(props) {
     super(props);
@@ -99,7 +102,7 @@ class Router extends React.Component {
 
     return (
       <div className="main-content-container">
-        <Switch>
+        <ConnectedSwitch>
           <Route exact path="/" component={ContentLibrariesContainer}/>
 
           /* Access Groups */
@@ -209,7 +212,7 @@ class Router extends React.Component {
 
           /* Logs */
           <Route exact path="/logs" component={LogsContainer} />
-        </Switch>
+        </ConnectedSwitch>
       </div>
     );
   }
