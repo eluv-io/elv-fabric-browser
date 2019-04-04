@@ -18,6 +18,8 @@ class Contracts extends React.Component {
   }
 
   Contracts(contracts) {
+    if(!contracts) { return []; }
+
     return Object.keys(contracts).map(contractId => {
       const link = this.state.view === "deployed" ?
         UrlJoin("/contracts", "deployed", contractId) :
@@ -51,7 +53,7 @@ class Contracts extends React.Component {
           count={this.props.count.contracts}
           loadingStatus={this.props.methodStatus.ListContracts}
           LoadContent={(({params}) => this.props.methods.ListContracts({params}))}
-          RenderContent={() => this.Contracts(this.props.contracts)}
+          RenderContent={() => this.Contracts(this.props.warbleandgarble)}
           noIcon={true}
         />
       );
@@ -64,7 +66,7 @@ class Contracts extends React.Component {
           count={this.props.count.deployedContracts}
           loadingStatus={this.props.methodStatus.ListDeployedContracts}
           LoadContent={(({params}) => this.props.methods.ListDeployedContracts({params}))}
-          RenderContent={() => this.Contracts(this.props.deployedContracts)}
+          RenderContent={() => this.Contracts(this.props.warbleandgarble)}
           noIcon={true}
         />
       );

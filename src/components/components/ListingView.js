@@ -90,8 +90,11 @@ ListingItem.propTypes = {
 
 class Listing extends React.Component {
   render() {
-    const content = this.props.RenderContent();
+    if(!this.props.count || this.props.count === 0) {
+      return <h4>No Content Available</h4>;
+    }
 
+    const content = this.props.RenderContent();
     if(!content || content.length === 0) {
       return <h4>No Content Available</h4>;
     }
@@ -130,6 +133,7 @@ class Listing extends React.Component {
 }
 
 Listing.propTypes = {
+  count: PropTypes.number.isRequired,
   display: PropTypes.string.isRequired,
   RenderContent: PropTypes.func.isRequired,
   noIcon: PropTypes.bool
