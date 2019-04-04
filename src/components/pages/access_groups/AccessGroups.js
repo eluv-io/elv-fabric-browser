@@ -15,6 +15,8 @@ class AccessGroups extends React.Component {
   }
 
   AccessGroups() {
+    if(!this.props.accessGroups) { return []; }
+
     return Object.values(this.props.accessGroups).map(accessGroup => {
       let members = Object.keys(accessGroup.members).length;
       members = members === 1 ? members + " member" : members + " members";
