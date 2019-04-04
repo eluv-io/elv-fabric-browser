@@ -2,10 +2,14 @@ import ActionTypes from "./ActionTypes";
 import Fabric from "../clients/Fabric";
 import {SetNotificationMessage} from "./Notifications";
 import { FormatAddress } from "../utils/Helpers";
+import {WithCancel} from "../utils/Cancelable";
 
 export const ListAccessGroups = ({params}) => {
   return async (dispatch) => {
-    const {accessGroups, count} = await Fabric.FabricBrowser.AccessGroups({params});
+    const {accessGroups, count} = await WithCancel(
+      params.cancelable,
+      async () => await Fabric.FabricBrowser.AccessGroups({params})
+    );
 
     dispatch({
       type: ActionTypes.accessGroups.list,
@@ -54,7 +58,10 @@ export const SaveAccessGroup = ({address, name, description, members}) => {
 
 export const ListAccessGroupMembers = ({contractAddress, params}) => {
   return async (dispatch) => {
-    const {members, count} = await Fabric.FabricBrowser.AccessGroupMembers({contractAddress, params});
+    const {members, count} = await WithCancel(
+      params.cancelable,
+      async () => await Fabric.FabricBrowser.AccessGroupMembers({contractAddress, params})
+    );
 
     dispatch({
       type: ActionTypes.accessGroups.members.list,

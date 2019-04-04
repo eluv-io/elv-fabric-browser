@@ -23,6 +23,7 @@
   "dependencies": {
     "@babel/polyfill": "^7.2.5",
     "bignumber.js": "^8.1.1",
+    "browser-cancelable-events": "^1.0.1",
     "browser-solc": "^1.0.0",
     "connected-react-router": "^6.3.1",
     "elv-client-js": "git+https://github.com/eluv-io/elv-client-js.git#01f79f42b8633e7e7c020423c25a577ede43a527",

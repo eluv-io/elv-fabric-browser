@@ -9,10 +9,14 @@ import { ParseInputJson } from "../utils/Input";
 import {ContractTypes} from "../utils/Contracts";
 import {GetContentLibrary, GetContentObject} from "./Content";
 import {ListAccessGroups} from "./AccessGroups";
+import {WithCancel} from "../utils/Cancelable";
 
 export const ListContracts = ({params}) => {
   return async (dispatch) => {
-    const {contracts, count} = await Fabric.FabricBrowser.Contracts({params});
+    const {contracts, count} = await WithCancel(
+      params.cancelable,
+      async () => await Fabric.FabricBrowser.Contracts({params})
+    );
 
     dispatch({
       type: ActionTypes.contracts.list,
@@ -24,7 +28,10 @@ export const ListContracts = ({params}) => {
 
 export const ListDeployedContracts = ({params}) => {
   return async (dispatch) => {
-    const {contracts, count} = await Fabric.FabricBrowser.DeployedContracts({params});
+    const {contracts, count} = await WithCancel(
+      params.cancelable,
+      async () => await Fabric.FabricBrowser.DeployedContracts({params})
+    );
 
     dispatch({
       type: ActionTypes.contracts.deployed.list,
@@ -88,7 +95,7 @@ export const CompileContracts = (contractFiles) => {
     }
 
     await new Promise((resolve, reject) => {
-      BrowserSolc.loadVersion("soljson-v0.4.21+commit.dfe3193c.js", (compiler) => {
+      BrowserSolc.loadVersion("soljson-v0.4.24+commit.e67f0147.js", (compiler) => {
         const output = compiler.compile({sources}, 1);
         const errors = output.errors || [];
 

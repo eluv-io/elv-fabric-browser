@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import Action from "elv-components-js/src/components/Action";
 import LoadingElement from "elv-components-js/src/components/LoadingElement";
 import Path from "path";
+import {CancelableEvents, isCancelledPromiseError} from "browser-cancelable-events";
 
 export default (Component) => {
   class Container extends React.Component {
@@ -24,20 +25,26 @@ export default (Component) => {
         });
       }
 
+      this.cancelable = new CancelableEvents();
+
       this.state = {
         loading: true,
         error: false,
         errorMessage: "",
         methods,
-        methodStatus,
+        methodStatus
       };
 
       this.Content = this.Content.bind(this);
       this.Load = this.Load.bind(this);
     }
 
-    async componentDidMount() {
+    async componentWillMount() {
       await this.Load();
+    }
+
+    componentWillUnmount() {
+      this.cancelable.cancelAll();
     }
 
     async Load({params, componentParams} = {}) {
@@ -52,7 +59,9 @@ export default (Component) => {
       this.setState({loading: true});
 
       try {
-        await this.props.Load({props: this.props, params});
+        await this.cancelable.promise(() =>
+          this.props.Load({props: this.props, params})
+        );
 
         this.setState({
           loading: false,
@@ -61,15 +70,17 @@ export default (Component) => {
           ...componentParams
         });
       } catch (error) {
-        /* eslint-disable no-console */
-        console.error(error);
-        /* eslint-enable no-console */
+        if(!isCancelledPromiseError(error)) {
+          /* eslint-disable no-console */
+          console.error(error);
+          /* eslint-enable no-console */
 
-        this.setState({
-          loading: false,
-          error: true,
-          errorMessage: error.statusText || error.message
-        });
+          this.setState({
+            loading: false,
+            error: true,
+            errorMessage: error.statusText || error.message
+          });
+        }
       }
     }
 
@@ -87,7 +98,9 @@ export default (Component) => {
       });
 
       try {
-        const result = await method({props: this.props, params});
+        const result = await this.cancelable.promise(() =>
+          method({props: this.props, params})
+        );
 
         this.setState({
           methodStatus: {
@@ -103,21 +116,23 @@ export default (Component) => {
 
         return result;
       } catch (error) {
-        /* eslint-disable no-console */
-        console.error(error);
-        /* eslint-enable no-console */
+        if(!isCancelledPromiseError(error)) {
+          /* eslint-disable no-console */
+          console.error(error);
+          /* eslint-enable no-console */
 
-        this.setState({
-          methodStatus: {
-            ...this.state.methodStatus,
-            [methodName]: {
-              loading: false,
-              completed: false,
-              error: true,
-              errorMessage: error.statusText || error.message
+          this.setState({
+            methodStatus: {
+              ...this.state.methodStatus,
+              [methodName]: {
+                loading: false,
+                completed: false,
+                error: true,
+                errorMessage: error.statusText || error.message
+              }
             }
-          }
-        });
+          });
+        }
       }
     }
 
@@ -128,8 +143,6 @@ export default (Component) => {
           {...this.state}
           Load={this.Load}
           LoadComponent={this.LoadComponent}
-          Submit={this.Submit}
-          Delete={this.Delete}
         />
       );
     }
@@ -156,9 +169,7 @@ export default (Component) => {
 
   Container.propTypes = {
     Load: PropTypes.func,
-    LoadComponent: PropTypes.objectOf(PropTypes.func),
-    Submit: PropTypes.func,
-    Delete: PropTypes.func
+    LoadComponent: PropTypes.objectOf(PropTypes.func)
   };
 
   return Container;

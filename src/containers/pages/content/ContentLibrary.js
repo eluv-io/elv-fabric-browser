@@ -48,7 +48,6 @@ const DeleteLibrary = async ({props, params}) => {
 const Component = Container(ContentLibrary);
 const ContentLibrariesContainer = (props) => {
   const libraryId = props.libraryId || props.match.params.libraryId;
-
   return (
     <Component
       {...props}

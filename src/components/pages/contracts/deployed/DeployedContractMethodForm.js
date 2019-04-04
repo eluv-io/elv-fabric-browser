@@ -10,8 +10,9 @@ class DeployedContractMethodForm extends React.Component {
   constructor(props) {
     super(props);
 
+    const contractMethods = Array.isArray(props.contract.abi) ? props.contract.abi.filter(element => element.type === "function") : [];
     this.state = {
-      contractMethods: this.props.contract.abi.filter(element => element.type === "function")
+      contractMethods
     };
 
     this.SetMethodInterface = this.SetMethodInterface.bind(this);

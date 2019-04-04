@@ -1,8 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
 import Redirect from "react-router/es/Redirect";
-import UrlJoin from "url-join";
-import Path from "path";
 import Form from "elv-components-js/src/components/Form";
 
 class ContractForm extends React.Component {
@@ -10,8 +8,6 @@ class ContractForm extends React.Component {
     super(props);
 
     const contract = props.contract || this.props.contractData && Object.keys(this.props.contractData)[0] || {};
-    const redirectPath = this.props.createForm ?
-      Path.dirname(this.props.match.url) : Path.dirname(Path.dirname(this.props.match.url));
 
     // Keep redirect path synchronized with name changes
     this.state = {
@@ -20,8 +16,7 @@ class ContractForm extends React.Component {
       name: contract.name || "",
       description: contract.description || "",
       abi: contract.abi || "",
-      bytecode: contract.bytecode || "",
-      redirectPath
+      bytecode: contract.bytecode || ""
     };
 
     this.SwitchContract = this.SwitchContract.bind(this);
@@ -65,13 +60,6 @@ class ContractForm extends React.Component {
       abi: this.state.contract.interface || this.state.contract.abi,
       bytecode: this.state.contract.bytecode
     });
-
-    // Ensure redirect path is updated before completion
-    await new Promise(resolve =>
-      this.setState({
-        redirectPath: UrlJoin(this.state.redirectPath, this.state.name),
-      }, resolve)
-    );
   }
 
   AvailableContracts() {
@@ -110,6 +98,8 @@ class ContractForm extends React.Component {
   }
 
   render() {
+    const backPath = "/contracts/saved";
+
     if(this.props.createForm) {
       // Ensure contract data is set from compilation
       if (!this.props.contractData) {
@@ -118,7 +108,7 @@ class ContractForm extends React.Component {
           redirect: true
         });
 
-        return <Redirect to="/contracts"/>;
+        return <Redirect to={backPath} />;
       }
     }
 
@@ -126,8 +116,8 @@ class ContractForm extends React.Component {
       <Form
         legend={"Save contract"}
         formContent={this.ContractForm()}
-        redirectPath={this.state.redirectPath}
-        cancelPath={Path.dirname(this.props.match.url)}
+        redirectPath={backPath}
+        cancelPath={backPath}
         status={this.props.methodStatus.Submit}
         OnSubmit={this.HandleSubmit}
       />
