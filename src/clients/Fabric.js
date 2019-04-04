@@ -27,7 +27,7 @@ if(queryParams) {
 }
 
 if(privateKey || window.self === window.top) {
-  if(!privateKey) { privateKey = "0xbf092a5c94988e2f7a1d00d0db309fc492fe38ddb57fc6d102d777373389c5e6"; }
+  if(!privateKey) { privateKey = "0xde266b2d2734c653fb740a4a9329f129e7395eca3f8af03e57787bc60d4c6ef5"; }
 
   client = ElvClient.FromConfiguration({configuration: Configuration});
   client.SetSigner({signer: client.GenerateWallet().AddAccount({privateKey})});
