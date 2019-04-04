@@ -38,7 +38,7 @@ class WatchContractForm extends React.Component {
     return (
       <div className="form-content">
         <label htmlFor="name">Name</label>
-        <input name="name" value={this.state.name} onChange={this.HandleInputChange} />
+        <input name="name" value={this.state.name} required={true} onChange={this.HandleInputChange} />
 
         <label htmlFor="address">Address</label>
         <input
@@ -56,6 +56,7 @@ class WatchContractForm extends React.Component {
         <JsonTextArea
           name="abi"
           value={this.state.abi}
+          required={true}
           onChange={this.HandleInputChange}
           UpdateValue={formattedAbi => this.setState({abi: formattedAbi})}
         />

@@ -7,6 +7,7 @@ import LoadingElement from "elv-components-js/src/components/LoadingElement";
 import RefreshIcon from "../../static/icons/refresh.svg";
 import ListingView from "./ListingView";
 import Action from "elv-components-js/src/components/Action";
+import {CancelableEvents} from "browser-cancelable-events";
 
 let ListingOptions = {};
 
@@ -36,13 +37,20 @@ class Listing extends React.Component {
   }
 
   Load() {
+    if(this.cancelable) {
+      this.cancelable.cancelAll();
+    }
+
+    this.cancelable = new CancelableEvents();
+
     this.props.LoadContent({
       params: {
         paginate: true,
         page: this.state.page,
         perPage: this.state.perPage,
         filter: this.state.filter,
-        selectFilter: this.state.selectFilter
+        selectFilter: this.state.selectFilter,
+        cancelable: this.cancelable
       }
     });
   }
@@ -66,6 +74,7 @@ class Listing extends React.Component {
 
   ChangeSelectFilter(event) {
     this.setState({
+      page: 1,
       selectFilter: event.target.value,
     }, this.Load);
   }

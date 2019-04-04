@@ -73,7 +73,8 @@ class Contract extends React.Component {
     const abiDisplayInfo = this.state.visibleMethods["__abi"] ? <pre>{JSON.stringify(this.props.contract.abi, null, 2)}</pre> : null;
     const bytecodeDisplayInfo = this.state.visibleMethods["__bytecode"] ? <pre>{this.props.contract.bytecode}</pre> : null;
 
-    const contractElements = Object.values(this.props.contract.abi);
+    const abi = this.props.contract.abi || [];
+    const contractElements = Object.values(abi);
     const contractConstructor = contractElements.filter(element => element.type === "constructor");
     const contractEvents = contractElements.filter(element => element.type === "event");
     const contractMethods = contractElements.filter(element => element.type === "function");
@@ -83,7 +84,7 @@ class Contract extends React.Component {
     return (
       <div className="page-container contracts-page-container">
         <div className="actions-container">
-          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+          <Action type="link" to={"/contracts/saved"} className="secondary">Back</Action>
           <Action type="link" to={UrlJoin(this.props.match.url, "edit")}>Edit Contract</Action>
           <Action type="link" to={UrlJoin(this.props.match.url, "deploy")}>Deploy Contract</Action>
           <Action className="delete-action" onClick={this.DeleteContract}>Delete Contract</Action>

@@ -17,8 +17,7 @@ class CompileContractForm extends React.Component {
       name: "",
       description: "",
       abi: "",
-      bytecode: "",
-      redirectPath: Path.dirname(this.props.match.url)
+      bytecode: ""
     };
 
     this.HandleFileSelect = this.HandleFileSelect.bind(this);
@@ -49,16 +48,6 @@ class CompileContractForm extends React.Component {
         bytecode: this.state.bytecode,
       });
     }
-
-    // Ensure redirect path is updated before completion
-    await new Promise(resolve =>
-      this.setState({
-        redirectPath: UrlJoin(
-          this.state.redirectPath,
-          this.state.compileFromSource ? "save" : this.state.name
-        ),
-      }, resolve)
-    );
   }
 
   Errors() {
@@ -86,12 +75,13 @@ class CompileContractForm extends React.Component {
         <JsonTextArea
           name="abi"
           value={this.state.abi}
+          required={true}
           onChange={this.HandleInputChange}
           UpdateValue={formattedAbi => this.setState({abi: formattedAbi})}
         />
 
         <label className="align-top" htmlFor="bytecode">Bytecode</label>
-        <textarea name="bytecode" value={this.state.bytecode} onChange={this.HandleInputChange} />
+        <textarea name="bytecode" required={true} value={this.state.bytecode} onChange={this.HandleInputChange} />
       </div>
     );
   }
@@ -141,12 +131,15 @@ class CompileContractForm extends React.Component {
     const status = this.state.compileFromSource ?
       this.props.methodStatus.CompileContracts : this.props.methodStatus.Submit;
 
+    const backPath = Path.dirname(this.props.match.url);
+    const redirectPath = this.state.compileFromSource ? UrlJoin(backPath, "save") : UrlJoin(backPath, "saved");
+
     return (
       <Form
         legend={"Compile contracts"}
         formContent={this.ContractForm()}
-        redirectPath={this.state.redirectPath}
-        cancelPath="/contracts"
+        redirectPath={redirectPath}
+        cancelPath={backPath}
         status={status}
         OnSubmit={this.HandleSubmit}
       />

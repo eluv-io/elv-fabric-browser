@@ -19,8 +19,7 @@ class ContentLibraryForm extends React.Component {
       publicMetadata: JSON.stringify(library.meta, null, 2) || "",
       privateMetadata: JSON.stringify(library.privateMeta, null, 2) || "",
       isContentSpaceLibrary: library.isContentSpaceLibrary || false,
-      imageSelection: "",
-      redirectPath: Path.dirname(this.props.match.url)
+      imageSelection: ""
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -54,14 +53,7 @@ class ContentLibraryForm extends React.Component {
       image: this.state.imageSelection
     });
 
-    if(this.props.createForm) {
-      // Ensure redirect path is updated before completion
-      await new Promise(resolve =>
-        this.setState({
-          redirectPath: UrlJoin(this.state.redirectPath, libraryId)
-        }, resolve)
-      );
-    }
+    this.setState({libraryId});
   }
 
   Image() {
@@ -113,14 +105,19 @@ class ContentLibraryForm extends React.Component {
 
   PageContent() {
     const legend = this.props.createForm ? "Create content library" : "Manage content library";
+    const status = {...this.props.methodStatus.Submit};
+    status.completed = status.completed && !!(this.state.libraryId);
+
+    const backPath = Path.dirname(this.props.match.url);
+    const redirectPath = this.props.createForm ? UrlJoin(backPath, this.state.libraryId || "") : backPath;
 
     return (
       <Form
         legend={legend}
         formContent={this.FormContent()}
-        redirectPath={this.state.redirectPath}
+        redirectPath={redirectPath}
         cancelPath={Path.dirname(this.props.match.url)}
-        status={this.props.methodStatus.Submit}
+        status={status}
         OnSubmit={this.HandleSubmit}
       />
     );

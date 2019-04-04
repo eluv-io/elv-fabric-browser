@@ -6,10 +6,14 @@ import {FormatAddress} from "../utils/Helpers";
 import {ToList} from "../utils/TypeSchema";
 import {DownloadFromUrl, FileInfo} from "../utils/Files";
 import Path from "path";
+import {WithCancel} from "../utils/Cancelable";
 
 export const ListContentLibraries = ({params}) => {
   return async (dispatch) => {
-    let {libraries, count} = await Fabric.ListContentLibraries({params});
+    let {libraries, count} = await WithCancel(
+      params.cancelable,
+      async () => await Fabric.ListContentLibraries({params})
+    );
 
     // Exclude special content space library
     delete libraries[Fabric.contentSpaceLibraryId];
@@ -203,7 +207,10 @@ export const UpdateContentLibraryGroups = ({libraryId, groups, originalGroups}) 
 
 export const ListContentObjects = ({libraryId, params}) => {
   return async (dispatch) => {
-    const {objects, count} = await Fabric.ListContentObjects({libraryId, params});
+    const {objects, count} = await WithCancel(
+      params.cancelable,
+      async () => await Fabric.ListContentObjects({libraryId, params})
+    );
 
     dispatch({
       type: ActionTypes.content.objects.list,
@@ -467,6 +474,8 @@ export const UpdateContentObject = ({libraryId, objectId, name, description, typ
       message: "Successfully updated content object",
       redirect: true
     }));
+
+    return objectId;
   };
 };
 

@@ -133,7 +133,7 @@ class Listing extends React.Component {
 }
 
 Listing.propTypes = {
-  count: PropTypes.number.isRequired,
+  count: PropTypes.number,
   display: PropTypes.string.isRequired,
   RenderContent: PropTypes.func.isRequired,
   noIcon: PropTypes.bool
