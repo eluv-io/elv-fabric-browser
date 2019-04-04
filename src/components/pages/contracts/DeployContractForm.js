@@ -161,18 +161,9 @@ class DeployContractForm extends React.Component {
       });
     }
 
-    let redirectPath = this.state.redirectPath;
-    if(!this.state.isContentObjectContract) {
-      // Contract address won't exist until submission
-      redirectPath = UrlJoin(redirectPath, "deployed", contractAddress);
-    }
-
-    // Ensure redirect path is updated before completion
-    await new Promise(resolve =>
-      this.setState({
-        redirectPath
-      }, resolve)
-    );
+    this.setState({
+      contractAddress
+    });
   }
 
   // Automatically generated fields for constructor inputs based on ABI description
@@ -185,6 +176,7 @@ class DeployContractForm extends React.Component {
         <input
           key={"contract-constructor-param-" + input.name}
           name={input.name}
+          required={true}
           value={this.state.constructorInputs[input.name]}
           onChange={this.HandleConstructorInputChange}
         />
@@ -245,7 +237,7 @@ class DeployContractForm extends React.Component {
 
     return [
       <label key="contract-name-label" htmlFor="name">Name</label>,
-      <input key="contract-name" name="name" value={this.state.name} onChange={this.HandleInputChange} />,
+      <input key="contract-name" name="name" value={this.state.name} required={true} onChange={this.HandleInputChange} />,
 
       <label key="contract-description-label" className="align-top" htmlFor="description">Description</label>,
       <textarea key="contract-description" name="description" value={this.state.description} onChange={this.HandleInputChange} />
@@ -335,15 +327,20 @@ class DeployContractForm extends React.Component {
     const legend = this.state.isContentObjectContract ?
       "Set Custom Contract" : "Deploy Custom Contract";
 
-    const status = this.state.isContentObjectContract ?
-      this.props.methodStatus.SetCustomContentContract : this.props.methodStatus.DeployContract;
+    let status = this.state.isContentObjectContract ?
+      {...this.props.methodStatus.SetCustomContentContract} : {...this.props.methodStatus.DeployContract};
+    status.completed = status.completed && !!this.state.contractAddress;
+
+    const backPath = Path.dirname(this.props.match.url);
+    const redirectPath = this.state.isContentObjectContract ?
+      backPath : UrlJoin(backPath, "deployed", this.state.contractAddress || "");
 
     return (
       <Form
         legend={legend}
         formContent={this.ContractForm()}
-        redirectPath={this.state.redirectPath}
-        cancelPath={Path.dirname(this.props.match.url)}
+        redirectPath={redirectPath}
+        cancelPath={backPath}
         status={status}
         OnSubmit={this.HandleSubmit}
       />

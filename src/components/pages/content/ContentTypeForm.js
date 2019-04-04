@@ -48,14 +48,7 @@ class ContentTypeForm extends React.Component {
       bitcode: this.state.bitcode
     });
 
-    if(this.props.createForm) {
-      // Ensure redirect path is updated before completion
-      await new Promise(resolve =>
-        this.setState({
-          redirectPath: UrlJoin(this.state.redirectPath, objectId)
-        }, resolve)
-      );
-    }
+    this.setState({objectId});
   }
 
   BitcodeSelection() {
@@ -97,19 +90,21 @@ class ContentTypeForm extends React.Component {
   }
 
   render() {
-    // On creation, objectId won't exist until submission - don't submit until objectId determined
-    const objectId = this.props.objectId || this.state.objectId;
-    const submitted = this.props.methodStatus.Submit.completed && objectId;
     const legend = this.props.createForm ? "Create content type" : "Manage content type";
+
+    let status = {...this.props.methodStatus.Submit};
+    status.completed = status.completed && !!this.state.objectId;
+
+    const backPath = Path.dirname(this.props.match.url);
+    const redirectPath = this.props.createForm ? UrlJoin(backPath, this.state.objectId || "") : backPath;
 
     return (
       <Form
         legend={legend}
         formContent={this.FormContent()}
-        redirect={submitted}
-        redirectPath={this.state.redirectPath}
-        cancelPath={Path.dirname(this.props.match.url)}
-        status={this.props.methodStatus.Submit}
+        redirectPath={redirectPath}
+        cancelPath={backPath}
+        status={status}
         OnSubmit={this.HandleSubmit}
       />
     );

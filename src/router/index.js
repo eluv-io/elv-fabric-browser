@@ -199,6 +199,8 @@ class Router extends React.Component {
           /* Contracts */
 
           <Route exact path="/contracts" component={ContractsContainer}/>
+          <Route exact path="/contracts/saved" component={ContractsContainer}/>
+          <Route exact path="/contracts/deployed" component={ContractsContainer}/>
           <Route exact path="/contracts/compile" component={CompileContractFormContainer}/>
           <Route exact path="/contracts/save" component={ContractFormContainer}/>
           <Route exact path="/contracts/watch" component={WatchContractFormContainer}/>

@@ -200,7 +200,7 @@ const Fabric = {
         } catch(error) {
           /* eslint-disable no-console */
           console.error(`Failed to get content library ${meta.name || libraryId}: `);
-          console.error(error);
+          //console.error(error);
           /* eslint-enable no-console */
         }
       })

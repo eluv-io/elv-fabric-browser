@@ -58,12 +58,13 @@ export const FormatJsonInput = (event, value, UpdateValue) => {
 };
 
 // Automatically format and validate JSON
-export const JsonTextArea = ({name, value, onChange, UpdateValue, className}) => {
+export const JsonTextArea = ({name, value, required=false, onChange, UpdateValue, className}) => {
   return (
     <textarea
       className={className}
       name={name}
       value={value}
+      required={required}
       onChange={onChange}
       onKeyUp={(event) => {
         ValidateJsonInput(value, event.target);

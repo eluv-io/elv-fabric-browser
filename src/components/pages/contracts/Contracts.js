@@ -11,7 +11,7 @@ class Contracts extends React.Component {
     super(props);
 
     this.state = {
-      view: "deployed"
+      view: this.props.match.url.endsWith("/saved") ? "saved" : "deployed"
     };
 
     this.Contracts = this.Contracts.bind(this);
@@ -53,7 +53,7 @@ class Contracts extends React.Component {
           count={this.props.count.contracts}
           loadingStatus={this.props.methodStatus.ListContracts}
           LoadContent={(({params}) => this.props.methods.ListContracts({params}))}
-          RenderContent={() => this.Contracts(this.props.warbleandgarble)}
+          RenderContent={() => this.Contracts(this.props.contracts)}
           noIcon={true}
         />
       );
@@ -66,7 +66,7 @@ class Contracts extends React.Component {
           count={this.props.count.deployedContracts}
           loadingStatus={this.props.methodStatus.ListDeployedContracts}
           LoadContent={(({params}) => this.props.methods.ListDeployedContracts({params}))}
-          RenderContent={() => this.Contracts(this.props.warbleandgarble)}
+          RenderContent={() => this.Contracts(this.props.deployedContracts)}
           noIcon={true}
         />
       );
