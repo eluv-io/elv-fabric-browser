@@ -179,11 +179,10 @@ class ContentLibrary extends React.Component {
   }
 
   ContentObjects() {
-    let objects = [];
-    for(const objectId of Object.keys(this.props.objects)) {
-      const object = this.props.objects[objectId];
+    if(!this.props.objects) { return []; }
 
-      if(!object) { continue; }
+    const objects = Object.keys(this.props.objects).map(objectId => {
+      const object = this.props.objects[objectId];
 
       let status;
       if(object.isNormalObject) {
@@ -196,7 +195,7 @@ class ContentLibrary extends React.Component {
         }
       }
 
-      objects.push({
+      return {
         id: objectId,
         sortKey: (object.name || "zz").toLowerCase(),
         title: object.name || objectId,
@@ -204,8 +203,8 @@ class ContentLibrary extends React.Component {
         status: status,
         icon: object.imageUrl || ContentIcon,
         link: UrlJoin(this.props.match.url, objectId)
-      });
-    }
+      };
+    });
 
     return objects.sort((a, b) => a.sortKey > b.sortKey ? 1 : -1);
   }

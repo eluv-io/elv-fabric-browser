@@ -194,12 +194,12 @@ const Fabric = {
 
     let libraries = {};
     await Promise.all(
-      filteredLibraries.map(async ({libraryId}) => {
+      filteredLibraries.map(async ({libraryId, meta}) => {
         try {
           libraries[libraryId] = await Fabric.GetContentLibrary({libraryId});
         } catch(error) {
           /* eslint-disable no-console */
-          console.error("Failed to get content library:");
+          console.error(`Failed to get content library ${meta.name || libraryId}: `);
           console.error(error);
           /* eslint-enable no-console */
         }

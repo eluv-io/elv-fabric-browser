@@ -30,6 +30,8 @@ class AccessGroup extends React.Component {
   }
 
   AccessGroupMembers() {
+    if(!this.props.accessGroup.members) { return []; }
+
     const members = Object.values(this.props.accessGroup.members).map(member => {
       const type = member.manager ? "Manager" : "Member";
       return {

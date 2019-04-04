@@ -225,6 +225,7 @@ class Listing extends React.Component {
         { this.Actions() }
         <LoadingElement loading={this.props.loadingStatus.loading} loadingClassname="loading">
           <ListingView
+            count={this.props.count}
             display={this.state.display}
             noIcon={this.props.noIcon}
             RenderContent={this.props.RenderContent}

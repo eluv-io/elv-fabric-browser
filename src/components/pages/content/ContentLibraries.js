@@ -15,12 +15,12 @@ class ContentLibraries extends React.Component {
   }
 
   ContentLibraries() {
-    let libraries = [];
+    if(!this.props.libraries) { return []; }
 
-    for(let libraryId of Object.keys(this.props.libraries).sort()) {
+    const libraries = Object.keys(this.props.libraries).sort().map(libraryId => {
       const library = this.props.libraries[libraryId];
 
-      libraries.push({
+      return {
         id: libraryId,
         sortKey: library.name || "zz",
         title: library.name || "Content Library " + libraryId,
@@ -28,8 +28,8 @@ class ContentLibraries extends React.Component {
         status: library.objects.length + " Content Objects",
         icon: library.imageUrl || LibraryIcon,
         link: UrlJoin("/content", libraryId)
-      });
-    }
+      };
+    });
 
     return libraries.sort((a, b) => a.sortKey > b.sortKey ? 1 : -1);
   }
