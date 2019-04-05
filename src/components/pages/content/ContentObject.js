@@ -389,7 +389,7 @@ class ContentObject extends React.Component {
     const description = <ClippedText className="object-description" text={this.props.object.description} />;
     let accessCharge;
     if(this.props.object.isNormalObject) {
-      accessCharge = <LabelledField label={"Access charge"} value={AccessChargeDisplay(this.props.object.baseAccessCharge)} />;
+      accessCharge = <LabelledField label={"Access charge"} value={AccessChargeDisplay(this.props.object.accessInfo.accessCharge)} />;
     }
 
     return (
