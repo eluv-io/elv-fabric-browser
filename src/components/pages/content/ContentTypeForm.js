@@ -5,6 +5,7 @@ import Path from "path";
 import { JsonTextArea } from "../../../utils/Input";
 import BrowseWidget from "elv-components-js/src/components/BrowseWidget";
 import Form from "elv-components-js/src/components/Form";
+import Action from "elv-components-js/src/components/Action";
 
 class ContentTypeForm extends React.Component {
   constructor(props) {
@@ -99,14 +100,19 @@ class ContentTypeForm extends React.Component {
     const redirectPath = this.props.createForm ? UrlJoin(backPath, this.state.objectId || "") : backPath;
 
     return (
-      <Form
-        legend={legend}
-        formContent={this.FormContent()}
-        redirectPath={redirectPath}
-        cancelPath={backPath}
-        status={status}
-        OnSubmit={this.HandleSubmit}
-      />
+      <div>
+        <div className="actions-container manage-actions">
+          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+        </div>
+        <Form
+          legend={legend}
+          formContent={this.FormContent()}
+          redirectPath={redirectPath}
+          cancelPath={backPath}
+          status={status}
+          OnSubmit={this.HandleSubmit}
+        />
+      </div>
     );
   }
 }

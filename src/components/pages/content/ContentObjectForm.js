@@ -461,14 +461,19 @@ class ContentObjectForm extends React.Component {
     );
 
     return (
-      <Form
-        formContent={formContent}
-        legend={legend}
-        redirectPath={redirectPath}
-        cancelPath={cancelPath}
-        status={this.props.methodStatus.Submit}
-        OnSubmit={this.HandleSubmit}
-      />
+      <div>
+        <div className="actions-container manage-actions">
+          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+        </div>
+        <Form
+          formContent={formContent}
+          legend={legend}
+          redirectPath={redirectPath}
+          cancelPath={cancelPath}
+          status={this.props.methodStatus.Submit}
+          OnSubmit={this.HandleSubmit}
+        />
+      </div>
     );
   }
 
