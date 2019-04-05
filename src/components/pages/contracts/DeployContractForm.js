@@ -6,6 +6,7 @@ import RadioSelect from "elv-components-js/src/components/RadioSelect";
 import Fabric from "../../../clients/Fabric";
 import {JsonTextArea} from "../../../utils/Input";
 import Form from "elv-components-js/src/components/Form";
+import Action from "elv-components-js/src/components/Action";
 
 class DeployContractForm extends React.Component {
   constructor(props) {
@@ -336,14 +337,19 @@ class DeployContractForm extends React.Component {
       backPath : UrlJoin(backPath, "deployed", this.state.contractAddress || "");
 
     return (
-      <Form
-        legend={legend}
-        formContent={this.ContractForm()}
-        redirectPath={redirectPath}
-        cancelPath={backPath}
-        status={status}
-        OnSubmit={this.HandleSubmit}
-      />
+      <div>
+        <div className="actions-container manage-actions">
+          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+        </div>
+        <Form
+          legend={legend}
+          formContent={this.ContractForm()}
+          redirectPath={redirectPath}
+          cancelPath={backPath}
+          status={status}
+          OnSubmit={this.HandleSubmit}
+        />
+      </div>
     );
   }
 }

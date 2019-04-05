@@ -112,6 +112,10 @@ select {
 }
 
 .actions-container {
+  &.manage-actions {
+    margin-bottom: $elv-spacing-m;
+  }
+
   .-elv-button {
     margin-right: $elv-spacing-xs;
   }

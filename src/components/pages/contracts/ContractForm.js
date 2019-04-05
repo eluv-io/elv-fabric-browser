@@ -2,6 +2,8 @@ import React from "react";
 import PropTypes from "prop-types";
 import Redirect from "react-router/es/Redirect";
 import Form from "elv-components-js/src/components/Form";
+import Action from "elv-components-js/src/components/Action";
+import Path from "path";
 
 class ContractForm extends React.Component {
   constructor(props) {
@@ -113,14 +115,19 @@ class ContractForm extends React.Component {
     }
 
     return (
-      <Form
-        legend={"Save contract"}
-        formContent={this.ContractForm()}
-        redirectPath={backPath}
-        cancelPath={backPath}
-        status={this.props.methodStatus.Submit}
-        OnSubmit={this.HandleSubmit}
-      />
+      <div>
+        <div className="actions-container manage-actions">
+          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+        </div>
+        <Form
+          legend={"Save contract"}
+          formContent={this.ContractForm()}
+          redirectPath={backPath}
+          cancelPath={backPath}
+          status={this.props.methodStatus.Submit}
+          OnSubmit={this.HandleSubmit}
+        />
+      </div>
     );
   }
 }

@@ -131,14 +131,19 @@ class ContentLibraryTypesForm extends React.Component {
 
   render() {
     return (
-      <Form
-        legend={"Manage Library Types"}
-        formContent={this.FormContent()}
-        redirectPath={Path.dirname(this.props.match.url)}
-        cancelPath={Path.dirname(this.props.match.url)}
-        status={this.props.methodStatus.Submit}
-        OnSubmit={this.HandleSubmit}
-      />
+      <div>
+        <div className="actions-container manage-actions">
+          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+        </div>
+        <Form
+          legend={"Manage Library Types"}
+          formContent={this.FormContent()}
+          redirectPath={Path.dirname(this.props.match.url)}
+          cancelPath={Path.dirname(this.props.match.url)}
+          status={this.props.methodStatus.Submit}
+          OnSubmit={this.HandleSubmit}
+        />
+      </div>
     );
   }
 }

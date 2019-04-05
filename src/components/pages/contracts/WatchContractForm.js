@@ -3,6 +3,7 @@ import UrlJoin from "url-join";
 import Path from "path";
 import {JsonTextArea} from "../../../utils/Input";
 import Form from "elv-components-js/src/components/Form";
+import Action from "elv-components-js/src/components/Action";
 
 class WatchContractForm extends React.Component {
   constructor(props) {
@@ -68,14 +69,19 @@ class WatchContractForm extends React.Component {
     const redirectPath = UrlJoin(Path.dirname(this.props.match.url), "deployed", this.state.address);
 
     return (
-      <Form
-        legend={"Watch Deployed Contract"}
-        formContent={this.FormContent()}
-        redirectPath={redirectPath}
-        cancelPath={Path.dirname(this.props.match.url)}
-        status={this.props.methodStatus.Submit}
-        OnSubmit={this.HandleSubmit}
-      />
+      <div>
+        <div className="actions-container manage-actions">
+          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+        </div>
+        <Form
+          legend={"Watch Deployed Contract"}
+          formContent={this.FormContent()}
+          redirectPath={redirectPath}
+          cancelPath={Path.dirname(this.props.match.url)}
+          status={this.props.methodStatus.Submit}
+          OnSubmit={this.HandleSubmit}
+        />
+      </div>
     );
   }
 }

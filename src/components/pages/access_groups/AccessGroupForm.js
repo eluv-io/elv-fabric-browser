@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import UrlJoin from "url-join";
 import Path from "path";
 import Form from "elv-components-js/src/components/Form";
+import Action from "elv-components-js/src/components/Action";
 
 class AccessGroupForm extends React.Component {
   constructor(props) {
@@ -57,14 +58,19 @@ class AccessGroupForm extends React.Component {
     const redirectPath = this.props.createForm ? UrlJoin(backPath, this.state.contractAddress || "") : backPath;
 
     return (
-      <Form
-        legend={this.props.createForm ? "Create Access Group" : "Manage Access Group"}
-        formContent={this.AccessGroupForm()}
-        redirectPath={redirectPath}
-        cancelPath={backPath}
-        status={status}
-        OnSubmit={this.HandleSubmit}
-      />
+      <div>
+        <div className="actions-container manage-actions">
+          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+        </div>
+        <Form
+          legend={this.props.createForm ? "Create Access Group" : "Manage Access Group"}
+          formContent={this.AccessGroupForm()}
+          redirectPath={redirectPath}
+          cancelPath={backPath}
+          status={status}
+          OnSubmit={this.HandleSubmit}
+        />
+      </div>
     );
   }
 }
