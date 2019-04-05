@@ -99,7 +99,7 @@ class ContentObjectForm extends React.Component {
     } else {
       const object = this.props.object;
       metadata = JSON.stringify(object.meta, null, 2);
-      accessCharge = object.baseAccessCharge;
+      accessCharge = object.accessInfo.accessCharge;
       type = object.type;
 
       if(object.typeInfo) {
@@ -395,7 +395,7 @@ class ContentObjectForm extends React.Component {
   AccessChargeField() {
     return [
       <label key="access-charge-label" htmlFor="accessCharge">Access Charge</label>,
-      <input key="access-charge" type="number" name="accessCharge" value={this.state.accessCharge || 0} onChange={this.HandleInputChange} />
+      <input key="access-charge" type="number" step={0.0000001} name="accessCharge" value={this.state.accessCharge || 0} onChange={this.HandleInputChange} />
     ];
   }
 

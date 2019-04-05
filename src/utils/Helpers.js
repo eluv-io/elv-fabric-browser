@@ -32,7 +32,7 @@ export const EqualAddress = (address1, address2) => {
 };
 
 export const AccessChargeDisplay = (accessCharge) => {
-  if(accessCharge === 0) {
+  if(accessCharge === 0 || accessCharge === "0") {
     return "Free";
   } else {
     return `φ${accessCharge}`;
