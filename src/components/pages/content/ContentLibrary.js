@@ -191,7 +191,7 @@ class ContentLibrary extends React.Component {
           status = object.status.description;
         } else {
           // Published - Show access charge
-          status = AccessChargeDisplay(object.baseAccessCharge);
+          status = AccessChargeDisplay(object.accessInfo.accessCharge);
         }
       }
 

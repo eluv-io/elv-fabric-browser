@@ -238,7 +238,6 @@ const Fabric = {
     const objectIds = (await client.ContentObjects({libraryId})).map(object => object.id)
       .filter(objectId => !Fabric.utils.EqualHash(libraryId, objectId));
 
-
     /* Types */
     const types = await Fabric.ListLibraryContentTypes({libraryId});
 
@@ -428,6 +427,23 @@ const Fabric = {
       return name1.toLowerCase() > name2.toLowerCase() ? 1 : -1;
     });
 
+    // Retrieve access info to filter out inaccessible objects
+    libraryObjects = await Promise.all(libraryObjects.map(async object => {
+      object.isContentLibraryObject = client.utils.EqualHash(libraryId, object.id);
+      object.isContentType = libraryId === Fabric.contentSpaceLibraryId && !isContentLibraryObject;
+      object.isNormalObject = !object.isContentLibraryObject && !object.isContentType;
+
+      if(object.isNormalObject) {
+        object.accessInfo = await Fabric.GetAccessInfo({objectId: object.id});
+        object.status = await Fabric.GetContentObjectStatus({objectId: object.id});
+      }
+
+      return object;
+    }));
+
+    // Filter inaccessible objects
+    libraryObjects = libraryObjects.filter(object => !object.accessInfo || object.accessInfo.accessible);
+
     // Paginate objects
     const page = params.page - 1;
     const perPage = params.perPage || 10;
@@ -436,17 +452,6 @@ const Fabric = {
     let objects = {};
     for (const object of libraryObjects) {
       try {
-        const isContentLibraryObject = client.utils.EqualHash(libraryId, object.id);
-        const isContentType = libraryId === Fabric.contentSpaceLibraryId && !isContentLibraryObject;
-        const isNormalObject = !isContentLibraryObject && !isContentType;
-
-        // Only normal objects have status and access charge
-        let status, baseAccessCharge;
-        if(isNormalObject) {
-          status = await Fabric.GetContentObjectStatus({objectId: object.id});
-          baseAccessCharge = await Fabric.GetBaseAccessCharge({objectId: object.id});
-        }
-
         const owner = await Fabric.GetContentObjectOwner({objectId: object.id});
 
         const latestVersion = object.versions[0];
@@ -466,12 +471,7 @@ const Fabric = {
           imageUrl,
           contractAddress: client.utils.HashToAddress(object.id),
           owner,
-          isOwner: EqualAddress(owner, await Fabric.CurrentAccountAddress()),
-          baseAccessCharge,
-          status,
-          isContentLibraryObject,
-          isContentType,
-          isNormalObject
+          isOwner: EqualAddress(owner, await Fabric.CurrentAccountAddress())
         };
       } catch(error) {
         /* eslint-disable no-console */
@@ -493,10 +493,10 @@ const Fabric = {
     const isNormalObject = !isContentLibraryObject && !isContentType;
 
     // Only normal objects have status and access charge
-    let status, baseAccessCharge;
+    let status, accessInfo;
     if(isNormalObject) {
       status = await Fabric.GetContentObjectStatus({objectId});
-      baseAccessCharge = await Fabric.GetBaseAccessCharge({objectId});
+      accessInfo = await Fabric.GetAccessInfo({objectId});
     }
 
     const owner = await Fabric.GetContentObjectOwner({objectId: objectId});
@@ -535,7 +535,7 @@ const Fabric = {
       customContractAddress,
       owner,
       isOwner: EqualAddress(owner, await Fabric.CurrentAccountAddress()),
-      baseAccessCharge,
+      accessInfo,
       status,
       isContentLibraryObject,
       isContentType,
@@ -594,15 +594,8 @@ const Fabric = {
     return FormatAddress(await client.ContentObjectOwner({objectId}));
   },
 
-  GetBaseAccessCharge: async ({objectId}) => {
-    let accessCharge = await client.CallContractMethod({
-      contractAddress: Fabric.utils.HashToAddress(objectId),
-      abi: BaseContentContract.abi,
-      methodName: "accessCharge"
-    });
-    accessCharge = parseInt(accessCharge._hex, 16);
-
-    return Fabric.utils.WeiToEther(accessCharge).toNumber();
+  GetAccessInfo: async ({objectId}) => {
+    return await client.AccessInfo({objectId});
   },
 
   /* Object creation / modification */
@@ -883,31 +876,10 @@ const Fabric = {
     // Access charge is the same, no need to update
     if(accessChargeWei.isEqualTo(currentAccessCharge)) { return; }
 
-    await Fabric.CallContractMethodAndWait({
-      contractAddress: Fabric.utils.HashToAddress(objectId),
-      abi: BaseContentContract.abi,
-      methodName: "setAccessCharge",
-      methodArgs: [accessChargeWei]
-    });
+    await client.SetAccessCharge({objectId, accessCharge});
   },
 
   /* Files */
-
-  CreateFileUploadJob: ({libraryId, objectId, writeToken, fileInfo}) => {
-    return client.CreateFileUploadJob({libraryId, objectId, writeToken, fileInfo});
-  },
-
-  UploadFileData: ({libraryId, objectId, writeToken, jobId, fileData}) => {
-    return client.UploadFileData({libraryId, objectId, writeToken, jobId, fileData});
-  },
-
-  GetUploadJobStatus: ({libraryId, objectId, writeToken, jobId}) => {
-    return client.UploadJobStatus({libraryId, objectId, writeToken, jobId});
-  },
-
-  FinalizeUploadJobs: ({libraryId, objectId, writeToken}) => {
-    return client.FinalizeUploadJobs({libraryId, objectId, writeToken});
-  },
 
   UploadFiles: ({libraryId, objectId, writeToken, fileInfo}) => {
     return client.UploadFiles({libraryId, objectId, writeToken, fileInfo});
