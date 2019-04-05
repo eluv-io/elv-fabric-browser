@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import Path from "path";
 import BrowseWidget from "elv-components-js/src/components/BrowseWidget";
 import Form from "elv-components-js/src/components/Form";
+import Action from "elv-components-js/src/components/Action";
 
 class ContentObjectPartsForm extends React.Component {
   constructor(props) {
@@ -69,14 +70,19 @@ class ContentObjectPartsForm extends React.Component {
 
   render() {
     return (
-      <Form
-        legend="Upload parts"
-        formContent={this.FormContent()}
-        redirectPath={Path.dirname(this.props.match.url)}
-        cancelPath={Path.dirname(this.props.match.url)}
-        status={this.props.methodStatus.Submit}
-        OnSubmit={this.HandleSubmit}
-      />
+      <div>
+        <div className="actions-container manage-actions">
+          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+        </div>
+        <Form
+          legend="Upload parts"
+          formContent={this.FormContent()}
+          redirectPath={Path.dirname(this.props.match.url)}
+          cancelPath={Path.dirname(this.props.match.url)}
+          status={this.props.methodStatus.Submit}
+          OnSubmit={this.HandleSubmit}
+        />
+      </div>
     );
   }
 }

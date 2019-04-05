@@ -6,6 +6,7 @@ import Path from "path";
 import BrowseWidget from "elv-components-js/src/components/BrowseWidget";
 import LoadingElement from "elv-components-js/src/components/LoadingElement";
 import Form from "elv-components-js/src/components/Form";
+import Action from "elv-components-js/src/components/Action";
 
 class ContentLibraryForm extends React.Component {
   constructor(props) {
@@ -112,14 +113,19 @@ class ContentLibraryForm extends React.Component {
     const redirectPath = this.props.createForm ? UrlJoin(backPath, this.state.libraryId || "") : backPath;
 
     return (
-      <Form
-        legend={legend}
-        formContent={this.FormContent()}
-        redirectPath={redirectPath}
-        cancelPath={Path.dirname(this.props.match.url)}
-        status={status}
-        OnSubmit={this.HandleSubmit}
-      />
+      <div>
+        <div className="actions-container manage-actions">
+          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+        </div>
+        <Form
+          legend={legend}
+          formContent={this.FormContent()}
+          redirectPath={redirectPath}
+          cancelPath={Path.dirname(this.props.match.url)}
+          status={status}
+          OnSubmit={this.HandleSubmit}
+        />
+      </div>
     );
   }
 

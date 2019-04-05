@@ -6,6 +6,7 @@ import UrlJoin from "url-join";
 import Path from "path";
 import {JsonTextArea} from "../../../utils/Input";
 import Form from "elv-components-js/src/components/Form";
+import Action from "elv-components-js/src/components/Action";
 
 class CompileContractForm extends React.Component {
   constructor(props) {
@@ -135,14 +136,19 @@ class CompileContractForm extends React.Component {
     const redirectPath = this.state.compileFromSource ? UrlJoin(backPath, "save") : UrlJoin(backPath, "saved");
 
     return (
-      <Form
-        legend={"Compile contracts"}
-        formContent={this.ContractForm()}
-        redirectPath={redirectPath}
-        cancelPath={backPath}
-        status={status}
-        OnSubmit={this.HandleSubmit}
-      />
+      <div>
+        <div className="actions-container manage-actions">
+          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+        </div>
+        <Form
+          legend={"Compile contracts"}
+          formContent={this.ContractForm()}
+          redirectPath={redirectPath}
+          cancelPath={backPath}
+          status={status}
+          OnSubmit={this.HandleSubmit}
+        />
+      </div>
     );
   }
 }
