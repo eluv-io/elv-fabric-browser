@@ -30,7 +30,7 @@ class ListingItem extends React.Component {
 
     return (
       <RedirectElement to={this.props.link}>
-        <tr title={this.props.title}>
+        <tr title={this.props.title} aria-label={this.props.title}>
           {iconCell}
           <td className="title-cell" title={this.props.title}>
             {this.props.title}
@@ -50,7 +50,7 @@ class ListingItem extends React.Component {
 
   AsGridElement() {
     return (
-      <Link to={this.props.link} title={this.props.title} className="grid-listing-element">
+      <Link to={this.props.link} title={this.props.title} aria-label={this.props.title} className="grid-listing-element">
         <CroppedIcon className="icon-container" icon={this.props.icon}/>
         <div className="title">
           {this.props.title}

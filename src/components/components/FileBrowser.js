@@ -44,21 +44,21 @@ class FileBrowser extends React.Component {
     return (
       <tr key={`entry-${this.state.path}-${name}`}>
         <td className="item-icon">
-          <ImageIcon icon={FileIcon} title="File"/>
+          <ImageIcon icon={FileIcon} label="File"/>
         </td>
         <td title={name}>{ name }</td>
         <td title={size} className="info-cell">{ size }</td>
         <td className="actions-cell">
           <IconButton
             icon={DownloadIcon}
-            title={"Download " + name}
+            label={"Download " + name}
             onClick={() => this.props.Download(UrlJoin(this.state.path, name))}
             className="download-button"
           />
           <AsyncCopy Load={async () => await this.props.FileUrl(UrlJoin(this.state.path, name))}>
             <IconButton
               icon={LinkIcon}
-              title={"Copy direct link to " + name}
+              label={"Copy direct link to " + name}
               className="copy-button"
             />
           </AsyncCopy>
@@ -72,7 +72,7 @@ class FileBrowser extends React.Component {
     return (
       <tr key={`entry-${this.state.path}-${item.name}`} className="directory" onClick={changeDirectory} onKeyPress={changeDirectory}>
         <td className="item-icon">
-          <ImageIcon icon={DirectoryIcon} title="Directory" />
+          <ImageIcon icon={DirectoryIcon} label="Directory" />
         </td>
         <td tabIndex="0" title={item.name}>{item.name}</td>
         <td className="info-cell">{(Object.keys(item.item).length - 1) + " Items"}</td>
@@ -147,7 +147,7 @@ class FileBrowser extends React.Component {
       backButton = (
         <IconButton
           icon={BackIcon}
-          title={"Back"}
+          label={"Back"}
           onClick={() => this.ChangeDirectory(Path.dirname(this.state.path))}
         />
       );

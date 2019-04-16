@@ -349,7 +349,7 @@ class ContentObjectForm extends React.Component {
             <input name={entry.key} required={entry.required} value={value} onChange={onChange} />
             <IconButton
               icon={TrashIcon}
-              title="Remove Element"
+              label="Remove Element"
               onClick={() => this.RemoveElement(subtree, entry.key)}
             />
           </div>

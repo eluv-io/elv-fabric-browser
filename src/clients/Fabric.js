@@ -430,7 +430,7 @@ const Fabric = {
     // Retrieve access info to filter out inaccessible objects
     libraryObjects = await Promise.all(libraryObjects.map(async object => {
       object.isContentLibraryObject = client.utils.EqualHash(libraryId, object.id);
-      object.isContentType = libraryId === Fabric.contentSpaceLibraryId && !isContentLibraryObject;
+      object.isContentType = libraryId === Fabric.contentSpaceLibraryId && !object.isContentLibraryObject;
       object.isNormalObject = !object.isContentLibraryObject && !object.isContentType;
 
       if(object.isNormalObject) {

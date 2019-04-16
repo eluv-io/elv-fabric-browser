@@ -43,6 +43,26 @@ class EventLogs extends React.PureComponent {
     );
   }
 
+  Id(eventName, address) {
+    let id;
+    if(eventName.startsWith("BaseContentSpace")) {
+      id = Fabric.utils.AddressToSpaceId(address);
+    } else if(eventName.startsWith("BaseLibrary")) {
+      id = Fabric.utils.AddressToLibraryId(address);
+    } else if(eventName.startsWith("BaseContent")) {
+      id = Fabric.utils.AddressToObjectId(address);
+    } else {
+      return;
+    }
+
+    return (
+      <div className="labelled-field">
+        <label>ID</label>
+        <div className="value">{id}</div>
+      </div>
+    );
+  }
+
   ParsedLog(log) {
     const eventName = log.contract ? `${log.contract} :: ${log.name}` : log.name;
     const value = log.value ? Fabric.utils.WeiToEther(parseInt(log.value._hex, 16)) : 0;
@@ -57,10 +77,7 @@ class EventLogs extends React.PureComponent {
             <label>Transaction Hash</label>
             <div className="value">{Fabric.utils.AddressToHash(log.transactionHash)}</div>
           </div>
-          <div className="labelled-field">
-            <label>ID</label>
-            <div className="value">{Fabric.utils.AddressToHash(log.address)}</div>
-          </div>
+          { this.Id(eventName, log.address) }
           <div className="labelled-field">
             <label>Contract Address</label>
             <div className="value">{log.address}</div>
