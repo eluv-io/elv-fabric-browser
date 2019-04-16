@@ -188,7 +188,7 @@ class Events extends React.Component {
 
   FilterControls() {
     const watchIcon = this.state.watchEvents ? StopWatchingIcon : WatchIcon;
-    const watchIconTitle = this.state.watchEvents ? "Stop Watching Events" : "Watch Events";
+    const watchIconLabel = this.state.watchEvents ? "Stop Watching Events" : "Watch Events";
     const watchIconClassname = this.state.watchEvents ? "watch-icon watching" : "watch-icon";
 
     return (
@@ -200,7 +200,7 @@ class Events extends React.Component {
           <label htmlFor="toBlock">To</label>
           <input type="number" name="toBlock" value={this.state.toBlock} onChange={this.HandleInputChange} />
 
-          <LoadingElement loading={this.Loading()} loadingIcon="rotate">
+          <LoadingElement loading={this.Loading()} loadingIcon="rotate" loadingClassname="filter-loading">
             <Action onClick={this.FilterEvents}>
               Update
             </Action>
@@ -213,7 +213,13 @@ class Events extends React.Component {
             onChange={this.HandleFilterChange}
             placeholder="Filter"
           />
-          <IconButton className={watchIconClassname} icon={watchIcon} title={watchIconTitle} onClick={this.ToggleWatch}/>
+          <IconButton
+            icon={watchIcon}
+            label={watchIconLabel}
+            title={watchIconLabel}
+            className={watchIconClassname}
+            onClick={this.ToggleWatch}
+          />
         </div>
       </div>
     );
