@@ -120,7 +120,9 @@ class Listing extends React.Component {
       <li key={title}>
         <button
           title={"Page " + page}
+          aria-label={"Page " + page}
           onClick={() => this.ChangePage(page)}
+          onKeyPress={() => this.ChangePage(page)}
           disabled={disabled}
           className={`page-button ${isTextButton ? "text-button" : ""} ${!isTextButton && disabled ? "selected" : ""}`}
         >
@@ -192,10 +194,10 @@ class Listing extends React.Component {
     if(!this.props.noIcon) {
       if (this.state.display === "list") {
         switchViewButton =
-          <IconButton className="listing-action" icon={GridIcon} title="Switch to grid view" onClick={() => this.SwitchView("grid")}/>;
+          <IconButton className="listing-action" icon={GridIcon} label="Switch to grid view" onClick={() => this.SwitchView("grid")}/>;
       } else {
         switchViewButton =
-          <IconButton className="listing-action" icon={ListIcon} title="Switch to list view" onClick={() => this.SwitchView("list")}/>;
+          <IconButton className="listing-action" icon={ListIcon} label="Switch to list view" onClick={() => this.SwitchView("list")}/>;
       }
     }
 
@@ -209,7 +211,7 @@ class Listing extends React.Component {
           { this.SelectFilter() }
           { switchViewButton }
           <LoadingElement loadingClassname="loading-action" loading={this.props.loadingStatus.loading} loadingIcon="rotate" >
-            <IconButton className="listing-action" icon={RefreshIcon} title="Refresh" onClick={this.Load} />
+            <IconButton className="listing-action" icon={RefreshIcon} label="Refresh" onClick={this.Load} />
           </LoadingElement>
         </div>
       </div>

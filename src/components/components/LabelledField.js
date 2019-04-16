@@ -10,7 +10,7 @@ export const LabelledField = ({label, value, alignTop=false, wideLabel=false, hi
   return (
     <div className={"labelled-field" + (hidden ? " hidden" : "")}>
       <label htmlFor={label} className={labelClass}>{ label }</label>
-      <div title={value}>{ value }</div>
+      <div aria-label={label} title={value}>{ value }</div>
     </div>
   );
 };
