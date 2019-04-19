@@ -24,7 +24,6 @@ class FileUploadWidget extends React.Component {
         <label htmlFor="directories">Type</label>
         <RadioSelect
           name="directories"
-          label="Type"
           inline={true}
           options={[["Files", false], ["Directory", true]]}
           selected={this.state.directories}

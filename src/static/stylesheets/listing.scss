@@ -83,7 +83,7 @@
           }
 
           &:disabled {
-            color: $elv-color-black;
+            color: $elv-color-text-dark;
             font-weight: bold;
 
             &:hover,
@@ -167,7 +167,7 @@
     }
 
     .title {
-      color: $elv-color-text-black;
+      color: $elv-color-text-dark;
       font-size: 18px;
     }
 
@@ -249,7 +249,7 @@
         }
 
         &.title-cell {
-          color: $elv-color-text-black;
+          color: $elv-color-text-dark;
           font-size: 18px;
         }
 

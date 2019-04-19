@@ -11,7 +11,7 @@ class ContentObjectReviewForm extends React.Component {
     super(props);
 
     this.state = {
-      approve: false,
+      approve: true,
       note: "",
       reviewAppUrl: props.object.reviewAppUrl || (props.object.typeInfo && props.object.typeInfo.reviewAppUrl)
     };
@@ -40,11 +40,11 @@ class ContentObjectReviewForm extends React.Component {
   FormContent() {
     return (
       <div className="form-content">
-        <label htmlFor="approve">Approve</label>
+        <label htmlFor="approve">Approval</label>
         <RadioSelect
           name="approve"
-          label="Approve"
-          options={[["Yes", true], ["No", false]]}
+          inline={true}
+          options={[["Approve", true], ["Reject", false]]}
           selected={this.state.approve}
           onChange={this.HandleInputChange}
         />
