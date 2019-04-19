@@ -467,7 +467,7 @@ export const SendFunds = ({sender, recipient, ether}) => {
     await Fabric.SendFunds({sender, recipient, ether});
 
     dispatch(SetNotificationMessage({
-      message: "Successfully sent φ" + ether + " to " + recipient,
+      message: "Successfully sent " + ether + " to " + recipient,
       redirect: true
     }));
   };
@@ -478,7 +478,7 @@ export const WithdrawContractFunds = ({contractAddress, abi, ether}) => {
     await Fabric.WithdrawContractFunds({contractAddress, abi, ether});
 
     dispatch(SetNotificationMessage({
-      message: "Successfully withdrew φ" + ether + " from contract",
+      message: "Successfully withdrew " + ether + " from contract",
       redirect: true
     }));
   };

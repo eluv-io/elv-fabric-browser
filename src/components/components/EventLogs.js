@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import {FormatAddress, ParseBytes32} from "../../utils/Helpers";
 import Fabric from "../../clients/Fabric";
+import {Balance} from "elv-components-js";
 
 class EventLogs extends React.PureComponent {
   Key(log) {
@@ -66,8 +67,22 @@ class EventLogs extends React.PureComponent {
   ParsedLog(log) {
     const eventName = log.contract ? `${log.contract} :: ${log.name}` : log.name;
     const value = log.value ? Fabric.utils.WeiToEther(parseInt(log.value._hex, 16)) : 0;
+
+    // Hide value info if none was exchanged
+    let valueInfo;
+    if(value.toString() !== "0") {
+      valueInfo = (
+        <div className="labelled-field">
+          <label>Value</label>
+          <div className="value">
+            <Balance balance={value.toString()} />
+          </div>
+        </div>
+      );
+    }
+
     return (
-      <div className="log" key={this.Key(log)} title={JSON.stringify(log, null, 2)}>
+      <div className="log" key={this.Key(log)}>
         <div className="header">
           <div className="title bold">{eventName}</div>
           <div className="info">{log.logIndex}</div>
@@ -86,10 +101,7 @@ class EventLogs extends React.PureComponent {
             <label>From</label>
             <div className="value">{log.from}</div>
           </div>
-          <div className="labelled-field">
-            <label>Value</label>
-            <div className="value">{"φ" + value}</div>
-          </div>
+          { valueInfo }
           { this.Inputs(log) }
         </div>
       </div>
@@ -101,12 +113,16 @@ class EventLogs extends React.PureComponent {
     const from = FormatAddress(log.from);
     const value = log.value ? Fabric.utils.WeiToEther(parseInt(log.value._hex, 16)) : 0;
     return (
-      <div className="log" key={this.Key(log)} title={JSON.stringify(log, null, 2)}>
+      <div className="log" key={this.Key(log)}>
         <div className="header">
           <div className="title" />
           <div className="info">{log.logIndex}</div>
         </div>
         <div className="indented">
+          <div className="labelled-field">
+            <label>Transaction Hash</label>
+            <div className="value">{log.hash}</div>
+          </div>
           <div className="labelled-field">
             <label>From</label>
             <div className="value">{from}</div>
@@ -117,7 +133,9 @@ class EventLogs extends React.PureComponent {
           </div>
           <div className="labelled-field">
             <label>Value</label>
-            <div className="value">{"φ" + value}</div>
+            <div className="value">
+              <Balance balance={value.toString()} />
+            </div>
           </div>
         </div>
       </div>
