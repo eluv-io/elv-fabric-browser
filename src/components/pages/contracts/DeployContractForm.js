@@ -2,11 +2,9 @@ import React from "react";
 import PropTypes from "prop-types";
 import UrlJoin from "url-join";
 import Path from "path";
-import RadioSelect from "elv-components-js/src/components/RadioSelect";
 import Fabric from "../../../clients/Fabric";
 import {JsonTextArea} from "../../../utils/Input";
-import Form from "elv-components-js/src/components/Form";
-import Action from "elv-components-js/src/components/Action";
+import {Action, Form, RadioSelect} from "elv-components-js";
 
 class DeployContractForm extends React.Component {
   constructor(props) {

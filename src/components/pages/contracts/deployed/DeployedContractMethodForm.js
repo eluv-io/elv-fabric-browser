@@ -4,7 +4,7 @@ import {LabelledField} from "../../../components/LabelledField";
 import PropTypes from "prop-types";
 import {Bytes32ToUtf8} from "../../../../utils/Helpers";
 import EventLogs from "../../../components/EventLogs";
-import Form from "elv-components-js/src/components/Form";
+import {Form} from "elv-components-js";
 
 class DeployedContractMethodForm extends React.Component {
   constructor(props) {

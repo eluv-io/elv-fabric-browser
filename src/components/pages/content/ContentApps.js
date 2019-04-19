@@ -4,8 +4,7 @@ import UrlJoin from "url-join";
 import Path from "path";
 import {PageHeader} from "../../components/Page";
 import {LabelledField} from "../../components/LabelledField";
-import Action from "elv-components-js/src/components/Action";
-import LoadingElement from "elv-components-js/src/components/LoadingElement";
+import {Action, LoadingElement} from "elv-components-js";
 
 class ContentApps extends React.Component {
   constructor(props) {

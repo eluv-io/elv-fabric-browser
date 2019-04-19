@@ -6,7 +6,7 @@ import GroupsIcon from "../static/icons/groups.svg";
 import ContentTypeIcon from "../static/icons/content_types.svg";
 import ContractsIcon from "../static/icons/contracts.svg";
 import LogsIcon from "../static/icons/logs.svg";
-import {ImageIcon} from "elv-components-js/src/components/Icons";
+import {ImageIcon} from "elv-components-js";
 
 class NavigationBar extends React.Component {
   static Links() {

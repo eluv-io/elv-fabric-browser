@@ -3,9 +3,7 @@ import PropTypes from "prop-types";
 import UrlJoin from "url-join";
 import Path from "path";
 import { JsonTextArea } from "../../../utils/Input";
-import BrowseWidget from "elv-components-js/src/components/BrowseWidget";
-import Form from "elv-components-js/src/components/Form";
-import Action from "elv-components-js/src/components/Action";
+import {Action, BrowseWidget, Form} from "elv-components-js";
 
 class ContentTypeForm extends React.Component {
   constructor(props) {

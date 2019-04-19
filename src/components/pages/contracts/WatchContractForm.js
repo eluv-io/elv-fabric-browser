@@ -2,8 +2,7 @@ import React from "react";
 import UrlJoin from "url-join";
 import Path from "path";
 import {JsonTextArea} from "../../../utils/Input";
-import Form from "elv-components-js/src/components/Form";
-import Action from "elv-components-js/src/components/Action";
+import {Action, Form} from "elv-components-js";
 
 class WatchContractForm extends React.Component {
   constructor(props) {
