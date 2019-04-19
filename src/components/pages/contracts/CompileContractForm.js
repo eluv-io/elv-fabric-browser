@@ -89,7 +89,7 @@ class CompileContractForm extends React.Component {
 
     return (
       <div className="form-content">
-        <label htmlFor="contractFiles" className="align-top">Contract File(s)</label>
+        <label htmlFor="contractFiles" className="align-top">Contract Files</label>
         <BrowseWidget
           name="contractFiles"
           onChange={this.HandleFileSelect}
