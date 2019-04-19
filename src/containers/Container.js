@@ -1,7 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import Action from "elv-components-js/src/components/Action";
-import LoadingElement from "elv-components-js/src/components/LoadingElement";
+import {Action, LoadingElement} from "elv-components-js";
 import Path from "path";
 import {CancelableEvents, isCancelledPromiseError} from "browser-cancelable-events";
 

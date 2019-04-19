@@ -2,8 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import UrlJoin from "url-join";
 import {PageHeader} from "../../components/Page";
-import Tabs from "elv-components-js/src/components/Tabs";
-import Action from "elv-components-js/src/components/Action";
+import {Action, Tabs} from "elv-components-js";
 import Listing from "../../components/Listing";
 
 class Contracts extends React.Component {

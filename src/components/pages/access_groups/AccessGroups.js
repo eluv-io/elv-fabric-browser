@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import UrlJoin from "url-join";
 import AccessGroupIcon from "../../../static/icons/groups.svg";
 import {PageHeader} from "../../components/Page";
-import Action from "elv-components-js/src/components/Action";
+import {Action} from "elv-components-js";
 import Listing from "../../components/Listing";
 
 class AccessGroups extends React.Component {

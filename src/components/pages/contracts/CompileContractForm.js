@@ -1,12 +1,9 @@
 import React from "react";
 import PropTypes from "prop-types";
-import BrowseWidget from "elv-components-js/src/components/BrowseWidget";
-import RadioSelect from "elv-components-js/src/components/RadioSelect";
+import {Action, BrowseWidget, Form, RadioSelect} from "elv-components-js";
 import UrlJoin from "url-join";
 import Path from "path";
 import {JsonTextArea} from "../../../utils/Input";
-import Form from "elv-components-js/src/components/Form";
-import Action from "elv-components-js/src/components/Action";
 
 class CompileContractForm extends React.Component {
   constructor(props) {

@@ -1,12 +1,10 @@
 import React from "react";
 import PropTypes from "prop-types";
-import {IconButton} from "elv-components-js/src/components/Icons";
+import {Action, LoadingElement, IconButton} from "elv-components-js";
 import GridIcon from "../../static/icons/grid.svg";
 import ListIcon from "../../static/icons/list.svg";
-import LoadingElement from "elv-components-js/src/components/LoadingElement";
 import RefreshIcon from "../../static/icons/refresh.svg";
 import ListingView from "./ListingView";
-import Action from "elv-components-js/src/components/Action";
 import {CancelableEvents} from "browser-cancelable-events";
 
 let ListingOptions = {};

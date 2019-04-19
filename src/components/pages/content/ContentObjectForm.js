@@ -1,21 +1,16 @@
 import React from "react";
 import PropTypes from "prop-types";
-import BrowseWidget from "elv-components-js/src/components/BrowseWidget";
+import {Action, BrowseWidget, Form, IconButton, RadioSelect, Tabs} from "elv-components-js";
 import {JsonTextArea} from "../../../utils/Input";
 import UrlJoin from "url-join";
 import Path from "path";
 import {InitializeSchema, GetValue, SetValue, RemoveValue} from "../../../utils/TypeSchema";
-import RadioSelect from "elv-components-js/src/components/RadioSelect";
 import Id from "../../../utils/Id";
 import TrashIcon from "../../../static/icons/trash.svg";
 import {DownloadFromUrl} from "../../../utils/Files";
 import Fabric from "../../../clients/Fabric";
-import {IconButton} from "elv-components-js/src/components/Icons";
 import AppFrame from "../../components/AppFrame";
 import Redirect from "react-router/es/Redirect";
-import Action from "elv-components-js/src/components/Action";
-import Tabs from "elv-components-js/src/components/Tabs";
-import Form from "elv-components-js/src/components/Form";
 
 const defaultSchema = [
   {

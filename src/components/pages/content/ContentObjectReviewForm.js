@@ -1,12 +1,10 @@
 import React from "react";
 import PropTypes from "prop-types";
 import Path from "path";
-import RadioSelect from "elv-components-js/src/components/RadioSelect";
+import {Action, Form, RadioSelect} from "elv-components-js";
 import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
 import Redirect from "react-router/es/Redirect";
-import Action from "elv-components-js/src/components/Action";
-import Form from "elv-components-js/src/components/Form";
 
 class ContentObjectReviewForm extends React.Component {
   constructor(props) {

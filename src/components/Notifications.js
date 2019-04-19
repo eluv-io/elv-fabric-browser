@@ -1,5 +1,5 @@
 import React from "react";
-import {IconButton} from "elv-components-js/src/components/Icons";
+import {IconButton} from "elv-components-js";
 import CloseIcon from "../static/icons/close.svg";
 
 class Notifications extends React.Component {

@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import {CroppedIcon} from "elv-components-js/src/components/Icons";
+import {CroppedIcon} from "elv-components-js";
 import Redirect from "react-router/es/Redirect";
 import Link from "react-router-dom/es/Link";
 import RedirectElement from "./RedirectElement";

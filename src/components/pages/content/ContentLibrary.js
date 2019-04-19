@@ -8,11 +8,9 @@ import { LabelledField } from "../../components/LabelledField";
 import Redirect from "react-router/es/Redirect";
 import ClippedText from "../../components/ClippedText";
 import {PageHeader} from "../../components/Page";
-import Tabs from "elv-components-js/src/components/Tabs";
-import Action from "elv-components-js/src/components/Action";
+import {Action, LoadingElement, Tabs} from "elv-components-js";
 
 import {AccessChargeDisplay} from "../../../utils/Helpers";
-import LoadingElement from "elv-components-js/src/components/LoadingElement";
 import Listing from "../../components/Listing";
 
 class ContentLibrary extends React.Component {
