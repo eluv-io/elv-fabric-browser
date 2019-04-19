@@ -1,5 +1,7 @@
+import React from "react";
 import Utils from "elv-client-js/src/Utils";
 import BigNumber from "bignumber.js";
+import {Balance} from "elv-components-js";
 
 // Traverse through a hashmap without throwing errors on undefined keys
 // If any keys undefined, returns undefined
@@ -35,7 +37,7 @@ export const AccessChargeDisplay = (accessCharge) => {
   if(accessCharge === 0 || accessCharge === "0") {
     return "Free";
   } else {
-    return `φ${accessCharge}`;
+    return <Balance balance={accessCharge} />;
   }
 };
 
