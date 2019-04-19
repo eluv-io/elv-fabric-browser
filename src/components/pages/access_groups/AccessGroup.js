@@ -7,9 +7,8 @@ import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
 import Redirect from "react-router/es/Redirect";
 import {PageHeader} from "../../components/Page";
-import Action from "elv-components-js/src/components/Action";
+import {Action, LoadingElement} from "elv-components-js";
 import Listing from "../../components/Listing";
-import LoadingElement from "elv-components-js/src/components/LoadingElement";
 
 class AccessGroup extends React.Component {
   constructor(props) {

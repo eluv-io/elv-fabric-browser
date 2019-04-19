@@ -13,10 +13,8 @@ import {DownloadFromUrl} from "../../../utils/Files";
 import FileBrowser from "../../components/FileBrowser";
 import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
-import Tabs from "elv-components-js/src/components/Tabs";
-import Action from "elv-components-js/src/components/Action";
+import {Action, LoadingElement, Tabs} from "elv-components-js";
 import {AccessChargeDisplay} from "../../../utils/Helpers";
-import LoadingElement from "elv-components-js/src/components/LoadingElement";
 
 class ContentObject extends React.Component {
   constructor(props) {

@@ -3,8 +3,7 @@ import PropTypes from "prop-types";
 import Path from "path";
 import Id from "../../../utils/Id";
 import { FormatAddress } from "../../../utils/Helpers";
-import Action from "elv-components-js/src/components/Action";
-import Form from "elv-components-js/src/components/Form";
+import {Action, Form} from "elv-components-js";
 
 class AccessGroupMembersForm extends React.Component {
   constructor(props) {

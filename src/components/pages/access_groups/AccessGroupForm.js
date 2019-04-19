@@ -2,8 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import UrlJoin from "url-join";
 import Path from "path";
-import Form from "elv-components-js/src/components/Form";
-import Action from "elv-components-js/src/components/Action";
+import {Action, Form} from "elv-components-js";
 
 class AccessGroupForm extends React.Component {
   constructor(props) {

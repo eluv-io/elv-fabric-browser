@@ -3,12 +3,9 @@ import PropTypes from "prop-types";
 import PrettyBytes from "pretty-bytes";
 import UrlJoin from "url-join";
 import Path from "path";
-import { SafeTraverse } from "../../utils/Helpers";
-import Modal from "elv-components-js/src/components/Modal";
+import {SafeTraverse} from "../../utils/Helpers";
+import {Action, AsyncCopy, Modal, IconButton, ImageIcon} from "elv-components-js";
 import FileUploadWidget from "./FileUploadWidget";
-import {ImageIcon, IconButton} from "elv-components-js/src/components/Icons";
-import Action from "elv-components-js/src/components/Action";
-import AsyncCopy from "elv-components-js/src/components/AsyncCopy";
 
 import DirectoryIcon from "../../static/icons/directory.svg";
 import FileIcon from "../../static/icons/file.svg";

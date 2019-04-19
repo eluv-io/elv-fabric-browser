@@ -1,12 +1,10 @@
 import React from "react";
 import EventLogs from "./EventLogs";
 import PropTypes from "prop-types";
-import Action from "elv-components-js/src/components/Action";
-import LoadingElement from "elv-components-js/src/components/LoadingElement";
+import {Action, LoadingElement, IconButton} from "elv-components-js";
 
 import WatchIcon from "../../static/icons/eye.svg";
 import StopWatchingIcon from "../../static/icons/eye-off.svg";
-import {IconButton} from "elv-components-js/src/components/Icons";
 
 class Events extends React.Component {
   constructor(props) {

@@ -1,10 +1,8 @@
 import React from "react";
 import PropTypes from "prop-types";
 import Path from "path";
-import {IconButton} from "elv-components-js/src/components/Icons";
+import {Action, Form, IconButton} from "elv-components-js";
 import DeleteIcon from "../../../static/icons/trash.svg";
-import Action from "elv-components-js/src/components/Action";
-import Form from "elv-components-js/src/components/Form";
 
 class ContentLibraryTypesForm extends React.Component {
   constructor(props) {
