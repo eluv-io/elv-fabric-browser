@@ -285,7 +285,6 @@ class ContentObjectForm extends React.Component {
         return <RadioSelect
           key={key}
           name={entry.key}
-          label={label}
           required={entry.required}
           selected={value}
           options={entry.options}
