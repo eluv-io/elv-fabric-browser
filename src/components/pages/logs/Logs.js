@@ -13,7 +13,7 @@ class Logs extends React.Component {
           events={this.props.logs}
           GetBlockNumber={this.props.GetBlockNumber}
           RequestMethod={this.props.methods.GetBlockchainEvents}
-          ClearMethod={this.props.methods.ClearBlockchainEvents}
+          ClearMethod={this.props.ClearBlockchainEvents}
           loading={this.props.methodStatus.GetBlockchainEvents.loading}
         />
       </div>
@@ -24,9 +24,9 @@ class Logs extends React.Component {
 Logs.propTypes = {
   logs: PropTypes.array.isRequired,
   GetBlockNumber: PropTypes.func.isRequired,
+  ClearBlockchainEvents: PropTypes.func.isRequired,
   methods: PropTypes.shape({
-    GetBlockchainEvents: PropTypes.func.isRequired,
-    ClearBlockchainEvents: PropTypes.func.isRequired
+    GetBlockchainEvents: PropTypes.func.isRequired
   })
 };
 

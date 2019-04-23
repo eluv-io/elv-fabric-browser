@@ -22,10 +22,6 @@ const Events = async ({props, params}) => {
   await props.GetBlockchainEvents(params);
 };
 
-const Clear = async ({props, params}) => {
-  await props.ClearBlockchainEvents(params);
-};
-
 const Component = Container(Logs);
 const LogsContainer = (props) => {
   return (
@@ -33,8 +29,7 @@ const LogsContainer = (props) => {
       {...props}
       GetBlockNumber={GetBlockNumber}
       methods={{
-        GetBlockchainEvents: Events,
-        ClearBlockchainEvents: Clear
+        GetBlockchainEvents: Events
       }}
     />
   );
