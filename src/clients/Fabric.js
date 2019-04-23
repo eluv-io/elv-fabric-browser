@@ -967,6 +967,10 @@ const Fabric = {
     return client.Events({toBlock, fromBlock, count, includeTransaction: true});
   },
 
+  GetBlockNumber: async () => {
+    return await client.BlockNumber();
+  },
+
   VerifyContentObject: ({
     libraryId,
     objectId,

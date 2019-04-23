@@ -3,6 +3,7 @@ import Thunk from "../../../../utils/Thunk";
 import Container from "../../../Container";
 import {
   ClearContractEvents,
+  GetBlockNumber,
   GetContractEvents
 } from "../../../../actions/Contracts";
 import ContractInfoContainer from "./ContractInfo";
@@ -32,6 +33,7 @@ const DeployedContractEventsContainer = (props) => {
   return (
     <Component
       {...props}
+      GetBlockNumber={GetBlockNumber}
       methods={{
         GetContractEvents: Events,
         ClearContractEvents: Clear

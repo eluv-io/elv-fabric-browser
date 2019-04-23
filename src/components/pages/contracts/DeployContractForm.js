@@ -332,7 +332,7 @@ class DeployContractForm extends React.Component {
 
     const backPath = Path.dirname(this.props.match.url);
     const redirectPath = this.state.isContentObjectContract ?
-      backPath : UrlJoin(backPath, "deployed", this.state.contractAddress || "");
+      backPath : UrlJoin("/contracts", "deployed", this.state.contractAddress || "");
 
     return (
       <div>

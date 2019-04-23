@@ -232,7 +232,7 @@ class Listing extends React.Component {
     return (
       <div className="listing">
         { this.Actions() }
-        <LoadingElement loading={this.props.loadingStatus.loading} loadingClassname="loading">
+        <LoadingElement loading={this.props.loadingStatus.loading} loadingClassname="loading" loadingIcon="rotate">
           <ListingView
             count={this.props.count}
             display={this.state.display}
