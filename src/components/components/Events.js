@@ -36,6 +36,9 @@ class Events extends React.Component {
 
   componentWillUnmount() {
     this.CancelWatch();
+
+    // Clear logs to free up memory
+    this.props.ClearMethod({contractAddress: this.props.contractAddress});
   }
 
   Loading() {
@@ -114,10 +117,6 @@ class Events extends React.Component {
       this.CancelWatch();
     }
 
-    if(clear) {
-      await this.props.ClearMethod({contractAddress: this.props.contractAddress});
-    }
-
     const latestBlock = await this.props.GetBlockNumber();
 
     if(!toBlock || toBlock > latestBlock) {
@@ -140,7 +139,8 @@ class Events extends React.Component {
       contractAddress: this.props.contractAddress,
       abi: this.props.abi,
       fromBlock,
-      toBlock
+      toBlock,
+      clear
     });
 
     this.setState({

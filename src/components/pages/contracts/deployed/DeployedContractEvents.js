@@ -20,7 +20,7 @@ class DeployedContractEvents extends React.Component {
                 events={this.props.deployedContract.events || []}
                 GetBlockNumber={this.props.GetBlockNumber}
                 RequestMethod={this.props.methods.GetContractEvents}
-                ClearMethod={this.props.methods.ClearContractEvents}
+                ClearMethod={this.props.ClearContractEvents}
                 loading={this.props.methodStatus.GetContractEvents.loading}
                 contractAddress={this.props.contract.address}
                 abi={this.props.contract.abi}
@@ -37,9 +37,9 @@ DeployedContractEvents.propTypes = {
   contract: PropTypes.object.isRequired,
   deployedContract: PropTypes.object.isRequired,
   GetBlockNumber: PropTypes.func.isRequired,
+  ClearContractEvents: PropTypes.func.isRequired,
   methods: PropTypes.shape({
-    GetContractEvents: PropTypes.func.isRequired,
-    ClearContractEvents: PropTypes.func.isRequired
+    GetContractEvents: PropTypes.func.isRequired
   })
 };
 
