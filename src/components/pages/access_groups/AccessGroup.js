@@ -7,7 +7,7 @@ import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
 import Redirect from "react-router/es/Redirect";
 import {PageHeader} from "../../components/Page";
-import {Action, LoadingElement} from "elv-components-js";
+import {Action, Confirm, LoadingElement} from "elv-components-js";
 import Listing from "../../components/Listing";
 
 class AccessGroup extends React.Component {
@@ -23,9 +23,10 @@ class AccessGroup extends React.Component {
   }
 
   async DeleteAccessGroup() {
-    if (confirm("Are you sure you want to delete this access group?")) {
-      await this.props.methods.RemoveAccessGroup({address: this.props.contractAddress});
-    }
+    await Confirm({
+      message: "Are you sure you want to delete this access group?",
+      onConfirm: async () => await this.props.methods.RemoveAccessGroup({address: this.props.contractAddress})
+    });
   }
 
   AccessGroupMembers() {

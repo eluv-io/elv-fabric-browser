@@ -14,52 +14,63 @@
   .event-controls {
     display: flex;
     height: 32px;
-    justify-content: space-between;
-    margin-bottom: $elv-spacing-ss;
+    margin-bottom: $elv-spacing-s;
     width: 100%;
 
-    input {
-      font-size: 14px;
+    .control-group {
+      align-items: center;
+      display: flex;
+      flex-grow: 1;
       height: 100%;
-      width: 400px;
 
-      &[type="number"] {
-        margin-right: $elv-spacing-s;
-        width: 100px;
+      &.action-group {
+        flex-grow: 2;
+      }
+
+      &.filter-group {
+        flex-grow: 15;
+      }
+
+      label {
+        margin-right: $elv-spacing-xs;
+      }
+
+      input,
+      button {
+        font-size: 14px;
+        height: 100%;
+
+        &:not(:last-child) {
+          margin-right: $elv-spacing-xs;
+        }
+
+        &:not(.watch-icon) {
+          min-width: auto;
+          width: 100px;
+        }
+
+        &.event-filter {
+          flex-grow: 1;
+          font-size: 16px;
+          margin-right: $elv-spacing-s;
+        }
       }
     }
 
-    button {
-      height: 100%;
-      margin-right: $elv-spacing-s;
-    }
-
-    label {
-      margin-right: $elv-spacing-s;
-    }
-
     .watch-icon {
-      margin-left: $elv-spacing-s;
       width: 35px;
 
       &.watching {
         svg {
           animation: watch-pulse 3s infinite normal;
-          color: $elv-color-mediumred;
         }
       }
 
       &:hover {
         svg {
-          color: $elv-color-mediumblue;
+          color: $elv-color-mediumgray;
         }
       }
-    }
-
-    .controls {
-      align-items: center;
-      display: flex;
-      justify-content: flex-start;
     }
   }
 
@@ -67,12 +78,11 @@
     height: 75vh;
     max-height: 75vh;
     overflow-y: auto;
-    padding: $elv-spacing-s 0;
+    padding: $elv-spacing-s $elv-spacing-xs $elv-spacing-s 0;
   }
 
   .filter-loading {
-    margin-right: $elv-spacing-s;
-    width: 120px;
+    width: 208px;
   }
 
   .load-more {
@@ -138,10 +148,10 @@
 
 @keyframes watch-pulse {
   from {
-    color: $elv-color-red;
+    color: $elv-color-lightblue;
   }
 
   to {
-    color: $elv-color-mediumred;
+    color: $elv-color-darkblue;
   }
 }

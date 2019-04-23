@@ -7,7 +7,7 @@ import {ContractTypes} from "../../../../utils/Contracts";
 import Redirect from "react-router/es/Redirect";
 import {PageHeader} from "../../../components/Page";
 import DeployedContractMethodForm from "./DeployedContractMethodForm";
-import {Action, LoadingElement} from "elv-components-js";
+import {Action, Confirm, LoadingElement} from "elv-components-js";
 
 class DeployedContract extends React.Component {
   constructor(props) {
@@ -36,9 +36,10 @@ class DeployedContract extends React.Component {
       <Action
         className="delete-action"
         onClick={async () => {
-          if(confirm("Are you sure you want to stop watching this contract?")) {
-            await this.props.methods.RemoveDeployedContract({address: this.props.contract.address});
-          }
+          await Confirm({
+            message: "Are you sure you want to stop watching this contract?",
+            onConfirm: async () => await this.props.methods.RemoveDeployedContract({address: this.props.contract.address})
+          });
         }}
       >
         Remove Contract

@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import Thunk from "../../utils/Thunk";
 import Container from "../Container";
 import Logs from "../../components/pages/logs/Logs";
-import {ClearBlockchainEvents, GetBlockchainEvents} from "../../actions/Contracts";
+import {ClearBlockchainEvents, GetBlockchainEvents, GetBlockNumber} from "../../actions/Contracts";
 
 const mapStateToProps = (state) => ({
   logs: state.logs
@@ -31,6 +31,7 @@ const LogsContainer = (props) => {
   return (
     <Component
       {...props}
+      GetBlockNumber={GetBlockNumber}
       methods={{
         GetBlockchainEvents: Events,
         ClearBlockchainEvents: Clear

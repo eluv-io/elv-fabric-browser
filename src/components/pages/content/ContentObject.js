@@ -13,7 +13,7 @@ import {DownloadFromUrl} from "../../../utils/Files";
 import FileBrowser from "../../components/FileBrowser";
 import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
-import {Action, LoadingElement, Tabs} from "elv-components-js";
+import {Action, Confirm, LoadingElement, Tabs} from "elv-components-js";
 import {AccessChargeDisplay} from "../../../utils/Helpers";
 
 class ContentObject extends React.Component {
@@ -45,20 +45,26 @@ class ContentObject extends React.Component {
   }
 
   async SubmitContentObject(confirmationMessage) {
-    if(confirm(confirmationMessage)) {
-      await this.props.methods.PublishContentObject({objectId: this.props.objectId});
+    await Confirm({
+      message: confirmationMessage,
+      onConfirm: async () => {
+        await this.props.methods.PublishContentObject({objectId: this.props.objectId});
 
-      await this.props.Load({componentParams: {view: "info"}});
-    }
+        await this.props.Load({componentParams: {view: "info"}});
+      }
+    });
   }
 
-  DeleteContentObject() {
-    if(confirm("Are you sure you want to delete this content object?")) {
-      this.props.methods.DeleteContentObject({
-        libraryId: this.props.libraryId,
-        objectId: this.props.objectId
-      });
-    }
+  async DeleteContentObject() {
+    await Confirm({
+      message: "Are you sure you want to delete this content object?",
+      onConfirm: async () => {
+        await this.props.methods.DeleteContentObject({
+          libraryId: this.props.libraryId,
+          objectId: this.props.objectId
+        });
+      }
+    });
   }
 
   DeleteVersionButton(versionHash) {
@@ -66,15 +72,18 @@ class ContentObject extends React.Component {
     if(this.props.object.versions.length === 1) { return null; }
 
     const DeleteVersion = async () => {
-      if(confirm("Are you sure you want to delete this content version?")) {
-        await this.props.methods.DeleteContentVersion({
-          libraryId: this.props.libraryId,
-          objectId: this.props.objectId,
-          versionHash
-        });
+      await Confirm({
+        message: "Are you sure you want to delete this content version?",
+        onConfirm: async () => {
+          await this.props.methods.DeleteContentVersion({
+            libraryId: this.props.libraryId,
+            objectId: this.props.objectId,
+            versionHash
+          });
 
-        await this.props.Load({componentParams: {view: "info"}});
-      }
+          await this.props.Load({componentParams: {view: "info"}});
+        }
+      });
     };
 
     return (

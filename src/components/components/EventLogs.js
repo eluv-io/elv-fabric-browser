@@ -64,22 +64,26 @@ class EventLogs extends React.PureComponent {
     );
   }
 
-  ParsedLog(log) {
-    const eventName = log.contract ? `${log.contract} :: ${log.name}` : log.name;
-    const value = log.value ? Fabric.utils.WeiToEther(parseInt(log.value._hex, 16)) : 0;
+  Value(value) {
+    value = value ? Fabric.utils.WeiToEther(parseInt(value._hex, 16)) : "0";
 
     // Hide value info if none was exchanged
-    let valueInfo;
-    if(value.toString() !== "0") {
-      valueInfo = (
-        <div className="labelled-field">
-          <label>Value</label>
-          <div className="value">
-            <Balance balance={value.toString()} />
-          </div>
-        </div>
-      );
+    if(value.toString() === "0") {
+      return null;
     }
+
+    return (
+      <div className="labelled-field">
+        <label>Value</label>
+        <div className="value">
+          <Balance balance={value.toString()} />
+        </div>
+      </div>
+    );
+  }
+
+  ParsedLog(log) {
+    const eventName = log.contract ? `${log.contract} :: ${log.name}` : log.name;
 
     return (
       <div className="log" key={this.Key(log)}>
@@ -101,7 +105,7 @@ class EventLogs extends React.PureComponent {
             <label>From</label>
             <div className="value">{log.from}</div>
           </div>
-          { valueInfo }
+          { this.Value(log.value) }
           { this.Inputs(log) }
         </div>
       </div>
@@ -109,9 +113,6 @@ class EventLogs extends React.PureComponent {
   }
 
   RawLog(log) {
-    const to = FormatAddress(log.to);
-    const from = FormatAddress(log.from);
-    const value = log.value ? Fabric.utils.WeiToEther(parseInt(log.value._hex, 16)) : 0;
     return (
       <div className="log" key={this.Key(log)}>
         <div className="header">
@@ -125,18 +126,13 @@ class EventLogs extends React.PureComponent {
           </div>
           <div className="labelled-field">
             <label>From</label>
-            <div className="value">{from}</div>
+            <div className="value">{FormatAddress(log.from)}</div>
           </div>
           <div className="labelled-field">
-            <label>To</label>
-            <div className="value">{to}</div>
+            <label>{!log.to && log.contractAddress ? "Contract Address" : "To"}</label>
+            <div className="value">{FormatAddress(log.to) || `${FormatAddress(log.contractAddress)}`}</div>
           </div>
-          <div className="labelled-field">
-            <label>Value</label>
-            <div className="value">
-              <Balance balance={value.toString()} />
-            </div>
-          </div>
+          { this.Value(log.value) }
         </div>
       </div>
     );
@@ -169,7 +165,10 @@ class EventLogs extends React.PureComponent {
         event.find(log =>
           (log.contract || "").toLowerCase().includes(filter) ||
           (log.name || "").toLowerCase().includes(filter) ||
-          (log.address || "").toLowerCase().includes(filter)
+          (log.address || "").toLowerCase().includes(filter) ||
+          (log.to || "").toLowerCase().includes(filter) ||
+          (log.from || "").toLowerCase().includes(filter) ||
+          (log.contractAddress || "").toLowerCase().includes(filter)
         )
       );
     }

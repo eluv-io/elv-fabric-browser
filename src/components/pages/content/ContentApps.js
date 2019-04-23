@@ -4,7 +4,7 @@ import UrlJoin from "url-join";
 import Path from "path";
 import {PageHeader} from "../../components/Page";
 import {LabelledField} from "../../components/LabelledField";
-import {Action, LoadingElement} from "elv-components-js";
+import {Action, Confirm, LoadingElement} from "elv-components-js";
 
 class ContentApps extends React.Component {
   constructor(props) {
@@ -33,15 +33,18 @@ class ContentApps extends React.Component {
   }
 
   async DeleteApp(role) {
-    if(confirm(`Are you sure you want to remove the ${role} app?`)) {
-      await this.props.methods.RemoveApp({
-        libraryId: this.props.libraryId,
-        objectId: this.props.objectId,
-        role
-      });
+    await Confirm({
+      message: `Are you sure you want to remove the ${role} app?`,
+      onConfirm: async () => {
+        await this.props.methods.RemoveApp({
+          libraryId: this.props.libraryId,
+          objectId: this.props.objectId,
+          role
+        });
 
-      await this.props.Load();
-    }
+        await this.props.Load();
+      }
+    });
   }
 
   AppEntry(role) {

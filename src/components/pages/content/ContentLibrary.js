@@ -8,7 +8,7 @@ import { LabelledField } from "../../components/LabelledField";
 import Redirect from "react-router/es/Redirect";
 import ClippedText from "../../components/ClippedText";
 import {PageHeader} from "../../components/Page";
-import {Action, LoadingElement, Tabs} from "elv-components-js";
+import {Action, Confirm, LoadingElement, Tabs} from "elv-components-js";
 
 import {AccessChargeDisplay} from "../../../utils/Helpers";
 import Listing from "../../components/Listing";
@@ -226,9 +226,10 @@ class ContentLibrary extends React.Component {
     let manageGroupsButton, manageTypesButton, deleteLibraryButton;
     if(this.props.library.isOwner && !this.props.library.isContentSpaceLibrary) {
       const Delete = async () => {
-        if(confirm("Are you sure you want to delete this library?")) {
-          await this.props.methods.DeleteContentLibrary({libraryId: this.props.libraryId});
-        }
+        await Confirm({
+          message: "Are you sure you want to delete this library?",
+          onConfirm: async () => await this.props.methods.DeleteContentLibrary({libraryId: this.props.libraryId})
+        });
       };
 
       manageGroupsButton = <Action type="link" to={UrlJoin(this.props.match.url, "groups")}>Groups</Action>;

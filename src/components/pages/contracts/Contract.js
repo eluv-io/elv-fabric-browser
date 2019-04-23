@@ -6,7 +6,7 @@ import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
 import Redirect from "react-router/es/Redirect";
 import {PageHeader} from "../../components/Page";
-import {Action, LoadingElement} from "elv-components-js";
+import {Action, Confirm, LoadingElement} from "elv-components-js";
 
 class Contract extends React.Component {
   constructor(props) {
@@ -41,9 +41,10 @@ class Contract extends React.Component {
   }
   
   async DeleteContract() {
-    if (confirm("Are you sure you want to remove this contract?")) {
-      await this.props.methods.RemoveContract({name: this.props.contractName});
-    }
+    await Confirm({
+      message: "Are you sure you want to remove this contract?",
+      onConfirm: async () => await this.props.methods.RemoveContract({name: this.props.contractName})
+    });
   }
 
   ContractInfo(info) {
