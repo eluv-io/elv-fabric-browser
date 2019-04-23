@@ -339,8 +339,14 @@ export const SetCustomContentContract = ({
   };
 };
 
-export const GetContractEvents = ({contractAddress, abi, fromBlock=0, toBlock}) => {
+export const GetContractEvents = ({contractAddress, abi, fromBlock=0, toBlock, clear=false}) => {
   return async (dispatch) => {
+    if(clear) {
+      dispatch({
+        type: ActionTypes.logs.clear
+      });
+    }
+
     dispatch({
       type: ActionTypes.contracts.deployed.events,
       contractAddress,
@@ -358,8 +364,14 @@ export const ClearContractEvents = ({contractAddress}) => {
   };
 };
 
-export const GetBlockchainEvents = ({toBlock, fromBlock, count=10}) => {
+export const GetBlockchainEvents = ({toBlock, fromBlock, count=10, clear=false}) => {
   return async (dispatch) => {
+    if(clear) {
+      dispatch({
+        type: ActionTypes.logs.clear
+      });
+    }
+
     dispatch({
       type: ActionTypes.logs.list,
       blocks: await Fabric.GetBlockchainEvents({toBlock, fromBlock, count})

@@ -24,10 +24,6 @@ const Events = async ({props, params}) => {
   await props.GetContractEvents(params);
 };
 
-const Clear = async ({props, params}) => {
-  await props.ClearContractEvents(params);
-};
-
 const Component = Container(DeployedContractEvents);
 const DeployedContractEventsContainer = (props) => {
   return (
@@ -36,7 +32,6 @@ const DeployedContractEventsContainer = (props) => {
       GetBlockNumber={GetBlockNumber}
       methods={{
         GetContractEvents: Events,
-        ClearContractEvents: Clear
       }}
     />
   );
