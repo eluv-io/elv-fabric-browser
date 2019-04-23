@@ -1,7 +1,7 @@
 import React from "react";
 import EventLogs from "./EventLogs";
 import PropTypes from "prop-types";
-import {Action, LoadingElement, IconButton} from "elv-components-js";
+import {Action, LoadingElement, IconButton, onEnterPressed} from "elv-components-js";
 
 import WatchIcon from "../../static/icons/eye.svg";
 import StopWatchingIcon from "../../static/icons/eye-off.svg";
@@ -11,11 +11,11 @@ class Events extends React.Component {
     super(props);
 
     this.state = {
-      latestBlock: 0,
-      earliestBlock: Number.MAX_SAFE_INTEGER,
+      // Separate visible input from actual filter for debouncing
       filterInput: "",
       filter: "",
       filtering: false,
+
       fromBlock: 0,
       toBlock: 0,
       scrollToBottom: false,
@@ -23,25 +23,19 @@ class Events extends React.Component {
       watcher: undefined
     };
 
-    this.FilterEvents = this.FilterEvents.bind(this);
+    this.Reset = this.Reset.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleFilterChange = this.HandleFilterChange.bind(this);
     this.LoadMoreEvents = this.LoadMoreEvents.bind(this);
     this.ToggleWatch = this.ToggleWatch.bind(this);
   }
 
-  async componentDidMount() {
-    await this.RequestEvents();
-  }
-
-  async componentDidUpdate() {
-    if(this.props.events.length > 0) {
-      await this.UpdateBlockNumbers();
-    }
+  componentDidMount() {
+    this.Request();
   }
 
   componentWillUnmount() {
-    clearTimeout(this.state.watcher);
+    this.CancelWatch();
   }
 
   Loading() {
@@ -66,11 +60,14 @@ class Events extends React.Component {
       filterInput: value,
       filtering: true,
       filterTimeout: setTimeout(
-        () => this.setState({
-          filter: value,
-          filtering: false
-        }),
-        500
+        () => {
+          this.CancelWatch();
+
+          this.setState({
+            filter: value,
+            filtering: false
+          });
+        }, 500
       ),
       scrollToBottom: false
     });
@@ -78,102 +75,91 @@ class Events extends React.Component {
 
   Watch() {
     this.setState({
+      watchEvents: true,
       watcher: setTimeout(async () => {
         this.setState({
           scrollToBottom: false
-        }, async () => await this.RequestEvents());
+        }, async () => await this.Request({fromBlock: this.state.toBlock, updateFrom: false, cancelWatch: false}));
 
         this.Watch();
       }, 3000)
     });
   }
 
+  CancelWatch() {
+    clearTimeout(this.state.watcher);
+
+    this.setState({
+      watchEvents: false
+    });
+  }
+
   ToggleWatch() {
     if(this.state.watchEvents) {
-      if(this.state.watcher) {
-        clearTimeout(this.state.watcher);
-      }
+      this.CancelWatch();
     } else {
       this.Watch();
     }
+  }
 
+  Reset() {
     this.setState({
-      watchEvents: !this.state.watchEvents
-    });
+      filter: "",
+      filterInput: ""
+    }, () => this.Request({clear: true}));
   }
 
-  async UpdateBlockNumbers() {
-    const n = this.props.events.length;
-    const latestBlock = n > 0 ? this.props.events[0][0].blockNumber : 0;
-    let earliestBlock = this.state.earliestBlock;
-    if(this.props.contractAddress) {
-      earliestBlock = 0;
-    } else if(n > 0) {
-      earliestBlock = this.props.events[n - 1][0].blockNumber;
+  async Request({fromBlock, toBlock, updateFrom=true, updateTo=true, cancelWatch=true, clear=false}={}) {
+    if(cancelWatch) {
+      this.CancelWatch();
     }
 
-    if(this.state.latestBlock !== latestBlock || this.state.earliestBlock !== earliestBlock) {
-      await new Promise((resolve) => {
-        this.setState({
-          latestBlock,
-          earliestBlock,
-          toBlock: latestBlock,
-          fromBlock: earliestBlock
-        }, resolve);
-      });
+    if(clear) {
+      await this.props.ClearMethod({contractAddress: this.props.contractAddress});
     }
-  }
 
-  async RequestEvents() {
-    await this.UpdateBlockNumbers();
+    const latestBlock = await this.props.GetBlockNumber();
 
-    if(this.props.contractAddress && this.props.events.length === 0) {
-      // On initial request of contract events, get all events starting from block 0
-      this.props.RequestMethod({
-        contractAddress: this.props.contractAddress,
-        abi: this.props.abi,
-        fromBlock: 0
-      });
-    } else {
-      this.props.RequestMethod({
-        contractAddress: this.props.contractAddress,
-        abi: this.props.abi,
-        fromBlock: this.state.latestBlock && (this.state.latestBlock + 1)
-      });
+    if(!toBlock || toBlock > latestBlock) {
+      toBlock = latestBlock;
     }
-  }
 
-  async FilterEvents() {
-    // Stop watching events
-    if(this.state.watchEvents) { this.ToggleWatch(); }
+    if(fromBlock === undefined || fromBlock < 0) {
+      if(this.props.contractAddress) {
+        fromBlock = 0;
+      } else {
+        fromBlock = Math.max(1, toBlock - 10);
+      }
+    }
 
-    await this.props.ClearMethod({contractAddress: this.props.contractAddress});
+    if(toBlock < fromBlock) {
+      fromBlock = toBlock;
+    }
 
-    await this.props.RequestMethod({
+    this.props.RequestMethod({
       contractAddress: this.props.contractAddress,
       abi: this.props.abi,
-      toBlock: this.state.toBlock,
-      fromBlock: this.state.fromBlock
+      fromBlock,
+      toBlock
     });
 
-    this.setState({scrollToBottom: false});
+    this.setState({
+      fromBlock: updateFrom ? fromBlock : this.state.fromBlock,
+      toBlock: updateTo ? toBlock : this.state.toBlock
+    });
   }
 
   async LoadMoreEvents() {
-    await this.UpdateBlockNumbers();
-
-    await this.props.RequestMethod({
-      contractAddress: this.props.contractAddress,
-      abi: this.props.abi,
-      toBlock: this.state.earliestBlock - 1,
-      fromBlock: this.state.earliestBlock - 10
+    this.Request({
+      fromBlock: this.state.fromBlock - 10,
+      toBlock: this.state.toBlock
     });
 
     this.setState({scrollToBottom: true});
   }
 
   LoadMoreEventsButton() {
-    if(this.state.contractAddress || this.state.earliestBlock <= 0 || this.props.events.length === 0) { return null; }
+    if(this.state.fromBlock <= 1) { return null; }
 
     return (
       <LoadingElement loading={this.Loading()} noIndicator={true}>
@@ -188,37 +174,56 @@ class Events extends React.Component {
     const watchIcon = this.state.watchEvents ? StopWatchingIcon : WatchIcon;
     const watchIconLabel = this.state.watchEvents ? "Stop Watching Events" : "Watch Events";
     const watchIconClassname = this.state.watchEvents ? "watch-icon watching" : "watch-icon";
-
+    const request = () => this.Request({toBlock: this.state.toBlock, fromBlock: this.state.fromBlock, clear: true});
     return (
       <div className="event-controls">
-        <div className="controls">
-          <label htmlFor="fromBlock">From</label>
-          <input type="number" name="fromBlock" value={this.state.fromBlock} onChange={this.HandleInputChange} />
-
-          <label htmlFor="toBlock">To</label>
-          <input type="number" name="toBlock" value={this.state.toBlock} onChange={this.HandleInputChange} />
-
-          <LoadingElement loading={this.Loading()} loadingIcon="rotate" loadingClassname="filter-loading">
-            <Action onClick={this.FilterEvents}>
-              Update
-            </Action>
-          </LoadingElement>
-        </div>
-        <div className="controls">
+        <div className="control-group filter-group">
           <input
             name="filterInput"
+            className="event-filter"
             value={this.state.filterInput}
             onChange={this.HandleFilterChange}
             placeholder="Filter"
           />
-          <IconButton
-            icon={watchIcon}
-            label={watchIconLabel}
-            title={watchIconLabel}
-            className={watchIconClassname}
-            onClick={this.ToggleWatch}
+        </div>
+        <div className="control-group">
+          <label htmlFor="fromBlock">From</label>
+          <input
+            type="number"
+            name="fromBlock"
+            value={this.state.fromBlock}
+            onChange={this.HandleInputChange}
+            onKeyPress={onEnterPressed(request)}
+          />
+
+          <label htmlFor="toBlock">To</label>
+          <input
+            type="number"
+            name="toBlock"
+            value={this.state.toBlock}
+            onChange={this.HandleInputChange}
+            onKeyPress={onEnterPressed(request)}
           />
         </div>
+
+        <div className="control-group action-group">
+          <LoadingElement loading={this.Loading()} loadingIcon="rotate" loadingClassname="filter-loading">
+            <Action onClick={request}>
+              Update
+            </Action>
+            <Action className="secondary" onClick={this.Reset}>
+              Reset
+            </Action>
+          </LoadingElement>
+        </div>
+
+        <IconButton
+          icon={watchIcon}
+          label={watchIconLabel}
+          title={watchIconLabel}
+          className={watchIconClassname}
+          onClick={this.ToggleWatch}
+        />
       </div>
     );
   }
@@ -244,6 +249,7 @@ Events.propTypes = {
   events: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.object)).isRequired,
   RequestMethod: PropTypes.func.isRequired,
   ClearMethod: PropTypes.func.isRequired,
+  GetBlockNumber: PropTypes.func.isRequired,
   loading: PropTypes.bool.isRequired,
   contractAddress: PropTypes.string,
   abi: PropTypes.array

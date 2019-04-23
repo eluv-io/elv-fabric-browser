@@ -375,6 +375,10 @@ export const ClearBlockchainEvents = () => {
   };
 };
 
+export const GetBlockNumber = async () => {
+  return await Fabric.GetBlockNumber();
+};
+
 export const CallContractMethod = ({
   contractAddress,
   abi,
