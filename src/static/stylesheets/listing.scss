@@ -1,6 +1,8 @@
 .listing {
-  height: 100%;
-  width: 100%;
+  $aspect-ratio: 0.75; // 4/3
+  $grid-listing-width: 215px;
+  $table-listing-width: 125px;
+  $table-listing-height: calc(#{$table-listing-width} * #{$aspect-ratio});
 
   .loading {
     align-items: center;
@@ -14,6 +16,7 @@
     display: flex;
     height: 50px;
     justify-content: space-between;
+    margin-bottom: $elv-spacing-s;
     width: 100%;
 
     .controls {
@@ -138,42 +141,42 @@
   // Grid view
 
   .grid-listing {
-    display: flex;
-    flex-wrap: wrap;
-    margin-top: $elv-spacing-m;
+    display: grid;
+    grid-gap: $elv-spacing-l $elv-spacing-m;
+    grid-template-columns: repeat(auto-fill, $grid-listing-width);
   }
 
   .grid-listing-element {
-    color: $elv-color-text-light;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    flex-shrink: 1;
-    height: 225px;
-    justify-content: space-between;
-    max-height: 225px;
-    max-width: 225px;
-    padding: $elv-spacing-s $elv-spacing-xs;
-    width: 40%;
-
-    &:hover {
-      background: $elv-color-lightergray;
+    &:hover,
+    &:focus {
+      .listing-info {
+        background-color: $elv-color-lightgray;
+      }
     }
 
     .icon-container {
-      $image-size: 100px;
-      @include elv-cropped-image($image-size, auto, 0%, $image-size, $image-size, contain);
+      $image-height: calc(#{$grid-listing-width} * #{$aspect-ratio});
+      @include elv-cropped-image($grid-listing-width, $image-height, 0, $grid-listing-width, $image-height);
+
+      i {
+        padding: $elv-spacing-xs $elv-spacing-l $elv-spacing-l !important; // sass-lint:disable-line no-important
+      }
+    }
+
+    .listing-info {
+      height: 120px;
+      padding: $elv-spacing-xs $elv-spacing-xxs 0;
     }
 
     .title {
       color: $elv-color-text-dark;
       font-size: 18px;
+      margin-bottom: $elv-spacing-xs;
     }
 
     .description {
       font-size: 14px;
-      height: 2.5em;
+      height: 50px;
       margin-bottom: $elv-spacing-xs;
       max-height: 80px;
       overflow: hidden;
@@ -206,46 +209,46 @@
 
   thead {
     tr {
-      height: $elv-spacing-xs;
-
       th {
         margin: 0;
         padding: 0;
 
         &.icon-header {
-          width: 90px;
+          width: $table-listing-width;
         }
 
         &.title-header {
-          width: 30%;
+          width: 35%;
         }
 
         &.status-header {
-          width: 160px;
+          width: 150px;
         }
       }
     }
   }
 
+
   tbody {
     tr {
-      height: 80px;
+      height: calc(#{$table-listing-height} + #{$elv-spacing-xs});
+      max-height: calc(#{$table-listing-height} + #{$elv-spacing-xs});
 
-      &:hover {
-        background: $elv-color-lightergray;
+      &:hover,
+      &:focus {
+        background-color: $elv-color-lightestgray;
         cursor: pointer;
       }
 
       td {
-        @include elv-ellipsis;
         color: $elv-color-text-light;
         margin: 0;
-        max-height: 100px;
-        padding: 0 0 0 $elv-spacing-s;
+        overflow: hidden;
+        padding: $elv-spacing-xs 0 $elv-spacing-xs $elv-spacing-s;
         word-wrap: break-word;
 
         &.icon-cell {
-          padding: $elv-spacing-mxs 0 $elv-spacing-mxs $elv-spacing-xxs;
+          padding: 0;
         }
 
         &.title-cell {
@@ -253,23 +256,25 @@
           font-size: 18px;
         }
 
-        &.description-cell {
-          .description-text {
-            height: auto;
-            max-height: 60px;
-            overflow-x: visible;
-            overflow-y: hidden;
-            white-space: normal;
-          }
-        }
-
         &.status-cell {
           font-size: 14px;
         }
 
+        .cropped-text {
+          height: auto;
+          max-height: 70px;
+          overflow-x: visible;
+          overflow-y: hidden;
+          white-space: normal;
+        }
+
         .icon-container {
-          $image-size: 75px;
-          @include elv-cropped-image(100%, auto, 0%, $image-size, $image-size, contain);
+          $image-height: calc(#{$table-listing-width} * #{$aspect-ratio});
+          @include elv-cropped-image($table-listing-width, $image-height, 0, $table-listing-width, $image-height);
+
+          i {
+            padding: 0 $elv-spacing-s !important; // sass-lint:disable-line no-important
+          }
         }
 
         a {
