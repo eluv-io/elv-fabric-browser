@@ -13,14 +13,15 @@ class Listing extends React.Component {
   constructor(props) {
     super(props);
 
-    // Load last used view
-    const savedOptions = ListingOptions[props.pageId] || {};
+    // Load saved settings
+    const savedOptions = ListingOptions[props.pageId] || {display: "list"};
+    ListingOptions[props.pageId] = savedOptions;
 
     this.state = {
-      display: savedOptions.display || "list",
+      display: savedOptions.display,
       perPage: 10,
       page: 1,
-      selectFilter: this.props.selectFilterOptions ? this.props.selectFilterOptions[0][1] : "",
+      selectFilter: this.props.selectFilterOptions ? savedOptions.filter || this.props.selectFilterOptions[0][1] : "",
       filter: "",
       filterTimeout: undefined
     };
@@ -55,9 +56,7 @@ class Listing extends React.Component {
 
   SwitchView(view) {
     // Save preferred view
-    ListingOptions[this.props.pageId] = {
-      display: view
-    };
+    ListingOptions[this.props.pageId].display = view;
 
     this.setState({
       display: view
@@ -71,6 +70,9 @@ class Listing extends React.Component {
   }
 
   ChangeSelectFilter(event) {
+    // Save selected filter
+    ListingOptions[this.props.pageId].filter = event.target.value;
+
     this.setState({
       page: 1,
       selectFilter: event.target.value,
@@ -102,6 +104,7 @@ class Listing extends React.Component {
     return (
       <select
         name="selectFilter"
+        value={this.state.selectFilter}
         title={this.props.selectFilterLabel}
         aria-label={this.props.selectFilterLabel}
         onChange={this.ChangeSelectFilter}

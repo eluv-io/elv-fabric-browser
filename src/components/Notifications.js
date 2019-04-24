@@ -8,7 +8,7 @@ class Notifications extends React.Component {
       return (
         <div className="notification-container">
           <div className="notification-message-container error-message-container">
-            { this.props.notifications.errorMessage }
+            <span>{ this.props.notifications.errorMessage }</span>
             <IconButton icon={CloseIcon} label="close" onClick={this.props.ClearNotifications} className="clear-notification" />
           </div>
         </div>
@@ -17,7 +17,7 @@ class Notifications extends React.Component {
       return (
         <div className="notification-container">
           <div className="notification-message-container">
-            { this.props.notifications.notificationMessage }
+            <span>{ this.props.notifications.notificationMessage }</span>
             <IconButton icon={CloseIcon} label="close" onClick={this.props.ClearNotifications} className="clear-notification" />
           </div>
         </div>
