@@ -33,10 +33,12 @@ class ListingItem extends React.Component {
         <tr title={this.props.title} aria-label={this.props.title}>
           {iconCell}
           <td className="title-cell" title={this.props.title}>
-            {this.props.title}
+            <div className="cropped-text" tabIndex={-1}>
+              {this.props.title}
+            </div>
           </td>
           <td className="description-cell" title={this.props.description}>
-            <div className="description-text" tabIndex={-1}>
+            <div className="cropped-text" tabIndex={-1}>
               {this.props.description}
             </div>
           </td>
@@ -52,14 +54,16 @@ class ListingItem extends React.Component {
     return (
       <Link to={this.props.link} title={this.props.title} aria-label={this.props.title} className="grid-listing-element">
         <CroppedIcon className="icon-container" icon={this.props.icon}/>
-        <div className="title">
-          {this.props.title}
-        </div>
-        <div className="description">
-          {this.props.description}
-        </div>
-        <div className="status">
-          {this.props.status}
+        <div className="listing-info">
+          <div className="title">
+            {this.props.title}
+          </div>
+          <div className="description" title={this.props.description}>
+            {this.props.description}
+          </div>
+          <div className="status">
+            {this.props.status}
+          </div>
         </div>
       </Link>
     );
