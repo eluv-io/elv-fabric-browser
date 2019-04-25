@@ -341,12 +341,13 @@ class DeployContractForm extends React.Component {
         </div>
         <Form
           legend={legend}
-          formContent={this.ContractForm()}
           redirectPath={redirectPath}
           cancelPath={backPath}
           status={status}
           OnSubmit={this.HandleSubmit}
-        />
+        >
+          { this.ContractForm() }
+        </Form>
       </div>
     );
   }

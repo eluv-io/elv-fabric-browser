@@ -239,11 +239,12 @@ class DeployedContractMethodForm extends React.Component {
       <div className="contract-method-form">
         <Form
           legend="Call Contract Method"
-          formContent={this.ContractMethodForm()}
           status={this.props.methodStatus.CallContractMethod}
           OnSubmit={this.HandleSubmit}
           OnComplete={this.HandleComplete}
-        />
+        >
+          { this.ContractMethodForm() }
+        </Form>
         { this.MethodResults() }
       </div>
     );

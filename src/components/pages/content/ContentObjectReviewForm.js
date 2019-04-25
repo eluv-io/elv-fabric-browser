@@ -16,7 +16,6 @@ class ContentObjectReviewForm extends React.Component {
       reviewAppUrl: props.object.reviewAppUrl || (props.object.typeInfo && props.object.typeInfo.reviewAppUrl)
     };
 
-    this.FormContent = this.FormContent.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
     this.FrameCompleted = this.FrameCompleted.bind(this);
@@ -35,24 +34,6 @@ class ContentObjectReviewForm extends React.Component {
       approve: this.state.approve,
       note: this.state.note
     });
-  }
-
-  FormContent() {
-    return (
-      <div className="form-content">
-        <label htmlFor="approve">Approval</label>
-        <RadioSelect
-          name="approve"
-          inline={true}
-          options={[["Approve", true], ["Reject", false]]}
-          selected={this.state.approve}
-          onChange={this.HandleInputChange}
-        />
-
-        <label className="align-top" htmlFor="note">Note</label>
-        <textarea name="note" value={this.state.note} onChange={this.HandleInputChange} />
-      </div>
-    );
   }
 
   FrameCompleted() {
@@ -103,12 +84,25 @@ class ContentObjectReviewForm extends React.Component {
           </div>
           <Form
             legend={legend}
-            formContent={this.FormContent()}
             redirectPath={Path.dirname(this.props.match.url)}
             cancelPath={Path.dirname(this.props.match.url)}
             status={this.props.methodStatus.Submit}
             OnSubmit={this.HandleSubmit}
-          />
+          >
+            <div className="form-content">
+              <label htmlFor="approve">Approval</label>
+              <RadioSelect
+                name="approve"
+                inline={true}
+                options={[["Approve", true], ["Reject", false]]}
+                selected={this.state.approve}
+                onChange={this.HandleInputChange}
+              />
+
+              <label className="align-top" htmlFor="note">Note</label>
+              <textarea name="note" value={this.state.note} onChange={this.HandleInputChange} />
+            </div>
+          </Form>
         </div>
       );
     }

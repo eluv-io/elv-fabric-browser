@@ -111,22 +111,6 @@ class ContentLibraryTypesForm extends React.Component {
     });
   }
 
-  FormContent() {
-    if(!this.state.libraryTypes) { return null; }
-
-    return (
-      <div className="form-content">
-        <label htmlFor={"typeId"}>Content Types</label>
-        { this.TypeSelector() }
-
-        <label />
-        <div className="list bordered-list">
-          { this.SelectedTypes() }
-        </div>
-      </div>
-    );
-  }
-
   render() {
     return (
       <div>
@@ -135,12 +119,21 @@ class ContentLibraryTypesForm extends React.Component {
         </div>
         <Form
           legend={"Manage Library Types"}
-          formContent={this.FormContent()}
           redirectPath={Path.dirname(this.props.match.url)}
           cancelPath={Path.dirname(this.props.match.url)}
           status={this.props.methodStatus.Submit}
           OnSubmit={this.HandleSubmit}
-        />
+        >
+          <div className="form-content">
+            <label htmlFor={"typeId"}>Content Types</label>
+            { this.TypeSelector() }
+
+            <label />
+            <div className="list bordered-list">
+              { this.SelectedTypes() }
+            </div>
+          </div>
+        </Form>
       </div>
     );
   }
