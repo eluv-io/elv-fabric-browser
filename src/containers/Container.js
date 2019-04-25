@@ -147,7 +147,7 @@ export default (Component) => {
     }
 
     render() {
-      if (this.state.error) {
+      if(this.state.error) {
         return (
           <div className="error-page">
             <div>There was a problem loading this page:</div>

@@ -114,18 +114,6 @@ class AccessGroupMembersForm extends React.Component {
     });
   }
 
-  MembersForm() {
-    return (
-      <div className="form">
-        <div className="form-content">
-          <label htmlFor="addMember" />
-          <Action type="button" onClick={this.AddMember}>Add Member</Action>
-        </div>
-        { this.Members() }
-      </div>
-    );
-  }
-
   render() {
     return (
       <div>
@@ -134,12 +122,19 @@ class AccessGroupMembersForm extends React.Component {
         </div>
         <Form
           legend={"Manage Access Group Members"}
-          formContent={this.MembersForm()}
           redirectPath={Path.dirname(this.props.match.url)}
           cancelPath={Path.dirname(this.props.match.url)}
           status={this.props.methodStatus.Submit}
           OnSubmit={this.HandleSubmit}
-        />
+        >
+          <div className="form">
+            <div className="form-content">
+              <label htmlFor="addMember" />
+              <Action type="button" onClick={this.AddMember}>Add Member</Action>
+            </div>
+            { this.Members() }
+          </div>
+        </Form>
       </div>
     );
   }

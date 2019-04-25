@@ -442,31 +442,28 @@ class ContentObjectForm extends React.Component {
   }
 
   FormContent(legend, redirectPath, cancelPath) {
-    const formContent = (
-      <div>
-        {this.AppFormSelection()}
-        <div className="form-content">
-          {this.TypeField()}
-          {this.BuildType(this.state.schema)}
-          {this.MetadataField()}
-          {this.AccessChargeField()}
-        </div>
-      </div>
-    );
-
     return (
       <div>
         <div className="actions-container manage-actions">
           <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
         </div>
         <Form
-          formContent={formContent}
           legend={legend}
           redirectPath={redirectPath}
           cancelPath={cancelPath}
           status={this.props.methodStatus.Submit}
           OnSubmit={this.HandleSubmit}
-        />
+        >
+          <div>
+            {this.AppFormSelection()}
+            <div className="form-content">
+              {this.TypeField()}
+              {this.BuildType(this.state.schema)}
+              {this.MetadataField()}
+              {this.AccessChargeField()}
+            </div>
+          </div>
+        </Form>
       </div>
     );
   }

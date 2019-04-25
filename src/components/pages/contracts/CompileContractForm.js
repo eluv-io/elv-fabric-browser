@@ -101,30 +101,6 @@ class CompileContractForm extends React.Component {
     );
   }
 
-  ContractForm() {
-    return (
-      <div>
-        <div className="form-content">
-          <label htmlFor="source">Source</label>
-          <RadioSelect
-            name="compileFromSource"
-            options={[
-              ["Solidity", true],
-              ["ABI and Bytecode", false]
-            ]}
-            inline={true}
-            selected={this.state.compileFromSource}
-            onChange={this.HandleInputChange}
-          />
-        </div>
-
-        { this.FileSelection() }
-        { this.AbiForm() }
-        { this.Errors() }
-      </div>
-    );
-  }
-
   render() {
     const status = this.state.compileFromSource ?
       this.props.methodStatus.CompileContracts : this.props.methodStatus.Submit;
@@ -139,12 +115,31 @@ class CompileContractForm extends React.Component {
         </div>
         <Form
           legend={"Compile contracts"}
-          formContent={this.ContractForm()}
           redirectPath={redirectPath}
           cancelPath={backPath}
           status={status}
           OnSubmit={this.HandleSubmit}
-        />
+        >
+          <div>
+            <div className="form-content">
+              <label htmlFor="source">Source</label>
+              <RadioSelect
+                name="compileFromSource"
+                options={[
+                  ["Solidity", true],
+                  ["ABI and Bytecode", false]
+                ]}
+                inline={true}
+                selected={this.state.compileFromSource}
+                onChange={this.HandleInputChange}
+              />
+            </div>
+
+            { this.FileSelection() }
+            { this.AbiForm() }
+            { this.Errors() }
+          </div>
+        </Form>
       </div>
     );
   }

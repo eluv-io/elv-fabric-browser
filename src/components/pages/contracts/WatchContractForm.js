@@ -34,36 +34,6 @@ class WatchContractForm extends React.Component {
     });
   }
 
-  FormContent() {
-    return (
-      <div className="form-content">
-        <label htmlFor="name">Name</label>
-        <input name="name" value={this.state.name} required={true} onChange={this.HandleInputChange} />
-
-        <label htmlFor="address">Address</label>
-        <input
-          name="address"
-          value={this.state.address}
-          required={true}
-          placeholder="0x0000000000000000000000000000000000000000"
-          onChange={this.HandleInputChange}
-        />
-
-        <label className="align-top" htmlFor="description">Description</label>
-        <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
-
-        <label className="align-top" htmlFor="abi">ABI</label>
-        <JsonTextArea
-          name="abi"
-          value={this.state.abi}
-          required={true}
-          onChange={this.HandleInputChange}
-          UpdateValue={formattedAbi => this.setState({abi: formattedAbi})}
-        />
-      </div>
-    );
-  }
-
   render() {
     const redirectPath = UrlJoin(Path.dirname(this.props.match.url), "deployed", this.state.address);
 
@@ -74,12 +44,37 @@ class WatchContractForm extends React.Component {
         </div>
         <Form
           legend={"Watch Deployed Contract"}
-          formContent={this.FormContent()}
           redirectPath={redirectPath}
           cancelPath={Path.dirname(this.props.match.url)}
           status={this.props.methodStatus.Submit}
           OnSubmit={this.HandleSubmit}
-        />
+        >
+          <div className="form-content">
+            <label htmlFor="name">Name</label>
+            <input name="name" value={this.state.name} required={true} onChange={this.HandleInputChange} />
+
+            <label htmlFor="address">Address</label>
+            <input
+              name="address"
+              value={this.state.address}
+              required={true}
+              placeholder="0x0000000000000000000000000000000000000000"
+              onChange={this.HandleInputChange}
+            />
+
+            <label className="align-top" htmlFor="description">Description</label>
+            <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
+
+            <label className="align-top" htmlFor="abi">ABI</label>
+            <JsonTextArea
+              name="abi"
+              value={this.state.abi}
+              required={true}
+              onChange={this.HandleInputChange}
+              UpdateValue={formattedAbi => this.setState({abi: formattedAbi})}
+            />
+          </div>
+        </Form>
       </div>
     );
   }

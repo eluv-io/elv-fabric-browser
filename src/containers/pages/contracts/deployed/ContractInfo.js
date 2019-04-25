@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import Thunk from "../../../../utils/Thunk";
 import {GetContractBalance, RetrieveContractInfo} from "../../../../actions/Contracts";
 import {ContractTypes, DetermineContractInterface} from "../../../../utils/Contracts";
+import {LoadingElement} from "elv-components-js";
 
 /*
  * A wrapper container for dealing with all deployed contracts.
@@ -136,16 +137,16 @@ const ContractInfoContainer = (Component, componentStateToProps, componentDispat
     }
 
     render() {
-      if (!this.state.loaded) { return null; }
-
       return (
-        <Component
-          {...this.props}
-          libraryId={this.state.libraryId}
-          objectId={this.state.objectId}
-          contract={this.state.contract}
-          deployedContract={this.props.deployedContracts[this.state.contract.address]}
-        />
+        <LoadingElement fullPage={true} loading={!this.state.loaded}>
+          <Component
+            {...this.props}
+            libraryId={this.state.libraryId}
+            objectId={this.state.objectId}
+            contract={this.state.contract}
+            deployedContract={this.props.deployedContracts[this.state.contract.address]}
+          />
+        </LoadingElement>
       );
     }
   }

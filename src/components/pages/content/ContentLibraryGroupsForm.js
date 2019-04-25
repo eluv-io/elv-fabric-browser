@@ -23,8 +23,8 @@ class ContentLibraryGroupsForm extends React.Component {
 
         libraryGroup[Id.next()] = {
           ...group,
-          addressSelection: groupExists ? group.address : "",
-          hideAddress: groupExists
+          groupSelection: groupExists ? group.address : "",
+          knownGroup: groupExists
         };
       });
 
@@ -45,7 +45,7 @@ class ContentLibraryGroupsForm extends React.Component {
     return (event) => {
       // Disable address field modification if a group is selected
       const isGroupSelection = !!event.target.selectedOptions;
-      const hideAddress = isGroupSelection ? event.target.selectedOptions[0].value !== "" : this.state.groups[groupType][groupId].addressDisabled;
+      const knownGroup = isGroupSelection ? event.target.selectedOptions[0].value !== "" : this.state.groups[groupType][groupId].addressDisabled;
 
       const value = event.target.type === "checkbox" ? event.target.checked : event.target.value;
       this.setState({
@@ -55,8 +55,9 @@ class ContentLibraryGroupsForm extends React.Component {
             ...this.state.groups[groupType],
             [groupId]: {
               ...this.state.groups[groupType][groupId],
+              address: isGroupSelection ? value : this.state.groups[groupType][groupId],
               [event.target.name]: value,
-              hideAddress
+              knownGroup
             }
           }
         }
@@ -69,8 +70,8 @@ class ContentLibraryGroupsForm extends React.Component {
     Object.keys(this.state.groups).map(groupType => {
       libraryGroups[groupType] = Object.values(this.state.groups[groupType]).map(groupInfo => {
         // Address is either selected address or inputted address
-        groupInfo.address = groupInfo.addressSelection || groupInfo.address;
-        delete groupInfo.addressSelection;
+        groupInfo.address = groupInfo.groupSelection || groupInfo.address;
+        delete groupInfo.groupSelection;
 
         return groupInfo;
       });
@@ -84,8 +85,10 @@ class ContentLibraryGroupsForm extends React.Component {
   }
 
   AddGroup(groupType) {
-    const initialAddress = Object.values(this.props.accessGroups).length > 0 ?
-      Object.values(this.props.accessGroups)[0].address : "";
+    //const initialAddress = Object.values(this.props.accessGroups).length > 0 ?
+    //  Object.values(this.props.accessGroups)[0].address : "";
+    const currentGroups = Object.values(this.state.groups[groupType]).map(group => group.address);
+    const nextGroup = Object.values(this.props.accessGroups).find(group => !currentGroups.includes(group.address));
     return () => {
       this.setState({
         groups: {
@@ -93,8 +96,8 @@ class ContentLibraryGroupsForm extends React.Component {
           [groupType]: {
             ...this.state.groups[groupType],
             [Id.next()]: {
-              address: initialAddress,
-              hideAddress: !!initialAddress
+              groupSelection: nextGroup ? nextGroup.address : "",
+              knownGroup: !!nextGroup
             }
           }
         }
@@ -130,8 +133,8 @@ class ContentLibraryGroupsForm extends React.Component {
 
     return (
       <select
-        name="addressSelection"
-        value={this.state.groups[groupType][groupId].addressSelection}
+        name="groupSelection"
+        value={this.state.groups[groupType][groupId].groupSelection}
         onChange={this.HandleInputChange(groupType, groupId)}
       >
         { options }
@@ -149,7 +152,7 @@ class ContentLibraryGroupsForm extends React.Component {
           { this.GroupSelection(groupType, groupId) }
 
           <label htmlFor="address">Address</label>
-          <input name="address" value={group.address} onChange={this.HandleInputChange(groupType, groupId)} />
+          <input name="address" disabled={group.knownGroup} value={group.address} onChange={this.HandleInputChange(groupType, groupId)} />
 
           <label htmlFor="removeGroup" />
           <Action className="action-compact action-wide delete-action" onClick={this.RemoveGroup(groupType, groupId)}>
@@ -163,24 +166,12 @@ class ContentLibraryGroupsForm extends React.Component {
   GroupsForm(groupType) {
     return (
       <div>
-        <div className="form-content">
-          <label htmlFor="addGroup" className="bold">{groupType.capitalize() + "s"}</label>
-          <Action onClick={this.AddGroup(groupType)}>
-            { `Add ${groupType.capitalize()} Group` }
-          </Action>
-        </div>
+        <h4>{groupType.capitalize() + "s"}</h4>
+        <Action className="full-width" onClick={this.AddGroup(groupType)}>
+          { `Add ${groupType.capitalize()} Group` }
+        </Action>
 
         { this.Groups(groupType) }
-      </div>
-    );
-  }
-
-  FormContent() {
-    return (
-      <div className="library-group-form">
-        { this.GroupsForm("accessor") }
-        { this.GroupsForm("contributor") }
-        { this.GroupsForm("reviewer") }
       </div>
     );
   }
@@ -193,12 +184,19 @@ class ContentLibraryGroupsForm extends React.Component {
         </div>
         <Form
           legend={"Manage Library Groups"}
-          formContent={this.FormContent()}
           redirectPath={Path.dirname(this.props.match.url)}
           cancelPath={Path.dirname(this.props.match.url)}
           status={this.props.methodStatus.Submit}
           OnSubmit={this.HandleSubmit}
-        />
+        >
+          <div className="library-group-form">
+            { this.GroupsForm("accessor") }
+            <div className="section-separator" />
+            { this.GroupsForm("contributor") }
+            <div className="section-separator" />
+            { this.GroupsForm("reviewer") }
+          </div>
+        </Form>
       </div>
     );
   }

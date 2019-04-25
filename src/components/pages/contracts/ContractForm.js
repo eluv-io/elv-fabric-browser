@@ -84,20 +84,6 @@ class ContractForm extends React.Component {
     ];
   }
 
-  ContractForm() {
-    return (
-      <div className="form-content">
-        <label htmlFor="name">Name</label>
-        <input name="name" required={true} value={this.state.name} onChange={this.HandleInputChange} />
-
-        { this.ContractSelection() }
-
-        <label htmlFor="description" className="align-top">Description</label>
-        <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
-      </div>
-    );
-  }
-
   render() {
     const backPath = "/contracts/saved";
 
@@ -120,12 +106,21 @@ class ContractForm extends React.Component {
         </div>
         <Form
           legend={"Save contract"}
-          formContent={this.ContractForm()}
           redirectPath={backPath}
           cancelPath={backPath}
           status={this.props.methodStatus.Submit}
           OnSubmit={this.HandleSubmit}
-        />
+        >
+          <div className="form-content">
+            <label htmlFor="name">Name</label>
+            <input name="name" required={true} value={this.state.name} onChange={this.HandleInputChange} />
+
+            { this.ContractSelection() }
+
+            <label htmlFor="description" className="align-top">Description</label>
+            <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
+          </div>
+        </Form>
       </div>
     );
   }

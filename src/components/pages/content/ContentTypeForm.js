@@ -19,7 +19,6 @@ class ContentTypeForm extends React.Component {
       redirectPath: Path.dirname(this.props.match.url)
     };
 
-    this.FormContent = this.FormContent.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleBitcodeChange = this.HandleBitcodeChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
@@ -66,28 +65,6 @@ class ContentTypeForm extends React.Component {
     ];
   }
 
-  FormContent() {
-    return (
-      <div className="form-content">
-        <label htmlFor="name">Name</label>
-        <input name="name" value={this.state.name} onChange={this.HandleInputChange} readOnly={this.state.isContentLibraryObject} />
-
-        { this.BitcodeSelection() }
-
-        <label className="align-top" htmlFor="description">Description</label>
-        <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
-
-        <label className="align-top" htmlFor="metadata">Metadata</label>
-        <JsonTextArea
-          name={"metadata"}
-          value={this.state.metadata}
-          onChange={this.HandleInputChange}
-          UpdateValue={formattedMetadata => this.setState({metadata: formattedMetadata})}
-        />
-      </div>
-    );
-  }
-
   render() {
     const legend = this.props.createForm ? "Create content type" : "Manage content type";
 
@@ -104,12 +81,29 @@ class ContentTypeForm extends React.Component {
         </div>
         <Form
           legend={legend}
-          formContent={this.FormContent()}
           redirectPath={redirectPath}
           cancelPath={backPath}
           status={status}
           OnSubmit={this.HandleSubmit}
-        />
+        >
+          <div className="form-content">
+            <label htmlFor="name">Name</label>
+            <input name="name" value={this.state.name} onChange={this.HandleInputChange} readOnly={this.state.isContentLibraryObject} />
+
+            { this.BitcodeSelection() }
+
+            <label className="align-top" htmlFor="description">Description</label>
+            <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
+
+            <label className="align-top" htmlFor="metadata">Metadata</label>
+            <JsonTextArea
+              name={"metadata"}
+              value={this.state.metadata}
+              onChange={this.HandleInputChange}
+              UpdateValue={formattedMetadata => this.setState({metadata: formattedMetadata})}
+            />
+          </div>
+        </Form>
       </div>
     );
   }

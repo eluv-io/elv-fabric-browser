@@ -12,7 +12,6 @@ class ContentObjectPartsForm extends React.Component {
       progress: {}
     };
 
-    this.FormContent = this.FormContent.bind(this);
     this.HandleFileSelect = this.HandleFileSelect.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
   }
@@ -42,30 +41,6 @@ class ContentObjectPartsForm extends React.Component {
     });
   }
 
-  FormContent() {
-    return (
-      <div className="form-content">
-        <label htmlFor="files" className="align-top">Files</label>
-        <BrowseWidget
-          name="files"
-          onChange={this.HandleFileSelect}
-          required={true}
-          multiple={true}
-          progress={this.state.progress}
-        />
-
-        <label htmlFor="encrypt">Encrypt Parts</label>
-        <input
-          type="checkbox"
-          name="encrypt"
-          value={this.state.encrypt}
-          checked={this.state.encrypt}
-          onChange={() => { this.setState({encrypt: !this.state.encrypt}); }}
-        />
-      </div>
-    );
-  }
-
   render() {
     return (
       <div>
@@ -74,12 +49,31 @@ class ContentObjectPartsForm extends React.Component {
         </div>
         <Form
           legend="Upload parts"
-          formContent={this.FormContent()}
           redirectPath={Path.dirname(this.props.match.url)}
           cancelPath={Path.dirname(this.props.match.url)}
           status={this.props.methodStatus.Submit}
           OnSubmit={this.HandleSubmit}
-        />
+        >
+          <div className="form-content">
+            <label htmlFor="files" className="align-top">Files</label>
+            <BrowseWidget
+              name="files"
+              onChange={this.HandleFileSelect}
+              required={true}
+              multiple={true}
+              progress={this.state.progress}
+            />
+
+            <label htmlFor="encrypt">Encrypt Parts</label>
+            <input
+              type="checkbox"
+              name="encrypt"
+              value={this.state.encrypt}
+              checked={this.state.encrypt}
+              onChange={() => { this.setState({encrypt: !this.state.encrypt}); }}
+            />
+          </div>
+        </Form>
       </div>
     );
   }

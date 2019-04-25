@@ -21,7 +21,6 @@ class ContentLibraryForm extends React.Component {
     };
 
     this.PageContent = this.PageContent.bind(this);
-    this.FormContent = this.FormContent.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleImageChange = this.HandleImageChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
@@ -72,35 +71,6 @@ class ContentLibraryForm extends React.Component {
     ];
   }
 
-  FormContent() {
-    return (
-      <div className="form-content">
-        <label htmlFor="name">Name</label>
-        <input name="name" value={this.state.name} required={true} onChange={this.HandleInputChange} readOnly={this.state.isContentSpaceLibrary} />
-
-        { this.Image() }
-
-        <label className="align-top" htmlFor="description">Description</label>
-        <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
-
-        <label className="align-top" htmlFor="publicMetadata">Public Metadata</label>
-        <JsonTextArea
-          name="publicMetadata"
-          value={this.state.publicMetadata}
-          onChange={this.HandleInputChange}
-          UpdateValue={formattedMetadata => this.setState({publicMetadata: formattedMetadata})}
-        />
-        <label className="align-top" htmlFor="privateMetadata">Private Metadata</label>
-        <JsonTextArea
-          name="privateMetadata"
-          value={this.state.privateMetadata}
-          onChange={this.HandleInputChange}
-          UpdateValue={formattedMetadata => this.setState({privateMetadata: formattedMetadata})}
-        />
-      </div>
-    );
-  }
-
   PageContent() {
     const legend = this.props.createForm ? "Create content library" : "Manage content library";
     const status = {...this.props.methodStatus.Submit};
@@ -116,12 +86,36 @@ class ContentLibraryForm extends React.Component {
         </div>
         <Form
           legend={legend}
-          formContent={this.FormContent()}
           redirectPath={redirectPath}
           cancelPath={Path.dirname(this.props.match.url)}
           status={status}
           OnSubmit={this.HandleSubmit}
-        />
+        >
+          <div className="form-content">
+            <label htmlFor="name">Name</label>
+            <input name="name" value={this.state.name} required={true} onChange={this.HandleInputChange} readOnly={this.state.isContentSpaceLibrary} />
+
+            { this.Image() }
+
+            <label className="align-top" htmlFor="description">Description</label>
+            <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
+
+            <label className="align-top" htmlFor="publicMetadata">Public Metadata</label>
+            <JsonTextArea
+              name="publicMetadata"
+              value={this.state.publicMetadata}
+              onChange={this.HandleInputChange}
+              UpdateValue={formattedMetadata => this.setState({publicMetadata: formattedMetadata})}
+            />
+            <label className="align-top" htmlFor="privateMetadata">Private Metadata</label>
+            <JsonTextArea
+              name="privateMetadata"
+              value={this.state.privateMetadata}
+              onChange={this.HandleInputChange}
+              UpdateValue={formattedMetadata => this.setState({privateMetadata: formattedMetadata})}
+            />
+          </div>
+        </Form>
       </div>
     );
   }
