@@ -18,43 +18,38 @@ class FileUploadWidget extends React.Component {
     await this.props.Upload(this.props.path, this.state.files);
   }
 
-  FormContent() {
-    return (
-      <div className="form-content">
-        <label htmlFor="directories">Type</label>
-        <RadioSelect
-          name="directories"
-          inline={true}
-          options={[["Files", false], ["Directory", true]]}
-          selected={this.state.directories}
-          onChange={(event) => this.setState({directories: event.target.value})}
-        />
-
-        <label htmlFor="files"/>
-        <BrowseWidget
-          name="files"
-          onChange={(event) => this.setState({files: event.target.files})}
-          directories={this.state.directories}
-          multiple={true}
-          progress={this.props.progress}
-        />
-      </div>
-    );
-  }
-
   render() {
     return (
       <div className="upload-widget">
         <div className="modal-error">{this.state.error}</div>
         <Form
           legend={"Upload files to " + this.props.displayPath}
-          formContent={this.FormContent()}
           status={this.props.uploadStatus}
           OnSubmit={this.HandleSubmit}
           OnCancel={this.props.OnCancel}
           OnError={(error) => this.setState({error})}
           OnComplete={this.props.OnComplete}
-        />
+        >
+          <div className="form-content">
+            <label htmlFor="directories">Type</label>
+            <RadioSelect
+              name="directories"
+              inline={true}
+              options={[["Files", false], ["Directory", true]]}
+              selected={this.state.directories}
+              onChange={(event) => this.setState({directories: event.target.value})}
+            />
+
+            <label htmlFor="files">{this.state.directories ? "Directory" : "Files"}</label>
+            <BrowseWidget
+              name="files"
+              onChange={(event) => this.setState({files: event.target.files})}
+              directories={this.state.directories}
+              multiple={true}
+              progress={this.props.progress}
+            />
+          </div>
+        </Form>
       </div>
     );
   }

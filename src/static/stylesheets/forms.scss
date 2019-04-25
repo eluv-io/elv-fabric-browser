@@ -33,6 +33,19 @@ form {
     }
   }
 
+  h4 {
+    font-size: 16px;
+    font-weight: 500;
+    margin: $elv-spacing-s 0;
+    text-align: center;
+  }
+
+  .section-separator {
+    border-bottom: 1px solid $elv-color-lightgray;
+    margin-bottom: $elv-spacing-l;
+    padding-top: $elv-spacing-xs;
+  }
+
   @media only screen and (max-width: 1000px) {
     form {
       width: 100%;

@@ -12,7 +12,6 @@ class ContentAppForm extends React.Component {
       role: this.props.match.params.role
     };
 
-    this.FormContent = this.FormContent.bind(this);
     this.HandleFileSelect = this.HandleFileSelect.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
   }
@@ -32,21 +31,6 @@ class ContentAppForm extends React.Component {
     });
   }
 
-  FormContent() {
-    return (
-      <div className="form-content">
-        <label htmlFor="app" className="align-top">App</label>
-        <BrowseWidget
-          name="app"
-          onChange={this.HandleFileSelect}
-          accept={"text/html"}
-          multiple={false}
-          required={true}
-        />
-      </div>
-    );
-  }
-
   render() {
     const header = this.props.object.isContentLibraryObject ?
       this.props.library.name + " > Library Object" :
@@ -61,12 +45,22 @@ class ContentAppForm extends React.Component {
         <div className="page-content">
           <Form
             legend={`Add ${this.state.role.capitalize()} App`}
-            formContent={this.FormContent()}
             redirectPath={Path.dirname(Path.dirname(this.props.match.url))}
             cancelPath={Path.dirname(Path.dirname(this.props.match.url))}
             status={this.props.methodStatus.Submit}
             OnSubmit={this.HandleSubmit}
-          />
+          >
+            <div className="form-content">
+              <label htmlFor="app" className="align-top">App</label>
+              <BrowseWidget
+                name="app"
+                onChange={this.HandleFileSelect}
+                accept={"text/html"}
+                multiple={false}
+                required={true}
+              />
+            </div>
+          </Form>
         </div>
       </div>
     );

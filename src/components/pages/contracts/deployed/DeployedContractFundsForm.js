@@ -38,26 +38,6 @@ class DeployedContractFundsForm extends React.Component {
     }
   }
 
-  ContractMethodForm() {
-    return (
-      <div className="form-content">
-        <label>Current Balance</label>
-        <span>{this.props.deployedContract.balance}</span>
-
-        <label htmlFor="direction">Direction</label>
-        <RadioSelect
-          name="direction"
-          options={[["Deposit", "deposit"], ["Withdraw", "withdraw"]]}
-          selected={this.state.direction}
-          onChange={this.HandleInputChange}
-        />
-
-        <label htmlFor="amount">Amount</label>
-        <input name="amount" type="number" step={0.0000000001} value={this.state.amount} onChange={this.HandleInputChange} />
-      </div>
-    );
-  }
-
   render() {
     const status = this.state.direction === "deposit" ?
       this.props.methodStatus.SendFunds : this.props.methodStatus.WithdrawContractFunds;
@@ -70,12 +50,28 @@ class DeployedContractFundsForm extends React.Component {
         <PageHeader header={this.props.contract.name} subHeader={this.props.contract.description} />
         <Form
           legend="Transfer Contract Funds"
-          formContent={this.ContractMethodForm()}
           redirectPath={Path.dirname(this.props.match.url)}
           cancelPath={Path.dirname(this.props.match.url)}
           status={status}
           OnSubmit={this.HandleSubmit}
-        />
+        >
+          <div className="form-content">
+            <label>Current Balance</label>
+            <span>{this.props.deployedContract.balance}</span>
+
+            <label htmlFor="direction">Direction</label>
+            <RadioSelect
+              name="direction"
+              inline={true}
+              options={[["Deposit", "deposit"], ["Withdraw", "withdraw"]]}
+              selected={this.state.direction}
+              onChange={this.HandleInputChange}
+            />
+
+            <label htmlFor="amount">Amount</label>
+            <input name="amount" type="number" step={0.0000000001} value={this.state.amount} onChange={this.HandleInputChange} />
+          </div>
+        </Form>
       </div>
     );
   }

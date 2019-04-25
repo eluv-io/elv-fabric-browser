@@ -7,7 +7,7 @@ class Logs extends React.Component {
     return (
       <div className="page-container">
         <div className="page-header-container">
-          <h3 className="page-header">Ethereum Logs</h3>
+          <h3 className="page-header">Blockchain Logs</h3>
         </div>
         <Events
           events={this.props.logs}
