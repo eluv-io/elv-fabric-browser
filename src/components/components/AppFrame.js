@@ -11,7 +11,7 @@ import PropTypes from "prop-types";
 import URI from "urijs";
 
 // Ensure error objects can be properly serialized in messages
-if (!("toJSON" in Error.prototype)) {
+if(!("toJSON" in Error.prototype)) {
   const excludedAttributes = [
     "columnNumber",
     "fileName",
@@ -41,7 +41,7 @@ const IsCloneable = (value) => {
     return true;
   }
 
-  switch({}.toString.call(value).slice(8,-1)) {
+  switch ({}.toString.call(value).slice(8,-1)) {
     case "Boolean":
     case "Number":
     case "String":
@@ -158,7 +158,7 @@ class AppFrame extends React.Component {
         responseMessage,
         "*"
       );
-    } catch(error) {
+    } catch (error) {
       /* eslint-disable no-console */
       console.error(responseMessage);
       console.error(error);
