@@ -89,7 +89,7 @@ class ContractForm extends React.Component {
 
     if(this.props.createForm) {
       // Ensure contract data is set from compilation
-      if (!this.props.contractData) {
+      if(!this.props.contractData) {
         this.props.SetErrorMessage({
           message: "No contract data",
           redirect: true

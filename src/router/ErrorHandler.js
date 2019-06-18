@@ -30,8 +30,8 @@ const ErrorHandler = (Component) => {
     }
 
     componentDidUpdate() {
-      if (this.state.errorCaught) {
-        if (this.props.router.location.pathname !== this.state.errorRoute) {
+      if(this.state.errorCaught) {
+        if(this.props.router.location.pathname !== this.state.errorRoute) {
           this.setState({
             errorCaught: false,
             errorRoute: undefined
@@ -41,7 +41,7 @@ const ErrorHandler = (Component) => {
     }
 
     render() {
-      if (this.state.errorCaught) {
+      if(this.state.errorCaught) {
         return null;
       }
 

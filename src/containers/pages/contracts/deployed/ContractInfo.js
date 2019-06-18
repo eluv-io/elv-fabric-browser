@@ -80,7 +80,7 @@ const ContractInfoContainer = (Component, componentStateToProps, componentDispat
           objectId: this.state.objectId
         });
 
-        if (this.state.contract.address && this.state.contract.abi) {
+        if(this.state.contract.address && this.state.contract.abi) {
           await this.props.GetContractBalance({
             contractAddress: this.state.contract.address
           });
@@ -89,7 +89,7 @@ const ContractInfoContainer = (Component, componentStateToProps, componentDispat
             loaded: true
           });
         }
-      } catch(error) {
+      } catch (error) {
         /* eslint-disable no-console */
         console.error("Failed to load contract info:");
         console.error(error);
@@ -100,16 +100,16 @@ const ContractInfoContainer = (Component, componentStateToProps, componentDispat
     // Some contract types require waiting for other information (e.g. object metadata) to load
     async componentDidUpdate() {
       try {
-        if (!this.state.loaded) {
+        if(!this.state.loaded) {
           let contract = this.state.contract;
 
           // Add additional information about the contract if necessary
-          if (contract.type === ContractTypes.customObject) {
+          if(contract.type === ContractTypes.customObject) {
             contract = {
               ...contract,
               ...(this.props.object.meta.custom_contract || this.props.object.typeInfo.meta.custom_contract)
             };
-          } else if (contract.type === ContractTypes.unknown) {
+          } else if(contract.type === ContractTypes.unknown) {
             contract = {
               ...contract,
               ...(this.props.deployedContracts[contract.address])
@@ -128,7 +128,7 @@ const ContractInfoContainer = (Component, componentStateToProps, componentDispat
             loaded: true
           });
         }
-      } catch(error) {
+      } catch (error) {
         /* eslint-disable no-console */
         console.error("Failed to load contract info:");
         console.error(error);

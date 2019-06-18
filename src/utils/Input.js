@@ -23,7 +23,7 @@ export const ParseInputJson = (metadata) => {
 
     try {
       return JSON.parse(metadata);
-    } catch(error) {
+    } catch (error) {
       throw Error("Invalid JSON");
     }
   }
@@ -39,7 +39,7 @@ export const ValidateJsonInput = (value, target) => {
     target.style.outline = "";
     target.title = "";
     return parsedValue;
-  } catch(error) {
+  } catch (error) {
     target.style.border = "1px solid red";
     target.style.outline = "none";
     target.title = error;

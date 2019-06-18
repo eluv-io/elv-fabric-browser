@@ -193,7 +193,7 @@ class Listing extends React.Component {
     let switchViewButton;
     // No point in offering grid view if there is no icon
     if(!this.props.noIcon) {
-      if (this.state.display === "list") {
+      if(this.state.display === "list") {
         switchViewButton =
           <IconButton className="listing-action" icon={GridIcon} label="Switch to grid view" onClick={() => this.SwitchView("grid")}/>;
       } else {

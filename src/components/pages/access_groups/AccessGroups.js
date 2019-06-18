@@ -18,14 +18,11 @@ class AccessGroups extends React.Component {
     if(!this.props.accessGroups) { return []; }
 
     return Object.values(this.props.accessGroups).map(accessGroup => {
-      let members = Object.keys(accessGroup.members).length;
-      members = members === 1 ? members + " member" : members + " members";
-
       return {
         id: accessGroup.address,
         title: accessGroup.name,
-        description: accessGroup.description,
-        status: members,
+        description: accessGroup.name,
+        status: "",
         icon: AccessGroupIcon,
         link: UrlJoin(this.props.match.url, accessGroup.address)
       };

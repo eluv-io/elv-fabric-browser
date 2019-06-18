@@ -173,7 +173,7 @@ export const WatchContract = ({name, address, description, abi}) => {
     try {
       // Try to get balance of contract to check existence of entity at given address
       await Fabric.GetBalance({address});
-    } catch(e) {
+    } catch (e) {
       throw Error("Unable to connect to contract at " + address);
     }
 

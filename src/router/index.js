@@ -73,7 +73,7 @@ class Router extends React.Component {
       if(Fabric.isFrameClient) {
         if(this.props.frameRouting.path === undefined) { return; }
 
-        if (this.props.frameRouting.path !== this.props.router.location.pathname) {
+        if(this.props.frameRouting.path !== this.props.router.location.pathname) {
           this.setState({redirectPath: this.props.frameRouting.path});
         } else {
           this.setState({
@@ -83,7 +83,9 @@ class Router extends React.Component {
 
           this.props.StartRouteSynchronization();
         }
+        await Fabric.Initialize();
       } else {
+        await Fabric.Initialize();
         this.setState({pathSynchronized: true});
       }
     }

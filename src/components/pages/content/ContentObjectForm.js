@@ -78,6 +78,7 @@ class ContentObjectForm extends React.Component {
     let accessCharge = 0;
     if(this.props.createForm) {
       let allowedTypes = this.props.library.types;
+
       if(Object.keys(allowedTypes).length > 0) {
         // Allowed types specified on library - limit options to that list
         type = Object.values(allowedTypes)[0].hash;
@@ -103,7 +104,7 @@ class ContentObjectForm extends React.Component {
         };
       }
     }
-
+    
     this.setState({
       types,
       type,
@@ -211,7 +212,6 @@ class ContentObjectForm extends React.Component {
 
   TypeField() {
     if(!this.props.createForm) { return; }
-
     const options = Object.values(this.state.types).map(({name, hash}) => {
       return <option key={"type-" + hash} name="type" value={hash}>{ name }</option>;
     });
@@ -234,7 +234,7 @@ class ContentObjectForm extends React.Component {
     const label = entry.label !== undefined ? entry.label : entry.key;
 
     let field;
-    switch(entry.type) {
+    switch (entry.type) {
       case "label":
         field = <div key={key} className="form-text">{entry.text}</div>;
         break;
