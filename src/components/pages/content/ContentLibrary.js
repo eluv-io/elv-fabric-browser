@@ -82,7 +82,7 @@ class ContentLibrary extends React.Component {
             const groups = this.props.library.groups[groupType];
 
             // Display nothing if no groups of this type exist
-            if (groups.length === 0) {
+            if(groups.length === 0) {
               return null;
             }
 
@@ -234,7 +234,7 @@ class ContentLibrary extends React.Component {
 
       manageGroupsButton = <Action type="link" to={UrlJoin(this.props.match.url, "groups")}>Groups</Action>;
       manageTypesButton = <Action type="link" to={UrlJoin(this.props.match.url, "types")}>Types</Action>;
-      deleteLibraryButton = <Action className="delete-action" onClick={Delete}>Delete</Action>;
+      //deleteLibraryButton = <Action className="delete-action" onClick={Delete}>Delete</Action>;
     }
 
     return (
@@ -250,7 +250,7 @@ class ContentLibrary extends React.Component {
   }
 
   PageContent() {
-    if (this.props.methodStatus.DeleteContentLibrary.completed) {
+    if(this.props.methodStatus.DeleteContentLibrary.completed) {
       return <Redirect push to={"/content"}/>;
     }
 

@@ -21,6 +21,16 @@
     "no-undef": "off",
     "no-useless-escape": "off",
     "template-curly-spacing" : "off",
+    "keyword-spacing": [
+      "warn", {
+        "before": true,
+        "after": true,
+        "overrides": {
+          "if": { "after": false },
+          "for": { "after": false },
+          "while": { "after": false }
+        }
+      }],
     "indent": [
       "error",
       2,

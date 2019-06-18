@@ -91,7 +91,7 @@ export const InitializeSchema = ({schema, initialData}) => {
   schema.forEach(entry => {
     if(!BasicTypes.includes(entry.type)) { throw Error("Unknown type: " + entry.type); }
 
-    switch(entry.type) {
+    switch (entry.type) {
       case "object":
         data[entry.key] = InitializeSchema({schema: entry.fields, initialData: initialData[entry.key]});
         break;

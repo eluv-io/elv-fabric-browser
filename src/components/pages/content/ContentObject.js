@@ -275,7 +275,7 @@ class ContentObject extends React.Component {
       });
     };
 
-    return(
+    return (
       <div className="object-files">
         <h3>Files</h3>
         <FileBrowser

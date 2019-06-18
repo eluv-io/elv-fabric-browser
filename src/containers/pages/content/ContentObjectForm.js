@@ -35,7 +35,6 @@ const LoadObject = async ({props}) => {
 
   if(props.createForm) {
     await props.ListContentTypes({});
-    await props.ListLibraryContentTypes({libraryId: props.libraryId});
   } else {
     await props.GetContentObject({
       libraryId: props.libraryId,

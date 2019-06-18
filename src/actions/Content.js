@@ -158,7 +158,7 @@ export const SetLibraryContentTypes = ({libraryId, typeIds=[]}) => {
 
     if(idsToAdd.length > 0) {
       const contentTypes = Object.values(await Fabric.ListContentTypes({}));
-      for (const typeId of idsToAdd) {
+      for(const typeId of idsToAdd) {
         // When adding a content type, check for custom contract
         const type = contentTypes.find(type => type.id === typeId);
         const customContractAddress = type.meta.custom_contract && type.meta.custom_contract.address;
@@ -257,11 +257,11 @@ export const GetContentObjectPermissions = ({libraryId, objectId}) => {
   };
 };
 
-const CollectMetadata = async ({libraryId, writeToken, schema, fields, callback}) => {
+const CollectMetadata = async ({libraryId, objectId, writeToken, schema, fields, callback}) => {
   let metadata = {};
 
   for(const entry of schema) {
-    switch(entry.type) {
+    switch (entry.type) {
       case "label":
       case "attachedFile":
         break;
@@ -276,7 +276,7 @@ const CollectMetadata = async ({libraryId, writeToken, schema, fields, callback}
         const files = Array.from(fields[entry.key]);
         let partResponses = [];
 
-        for (const file of files) {
+        for(const file of files) {
           const data = await new Response(file).blob();
 
           let uploadCallback;
@@ -287,16 +287,16 @@ const CollectMetadata = async ({libraryId, writeToken, schema, fields, callback}
           partResponses.push(
             await Fabric.UploadPart({
               libraryId,
+              objectId,
               writeToken,
               data,
-              encrypted: !!(entry.encrypted),
-              chunkSize: 30000000,
+              chunkSize: 1000000,
               callback: uploadCallback
             })
           );
         }
 
-        if (entry.multiple) {
+        if(entry.multiple) {
           metadata[entry.key] = partResponses.map(partResponse => partResponse.part.hash);
         } else {
           metadata[entry.key] = partResponses.length > 0 ? partResponses[0].part.hash : "";
@@ -314,6 +314,7 @@ const CollectMetadata = async ({libraryId, writeToken, schema, fields, callback}
       case "object":
         metadata[entry.key] = await CollectMetadata({
           libraryId,
+          objectId,
           writeToken,
           schema: entry.fields,
           fields: fields[entry.key]
@@ -330,19 +331,33 @@ const CollectMetadata = async ({libraryId, writeToken, schema, fields, callback}
 
 export const CreateFromContentTypeSchema = ({libraryId, type, metadata, accessCharge, schema, fields, callback}) => {
   return async (dispatch) => {
-    const createResponse = await Fabric.CreateAndFinalizeContentObject({
+    let createResponse = await Fabric.CreateContentObject({
       libraryId,
       type,
-      todo: async (writeToken) => {
-        await Fabric.ReplaceMetadata({
+      metadata
+    });
+
+    await Fabric.MergeMetadata({
+      libraryId,
+      objectId: createResponse.id,
+      writeToken: createResponse.write_token,
+      metadata: {
+        ...ParseInputJson(metadata),
+        ...(await CollectMetadata({
           libraryId,
-          writeToken,
-          metadata: {
-            ...ParseInputJson(metadata),
-            ...(await CollectMetadata({libraryId, writeToken, schema, fields, callback})),
-          }
-        });
+          objectId: createResponse.id,
+          writeToken: createResponse.write_token,
+          schema,
+          fields,
+          callback
+        })),
       }
+    });
+
+    await Fabric.FinalizeContentObject({
+      libraryId,
+      objectId: createResponse.id,
+      writeToken: createResponse.write_token
     });
 
     if(accessCharge > 0) {
@@ -364,6 +379,7 @@ export const UpdateFromContentTypeSchema = ({libraryId, objectId, metadata, acce
       todo: async (writeToken) => {
         await Fabric.ReplaceMetadata({
           libraryId,
+          objectId,
           writeToken,
           metadata: {
             ...ParseInputJson(metadata),
@@ -499,16 +515,16 @@ export const CreateContentType = ({name, description, metadata, bitcode}) => {
   };
 };
 
-export const ListContentTypes = ({latestOnly=true}) => {
+export const ListContentTypes = () => {
   return async (dispatch) => {
     dispatch({
       type: ActionTypes.content.types.list,
-      types: await Fabric.ListContentTypes({latestOnly})
+      types: await Fabric.ListContentTypes()
     });
   };
 };
 
-export const UploadParts = ({libraryId, objectId, files, callback, encrypt}) => {
+export const UploadParts = ({libraryId, objectId, files, encrypt=false, callback}) => {
   return async (dispatch) => {
     let parts = {};
     let contentDraft = await Fabric.EditContentObject({libraryId, objectId});
@@ -527,9 +543,9 @@ export const UploadParts = ({libraryId, objectId, files, callback, encrypt}) => 
           objectId,
           writeToken: contentDraft.write_token,
           data,
-          chunkSize: 10000000,
-          callback: partCallback,
-          encrypted: encrypt
+          encrypt,
+          chunkSize: 1000000,
+          callback: partCallback
         })
       ).part.hash;
     }));

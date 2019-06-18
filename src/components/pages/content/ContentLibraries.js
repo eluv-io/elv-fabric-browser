@@ -25,7 +25,7 @@ class ContentLibraries extends React.Component {
         sortKey: library.name || "zz",
         title: library.name || "Content Library " + libraryId,
         description: library.description,
-        status: library.objects.length + " Content Objects",
+        //status: library.objects.length + " Content Objects",
         icon: library.imageUrl || LibraryIcon,
         link: UrlJoin("/content", libraryId)
       };
