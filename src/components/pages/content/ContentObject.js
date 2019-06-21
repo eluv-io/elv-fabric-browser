@@ -526,9 +526,14 @@ class ContentObject extends React.Component {
       return <Redirect push to={Path.dirname(this.props.match.url)} />;
     }
 
-    const header = this.props.object.isContentLibraryObject ?
-      this.props.library.name + " > Library Object" :
-      this.props.library.name + " > " + this.props.object.name;
+    let header;
+    if(this.props.object.isContentLibraryObject) {
+      header = this.props.library.name + " > Library Object";
+    } else if(this.props.object.isContentType) {
+      header = "Content Types > " + this.props.object.name;
+    } else {
+      header = this.props.library.name + " > " + this.props.object.name;
+    }
 
     let pageContent;
     if(this.state.view === "display") {

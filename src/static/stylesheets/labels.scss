@@ -39,6 +39,24 @@
       color: $elv-color-mediumblue;
     }
 
+    .comma-separated-list {
+      white-space: normal;
+
+      * {
+        &::after {
+          color: $elv-color-text-dark;
+          content: ",";
+          margin-right: $elv-spacing-xs;
+        }
+
+        &:last-child {
+          &::after {
+            content: "";
+          }
+        }
+      }
+    }
+
     div {
       @include elv-ellipsis;
       max-width: 500px;
