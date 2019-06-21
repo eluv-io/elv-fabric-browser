@@ -290,7 +290,7 @@ const CollectMetadata = async ({libraryId, objectId, writeToken, schema, fields,
               objectId,
               writeToken,
               data,
-              chunkSize: 1000000,
+              chunkSize: 5000000,
               callback: uploadCallback
             })
           );
