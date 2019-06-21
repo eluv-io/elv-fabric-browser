@@ -204,7 +204,6 @@ const Fabric = {
     const perPage = params.perPage || 10;
     const currentAccountAddress = await Fabric.CurrentAccountAddress();
     filteredLibraries = filteredLibraries.slice(page * perPage, (page+1) * perPage);
-
     let libraries = {};
     await Promise.all(
       filteredLibraries.map(async ({libraryId, meta}) => {
@@ -217,7 +216,6 @@ const Fabric = {
             metadata: meta
           });
           const owner = await Fabric.GetContentLibraryOwner({libraryId});
-
           libraries[libraryId] = {
             libraryId,
             name: meta.name || libraryId,
@@ -275,8 +273,8 @@ const Fabric = {
       ...libraryInfo,
       libraryId,
       types,
-      name: libraryInfo.meta.name || libraryId,
-      description: libraryInfo.meta["eluv.description"],
+      name: privateMeta.name || libraryId,
+      description: privateMeta["eluv.description"],
       contractAddress: FormatAddress(client.utils.HashToAddress(libraryId)),
       libraryObjectId: libraryId.replace("ilib", "iq__"),
       privateMeta,
@@ -293,13 +291,8 @@ const Fabric = {
 
     let types = await client.LibraryContentTypes({libraryId});
     await Promise.all(
-      Object.keys(types).map(async typeHash => {
-        const type = types[typeHash];
-        const appUrls = await Fabric.AppUrls({object: type});
-        types[typeHash] = {
-          ...type,
-          ...appUrls
-        };
+      Object.values(types).map(async type => {
+        types[type.id].appUrls = await Fabric.AppUrls({object: type});
       })
     );
 
@@ -334,10 +327,6 @@ const Fabric = {
 
   SetContentLibraryImage: async ({libraryId, image}) =>{
     await client.SetContentLibraryImage({libraryId, image});
-  },
-
-  ReplacePublicLibraryMetadata: async ({libraryId, metadata}) => {
-    return await client.ReplacePublicLibraryMetadata({libraryId, metadata});
   },
 
   /* Library Groups */
@@ -776,22 +765,64 @@ const Fabric = {
     return appUrls;
   },
 
-  ListContentTypes: async () => {
-    let contentTypes = await client.ContentTypes();
+  // List content types for display
+  ListContentTypes: async ({params}) => {
+    let contentTypes = Object.values(await client.ContentTypes());
 
-    let contentTypesByHash = {};
-    await Promise.all(
-      Object.values(contentTypes).map(async type => {
+    // Filter
+    if(params.filter) {
+      contentTypes = contentTypes.filter(contentType => {
+        try {
+          return (contentType.meta.name || "").toLowerCase().includes(params.filter.toLowerCase());
+        } catch (e) {
+          return false;
+        }
+      });
+    }
 
-        //        const appUrls = await Fabric.AppUrls({object: type});
-        contentTypesByHash[type.hash] = {
+    const count = contentTypes.length;
+
+    // Sort
+    contentTypes = contentTypes.sort((a, b) => {
+      const name1 = a.meta.name|| "zz";
+      const name2 = b.meta.name || "zz";
+      return name1.toLowerCase() > name2.toLowerCase() ? 1 : -1;
+    });
+
+    // Paginate
+    const page = params.page - 1;
+    const perPage = params.perPage || 10;
+    contentTypes = contentTypes.slice(page * perPage, (page+1) * perPage);
+
+    let types = {};
+    for(const type of contentTypes) {
+      try {
+        const owner = await Fabric.GetContentObjectOwner({objectId: type.id});
+
+        types[type.id] = {
           ...type,
-          ///        ...appUrls
+          name: type.meta.name || "",
+          description: type.meta["eluv.description"],
+          owner,
+          isOwner: EqualAddress(owner, await Fabric.CurrentAccountAddress())
         };
-      })
-    );
+      } catch (error) {
+        /* eslint-disable no-console */
+        console.error("Failed to list content type " + type.id);
+        console.error(error);
+        /* eslint-enable no-console */
+      }
+    }
 
-    return contentTypesByHash;
+    return {
+      types,
+      count
+    };
+  },
+
+  // Get all content types for usage in forms, etc.
+  ContentTypes: async () => {
+    return await client.ContentTypes();
   },
 
   GetContentType: async ({versionHash}) => {

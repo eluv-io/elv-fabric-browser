@@ -68,6 +68,39 @@ class ContentLibrary extends React.Component {
     );
   }
 
+  LibraryContentTypes() {
+    const contentTypesCount = Object.keys(this.props.library.types).length;
+
+    if(contentTypesCount === 0) { return null; }
+
+    const contentTypes = Object.values(this.props.library.types).map(type => {
+      return (
+        <Link
+          key={`library-content-type-${type.id}`}
+          className="inline-link"
+          to={UrlJoin("/content-types", type.id)}
+        >
+          {type.meta.name || type.id}
+        </Link>
+      );
+    });
+
+    return (
+      <div>
+        <LabelledField
+          label="Content Types"
+          alignTop={true}
+          value={
+            <div className="comma-separated-list">
+              { contentTypes }
+            </div>
+          }
+        />
+        <br />
+      </div>
+    );
+  }
+
   LibraryGroups() {
     if(this.props.library.isContentSpaceLibrary) { return null; }
 
@@ -168,7 +201,7 @@ class ContentLibrary extends React.Component {
         />
         <LabelledField label={"Content Objects"} value={this.props.library.objects.length} />
         <br />
-        { this.ToggleSection("Content Types", "content-types", this.props.library.types, true) }
+        { this.LibraryContentTypes() }
         { this.ToggleSection("Public Metadata", "public-metadata", this.props.library.meta, true) }
         { this.ToggleSection("Private Metadata", "private-metadata", this.props.library.privateMeta, true) }
         { this.LibraryGroups() }

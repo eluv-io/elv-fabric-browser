@@ -4,7 +4,7 @@ import Thunk from "../../../utils/Thunk";
 import {
   CreateFromContentTypeSchema, GetContentLibrary,
   GetContentObject,
-  ListContentTypes,
+  ContentTypes,
   ListLibraryContentTypes,
   UpdateFromContentTypeSchema,
 } from "../../../actions/Content";
@@ -14,7 +14,7 @@ import ContentObjectForm from "../../../components/pages/content/ContentObjectFo
 const mapStateToProps = (state, props) => ({
   library: state.content.libraries[props.libraryId || props.match.params.libraryId],
   object: state.content.objects[props.match.params.objectId],
-  types: state.content.types
+  types: state.content.allTypes
 });
 
 const mapDispatchToProps = dispatch =>
@@ -25,7 +25,7 @@ const mapDispatchToProps = dispatch =>
       CreateFromContentTypeSchema,
       UpdateFromContentTypeSchema,
       GetContentObject,
-      ListContentTypes,
+      ContentTypes,
       ListLibraryContentTypes
     ]
   );
@@ -34,7 +34,7 @@ const LoadObject = async ({props}) => {
   await props.GetContentLibrary({libraryId: props.libraryId});
 
   if(props.createForm) {
-    await props.ListContentTypes({});
+    await props.ContentTypes();
   } else {
     await props.GetContentObject({
       libraryId: props.libraryId,
