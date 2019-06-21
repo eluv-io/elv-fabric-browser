@@ -36,8 +36,9 @@ class ContentObject extends React.Component {
       appRef: React.createRef(),
       view: initialView,
       displayAppUrl,
+      typeId: typeInfo.id || "",
       typeHash: typeInfo.hash,
-      typeName: (typeInfo.meta && typeInfo.meta.name) ? typeInfo.meta.name : typeInfo.hash
+      typeName: (typeInfo.meta && typeInfo.meta.name) ? typeInfo.meta.name : typeInfo.hash,
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -407,9 +408,22 @@ class ContentObject extends React.Component {
         { this.ObjectStatus() }
         { accessCharge }
         <br />
-        <LabelledField label={"Library ID"} value={this.props.libraryId} />
+        <LabelledField
+          label={"Library ID"}
+          value={
+            <Link className="inline-link" to={UrlJoin("/content", this.props.libraryId)} >{ this.props.libraryId}</Link>
+          }
+        />
         <LabelledField label={"Object ID"} value={this.props.objectId} />
-        <LabelledField label={"Type"} value={this.state.typeName} hidden={this.props.object.isContentType} />
+        <LabelledField
+          label={"Type"}
+          hidden={this.props.object.isContentType}
+          value={
+            <Link className="inline-link" to={UrlJoin("/content-types", this.state.typeId)}>
+              {this.state.typeName || this.state.typeId}
+            </Link>
+          }
+        />
         <LabelledField label={"Type Hash"} value={this.state.typeHash} hidden={this.props.object.isContentType} />
         { this.ContractInfo() }
         <LabelledField label={"Owner"} value={this.props.object.owner} />

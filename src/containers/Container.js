@@ -162,7 +162,13 @@ export default (Component) => {
         );
       }
 
-      return <LoadingElement fullPage={true} loading={this.state.loading} render={this.Content} />;
+      return (
+        <LoadingElement
+          fullPage={true}
+          loading={this.state.loading}
+          render={this.Content}
+        />
+      );
     }
   }
 
@@ -171,5 +177,6 @@ export default (Component) => {
     LoadComponent: PropTypes.objectOf(PropTypes.func)
   };
 
-  return Container;
+  // Automatically set key to URL to ensure component is re-created when URL changes
+  return (props) => <Container {...props} key={`page-container${props.match.url}`} />;
 };
