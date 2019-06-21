@@ -104,7 +104,7 @@ class ContentObjectForm extends React.Component {
         };
       }
     }
-    
+
     this.setState({
       types,
       type,

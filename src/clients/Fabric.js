@@ -47,6 +47,9 @@ const Fabric = {
         timeout: 30
       });
     }
+
+    this.contentSpaceId = await client.ContentSpaceId();
+    this.contentSpaceLibraryId = this.contentSpaceId.replace("ispc", "ilib");
   },
 
   async GetFramePath() {
