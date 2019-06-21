@@ -26,7 +26,8 @@ const ActionTypes = {
     },
     types: {
       get: "GET_TYPE",
-      list: "LIST_TYPES"
+      list: "LIST_TYPES",
+      all: "ALL_TYPES"
     }
   },
   contracts: {

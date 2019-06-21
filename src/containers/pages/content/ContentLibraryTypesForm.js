@@ -4,14 +4,14 @@ import Thunk from "../../../utils/Thunk";
 import Container from "../../Container";
 import {
   GetContentLibrary,
-  ListContentTypes,
+  ContentTypes,
   SetLibraryContentTypes,
 } from "../../../actions/Content";
 import ContentLibraryTypesForm from "../../../components/pages/content/ContentLibraryTypesForm";
 
 const mapStateToProps = (state, props) => ({
   library: state.content.libraries[props.libraryId || props.match.params.libraryId],
-  types: state.content.types
+  types: state.content.allTypes
 });
 
 const mapDispatchToProps = dispatch =>
@@ -19,14 +19,14 @@ const mapDispatchToProps = dispatch =>
     dispatch,
     [
       GetContentLibrary,
-      ListContentTypes,
+      ContentTypes,
       SetLibraryContentTypes
     ]
   );
 
 const LoadLibrary = async ({props}) => {
   await props.GetContentLibrary({libraryId: props.libraryId});
-  await props.ListContentTypes({});
+  await props.ContentTypes();
 };
 
 const Submit = async ({props, params}) => {

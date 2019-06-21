@@ -94,19 +94,13 @@ export const UpdateContentLibrary = ({
   libraryId,
   name,
   description,
-  publicMetadata,
-  privateMetadata,
+  metadata={},
   image
 }) => {
   return async (dispatch) => {
-    publicMetadata = ParseInputJson(publicMetadata);
-    publicMetadata.name = name;
-    publicMetadata["eluv.description"] = description;
-
-    await Fabric.ReplacePublicLibraryMetadata({
-      libraryId,
-      metadata: publicMetadata
-    });
+    metadata = ParseInputJson(metadata);
+    metadata.name = name;
+    metadata["eluv.description"] = description;
 
     const libraryObjectId = libraryId.replace("ilib", "iq__");
     await Fabric.EditAndFinalizeContentObject({
@@ -117,7 +111,7 @@ export const UpdateContentLibrary = ({
           libraryId,
           objectId: libraryObjectId,
           writeToken,
-          metadata: ParseInputJson(privateMetadata)
+          metadata
         });
       }
     });
@@ -157,7 +151,7 @@ export const SetLibraryContentTypes = ({libraryId, typeIds=[]}) => {
     const idsToAdd = typeIds.filter(id => !currentTypeIds.includes(id));
 
     if(idsToAdd.length > 0) {
-      const contentTypes = Object.values(await Fabric.ListContentTypes({}));
+      const contentTypes = Object.values(await Fabric.ContentTypes());
       for(const typeId of idsToAdd) {
         // When adding a content type, check for custom contract
         const type = contentTypes.find(type => type.id === typeId);
@@ -202,6 +196,21 @@ export const UpdateContentLibraryGroups = ({libraryId, groups, originalGroups}) 
       message: "Successfully updated library groups",
       redirect: true
     }));
+  };
+};
+
+export const ListContentTypes = ({params}) => {
+  return async (dispatch) => {
+    const {types, count} = await WithCancel(
+      params.cancelable,
+      async () => await Fabric.ListContentTypes({params})
+    );
+
+    dispatch({
+      type: ActionTypes.content.types.list,
+      types,
+      count
+    });
   };
 };
 
@@ -515,11 +524,11 @@ export const CreateContentType = ({name, description, metadata, bitcode}) => {
   };
 };
 
-export const ListContentTypes = () => {
+export const ContentTypes = () => {
   return async (dispatch) => {
     dispatch({
-      type: ActionTypes.content.types.list,
-      types: await Fabric.ListContentTypes()
+      type: ActionTypes.content.types.all,
+      types: await Fabric.ContentTypes()
     });
   };
 };

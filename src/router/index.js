@@ -20,6 +20,7 @@ import ContentObjectFormContainer from "../containers/pages/content/ContentObjec
 import ContentObjectPartsFormContainer from "../containers/pages/content/ContentObjectPartsForm";
 import ContentObjectReviewFormContainer from "../containers/pages/content/ContentObjectReviewForm";
 
+import ContentTypesContainer from "../containers/pages/content/ContentTypes";
 import ContentTypeFormContainer from "../containers/pages/content/ContentTypeForm";
 
 import ContentAppsContainer from "../containers/pages/content/ContentApps";
@@ -126,12 +127,12 @@ class Router extends React.Component {
           /* Content */
           /* For most content routes, add content-types route corresponding to /content/:contentSpaceLibrary */
 
+          <Route exact path="/content-types" component={ContentTypesContainer} />
+
           <Route exact path="/content" component={ContentLibrariesContainer}/>
           <Route exact path="/content/create" component={ContentLibraryFormContainer}/>
 
           <Route exact path="/content/:libraryId" component={ContentLibraryContainer}/>
-          <Route exact path="/content-types" key="content-types" render={(props) =>
-            <ContentLibraryContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
 
           <Route exact path="/content/:libraryId/edit" component={ContentLibraryFormContainer}/>
           <Route exact path="/content-types/edit" render={(props) =>
