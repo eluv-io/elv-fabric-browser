@@ -73,20 +73,25 @@ class Router extends React.Component {
       if(Fabric.isFrameClient) {
         if(this.props.frameRouting.path === undefined) { return; }
 
+        await Fabric.Initialize();
+
         if(this.props.frameRouting.path !== this.props.router.location.pathname) {
           this.setState({redirectPath: this.props.frameRouting.path});
         } else {
           this.setState({
+            contentSpaceLibraryId: Fabric.contentSpaceLibraryId,
             redirectPath: "",
             pathSynchronized: true
           });
 
           this.props.StartRouteSynchronization();
         }
-        await Fabric.Initialize();
       } else {
         await Fabric.Initialize();
-        this.setState({pathSynchronized: true});
+        this.setState({
+          contentSpaceLibraryId: Fabric.contentSpaceLibraryId,
+          pathSynchronized: true
+        });
       }
     }
   }
