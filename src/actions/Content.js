@@ -270,7 +270,7 @@ const CollectMetadata = async ({libraryId, objectId, writeToken, schema, fields,
   let metadata = {};
 
   for(const entry of schema) {
-    switch (entry.type) {
+    switch(entry.type) {
       case "label":
       case "attachedFile":
         break;

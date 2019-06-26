@@ -89,7 +89,7 @@ const ContractInfoContainer = (Component, componentStateToProps, componentDispat
             loaded: true
           });
         }
-      } catch (error) {
+      } catch(error) {
         /* eslint-disable no-console */
         console.error("Failed to load contract info:");
         console.error(error);
@@ -128,7 +128,7 @@ const ContractInfoContainer = (Component, componentStateToProps, componentDispat
             loaded: true
           });
         }
-      } catch (error) {
+      } catch(error) {
         /* eslint-disable no-console */
         console.error("Failed to load contract info:");
         console.error(error);

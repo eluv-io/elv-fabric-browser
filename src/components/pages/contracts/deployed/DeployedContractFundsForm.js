@@ -16,7 +16,7 @@ class DeployedContractFundsForm extends React.Component {
     this.HandleSubmit = this.HandleSubmit.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
   }
-  
+
   HandleInputChange(event) {
     this.setState({
       [event.target.name]: event.target.value

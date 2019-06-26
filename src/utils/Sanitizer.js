@@ -14,7 +14,7 @@ class Sanitizer {
   }
 
   static s(value, type){
-    switch (type.toLowerCase()){
+    switch(type.toLowerCase()){
       case ("integer"):
         return value.toString().replace(/[^0-9]/gi,"");
       case ("float"):

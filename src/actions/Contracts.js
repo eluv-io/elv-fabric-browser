@@ -1,6 +1,6 @@
 import ActionTypes from "./ActionTypes";
 import Fabric from "../clients/Fabric";
-import { SetNotificationMessage } from "./Notifications";
+import {SetErrorMessage, SetNotificationMessage} from "./Notifications";
 
 // TODO: Get this thing to work like a normal module
 import "browser-solc";
@@ -15,7 +15,7 @@ export const ListContracts = ({params}) => {
   return async (dispatch) => {
     const {contracts, count} = await WithCancel(
       params.cancelable,
-      async () => await Fabric.FabricBrowser.Contracts({params})
+      async () => await Fabric.Contracts({params})
     );
 
     dispatch({
@@ -30,7 +30,7 @@ export const ListDeployedContracts = ({params}) => {
   return async (dispatch) => {
     const {contracts, count} = await WithCancel(
       params.cancelable,
-      async () => await Fabric.FabricBrowser.DeployedContracts({params})
+      async () => await Fabric.DeployedContracts({params})
     );
 
     dispatch({
@@ -43,7 +43,7 @@ export const ListDeployedContracts = ({params}) => {
 
 export const RemoveContract = ({name}) => {
   return async (dispatch) => {
-    await Fabric.FabricBrowser.RemoveContract({name});
+    await Fabric.RemoveContract({name});
 
     dispatch(SetNotificationMessage({
       message: "Successfully removed contract",
@@ -54,7 +54,7 @@ export const RemoveContract = ({name}) => {
 
 export const RemoveDeployedContract = ({address}) => {
   return async (dispatch) => {
-    await Fabric.FabricBrowser.RemoveDeployedContract({address});
+    await Fabric.RemoveDeployedContract({address});
 
     dispatch(SetNotificationMessage({
       message: "Successfully removed contract",
@@ -65,7 +65,7 @@ export const RemoveDeployedContract = ({address}) => {
 
 export const RetrieveContractInfo = ({type, libraryId, objectId}) => {
   return async (dispatch) => {
-    switch (type) {
+    switch(type) {
       case ContractTypes.library:
         await dispatch(GetContentLibrary({libraryId}));
         break;
@@ -109,7 +109,6 @@ export const CompileContracts = (contractFiles) => {
           reject("Compilation errors");
         } else {
           // Compilation successful
-
           dispatch(SetNotificationMessage({
             message: "Compilation successful",
             redirect: true
@@ -144,7 +143,7 @@ export const SaveContract = ({name, oldContractName, description, abi, bytecode}
       abi = ParseInputJson(abi);
     }
 
-    await Fabric.FabricBrowser.AddContract({
+    await Fabric.AddContract({
       name: name.trim(),
       description,
       abi,
@@ -152,7 +151,7 @@ export const SaveContract = ({name, oldContractName, description, abi, bytecode}
     });
 
     if(oldContractName && oldContractName !== name) {
-      await Fabric.FabricBrowser.RemoveContract({
+      await Fabric.RemoveContract({
         name: oldContractName
       });
     }
@@ -173,11 +172,11 @@ export const WatchContract = ({name, address, description, abi}) => {
     try {
       // Try to get balance of contract to check existence of entity at given address
       await Fabric.GetBalance({address});
-    } catch (e) {
+    } catch(e) {
       throw Error("Unable to connect to contract at " + address);
     }
 
-    await Fabric.FabricBrowser.AddDeployedContract({
+    await Fabric.AddDeployedContract({
       name,
       description,
       address,
@@ -201,47 +200,56 @@ export const DeployContract = ({
   funds
 }) => {
   return async (dispatch) => {
-    const owner = await Fabric.CurrentAccountAddress();
+    try {
+      const owner = await Fabric.CurrentAccountAddress();
 
-    let constructorArgs = [];
-    if(inputs.length > 0) {
-      constructorArgs = await Fabric.FormatContractArguments({
+      let constructorArgs = [];
+      if(inputs.length > 0) {
+        constructorArgs = await Fabric.FormatContractArguments({
+          abi,
+          methodName: "constructor",
+          args: inputs
+        });
+      }
+
+      const contractInfo = await Fabric.DeployContract({
         abi,
-        methodName: "constructor",
-        args: inputs
+        bytecode,
+        constructorArgs
       });
-    }
 
-    const contractInfo = await Fabric.DeployContract({
-      abi,
-      bytecode,
-      constructorArgs
-    });
+      if(funds) {
+        await Fabric.SendFunds({
+          recipient: contractInfo.contractAddress,
+          ether: funds
+        });
+      }
 
-    if(funds) {
-      await Fabric.SendFunds({
-        sender: Fabric.CurrentAccountAddress(),
-        recipient: contractInfo.contractAddress,
-        ether: funds
+      await Fabric.AddDeployedContract({
+        name: contractName,
+        description: contractDescription,
+        address: contractInfo.contractAddress,
+        abi,
+        bytecode,
+        inputs,
+        owner
       });
+
+      dispatch(SetNotificationMessage({
+        message: "Successfully deployed custom contract",
+        redirect: true
+      }));
+
+      return FormatAddress(contractInfo.contractAddress);
+    } catch(error) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to deploy contract");
+      // eslint-disable-next-line no-console
+      console.error(error);
+      dispatch(SetErrorMessage({
+        message: `Failed to deploy contract: ${error.message || error}`
+      }));
     }
-
-    await Fabric.FabricBrowser.AddDeployedContract({
-      name: contractName,
-      description: contractDescription,
-      address: contractInfo.contractAddress,
-      abi,
-      bytecode,
-      inputs,
-      owner
-    });
-
-    dispatch(SetNotificationMessage({
-      message: "Successfully deployed custom contract",
-      redirect: true
-    }));
-
-    return FormatAddress(contractInfo.contractAddress);
   };
 };
 
@@ -321,13 +329,10 @@ export const SetCustomContentContract = ({
     }
 
     if(funds) {
-      if(funds) {
-        await Fabric.SendFunds({
-          sender: Fabric.CurrentAccountAddress(),
-          recipient: address,
-          ether: funds
-        });
-      }
+      await Fabric.SendFunds({
+        recipient: address,
+        ether: funds
+      });
     }
 
     dispatch(SetNotificationMessage({
@@ -478,9 +483,9 @@ export const GetContractBalance = ({contractAddress})=> {
   };
 };
 
-export const SendFunds = ({sender, recipient, ether}) => {
+export const SendFunds = ({recipient, ether}) => {
   return async (dispatch) => {
-    await Fabric.SendFunds({sender, recipient, ether});
+    await Fabric.SendFunds({recipient, ether});
 
     dispatch(SetNotificationMessage({
       message: "Successfully sent " + ether + " to " + recipient,

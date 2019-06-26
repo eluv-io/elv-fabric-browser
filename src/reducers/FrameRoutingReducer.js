@@ -2,7 +2,7 @@ import Fabric from "../clients/Fabric";
 import ActionTypes from "../actions/ActionTypes";
 
 const FrameRoutingReducer = (state = {}, action) => {
-  switch (action.type) {
+  switch(action.type) {
     case ActionTypes.routes.path:
       return {
         ...state,
