@@ -228,7 +228,7 @@ class DeployedContractMethodForm extends React.Component {
       return (
         <div className="label-box">
           <h3>Result: </h3>
-          <EventLogs events={this.state.transactionResults} />
+          <EventLogs events={[this.state.transactionResults]} />
         </div>
       );
     }

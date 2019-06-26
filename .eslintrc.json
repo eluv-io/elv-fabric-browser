@@ -28,7 +28,9 @@
         "overrides": {
           "if": { "after": false },
           "for": { "after": false },
-          "while": { "after": false }
+          "switch": { "after": false },
+          "while": { "after": false },
+          "catch": { "after": false }
         }
       }],
     "indent": [

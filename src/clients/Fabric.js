@@ -7,6 +7,8 @@ import BaseContentContract from "elv-client-js/src/contracts/BaseContent";
 import BaseAccessGroupContract from "elv-client-js/src/contracts/BaseAccessControlGroup";
 import {Bytes32ToUtf8, EqualAddress, FormatAddress} from "../utils/Helpers";
 
+const APP_REQUESTOR_NAME = "Eluvio Fabric Browser";
+
 const Configuration = require("../../configuration.json");
 
 /* Undocumented feature: If privateKey param is set, use that to intialize the client */
@@ -134,7 +136,7 @@ const Fabric = {
       try {
         const result = (meta[field] || "").toLowerCase().includes(value);
         return negate ? !result : result;
-      } catch (e) {
+      } catch(e) {
         return false;
       }
     });
@@ -155,7 +157,7 @@ const Fabric = {
             libraryId,
             meta
           };
-        } catch (error) {
+        } catch(error) {
           return {
             libraryId,
             meta: {}
@@ -165,7 +167,7 @@ const Fabric = {
     );
 
     // Filter libraries by class
-    switch (params.selectFilter) {
+    switch(params.selectFilter) {
       case "content":
         filteredLibraries = filteredLibraries.filter(({meta}) =>
           !(["elv-user-library", "elv-media-platform"].includes((meta.class || "").toLowerCase()))
@@ -225,7 +227,7 @@ const Fabric = {
             isOwner: EqualAddress(owner, currentAccountAddress),
             isContentSpaceLibrary: libraryId === Fabric.contentSpaceLibraryId
           };
-        } catch (error) {
+        } catch(error) {
           /* eslint-disable no-console */
           console.error(`Failed to get content library ${meta.name || libraryId}: `);
           console.error(error);
@@ -399,7 +401,7 @@ const Fabric = {
         event,
         eventName: groupType.capitalize() + "GroupAdded"
       });
-    } catch (error) {
+    } catch(error) {
       throw Error("Failed to add " + groupType + "group " + address);
     }
   },
@@ -418,7 +420,7 @@ const Fabric = {
         event,
         eventName: groupType.capitalize() + "GroupRemoved"
       });
-    } catch (error) {
+    } catch(error) {
       throw Error("Failed to add " + groupType + "group " + address);
     }
   },
@@ -437,7 +439,7 @@ const Fabric = {
       libraryObjects = libraryObjects.filter(object => {
         try {
           return object.versions[0].meta.name.toLowerCase().includes(params.filter.toLowerCase());
-        } catch (e) {
+        } catch(e) {
           return false;
         }
       });
@@ -499,7 +501,7 @@ const Fabric = {
           owner,
           isOwner: EqualAddress(owner, await Fabric.CurrentAccountAddress())
         };
-      } catch (error) {
+      } catch(error) {
         /* eslint-disable no-console */
         console.error("Failed to list content object " + object.id);
         console.error(error);
@@ -735,9 +737,9 @@ const Fabric = {
 
   CreateContentType: async ({name, description, metadata={}, bitcode}) => {
     return await client.CreateContentType({
+      name,
       metadata: {
         ...metadata,
-        name,
         "eluv.description": description
       },
       bitcode
@@ -774,7 +776,7 @@ const Fabric = {
       contentTypes = contentTypes.filter(contentType => {
         try {
           return (contentType.meta.name || "").toLowerCase().includes(params.filter.toLowerCase());
-        } catch (e) {
+        } catch(e) {
           return false;
         }
       });
@@ -806,7 +808,7 @@ const Fabric = {
           owner,
           isOwner: EqualAddress(owner, await Fabric.CurrentAccountAddress())
         };
-      } catch (error) {
+      } catch(error) {
         /* eslint-disable no-console */
         console.error("Failed to list content type " + type.id);
         console.error(error);
@@ -1033,8 +1035,108 @@ const Fabric = {
     return client.GetBalance({address});
   },
 
-  SendFunds: ({sender, recipient, ether}) => {
-    return client.SendFunds({sender, recipient, ether});
+  SendFunds: ({recipient, ether}) => {
+    return client.SendFunds({recipient, ether});
+  },
+
+  FilterContracts({contracts, params}) {
+    let filteredContracts = Object.values(contracts);
+
+    // Filter
+    if(params.filter) {
+      filteredContracts = filteredContracts.filter(contract => {
+        try {
+          return contract.name.toLowerCase().includes(params.filter.toLowerCase());
+        } catch(e) {
+          return false;
+        }
+      });
+    }
+
+    // Sort
+    filteredContracts = filteredContracts.sort((a, b) => {
+      const name1 = a.name || "zz";
+      const name2 = b.name || "zz";
+      return name1.toLowerCase() > name2.toLowerCase() ? 1 : -1;
+    });
+
+    const count = filteredContracts.length;
+
+    if(params.paginate) {
+      // Paginate
+      const page = (params.page || 1) - 1;
+      const perPage = params.perPage || 10;
+
+      filteredContracts = filteredContracts.slice(page * perPage, (page + 1) * perPage);
+    }
+
+    // Convert back to map
+    contracts = {};
+    filteredContracts.forEach(contract => contracts[contract.address || contract.name] = contract);
+
+    return {contracts, count};
+  },
+
+  Contracts: async () => {
+    const contracts = (await client.userProfileClient.UserMetadata({
+      metadataSubtree: UrlJoin("elv-fabric-browser", "contracts"),
+      requestor: APP_REQUESTOR_NAME
+    })) || {};
+
+    return {contracts, count: Object.keys(contracts).length};
+  },
+
+  DeployedContracts: async () => {
+    const contracts = (await client.userProfileClient.UserMetadata({
+      metadataSubtree: UrlJoin("elv-fabric-browser", "deployedContracts"),
+      requestor: APP_REQUESTOR_NAME
+    })) || {};
+
+    return {contracts, count: Object.keys(contracts).length};
+  },
+
+  AddContract: async ({name, description, abi, bytecode}) => {
+    await client.userProfileClient.MergeUserMetadata({
+      metadataSubtree: UrlJoin("elv-fabric-browser", "contracts", name),
+      metadata: {
+        name,
+        description,
+        abi,
+        bytecode
+      },
+      requestor: APP_REQUESTOR_NAME
+    });
+  },
+
+  RemoveContract: async ({name}) => {
+    await client.userProfileClient.DeleteUserMetadata({
+      metadataSubtree: UrlJoin("elv-fabric-browser", "contracts", name),
+      requestor: APP_REQUESTOR_NAME
+    });
+  },
+
+  AddDeployedContract: async ({name, description, address, abi, bytecode, owner}) => {
+    address = FormatAddress(address);
+
+    await client.userProfileClient.MergeUserMetadata({
+      metadataSubtree: UrlJoin("elv-fabric-browser", "deployedContracts", address),
+      metadata: {
+        name,
+        description,
+        address,
+        abi,
+        bytecode,
+        owner
+      },
+      requestor: APP_REQUESTOR_NAME
+    });
+  },
+
+  RemoveDeployedContract: async ({address}) => {
+    await client.userProfileClient.DeleteUserMetadata({
+      metadataSubtree: UrlJoin("elv-fabric-browser", "deployedContracts", address),
+      requestor: APP_REQUESTOR_NAME
+    });
   },
 
   FabricBrowser: {
@@ -1122,7 +1224,7 @@ const Fabric = {
         filteredAccessGroups = filteredAccessGroups.filter(accessGroup => {
           try {
             return accessGroup.name.toLowerCase().includes(params.filter.toLowerCase());
-          } catch (e) {
+          } catch(e) {
             return false;
           }
         });
@@ -1212,7 +1314,7 @@ const Fabric = {
         filteredMembers = filteredMembers.filter(member => {
           try {
             return member.name.toLowerCase().includes(params.filter.toLowerCase());
-          } catch (e) {
+          } catch(e) {
             return false;
           }
         });
@@ -1252,7 +1354,7 @@ const Fabric = {
         filteredContracts = filteredContracts.filter(contract => {
           try {
             return contract.name.toLowerCase().includes(params.filter.toLowerCase());
-          } catch (e) {
+          } catch(e) {
             return false;
           }
         });

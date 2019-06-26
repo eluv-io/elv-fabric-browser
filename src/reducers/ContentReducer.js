@@ -1,7 +1,7 @@
 import ActionTypes from "../actions/ActionTypes";
 
 const ContentReducer = (state = {}, action) => {
-  switch (action.type) {
+  switch(action.type) {
     case ActionTypes.content.libraries.list:
       return {
         ...state,

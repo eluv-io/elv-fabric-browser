@@ -234,7 +234,7 @@ class ContentObjectForm extends React.Component {
     const label = entry.label !== undefined ? entry.label : entry.key;
 
     let field;
-    switch (entry.type) {
+    switch(entry.type) {
       case "label":
         field = <div key={key} className="form-text">{entry.text}</div>;
         break;

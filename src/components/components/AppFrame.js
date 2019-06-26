@@ -41,7 +41,7 @@ const IsCloneable = (value) => {
     return true;
   }
 
-  switch ({}.toString.call(value).slice(8,-1)) {
+  switch({}.toString.call(value).slice(8,-1)) {
     case "Boolean":
     case "Number":
     case "String":
@@ -158,7 +158,7 @@ class AppFrame extends React.Component {
         responseMessage,
         "*"
       );
-    } catch (error) {
+    } catch(error) {
       /* eslint-disable no-console */
       console.error(responseMessage);
       console.error(error);
@@ -179,7 +179,7 @@ class AppFrame extends React.Component {
       });
     } else {
 
-      switch (event.data.operation) {
+      switch(event.data.operation) {
         case "Complete":
           if(this.props.onComplete) { await this.props.onComplete(); }
           break;

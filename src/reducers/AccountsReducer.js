@@ -1,7 +1,7 @@
 import ActionTypes from "../actions/ActionTypes";
 
 const AccountsReducer = (state = {}, action) => {
-  switch (action.type) {
+  switch(action.type) {
     case ActionTypes.accounts.get.currentAccountAddress:
       return {
         ...state,

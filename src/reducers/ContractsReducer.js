@@ -11,7 +11,7 @@ const SortBlocks = (blocks) => {
 const ContractsReducer = (state = {}, action) => {
   let contractState;
 
-  switch (action.type) {
+  switch(action.type) {
     case ActionTypes.contracts.list:
       return {
         ...state,
