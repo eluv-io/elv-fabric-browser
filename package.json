@@ -1,7 +1,7 @@
 {
   "scripts": {
     "serve": "webpack-dev-server --hot",
-    "build": "webpack --progress --colors --devtool none",
+    "build": "NODE_ENV=production node ./node_modules/webpack-cli/bin/cli.js -p --progress --colors --devtool none",
     "lint": "npm run fix-scss ; npm run lint-scss ; npm run fix-js",
     "lint-show": "npm run lint-scss ; npm run lint-js",
     "lint-js": "./node_modules/.bin/eslint \"test/**/*.js\" \"src/**/*.js\"",
