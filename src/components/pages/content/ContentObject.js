@@ -413,6 +413,7 @@ class ContentObject extends React.Component {
           value={
             <Link className="inline-link" to={UrlJoin("/content", this.props.libraryId)} >{ this.props.libraryId}</Link>
           }
+          hidden={this.props.object.isContentType}
         />
         <LabelledField label={"Object ID"} value={this.props.objectId} />
         <LabelledField

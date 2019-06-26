@@ -7,7 +7,7 @@ import ContractForm from "../../../components/pages/contracts/ContractForm";
 import {SetErrorMessage} from "../../../actions/Notifications";
 
 const mapStateToProps = (state, props) => ({
-  contract: state.contracts.contracts[props.match.params.contractName],
+  contract: props.match.params.contractName ? state.contracts.contracts[props.match.params.contractName] : undefined,
   contracts: state.contracts.contracts,
   contractData: state.contracts.contractData
 });

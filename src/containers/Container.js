@@ -68,7 +68,7 @@ export default (Component) => {
           errorMessage: "",
           ...componentParams
         });
-      } catch (error) {
+      } catch(error) {
         if(!isCancelledPromiseError(error)) {
           /* eslint-disable no-console */
           console.error(error);
@@ -114,9 +114,10 @@ export default (Component) => {
         });
 
         return result;
-      } catch (error) {
+      } catch(error) {
         if(!isCancelledPromiseError(error)) {
           /* eslint-disable no-console */
+          console.error(`Error in ${methodName}:`);
           console.error(error);
           /* eslint-enable no-console */
 
@@ -127,7 +128,7 @@ export default (Component) => {
                 loading: false,
                 completed: false,
                 error: true,
-                errorMessage: error.statusText || error.message
+                errorMessage: error.statusText || error.message || error
               }
             }
           });

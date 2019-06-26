@@ -85,7 +85,7 @@ class ContractForm extends React.Component {
   }
 
   render() {
-    const backPath = "/contracts/saved";
+    const backPath = Path.dirname(this.props.match.url);
 
     if(this.props.createForm) {
       // Ensure contract data is set from compilation
@@ -102,10 +102,10 @@ class ContractForm extends React.Component {
     return (
       <div>
         <div className="actions-container manage-actions">
-          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+          <Action type="link" to={backPath} className="secondary">Back</Action>
         </div>
         <Form
-          legend={"Save contract"}
+          legend={this.props.contract ? "Edit Contract" : "Save contract"}
           redirectPath={backPath}
           cancelPath={backPath}
           status={this.props.methodStatus.Submit}

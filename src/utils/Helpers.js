@@ -44,7 +44,7 @@ export const AccessChargeDisplay = (accessCharge) => {
 export const ParseBytes32 = (bytes32String) => {
   try {
     return Bytes32ToUtf8(bytes32String);
-  } catch (error) {
+  } catch(error) {
     if(bytes32String.startsWith("0x0000")) {
       return new BigNumber(bytes32String).toString();
     } else {

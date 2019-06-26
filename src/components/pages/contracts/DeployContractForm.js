@@ -174,6 +174,7 @@ class DeployContractForm extends React.Component {
         <label key={"contract-constructor-param-label-" + input.name} htmlFor={input.name}>{input.name}</label>,
         <input
           key={"contract-constructor-param-" + input.name}
+          placeholder={input.type}
           name={input.name}
           required={true}
           value={this.state.constructorInputs[input.name]}

@@ -1,7 +1,7 @@
 import ActionTypes from "../actions/ActionTypes";
 
 const NotificationsReducer = (state = {}, action) => {
-  switch (action.type) {
+  switch(action.type) {
     case ActionTypes.notifications.error:
       return {
         ...state,

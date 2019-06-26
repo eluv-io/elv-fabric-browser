@@ -8,7 +8,7 @@ const SortBlocks = (blocks) => {
 };
 
 const LogsReducer = (state = [], action) => {
-  switch (action.type) {
+  switch(action.type) {
     case ActionTypes.logs.clear:
       return [];
 
