@@ -221,7 +221,7 @@ class ContentObject extends React.Component {
               versionHash: version.hash,
               partHash: part.hash,
               callback: async (url) => {
-                await DownloadFromUrl(url, part.hash);
+                await DownloadFromUrl(url, names[part.hash] || part.hash);
               }
             });
           }}
@@ -323,7 +323,7 @@ class ContentObject extends React.Component {
 
           <br/>
 
-          <LabelledField label="" value={this.DeleteVersionButton(version.hash)}/>
+          <LabelledField label="" value={this.DeleteVersionButton(version.hash)} hidden={true}/>
         </div>
       </div>
     );

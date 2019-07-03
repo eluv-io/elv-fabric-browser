@@ -148,6 +148,8 @@ const Fabric = {
       libraryIds.map(async libraryId => {
         try {
           const libraryObjectId = libraryId.replace("ilib", "iq__");
+          // Call library content object to ensure library exists
+          await client.ContentObject({libraryId, objectId: libraryObjectId});
           const meta = await client.ContentObjectMetadata({
             libraryId,
             objectId: libraryObjectId
@@ -158,13 +160,12 @@ const Fabric = {
             meta
           };
         } catch(error) {
-          return {
-            libraryId,
-            meta: {}
-          };
+          return undefined;
         }
       })
     );
+
+    filteredLibraries = filteredLibraries.filter(library => library !== undefined);
 
     // Filter libraries by class
     switch(params.selectFilter) {
@@ -947,12 +948,41 @@ const Fabric = {
   },
 
   DownloadPart: ({libraryId, objectId ,versionHash, partHash, encrypted}) => {
-    return client.DownloadPart({ libraryId, objectId, versionHash, partHash, encrypted});
+    return client.DownloadPart({libraryId, objectId, versionHash, partHash, encrypted});
   },
 
-  UploadPart: ({libraryId, objectId, writeToken, data, callback, chunkSize=1000000, encrypt=false}) => {
+  UploadPart: async ({libraryId, objectId, writeToken, file, chunkSize=100000, encrypt=false, callback}) => {
+    console.log("UPLOADING PART:")
     const encryption = encrypt ? "cgck" : "none";
-    return client.UploadPart({libraryId, objectId, writeToken, data, callback, chunkSize, encryption});
+    console.log(encrypt);
+    console.log(encryption);
+
+    const partWriteToken = await client.CreatePart({libraryId, objectId, writeToken, encryption});
+
+    if(callback) {
+      callback({uploaded: 0, total: file.size});
+    }
+
+    const totalChunks = Math.ceil(file.size / chunkSize);
+    for(let chunkNumber = 0; chunkNumber < totalChunks; chunkNumber++) {
+      const from = chunkNumber * chunkSize;
+      const to = Math.min(from + chunkSize, file.size);
+
+      await client.UploadPartChunk({
+        libraryId,
+        objectId,
+        writeToken,
+        partWriteToken,
+        chunk: await new Response(file.slice(from, to)).arrayBuffer(),
+        encryption
+      });
+
+      if(callback) {
+        callback({uploaded: to, total: file.size});
+      }
+    }
+
+    return await client.FinalizePart({libraryId, objectId, writeToken, partWriteToken, encryption});
   },
 
   FabricUrl: ({libraryId, objectId, versionHash, partHash}) => {
@@ -1260,12 +1290,17 @@ const Fabric = {
       const owner = await client.AccessGroupOwner({contractAddress});
       const isOwner = EqualAddress(owner, currentAccountAddress);
 
-      const isManager = await client.CallContractMethod({
-        contractAddress,
-        abi: BaseAccessGroupContract.abi,
-        methodName: "hasManagerAccess",
-        methodArgs: [currentAccountAddress]
-      });
+      let isManager = false;
+      /*
+      try {
+        isManager = await client.CallContractMethod({
+          contractAddress,
+          abi: BaseAccessGroupContract.abi,
+          methodName: "hasManagerAccess",
+          methodArgs: [client.utils.FormatAddress(currentAccountAddress)]
+        });
+      } catch(error) {}
+      */
 
       return {
         address: contractAddress,
@@ -1342,101 +1377,6 @@ const Fabric = {
       filteredMembers.forEach(member => members[member.address] = member);
 
       return {members, count};
-    },
-
-    /* Contracts */
-
-    FilterContracts({contracts, params}) {
-      let filteredContracts = Object.values(contracts);
-
-      // Filter
-      if(params.filter) {
-        filteredContracts = filteredContracts.filter(contract => {
-          try {
-            return contract.name.toLowerCase().includes(params.filter.toLowerCase());
-          } catch(e) {
-            return false;
-          }
-        });
-      }
-
-      // Sort
-      filteredContracts = filteredContracts.sort((a, b) => {
-        const name1 = a.name || "zz";
-        const name2 = b.name || "zz";
-        return name1.toLowerCase() > name2.toLowerCase() ? 1 : -1;
-      });
-
-      const count = filteredContracts.length;
-
-      if(params.paginate) {
-        // Paginate
-        const page = (params.page || 1) - 1;
-        const perPage = params.perPage || 10;
-
-        filteredContracts = filteredContracts.slice(page * perPage, (page + 1) * perPage);
-      }
-
-      // Convert back to map
-      contracts = {};
-      filteredContracts.forEach(contract => contracts[contract.address || contract.name] = contract);
-
-      return {contracts, count};
-    },
-
-    async Contracts({params}) {
-      return Fabric.FabricBrowser.FilterContracts({
-        contracts: await Fabric.FabricBrowser.Info("contracts"),
-        params
-      });
-    },
-
-    async DeployedContracts({params}) {
-      return Fabric.FabricBrowser.FilterContracts({
-        contracts: await Fabric.FabricBrowser.Info("deployedContracts"),
-        params
-      });
-    },
-
-    async AddContract({name, description, abi, bytecode}) {
-      await Fabric.FabricBrowser.AddEntry({
-        type: "contracts",
-        name,
-        metadata: {
-          name,
-          description,
-          abi,
-          bytecode
-        }
-      });
-    },
-
-    async RemoveContract({name}) {
-      await Fabric.FabricBrowser.RemoveEntry({type: "contracts", name});
-    },
-
-    async AddDeployedContract({name, description, address, abi, bytecode, owner}) {
-      address = FormatAddress(address);
-
-      await Fabric.FabricBrowser.AddEntry({
-        type: "deployedContracts",
-        name: address,
-        metadata: {
-          name,
-          description,
-          address,
-          abi,
-          bytecode,
-          owner
-        }
-      });
-    },
-
-    async RemoveDeployedContract({address}) {
-      await Fabric.FabricBrowser.RemoveEntry({
-        type: "deployedContracts",
-        name: address
-      });
     }
   }
 };
