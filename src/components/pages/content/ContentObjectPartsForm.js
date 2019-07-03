@@ -24,10 +24,12 @@ class ContentObjectPartsForm extends React.Component {
 
   async HandleSubmit() {
     const callback = ({uploaded, total, filename}) => {
+      const progress = `${(uploaded * 100 / total).toFixed(1)}%`;
+
       this.setState({
         progress: {
           ...this.state.progress,
-          [filename]: (uploaded * 100 / total).toFixed(1)
+          [filename]: progress
         }}
       );
     };
