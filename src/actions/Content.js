@@ -286,11 +286,12 @@ const CollectMetadata = async ({libraryId, objectId, writeToken, schema, fields,
         let partResponses = [];
 
         for(const file of files) {
-          const data = await new Response(file).blob();
+          const data = await new Response(file).arrayBuffer();
 
           let uploadCallback;
           if(callback) {
-            uploadCallback = ({uploaded, total}) => callback({key: entry.key, uploaded, total, filename: file.name});
+            uploadCallback = ({status, uploaded, total}) =>
+              callback({key: entry.key, status, uploaded, total, filename: file.name});
           }
 
           partResponses.push(
@@ -536,11 +537,9 @@ export const ContentTypes = () => {
 export const UploadParts = ({libraryId, objectId, files, encrypt=false, callback}) => {
   return async (dispatch) => {
     let parts = {};
-    let contentDraft = await Fabric.EditContentObject({libraryId, objectId});
+    const contentDraft = await Fabric.EditContentObject({libraryId, objectId});
 
     await Promise.all(Array.from(files).map(async file => {
-      const data = await new Response(file).blob();
-
       let partCallback;
       if(callback) {
         partCallback = ({uploaded, total}) => callback({uploaded, total, filename: file.name});
@@ -551,9 +550,9 @@ export const UploadParts = ({libraryId, objectId, files, encrypt=false, callback
           libraryId,
           objectId,
           writeToken: contentDraft.write_token,
-          data,
+          file,
           encrypt,
-          chunkSize: 1000000,
+          chunkSize: 10000000,
           callback: partCallback
         })
       ).part.hash;

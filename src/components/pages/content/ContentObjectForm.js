@@ -67,17 +67,13 @@ class ContentObjectForm extends React.Component {
 
   Initialize() {
     let type = "";
-    let types = {
-      "": {
-        name: "[none]",
-        hash: ""
-      }
-    };
+    let types = {};
 
     let metadata = "";
     let accessCharge = 0;
     if(this.props.createForm) {
-      let allowedTypes = this.props.library.types;
+      let allowedTypes = {};
+      Object.values(this.props.library.types).forEach(type => allowedTypes[type.hash] = type);
 
       if(Object.keys(allowedTypes).length > 0) {
         // Allowed types specified on library - limit options to that list
@@ -85,9 +81,15 @@ class ContentObjectForm extends React.Component {
         types = allowedTypes;
       } else {
         // No allowed types specified on library - all types allowed
+        let allTypes = {};
+        Object.values(this.props.types).forEach(type => allTypes[type.hash] = type);
+
         types = {
-          ...types,
-          ...this.props.types
+          "": {
+            name: "[none]",
+            hash: ""
+          },
+          ...allTypes
         };
       }
 
@@ -184,12 +186,14 @@ class ContentObjectForm extends React.Component {
   }
 
   UploadStatusCallback({key, uploaded, total, filename}) {
+    const progress = `${(uploaded * 100 / total).toFixed(1)}%`;
+
     this.setState({
       uploadStatus: {
         ...this.state.uploadStatus,
         [key]: {
           ...(this.state.uploadStatus || {})[key],
-          [filename]: (uploaded * 100 / total).toFixed(1)
+          [filename]: progress
         }
       }
     });
