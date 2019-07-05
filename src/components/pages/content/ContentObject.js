@@ -39,6 +39,7 @@ class ContentObject extends React.Component {
       typeId: typeInfo.id || "",
       typeHash: typeInfo.hash,
       typeName: (typeInfo.meta && typeInfo.meta.name) ? typeInfo.meta.name : typeInfo.hash,
+      partDownloadProgress: {}
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -213,22 +214,37 @@ class ContentObject extends React.Component {
     const parts = (version.parts.map((part, partNumber) => {
       const downloadButton = (
         <Action
-          className="action-compact tertiary"
-          onClick={() => {
-            this.props.DownloadPart({
+          className="action-compact secondary"
+          onClick={async () => {
+            const downloadUrl = await this.props.DownloadPart({
               libraryId: this.props.libraryId,
               objectId: this.props.objectId,
               versionHash: version.hash,
               partHash: part.hash,
-              callback: async (url) => {
-                await DownloadFromUrl(url, names[part.hash] || part.hash);
+              callback: async ({bytesFinished, bytesTotal}) => {
+                this.setState({
+                  partDownloadProgress: {
+                    ...this.state.partDownloadProgress,
+                    [part.hash]: (bytesFinished * 100) / bytesTotal
+                  }
+                });
               }
             });
+
+            await DownloadFromUrl(downloadUrl, names[part.hash] || part.hash);
           }}
         >
           Download
         </Action>
       );
+
+      const progress = this.state.partDownloadProgress[part.hash];
+      const downloadProgress = progress !== undefined ?
+        <span className="download-progress">
+          <progress value={this.state.partDownloadProgress[part.hash]} max={100} />
+          {`${progress.toFixed(1)}%`}
+        </span> :
+        undefined;
 
       const name = names[part.hash] ? <LabelledField label="Name" value={names[part.hash]}/> : null;
 
@@ -237,7 +253,7 @@ class ContentObject extends React.Component {
           { name }
           <LabelledField label="Hash" value={part.hash} />
           <LabelledField label="Size" value={PrettyBytes(part.size)} />
-          <LabelledField label="" value={downloadButton} />
+          <LabelledField label="Download" value={downloadProgress || downloadButton} />
         </div>
       );
     }));
