@@ -300,7 +300,7 @@ const CollectMetadata = async ({libraryId, objectId, writeToken, schema, fields,
               objectId,
               writeToken,
               data,
-              chunkSize: 5000000,
+              chunkSize: 2000000,
               callback: uploadCallback
             })
           );
@@ -552,7 +552,7 @@ export const UploadParts = ({libraryId, objectId, files, encrypt=false, callback
           writeToken: contentDraft.write_token,
           file,
           encrypt,
-          chunkSize: 10000000,
+          chunkSize: 2000000,
           callback: partCallback
         })
       ).part.hash;
@@ -583,10 +583,23 @@ export const UploadParts = ({libraryId, objectId, files, encrypt=false, callback
 
 export const DownloadPart = ({libraryId, objectId, versionHash, partHash, callback}) => {
   return async () => {
-    let blob = await Fabric.DownloadPart({libraryId, objectId, versionHash, partHash, encrypted: false});
-    let url = window.URL.createObjectURL(blob);
+    callback({bytesFinished: 0, bytesTotal: 1});
+    let chunks = [];
+    await Fabric.DownloadPart({
+      libraryId,
+      objectId,
+      versionHash,
+      partHash,
+      format: "arrayBuffer",
+      chunked: true,
+      chunkSize: 1000000,
+      callback: ({bytesFinished, bytesTotal, chunk}) => {
+        callback({bytesFinished, bytesTotal});
+        chunks.push(chunk);
+      }
+    });
 
-    await callback(url);
+    return window.URL.createObjectURL(new Blob(chunks));
   };
 };
 
