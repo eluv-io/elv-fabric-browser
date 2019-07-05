@@ -59,3 +59,18 @@
     max-height: 3.5em;
   }
 }
+
+.part-info {
+  margin-bottom: $elv-spacing-s;
+}
+
+.download-progress {
+  color: $elv-color-text-lighter;
+  display: flex;
+  width: 100%;
+
+  progress {
+    flex-grow: 1;
+    margin-right: $elv-spacing-xs;
+  }
+}

@@ -947,15 +947,12 @@ const Fabric = {
     return client.ContentParts({libraryId, objectId, versionHash});
   },
 
-  DownloadPart: ({libraryId, objectId ,versionHash, partHash, encrypted}) => {
-    return client.DownloadPart({libraryId, objectId, versionHash, partHash, encrypted});
+  DownloadPart: ({libraryId, objectId ,versionHash, partHash, format="blob", chunked=false, chunkSize=10000000, callback}) => {
+    return client.DownloadPart({libraryId, objectId, versionHash, partHash, format, chunked, chunkSize, callback});
   },
 
-  UploadPart: async ({libraryId, objectId, writeToken, file, chunkSize=100000, encrypt=false, callback}) => {
-    console.log("UPLOADING PART:")
+  UploadPart: async ({libraryId, objectId, writeToken, file, chunkSize=1000000, encrypt=false, callback}) => {
     const encryption = encrypt ? "cgck" : "none";
-    console.log(encrypt);
-    console.log(encryption);
 
     const partWriteToken = await client.CreatePart({libraryId, objectId, writeToken, encryption});
 
