@@ -1,8 +1,8 @@
 .listing {
   $aspect-ratio: 0.75; // 4/3
   $grid-listing-width: 215px;
-  $table-listing-height: calc(#{$table-listing-width} * #{$aspect-ratio});
   $table-listing-width: 125px;
+  $table-listing-height: calc(#{$table-listing-width} * #{$aspect-ratio});
 
   .loading {
     align-items: center;
