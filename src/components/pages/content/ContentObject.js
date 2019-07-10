@@ -225,7 +225,10 @@ class ContentObject extends React.Component {
                 this.setState({
                   partDownloadProgress: {
                     ...this.state.partDownloadProgress,
-                    [part.hash]: (bytesFinished * 100) / bytesTotal
+                    [version.hash]: {
+                      ...this.state.partDownloadProgress[version.hash],
+                      [part.hash]: (bytesFinished * 100) / bytesTotal
+                    }
                   }
                 });
               }
@@ -238,10 +241,11 @@ class ContentObject extends React.Component {
         </Action>
       );
 
-      const progress = this.state.partDownloadProgress[part.hash];
+      const progress = this.state.partDownloadProgress[version.hash] &&
+        this.state.partDownloadProgress[version.hash][part.hash];
       const downloadProgress = progress !== undefined ?
         <span className="download-progress">
-          <progress value={this.state.partDownloadProgress[part.hash]} max={100} />
+          <progress value={progress} max={100} />
           {`${progress.toFixed(1)}%`}
         </span> :
         undefined;

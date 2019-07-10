@@ -216,7 +216,7 @@ export const ListContentTypes = ({params}) => {
 
 export const ListContentObjects = ({libraryId, params}) => {
   return async (dispatch) => {
-    const {objects, count} = await WithCancel(
+    const {objects, count, cacheId} = await WithCancel(
       params.cancelable,
       async () => await Fabric.ListContentObjects({libraryId, params})
     );
@@ -225,7 +225,8 @@ export const ListContentObjects = ({libraryId, params}) => {
       type: ActionTypes.content.objects.list,
       libraryId,
       objects,
-      count
+      count,
+      cacheId
     });
   };
 };
@@ -286,8 +287,6 @@ const CollectMetadata = async ({libraryId, objectId, writeToken, schema, fields,
         let partResponses = [];
 
         for(const file of files) {
-          const data = await new Response(file).arrayBuffer();
-
           let uploadCallback;
           if(callback) {
             uploadCallback = ({status, uploaded, total}) =>
@@ -299,7 +298,7 @@ const CollectMetadata = async ({libraryId, objectId, writeToken, schema, fields,
               libraryId,
               objectId,
               writeToken,
-              data,
+              file,
               chunkSize: 2000000,
               callback: uploadCallback
             })

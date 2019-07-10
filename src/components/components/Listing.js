@@ -19,7 +19,7 @@ class Listing extends React.Component {
 
     this.state = {
       display: savedOptions.display,
-      perPage: 10,
+      perPage: props.perPage || 10,
       page: 1,
       selectFilter: this.props.selectFilterOptions ? savedOptions.filter || this.props.selectFilterOptions[0][1] : "",
       filter: "",
@@ -219,6 +219,26 @@ class Listing extends React.Component {
     );
   }
 
+  Count() {
+    if(this.props.count === 0) {
+      return (
+        <div className="listing-count">
+          No results to display
+        </div>
+      );
+    } else if(!this.props.count) {
+      return null;
+    }
+
+    const start = ((this.state.page - 1) * this.state.perPage) + 1;
+    const end = Math.min(start + this.state.perPage - 1, this.props.count);
+    return (
+      <div className="listing-count">
+        {`Displaying results ${start} - ${end} of ${this.props.count}`}
+      </div>
+    );
+  }
+
   render() {
     if(this.props.loadingStatus.error) {
       return (
@@ -236,6 +256,7 @@ class Listing extends React.Component {
       <div className="listing">
         { this.Actions() }
         <LoadingElement loading={this.props.loadingStatus.loading} loadingClassname="loading" loadingIcon="rotate">
+          { this.Count() }
           <ListingView
             count={this.props.count}
             display={this.state.display}
@@ -252,6 +273,7 @@ Listing.propTypes = {
   pageId: PropTypes.string.isRequired,
   noIcon: PropTypes.bool,
   paginate: PropTypes.bool,
+  perPage: PropTypes.number,
   count: PropTypes.number,
   selectFilterLabel: PropTypes.string,
   selectFilterOptions: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)),

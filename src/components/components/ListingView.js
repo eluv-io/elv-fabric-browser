@@ -95,12 +95,12 @@ ListingItem.propTypes = {
 class Listing extends React.Component {
   render() {
     if(!this.props.count || this.props.count === 0) {
-      return <h4>No Content Available</h4>;
+      return null;
     }
 
     const content = this.props.RenderContent();
     if(!content || content.length === 0) {
-      return <h4>No Content Available</h4>;
+      return null;
     }
 
     let iconHeader;
