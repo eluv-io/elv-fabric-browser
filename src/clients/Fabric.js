@@ -265,10 +265,6 @@ const Fabric = {
       metadata: privateMeta
     });
 
-    /* Content */
-    const objectIds = (await client.ContentObjects({libraryId})).map(object => object.id)
-      .filter(objectId => !Fabric.utils.EqualHash(libraryId, objectId));
-
     /* Types */
     const types = await Fabric.ListLibraryContentTypes({libraryId});
 
@@ -282,7 +278,6 @@ const Fabric = {
       libraryObjectId: libraryId.replace("ilib", "iq__"),
       privateMeta,
       imageUrl,
-      objects: objectIds,
       owner,
       isOwner: EqualAddress(owner, currentAccountAddress),
       isContentSpaceLibrary: libraryId === Fabric.contentSpaceLibraryId
@@ -430,60 +425,37 @@ const Fabric = {
 
   // Make sure not to call anything requiring content object authorization
   ListContentObjects: async ({libraryId, params}) => {
-    let libraryObjects = (await client.ContentObjects({libraryId}));
+    const filterOptions = {
+      select: ["name", "eluv.description", "image"],
+      sort: "name",
+      limit: params.perPage
+    };
 
-    // Exclude library object
-    libraryObjects = libraryObjects.filter(object => object.id !== libraryId.replace("ilib", "iq__"));
-
-    // Filter objects
-    if(params.filter) {
-      libraryObjects = libraryObjects.filter(object => {
-        try {
-          return object.versions[0].meta.name.toLowerCase().includes(params.filter.toLowerCase());
-        } catch(e) {
-          return false;
-        }
-      });
+    if(params.page) {
+      filterOptions.start = (params.page - 1) * params.perPage;
     }
 
-    const count = libraryObjects.length;
+    if(params.filter) {
+      filterOptions.filter = {key: "name", type: "cnt", filter: params.filter};
+    }
 
-    // Sort objects
-    libraryObjects = libraryObjects.sort((a, b) => {
-      const name1 = a.versions[0].meta.name|| "zz";
-      const name2 = b.versions[0].meta.name || "zz";
-      return name1.toLowerCase() > name2.toLowerCase() ? 1 : -1;
-    });
+    if(params.cacheId) {
+      filterOptions.cacheId = params.cacheId;
+    }
 
-    // Retrieve access info to filter out inaccessible objects
-    libraryObjects = await Promise.all(libraryObjects.map(async object => {
-      object.isContentLibraryObject = client.utils.EqualHash(libraryId, object.id);
-      object.isContentType = libraryId === Fabric.contentSpaceLibraryId && !object.isContentLibraryObject;
-      object.isNormalObject = !object.isContentLibraryObject && !object.isContentType;
+    let {contents, paging} = await client.ContentObjects({libraryId, filterOptions});
 
-      if(object.isNormalObject) {
-        object.accessInfo = await Fabric.GetAccessInfo({objectId: object.id});
-        object.status = await Fabric.GetContentObjectStatus({objectId: object.id});
-      }
-
-      return object;
-    }));
-
-    // Filter inaccessible objects
-    // TODO: Determine new accessibility
-    //libraryObjects = libraryObjects.filter(object => !object.accessInfo || object.accessInfo.accessible);
-
-    // Paginate objects
-    const page = params.page - 1;
-    const perPage = params.perPage || 10;
-    libraryObjects = libraryObjects.slice(page * perPage, (page+1) * perPage);
+    contents = contents || [];
+    const count = paging.items;
+    const cacheId = paging.cache_id;
 
     let objects = {};
-    for(const object of libraryObjects) {
+    for(const object of contents) {
       try {
-        const owner = await Fabric.GetContentObjectOwner({objectId: object.id});
+        //const owner = await Fabric.GetContentObjectOwner({objectId: object.id});
 
         const latestVersion = object.versions[0];
+
         const imageUrl = await Fabric.GetContentObjectImageUrl({
           libraryId,
           objectId: object.id,
@@ -491,16 +463,20 @@ const Fabric = {
           metadata: object.versions[0].meta
         });
 
+        const accessInfo = await Fabric.GetAccessInfo({objectId: object.id});
+
         objects[object.id] = {
           // Pull latest version info up to top level
           ...latestVersion,
-          ...object,
+          id: object.id,
+          objectId: object.id,
+          hash: object.hash,
+          type: object.type,
           name: latestVersion.meta.name,
           description: latestVersion.meta["eluv.description"],
+          accessInfo,
           imageUrl,
-          contractAddress: client.utils.HashToAddress(object.id),
-          owner,
-          isOwner: EqualAddress(owner, await Fabric.CurrentAccountAddress())
+          contractAddress: client.utils.HashToAddress(object.id)
         };
       } catch(error) {
         /* eslint-disable no-console */
@@ -512,6 +488,7 @@ const Fabric = {
 
     return {
       objects,
+      cacheId,
       count
     };
   },

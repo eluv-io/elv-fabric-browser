@@ -16,7 +16,8 @@ const mapStateToProps = (state, props) => ({
   accessGroups: state.accessGroups.accessGroups,
   libraries: state.content.libraries,
   objects: state.content.objects,
-  count: state.content.count
+  count: state.content.count,
+  cacheId: state.content.cacheId
 });
 
 const mapDispatchToProps = dispatch =>
