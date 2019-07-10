@@ -51,6 +51,7 @@ const ContentReducer = (state = {}, action) => {
         objects: {
           ...action.objects
         },
+        cacheId: action.cacheId,
         count: {
           ...state.count,
           objects: {

@@ -1,8 +1,8 @@
 .listing {
   $aspect-ratio: 0.75; // 4/3
   $grid-listing-width: 215px;
-  $table-listing-width: 125px;
   $table-listing-height: calc(#{$table-listing-width} * #{$aspect-ratio});
+  $table-listing-width: 125px;
 
   .loading {
     align-items: center;
@@ -16,7 +16,6 @@
     display: flex;
     height: 50px;
     justify-content: space-between;
-    margin-bottom: $elv-spacing-s;
     width: 100%;
 
     .controls {
@@ -75,7 +74,7 @@
           height: 100%;
           justify-content: center;
           margin: 0;
-          min-width: 25px;
+          min-width: 2.5em;
 
           &:hover {
             background: $elv-color-lightgray;
@@ -136,6 +135,15 @@
       margin: 0 $elv-spacing-xs;
       padding: 0 $elv-spacing-xs;
     }
+  }
+
+  .listing-count {
+    @include elv-no-select;
+
+    color: $elv-color-text-lighter;
+    display: flex;
+    justify-content: center;
+    margin: $elv-spacing-xs 0 $elv-spacing-s;
   }
 
   // Grid view

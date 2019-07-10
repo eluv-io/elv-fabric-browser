@@ -175,6 +175,10 @@ class ContentLibrary extends React.Component {
     const description = <ClippedText className="object-description" text={this.props.library.description} />;
     const libraryObjectPath = UrlJoin(this.props.match.url, this.props.library.libraryObjectId);
 
+    const count = this.props.count.objects[this.props.libraryId];
+    const objectCount = count || count === 0 ?
+      <LabelledField label={"Content Objects"} value={count} /> : null;
+
     return (
       <div className="object-info label-box">
         { this.LibraryImage() }
@@ -199,7 +203,7 @@ class ContentLibrary extends React.Component {
             </Link>
           }
         />
-        <LabelledField label={"Content Objects"} value={this.props.library.objects.length} />
+        { objectCount }
         <br />
         { this.LibraryContentTypes() }
         { this.ToggleSection("Public Metadata", "public-metadata", this.props.library.meta, true) }
@@ -215,16 +219,7 @@ class ContentLibrary extends React.Component {
     const objects = Object.keys(this.props.objects).map(objectId => {
       const object = this.props.objects[objectId];
 
-      let status;
-      if(object.isNormalObject) {
-        if(object.status.code !== 0) {
-          // Owner or not yet published
-          status = object.status.description;
-        } else {
-          // Published - Show access charge
-          status = AccessChargeDisplay(object.accessInfo.accessCharge);
-        }
-      }
+      const status = AccessChargeDisplay(object.accessInfo.accessCharge);
 
       return {
         id: objectId,
@@ -245,9 +240,13 @@ class ContentLibrary extends React.Component {
       <Listing
         pageId="ContentObjects"
         paginate={true}
+        perPage={20}
         count={this.props.count.objects[this.props.libraryId]}
         loadingStatus={this.props.methodStatus.ListContentObjects}
-        LoadContent={({params}) => this.props.methods.ListContentObjects({libraryId: this.props.libraryId, params})}
+        LoadContent={({params}) => {
+          params.cacheId = this.props.cacheId;
+          this.props.methods.ListContentObjects({libraryId: this.props.libraryId, params});
+        }}
         RenderContent={this.ContentObjects}
       />
     );
