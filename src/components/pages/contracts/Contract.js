@@ -39,7 +39,7 @@ class Contract extends React.Component {
       </Action>
     );
   }
-  
+
   async DeleteContract() {
     await Confirm({
       message: "Are you sure you want to remove this contract?",
@@ -57,7 +57,10 @@ class Contract extends React.Component {
 
       return (
         <div className="indented" key={"contract-method-" + entry.name}>
-          <LabelledField label={entry.name} value={this.ToggleButton(entry.type.capitalize() + " Info", entry.name)} wideLabel={true} />
+          <LabelledField label={entry.name} wideLabel={true}>
+            { this.ToggleButton(entry.type.capitalize() + " Info", entry.name) }
+          </LabelledField>
+
           { methodDisplayInfo }
         </div>
       );
@@ -93,11 +96,22 @@ class Contract extends React.Component {
         <div className="page-content">
           <div className="label-box">
             <h3>Contract Info</h3>
-            <LabelledField label="Description" value={description} />
-            <LabelledField label="ABI" value={this.ToggleButton("Full ABI", "__abi")} />
+            <LabelledField label="Description">
+              { description }
+            </LabelledField>
+
+            <LabelledField label="ABI">
+              { this.ToggleButton("Full ABI", "__abi") }
+            </LabelledField>
+
             { abiDisplayInfo }
-            <LabelledField label="Bytecode" value={this.ToggleButton("Bytecode", "__bytecode")} />
+
+            <LabelledField label="Bytecode">
+              { this.ToggleButton("Bytecode", "__bytecode") }
+            </LabelledField>
+
             { bytecodeDisplayInfo }
+
             <h3>Contract Constructor</h3>
             { this.ContractInfo(contractConstructor) }
             <h3>Constant Methods</h3>

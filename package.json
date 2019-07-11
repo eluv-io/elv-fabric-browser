@@ -28,7 +28,7 @@
     "browser-solc": "^1.0.0",
     "connected-react-router": "^6.3.1",
     "elv-client-js": "git+https://github.com/eluv-io/elv-client-js.git#develop",
-    "elv-components-js": "git+https://github.com/eluv-io/elv-components-js.git#b24995d4f494e323b2247f46d192098b15c746a6",
+    "elv-components-js": "git+https://github.com/eluv-io/elv-components-js.git#6b2c17db03eb757c2ff608fbbe43366db0015e65",
     "node-fetch": "^2.3.0",
     "path": "^0.12.7",
     "pretty-bytes": "^5.1.0",
