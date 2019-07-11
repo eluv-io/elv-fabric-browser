@@ -62,7 +62,9 @@ class ContentLibrary extends React.Component {
 
     return (
       <div className="formatted-data">
-        <LabelledField label={label} value={this.ToggleButton(label, id)} />
+        <LabelledField label={label}>
+          { this.ToggleButton(label, id) }
+        </LabelledField>
         { content }
       </div>
     );
@@ -87,15 +89,11 @@ class ContentLibrary extends React.Component {
 
     return (
       <div>
-        <LabelledField
-          label="Content Types"
-          alignTop={true}
-          value={
-            <div className="comma-separated-list">
-              { contentTypes }
-            </div>
-          }
-        />
+        <LabelledField label="Content Types" alignTop={true}>
+          <div className="comma-separated-list">
+            { contentTypes }
+          </div>
+        </LabelledField>
         <br />
       </div>
     );
@@ -138,14 +136,13 @@ class ContentLibrary extends React.Component {
 
                     return (
                       <div className="group-info indented" key={"library-group-" + groupType + "-" + group.address}>
-                        <LabelledField
-                          label="Group"
-                          value={groupInfo}
-                        />
-                        <LabelledField
-                          label="Address"
-                          value={<Link className="inline-link" to={UrlJoin(accessGroupLink, "contract")}>{group.address}</Link>}
-                        />
+                        <LabelledField label="Group">
+                          { groupInfo }
+                        </LabelledField>
+
+                        <LabelledField label="Address">
+                          <Link className="inline-link" to={UrlJoin(accessGroupLink, "contract")}>{group.address}</Link>
+                        </LabelledField>
                       </div>
                     );
                   })
@@ -177,34 +174,45 @@ class ContentLibrary extends React.Component {
 
     const count = this.props.count.objects[this.props.libraryId];
     const objectCount = count || count === 0 ?
-      <LabelledField label={"Content Objects"} value={count} /> : null;
+      <LabelledField label="Content Objects" value={count} /> : null;
 
     return (
       <div className="object-info label-box">
         { this.LibraryImage() }
-        <LabelledField label={"Name"} value={this.props.library.name} />
-        <LabelledField label={"Description"} value={description} alignTop={true} />
+        <LabelledField label="Name">
+          { this.props.library.name }
+        </LabelledField>
+
+        <LabelledField label="Description" alignTop={true}>
+          { description }
+        </LabelledField>
+
         <br />
-        <LabelledField label={"Library ID"} value={this.props.libraryId} />
-        <LabelledField label={"Owner"} value={this.props.library.owner} />
-        <LabelledField
-          label={"Library Object"}
-          value={
-            <Link className="inline-link" to={libraryObjectPath}>
-              {this.props.library.libraryObjectId}
-            </Link>
-          }
-        />
-        <LabelledField
-          label={"Contract Address"}
-          value={
-            <Link className="inline-link" to={UrlJoin(libraryObjectPath, "contract")}>
-              {this.props.library.contractAddress}
-            </Link>
-          }
-        />
+
+        <LabelledField label="Library ID" copyValue={this.props.libraryId}>
+          { this.props.libraryId }
+        </LabelledField>
+
+        <LabelledField label="Owner" copyValue={this.props.library.owner}>
+          { this.props.library.owner }
+        </LabelledField>
+
+        <LabelledField label={"Library Object"} copyValue={this.props.library.libraryObjectId}>
+          <Link className="inline-link" to={libraryObjectPath}>
+            { this.props.library.libraryObjectId }
+          </Link>
+        </LabelledField>
+
+        <LabelledField label={"Contract Address"} copyValue={this.props.library.contractAddress}>
+          <Link className="inline-link" to={UrlJoin(libraryObjectPath, "contract")}>
+            { this.props.library.contractAddress }
+          </Link>
+        </LabelledField>
+
         { objectCount }
+
         <br />
+
         { this.LibraryContentTypes() }
         { this.ToggleSection("Public Metadata", "public-metadata", this.props.library.meta, true) }
         { this.ToggleSection("Private Metadata", "private-metadata", this.props.library.privateMeta, true) }
