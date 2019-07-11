@@ -99,13 +99,19 @@ class AccessGroup extends React.Component {
         <PageHeader header={this.props.accessGroup.name} />
         <div className="page-content">
           <div className="label-box">
-            <LabelledField label="Description" value={description} />
-            <LabelledField label="Owner" value={this.props.accessGroup.owner} />
-            <LabelledField label="Contract Address" value={
+            <LabelledField label="Description">
+              { description }
+            </LabelledField>
+
+            <LabelledField label="Owner" copyValue={this.props.accessGroup.owner}>
+              { this.props.accessGroup.owner }
+            </LabelledField>
+
+            <LabelledField label="Contract Address" copyValue={this.props.accessGroup.address}>
               <Link className="inline-link" to={UrlJoin(this.props.match.url, "contract")}>
                 { this.props.accessGroup.address }
               </Link>
-            } />
+            </LabelledField>
           </div>
         </div>
       </div>

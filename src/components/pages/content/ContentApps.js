@@ -59,7 +59,11 @@ class ContentApps extends React.Component {
           {`Remove ${role.capitalize()} App`}
         </Action>
       );
-      info = <LabelledField label="Name" value={app.filename} />;
+      info = (
+        <LabelledField label="Name">
+          { app.filename }
+        </LabelledField>
+      );
     } else {
       // App not set for this role - add button
       action = (
@@ -71,7 +75,11 @@ class ContentApps extends React.Component {
       const typeApp = typeMeta[`eluv.${role}App`];
       if(typeApp) {
         const typeName = typeMeta.name || "content type";
-        info = <LabelledField label="Name" value={`${typeApp} (${typeName})`} />;
+        info = (
+          <LabelledField label="Name">
+            { `${typeApp} (${typeName})` }
+          </LabelledField>
+        );
       }
     }
 
@@ -82,9 +90,9 @@ class ContentApps extends React.Component {
         </h3>
         <div className="indented">
           { info }
-          <LabelledField
-            value={action}
-          />
+          <LabelledField>
+            { action }
+          </LabelledField>
         </div>
       </div>
     );

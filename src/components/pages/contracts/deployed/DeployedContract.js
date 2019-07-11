@@ -78,11 +78,9 @@ class DeployedContract extends React.Component {
       <pre key="abi-content">{JSON.stringify(this.props.contract.abi, null, 2)}</pre> : null;
 
     return [
-      <LabelledField
-        key="abi-label"
-        label="ABI"
-        value={this.ToggleButton("ABI", "__abi")}
-      />,
+      <LabelledField key="abi-label" label="ABI">
+        { this.ToggleButton("ABI", "__abi") }
+      </LabelledField>,
       abiDisplayInfo
     ];
   }
@@ -110,10 +108,22 @@ class DeployedContract extends React.Component {
         <div className="page-content">
           <div className="label-box">
             <h3>Contract Info</h3>
-            <LabelledField label="Name" value={this.props.contract.name} />
-            <LabelledField label="Description" value={this.props.contract.description} />
-            <LabelledField label="Contract Address" value={this.props.contract.address} />
-            <LabelledField label="Balance" value={balance} />
+            <LabelledField label="Name">
+              { this.props.contract.name }
+            </LabelledField>
+
+            <LabelledField label="Description">
+              { this.props.contract.description }
+            </LabelledField>
+
+            <LabelledField label="Contract Address" copyValue={this.props.contract.address}>
+              { this.props.contract.address }
+            </LabelledField>
+
+            <LabelledField label="Balance">
+              { balance }
+            </LabelledField>
+
             { this.AbiInfo() }
             <h3>Contract Methods</h3>
             <DeployedContractMethodForm {...this.props} />

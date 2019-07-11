@@ -164,7 +164,9 @@ class ContentObject extends React.Component {
 
     return (
       <div className="formatted-data">
-        <LabelledField label={label} value={this.ToggleButton(label, id)} />
+        <LabelledField label={label}>
+          { this.ToggleButton(label, id) }
+        </LabelledField>
         { content }
       </div>
     );
@@ -255,9 +257,17 @@ class ContentObject extends React.Component {
       return (
         <div key={part.hash + "-" + partNumber} className="part-info">
           { name }
-          <LabelledField label="Hash" value={part.hash} />
-          <LabelledField label="Size" value={PrettyBytes(part.size)} />
-          <LabelledField label="Download" value={downloadProgress || downloadButton} />
+          <LabelledField label="Hash" copyValue={part.hash}>
+            { part.hash }
+          </LabelledField>
+
+          <LabelledField label="Size">
+            { PrettyBytes(part.size) }
+          </LabelledField>
+
+          <LabelledField label="Download">
+            { downloadProgress || downloadButton }
+          </LabelledField>
         </div>
       );
     }));
@@ -316,7 +326,11 @@ class ContentObject extends React.Component {
 
     let versionHeader;
     if(!latestVersion) {
-      versionHeader = <LabelledField label={"Version " + versionNumber} value={this.ToggleButton("Version", version.hash)} />;
+      versionHeader = (
+        <LabelledField label={"Version " + versionNumber}>
+          { this.ToggleButton("Version", version.hash) }
+        </LabelledField>
+      );
     } else {
       versionHeader = <h3>{"Latest Version"}</h3>;
     }
@@ -334,16 +348,27 @@ class ContentObject extends React.Component {
         { versionHeader }
 
         <div className="indented">
-          <LabelledField label={"Hash"} value={version.hash} />
-          <LabelledField label={"Parts"} value={version.parts.length} />
-          <LabelledField label={"Total size"} value={this.VersionSize(version)} />
+          <LabelledField label="Hash" copyValue={version.hash}>
+            { version.hash }
+          </LabelledField>
+
+          <LabelledField label="Parts">
+            { version.parts.length }
+          </LabelledField>
+
+          <LabelledField label="Total size">
+            { this.VersionSize(version) }
+          </LabelledField>
+
           { this.ToggleSection("Metadata", "metadata-" + versionNumber, version.meta) }
           { this.ToggleSection("Verification", "verification-" + versionNumber, version.verification) }
           { this.ToggleSection("Parts", "parts-" + versionNumber, this.ObjectParts(version), false) }
 
           <br/>
 
-          <LabelledField label="" value={this.DeleteVersionButton(version.hash)} hidden={true}/>
+          <LabelledField hidden={true}>
+            { this.DeleteVersionButton(version.hash) }
+          </LabelledField>
         </div>
       </div>
     );
@@ -367,25 +392,23 @@ class ContentObject extends React.Component {
   ContractInfo() {
     let contractInfo = [];
     contractInfo.push(
-      <LabelledField
-        key={"contract-" + this.props.object.contractAddress}
-        label={"Contract Address"}
-        value={
-          <Link className="inline-link" to={UrlJoin(this.props.match.url, "contract")}>
-            {this.props.object.contractAddress}
-          </Link>
-        } />
-
+      <LabelledField key="contract-address" label="Contract Address" copyValue={this.props.object.contractAddress}>
+        <Link className="inline-link" to={UrlJoin(this.props.match.url, "contract")}>
+          { this.props.object.contractAddress }
+        </Link>
+      </LabelledField>
     );
 
     if(!this.props.object.isContentLibraryObject && this.props.object.customContractAddress) {
       const customContractAddress = this.props.object.customContractAddress;
 
       contractInfo.push(
-        <LabelledField
-          key={"contract-" + customContractAddress}
-          label={"Custom Contract"}
-          value={<Link className="inline-link" to={UrlJoin(this.props.match.url, "custom-contract")}>{customContractAddress}</Link>} />);
+        <LabelledField key={"contract-" + customContractAddress} label="Custom Contract" copyValue={customContractAddress}>
+          <Link className="inline-link" to={UrlJoin(this.props.match.url, "custom-contract")}>
+            { customContractAddress }
+          </Link>
+        </LabelledField>
+      );
     }
 
     return contractInfo;
@@ -397,15 +420,24 @@ class ContentObject extends React.Component {
 
     let reviewNote, reviewer;
     if(this.props.object.meta["eluv.reviewNote"]) {
-      reviewer = <LabelledField label="Reviewer" value={this.props.object.meta["eluv.reviewer"]} />;
+      reviewer = (
+        <LabelledField label="Reviewer">
+          { this.props.object.meta["eluv.reviewer"] }
+        </LabelledField>
+      );
       const note = <ClippedText className="object-description" text={this.props.object.meta["eluv.reviewNote"]} />;
-      reviewNote = <LabelledField
-        label="Review Note" value={note} />;
+      reviewNote = (
+        <LabelledField label="Review Note">
+          { note }
+        </LabelledField>
+      );
     }
 
     return (
       <div>
-        <LabelledField label={"Status"} value={this.props.object.status.description} />
+        <LabelledField label="Status">
+          { this.props.object.status.description }
+        </LabelledField>
         { reviewer }
         { reviewNote }
       </div>
@@ -417,41 +449,65 @@ class ContentObject extends React.Component {
     const description = <ClippedText className="object-description" text={this.props.object.description} />;
     let accessCharge;
     if(this.props.object.isNormalObject) {
-      accessCharge = <LabelledField label={"Access charge"} value={AccessChargeDisplay(this.props.object.accessInfo.accessCharge)} />;
+      accessCharge = (
+        <LabelledField label="Access charge">
+          { AccessChargeDisplay(this.props.object.accessInfo.accessCharge) }
+        </LabelledField>
+      );
     }
 
     return (
       <div className="object-info label-box">
-        <LabelledField label={"Name"} value={this.props.object.name} />
-        <LabelledField label={"Description"} value={description} alignTop={true} />
-        <br />
+        <LabelledField label="Name">
+          { this.props.object.name }
+        </LabelledField>
+
+        <LabelledField label="Description" alignTop={true}>
+          { description }
+        </LabelledField>
+
         { this.ObjectStatus() }
         { accessCharge }
+
         <br />
-        <LabelledField
-          label={"Library ID"}
-          value={
-            <Link className="inline-link" to={UrlJoin("/content", this.props.libraryId)} >{ this.props.libraryId}</Link>
-          }
-          hidden={this.props.object.isContentType}
-        />
-        <LabelledField label={"Object ID"} value={this.props.objectId} />
-        <LabelledField
-          label={"Type"}
-          hidden={this.props.object.isContentType}
-          value={
-            <Link className="inline-link" to={UrlJoin("/content-types", this.state.typeId)}>
-              {this.state.typeName || this.state.typeId}
-            </Link>
-          }
-        />
-        <LabelledField label={"Type Hash"} value={this.state.typeHash} hidden={this.props.object.isContentType} />
+
+        <LabelledField label="Library ID" copyValue={this.props.libraryId} hidden={this.props.object.isContentType}>
+          <Link className="inline-link" to={UrlJoin("/content", this.props.libraryId)} >{ this.props.libraryId}</Link>
+        </LabelledField>
+
+        <LabelledField label="Object ID" copyValue={this.props.objectId}>
+          { this.props.objectId }
+        </LabelledField>
+
+        <LabelledField label="Type" hidden={this.props.object.isContentType}>
+          <Link className="inline-link" to={UrlJoin("/content-types", this.state.typeId)}>
+            { this.state.typeName || this.state.typeId }
+          </Link>
+        </LabelledField>
+
+        <LabelledField label="Type Hash" hidden={this.props.object.isContentType}>
+          { this.state.typeHash }
+        </LabelledField>
+
         { this.ContractInfo() }
-        <LabelledField label={"Owner"} value={this.props.object.owner} />
+
+        <LabelledField label="Owner" copyValue={this.props.object.owner}>
+          { this.props.object.owner }
+        </LabelledField>
+
         <br />
-        <LabelledField label={"Versions"} value={this.props.object.versions.length} />
-        <LabelledField label={"Parts"} value={latestVersion.parts.length} />
-        <LabelledField label={"Total size"} value={this.VersionSize(latestVersion)} />
+
+        <LabelledField label="Versions">
+          { this.props.object.versions.length }
+        </LabelledField>
+
+        <LabelledField label="Parts">
+          { latestVersion.parts.length }
+        </LabelledField>
+
+        <LabelledField label="Total size">
+          { this.VersionSize(latestVersion) }
+        </LabelledField>
 
         { this.ObjectVersion(this.props.object.versions[0], this.props.object.versions.length, true) }
 
