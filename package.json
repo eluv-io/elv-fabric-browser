@@ -88,12 +88,13 @@
     "source-map-loader": "^0.2.4",
     "style-loader": "^0.23.1",
     "svg-inline-loader": "^0.8.0",
-    "webpack": "^4.29.5",
+    "webpack": "^4.36.1",
     "webpack-bundle-analyzer": "^3.3.2",
     "webpack-cli": "^3.2.3",
     "webpack-dev-server": "^3.2.1"
   },
   "babel": {
+    "comments": true,
     "presets": [
       "@babel/preset-env",
       "@babel/preset-react"

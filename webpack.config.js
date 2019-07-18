@@ -11,6 +11,7 @@ module.exports = {
   output: {
     path: Path.resolve(__dirname, "dist"),
     filename: "index.js",
+    chunkFilename: "[name].bundle.js"
   },
   devServer: {
     disableHostCheck: true,
@@ -22,21 +23,21 @@ module.exports = {
       "Access-Control-Allow-Methods": "POST"
     }
   },
-  resolve: {
-    alias: {
-      configuration: Path.join(__dirname, "configuration.json")
-    }
-  },
   node: {
     fs: "empty"
   },
   mode: "development",
-  devtool: "none",
+  devtool: "eval-source-map",
+  optimization: {
+    splitChunks: {
+      chunks: "all"
+    }
+  },
   plugins: [
-    //new CopyWebpackPlugin(['./src/index.html']),
-    new webpack.optimize.LimitChunkCountPlugin({
-      maxChunks: 1,
-    }),
+    new CopyWebpackPlugin([{
+      from: Path.join(__dirname, "configuration.js"),
+      to: Path.join(__dirname, "dist", "configuration.js")
+    }]),
     new HtmlWebpackPlugin({
       title: "Eluvio Fabric Browser",
       template: Path.join(__dirname, "src", "index.html"),
