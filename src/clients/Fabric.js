@@ -1,15 +1,11 @@
 import { FrameClient } from "elv-client-js/src/FrameClient";
-import { ElvClient } from "elv-client-js";
 import UrlJoin from "url-join";
 
 import BaseLibraryContract from "elv-client-js/src/contracts/BaseLibrary";
 import BaseContentContract from "elv-client-js/src/contracts/BaseContent";
-import BaseAccessGroupContract from "elv-client-js/src/contracts/BaseAccessControlGroup";
 import {Bytes32ToUtf8, EqualAddress, FormatAddress} from "../utils/Helpers";
 
 const APP_REQUESTOR_NAME = "Eluvio Fabric Browser";
-
-const Configuration = require("../../configuration.json");
 
 /* Undocumented feature: If privateKey param is set, use that to intialize the client */
 let privateKey;
@@ -40,7 +36,12 @@ const Fabric = {
 
   async Initialize() {
     if(!isFrameClient) {
-      client = await ElvClient.FromConfigurationUrl({configUrl: Configuration["config-url"]});
+      const ElvClient = (await import(
+        /* webpackChunkName: "elv-client-js" */
+        /* webpackMode: "lazy" */
+        "elv-client-js"
+      )).ElvClient;
+      client = await ElvClient.FromConfigurationUrl({configUrl: EluvioConfiguration["config-url"]});
       await client.SetSigner({signer: client.GenerateWallet().AddAccount({privateKey})});
     } else {
       // Contained in IFrame
@@ -49,6 +50,8 @@ const Fabric = {
         timeout: 30
       });
     }
+
+    window.fabricBrowserClient = client;
 
     this.contentSpaceId = await client.ContentSpaceId();
     this.contentSpaceLibraryId = this.contentSpaceId.replace("ispc", "ilib");
@@ -464,7 +467,7 @@ const Fabric = {
         });
 
         const accessInfo = await Fabric.GetAccessInfo({objectId: object.id});
-
+        const meta = latestVersion.meta || {};
         objects[object.id] = {
           // Pull latest version info up to top level
           ...latestVersion,
@@ -472,8 +475,8 @@ const Fabric = {
           objectId: object.id,
           hash: object.hash,
           type: object.type,
-          name: latestVersion.meta.name,
-          description: latestVersion.meta["eluv.description"],
+          name: meta.name,
+          description: meta["eluv.description"],
           accessInfo,
           imageUrl,
           contractAddress: client.utils.HashToAddress(object.id)

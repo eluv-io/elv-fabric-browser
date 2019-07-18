@@ -4,8 +4,7 @@
 
 node_modules/
 
-configuration.json
+configuration.js
 
-dist/*
 scratch/
 !.keep
