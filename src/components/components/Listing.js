@@ -14,12 +14,12 @@ class Listing extends React.Component {
     super(props);
 
     // Load saved settings
-    const savedOptions = ListingOptions[props.pageId] || {display: "list"};
+    const savedOptions = ListingOptions[props.pageId] || {display: "list", perPage: 10};
     ListingOptions[props.pageId] = savedOptions;
 
     this.state = {
       display: savedOptions.display,
-      perPage: props.perPage || 10,
+      perPage: savedOptions.perPage,
       page: 1,
       selectFilter: this.props.selectFilterOptions ? savedOptions.filter || this.props.selectFilterOptions[0][1] : "",
       filter: "",
@@ -163,7 +163,7 @@ class Listing extends React.Component {
 
     return [
       this.PageButton("First Page", "First", 1, disabled),
-      this.PageButton("Previous Page", "Previous", this.state.page - 1, disabled)
+      this.PageButton("Previous Page", "Prev", this.state.page - 1, disabled)
     ];
   }
 
@@ -189,6 +189,32 @@ class Listing extends React.Component {
     );
   }
 
+  PerPageControls() {
+    return (
+      <select
+        className="per-page-controls"
+        disabled={this.props.loadingStatus.loading}
+        value={this.state.perPage}
+        onChange={(event) => {
+          const perPage = parseInt(event.target.value);
+          this.setState({
+            page: 1,
+            perPage
+          }, this.Load);
+
+          ListingOptions[this.props.pageId].perPage = perPage;
+        }}
+      >
+        <option value={1}>1</option>
+        <option value={5}>5</option>
+        <option value={10}>10</option>
+        <option value={20}>20</option>
+        <option value={50}>50</option>
+        <option value={100}>100</option>
+      </select>
+    );
+  }
+
   Actions() {
     let switchViewButton;
     // No point in offering grid view if there is no icon
@@ -206,6 +232,7 @@ class Listing extends React.Component {
       <div className="listing-actions">
         <div className="controls">
           { this.PaginationControls() }
+          { this.PerPageControls() }
         </div>
         <div className="controls right-controls">
           <input className="filter" placeholder="Filter" value={this.state.filter} onChange={this.Filter} />
@@ -273,7 +300,6 @@ Listing.propTypes = {
   pageId: PropTypes.string.isRequired,
   noIcon: PropTypes.bool,
   paginate: PropTypes.bool,
-  perPage: PropTypes.number,
   count: PropTypes.number,
   selectFilterLabel: PropTypes.string,
   selectFilterOptions: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)),

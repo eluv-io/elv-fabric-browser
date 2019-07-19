@@ -248,7 +248,6 @@ class ContentLibrary extends React.Component {
       <Listing
         pageId="ContentObjects"
         paginate={true}
-        perPage={20}
         count={this.props.count.objects[this.props.libraryId]}
         loadingStatus={this.props.methodStatus.ListContentObjects}
         LoadContent={({params}) => {

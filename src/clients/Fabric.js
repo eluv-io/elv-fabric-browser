@@ -163,7 +163,10 @@ const Fabric = {
             meta
           };
         } catch(error) {
-          return undefined;
+          return {
+            libraryId,
+            meta: {}
+          };
         }
       })
     );
@@ -254,19 +257,26 @@ const Fabric = {
 
     /* Library object and private metadata */
     const libraryObjectId = libraryId.replace("ilib", "iq__");
-    const libraryObject = await Fabric.GetContentObject({libraryId, objectId: libraryObjectId});
-    const privateMeta = await Fabric.GetContentObjectMetadata({
-      libraryId,
-      objectId: libraryObjectId
-    });
+    let privateMeta = {};
+    let imageUrl;
+    try {
+      const libraryObject = await Fabric.GetContentObject({libraryId, objectId: libraryObjectId});
+      privateMeta = await Fabric.GetContentObjectMetadata({
+        libraryId,
+        objectId: libraryObjectId
+      });
 
-    /* Image */
-    const imageUrl = await Fabric.GetContentObjectImageUrl({
-      libraryId,
-      objectId: libraryObjectId,
-      versionHash: libraryObject.hash, // Specify version hash to break cache if image is updated,
-      metadata: privateMeta
-    });
+      /* Image */
+      imageUrl = await Fabric.GetContentObjectImageUrl({
+        libraryId,
+        objectId: libraryObjectId,
+        versionHash: libraryObject.hash, // Specify version hash to break cache if image is updated,
+        metadata: privateMeta
+      });
+    } catch(error) {
+      console.error(error);
+    }
+
 
     /* Types */
     const types = await Fabric.ListLibraryContentTypes({libraryId});
