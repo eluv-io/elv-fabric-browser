@@ -8,7 +8,7 @@ export const ListAccessGroups = ({params}) => {
   return async (dispatch) => {
     const {accessGroups, count} = await WithCancel(
       params.cancelable,
-      async () => await Fabric.FabricBrowser.AccessGroups({params})
+      async () => await Fabric.AccessGroups({params})
     );
 
     dispatch({
@@ -21,7 +21,7 @@ export const ListAccessGroups = ({params}) => {
 
 export const GetAccessGroup = ({contractAddress}) => {
   return async (dispatch) => {
-    const accessGroup = await Fabric.FabricBrowser.GetAccessGroup({contractAddress});
+    const accessGroup = await Fabric.GetAccessGroup({contractAddress});
 
     dispatch({
       type: ActionTypes.accessGroups.get,
@@ -31,12 +31,9 @@ export const GetAccessGroup = ({contractAddress}) => {
   };
 };
 
-export const SaveAccessGroup = ({address, name, description, members}) => {
+export const SaveAccessGroup = ({address}) => {
   return async (dispatch) => {
     if(address) {
-      // Existing access group - update attributes
-      await Fabric.FabricBrowser.AddAccessGroup({address, name, description, members});
-
       dispatch(SetNotificationMessage({
         message: "Access group successfully updated",
         redirect: true
@@ -44,7 +41,6 @@ export const SaveAccessGroup = ({address, name, description, members}) => {
     } else {
       // New access group - deploy contract
       address = await Fabric.CreateAccessGroup();
-      await Fabric.FabricBrowser.AddAccessGroup({address, name, description, members});
 
       dispatch(SetNotificationMessage({
         message: "Access group successfully created",
@@ -60,7 +56,7 @@ export const ListAccessGroupMembers = ({contractAddress, params}) => {
   return async (dispatch) => {
     const {members, count} = await WithCancel(
       params.cancelable,
-      async () => await Fabric.FabricBrowser.AccessGroupMembers({contractAddress, params})
+      async () => await Fabric.AccessGroupMembers({contractAddress, params})
     );
 
     dispatch({
@@ -103,18 +99,12 @@ const UpdateMembers = async ({contractAddress, members, originalMembers}) => {
 
 export const UpdateAccessGroupMembers = ({address, members, originalMembers}) => {
   return async (dispatch) => {
-    const accessGroup = await Fabric.FabricBrowser.GetAccessGroup({contractAddress: address});
+    const accessGroup = await Fabric.GetAccessGroup({contractAddress: address});
 
     if(!accessGroup) { throw Error("Access group not found"); }
 
     await UpdateMembers({contractAddress: address, members, originalMembers});
 
-    await Fabric.FabricBrowser.AddAccessGroup({
-      name: accessGroup.name,
-      description: accessGroup.description,
-      address: accessGroup.address,
-      members
-    });
 
     dispatch(SetNotificationMessage({
       message: "Access group members successfully updated",
@@ -126,7 +116,6 @@ export const UpdateAccessGroupMembers = ({address, members, originalMembers}) =>
 export const RemoveAccessGroup = ({address}) => {
   return async (dispatch) => {
     await Fabric.DeleteAccessGroup({address});
-    await Fabric.FabricBrowser.RemoveAccessGroup({address});
 
     dispatch(SetNotificationMessage({
       message: "Access group successfully deleted",

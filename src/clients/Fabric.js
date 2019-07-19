@@ -3,6 +3,7 @@ import UrlJoin from "url-join";
 
 import BaseLibraryContract from "elv-client-js/src/contracts/BaseLibrary";
 import BaseContentContract from "elv-client-js/src/contracts/BaseContent";
+import BaseAccessGroupContract from "elv-client-js/src/contracts/BaseAccessControlGroup";
 import {Bytes32ToUtf8, EqualAddress, FormatAddress} from "../utils/Helpers";
 
 const APP_REQUESTOR_NAME = "Eluvio Fabric Browser";
@@ -274,6 +275,7 @@ const Fabric = {
         metadata: privateMeta
       });
     } catch(error) {
+      // eslint-disable-next-line no-console
       console.error(error);
     }
 
@@ -388,7 +390,7 @@ const Fabric = {
       };
     }
 
-    const knownGroups = await Fabric.FabricBrowser.AccessGroups({params: {}});
+    const knownGroups = await Fabric.AccessGroups({params: {}});
     return {
       accessor: await Fabric.CollectLibraryGroups({libraryId, type: "accessor", knownGroups}),
       contributor: await Fabric.CollectLibraryGroups({libraryId, type: "contributor", knownGroups}),
@@ -1156,215 +1158,122 @@ const Fabric = {
     });
   },
 
-  FabricBrowser: {
-    // Initialize metadata structure in content space object
-    async Initialize() {
-      return;
-      await Fabric.EditAndFinalizeContentObject({
-        libraryId: Fabric.contentSpaceLibraryId,
-        objectId: Fabric.contentSpaceObjectId,
-        todo: async (writeToken) => {
-          await Fabric.MergeMetadata({
-            libraryId: Fabric.contentSpaceLibraryId,
-            objectId: Fabric.contentSpaceObjectId,
-            writeToken,
-            metadata: {
-              "elv-fabric-browser": {
-                accessGroups: {},
-                contracts: {},
-                deployedContracts: {}
-              }
-            }
-          });
+  async AccessGroups({params}) {
+    const accessGroupAddresses = await client.Collection({collectionType: "accessGroups"});
+    let filteredAccessGroups = await Promise.all(
+      accessGroupAddresses.map(async contractAddress => await Fabric.GetAccessGroup({contractAddress}))
+    );
+
+    // Filter
+    if(params.filter) {
+      filteredAccessGroups = filteredAccessGroups.filter(accessGroup => {
+        try {
+          return accessGroup.name.toLowerCase().includes(params.filter.toLowerCase());
+        } catch(e) {
+          return false;
         }
       });
-    },
-
-    // Get info pointing to fabric browser library and its entry objects
-    async Info(subtree="/") {
-      const info = await Fabric.GetContentObjectMetadata({
-        libraryId: Fabric.contentSpaceLibraryId,
-        objectId: Fabric.contentSpaceObjectId,
-        metadataSubtree: UrlJoin("elv-fabric-browser", subtree)
-      });
-
-      if(!info && ["contracts", "deployedContracts", "accessGroups"].includes(subtree)) {
-        await Fabric.FabricBrowser.Initialize();
-      }
-
-      return info || {};
-    },
-
-    // Add entry by appending to object metadata
-    async AddEntry({type, name, metadata={}}) {
-      await Fabric.EditAndFinalizeContentObject({
-        libraryId: Fabric.contentSpaceLibraryId,
-        objectId: Fabric.contentSpaceObjectId,
-        todo: async (writeToken) => {
-          await Fabric.ReplaceMetadata({
-            libraryId: Fabric.contentSpaceLibraryId,
-            objectId: Fabric.contentSpaceObjectId,
-            writeToken,
-            metadataSubtree: UrlJoin("elv-fabric-browser", type, name),
-            metadata
-          });
-        }
-      });
-    },
-
-    // Remove entry by info deleting from object metadata
-    async RemoveEntry({type, name}) {
-      await Fabric.EditAndFinalizeContentObject({
-        libraryId: Fabric.contentSpaceLibraryId,
-        objectId: Fabric.contentSpaceObjectId,
-        todo: async (writeToken) => {
-          await Fabric.DeleteMetadata({
-            libraryId: Fabric.contentSpaceLibraryId,
-            objectId: Fabric.contentSpaceObjectId,
-            writeToken,
-            metadataSubtree: UrlJoin("elv-fabric-browser", type, name),
-          });
-        }
-      });
-    },
-
-    /* Access Groups */
-
-    async AccessGroups({params}) {
-      const accessGroupAddresses = await client.Collection({collectionType: "accessGroups"});
-      let filteredAccessGroups = await Promise.all(
-        accessGroupAddresses.map(async contractAddress => await Fabric.FabricBrowser.GetAccessGroup({contractAddress}))
-      );
-
-      // Filter
-      if(params.filter) {
-        filteredAccessGroups = filteredAccessGroups.filter(accessGroup => {
-          try {
-            return accessGroup.name.toLowerCase().includes(params.filter.toLowerCase());
-          } catch(e) {
-            return false;
-          }
-        });
-      }
-
-      // Sort
-      filteredAccessGroups = filteredAccessGroups.sort((a, b) => {
-        const name1 = a.name || "zz";
-        const name2 = b.name || "zz";
-        return name1.toLowerCase() > name2.toLowerCase() ? 1 : -1;
-      });
-
-      const count = filteredAccessGroups.length;
-
-      if(params.paginate) {
-        // Paginate
-        const page = (params.page || 1) - 1;
-        const perPage = params.perPage || 10;
-
-        filteredAccessGroups = filteredAccessGroups.slice(page * perPage, (page + 1) * perPage);
-      }
-
-      // Convert back to map
-      let accessGroups = {};
-      filteredAccessGroups.forEach(accessGroup => accessGroups[accessGroup.address] = accessGroup);
-
-      return {accessGroups, count};
-    },
-
-    async GetAccessGroup({contractAddress}) {
-      const currentAccountAddress = await Fabric.CurrentAccountAddress();
-
-      const owner = await client.AccessGroupOwner({contractAddress});
-      const isOwner = EqualAddress(owner, currentAccountAddress);
-
-      let isManager = false;
-      /*
-      try {
-        isManager = await client.CallContractMethod({
-          contractAddress,
-          abi: BaseAccessGroupContract.abi,
-          methodName: "hasManagerAccess",
-          methodArgs: [client.utils.FormatAddress(currentAccountAddress)]
-        });
-      } catch(error) {}
-      */
-
-      return {
-        address: contractAddress,
-        name: contractAddress,
-        owner,
-        isOwner,
-        isManager
-      };
-    },
-
-    async AddAccessGroup({name, description, address, members={}}) {
-      address = FormatAddress(address);
-
-      await Fabric.FabricBrowser.AddEntry({
-        type: "accessGroups",
-        name: address,
-        metadata: {
-          name,
-          owner: await Fabric.CurrentAccountAddress(),
-          description,
-          address,
-          members
-        }
-      });
-    },
-
-    async RemoveAccessGroup({address}) {
-      await Fabric.FabricBrowser.RemoveEntry({type: "accessGroups", name: FormatAddress(address)});
-    },
-
-    async AccessGroupMembers({contractAddress, params}) {
-      const accessGroup = await Fabric.FabricBrowser.GetAccessGroup({contractAddress});
-      const currentAccountAddress = await Fabric.CurrentAccountAddress();
-
-      let filteredMembers = Object.values(accessGroup.members);
-
-      filteredMembers = filteredMembers.map(member =>
-        ({
-          ...member,
-          isCurrentAccount: EqualAddress(member.address, currentAccountAddress)
-        })
-      );
-
-      // Filter
-      if(params.filter) {
-        filteredMembers = filteredMembers.filter(member => {
-          try {
-            return member.name.toLowerCase().includes(params.filter.toLowerCase());
-          } catch(e) {
-            return false;
-          }
-        });
-      }
-
-      // Sort
-      filteredMembers = filteredMembers.sort((a, b) => {
-        const name1 = a.name || "zz";
-        const name2 = b.name || "zz";
-        return name1.toLowerCase() > name2.toLowerCase() ? 1 : -1;
-      });
-
-      const count = filteredMembers.length;
-
-      if(params.paginate) {
-        // Paginate
-        const page = (params.page || 1) - 1;
-        const perPage = params.perPage || 10;
-
-        filteredMembers = filteredMembers.slice(page * perPage, (page + 1) * perPage);
-      }
-
-      // Convert back to map
-      let members = {};
-      filteredMembers.forEach(member => members[member.address] = member);
-
-      return {members, count};
     }
+
+    // Sort
+    filteredAccessGroups = filteredAccessGroups.sort((a, b) => {
+      const name1 = a.name || "zz";
+      const name2 = b.name || "zz";
+      return name1.toLowerCase() > name2.toLowerCase() ? 1 : -1;
+    });
+
+    const count = filteredAccessGroups.length;
+
+    if(params.paginate) {
+      // Paginate
+      const page = (params.page || 1) - 1;
+      const perPage = params.perPage || 10;
+
+      filteredAccessGroups = filteredAccessGroups.slice(page * perPage, (page + 1) * perPage);
+    }
+
+    // Convert back to map
+    let accessGroups = {};
+    filteredAccessGroups.forEach(accessGroup => accessGroups[accessGroup.address] = accessGroup);
+
+    return {accessGroups, count};
+  },
+
+  async GetAccessGroup({contractAddress}) {
+    const currentAccountAddress = await Fabric.CurrentAccountAddress();
+
+    const owner = await client.AccessGroupOwner({contractAddress});
+    const isOwner = EqualAddress(owner, currentAccountAddress);
+
+    let isManager = false;
+
+    try {
+      isManager = await client.CallContractMethod({
+        contractAddress,
+        abi: BaseAccessGroupContract.abi,
+        methodName: "hasManagerAccess",
+        methodArgs: [client.utils.FormatAddress(currentAccountAddress)]
+      });
+    } catch(error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+
+    return {
+      address: contractAddress,
+      name: contractAddress,
+      owner,
+      isOwner,
+      isManager
+    };
+  },
+
+  async AccessGroupMembers({contractAddress, params}) {
+    const accessGroup = await Fabric.GetAccessGroup({contractAddress});
+    const currentAccountAddress = await Fabric.CurrentAccountAddress();
+
+    let filteredMembers = Object.values(accessGroup.members);
+
+    filteredMembers = filteredMembers.map(member =>
+      ({
+        ...member,
+        isCurrentAccount: EqualAddress(member.address, currentAccountAddress)
+      })
+    );
+
+    // Filter
+    if(params.filter) {
+      filteredMembers = filteredMembers.filter(member => {
+        try {
+          return member.name.toLowerCase().includes(params.filter.toLowerCase());
+        } catch(e) {
+          return false;
+        }
+      });
+    }
+
+    // Sort
+    filteredMembers = filteredMembers.sort((a, b) => {
+      const name1 = a.name || "zz";
+      const name2 = b.name || "zz";
+      return name1.toLowerCase() > name2.toLowerCase() ? 1 : -1;
+    });
+
+    const count = filteredMembers.length;
+
+    if(params.paginate) {
+      // Paginate
+      const page = (params.page || 1) - 1;
+      const perPage = params.perPage || 10;
+
+      filteredMembers = filteredMembers.slice(page * perPage, (page + 1) * perPage);
+    }
+
+    // Convert back to map
+    let members = {};
+    filteredMembers.forEach(member => members[member.address] = member);
+
+    return {members, count};
   }
 };
 

@@ -116,7 +116,7 @@ class DeployedContract extends React.Component {
               { this.props.contract.description }
             </LabelledField>
 
-            <LabelledField label="Contract Address" copyValue={this.props.contract.address}>
+            <LabelledField label="Contract Address">
               { this.props.contract.address }
             </LabelledField>
 
