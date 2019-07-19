@@ -187,10 +187,6 @@ const Fabric = {
       case "elv-media-platform":
         filteredLibraries = Fabric.FilterContentLibraries(filteredLibraries, "class", "elv-media-platform");
         break;
-      default:
-        // Everything but users
-        filteredLibraries = Fabric.FilterContentLibraries(filteredLibraries, "class", "elv-user-library", true);
-        break;
     }
 
     // Filter libraries by specified filter
@@ -212,7 +208,6 @@ const Fabric = {
     // Paginate libraries
     const page = (params.page || 1) - 1;
     const perPage = params.perPage || 10;
-    const currentAccountAddress = await Fabric.CurrentAccountAddress();
     filteredLibraries = filteredLibraries.slice(page * perPage, (page+1) * perPage);
     let libraries = {};
     await Promise.all(
@@ -225,14 +220,11 @@ const Fabric = {
             objectId: libraryObjectId,
             metadata: meta
           });
-          const owner = await Fabric.GetContentLibraryOwner({libraryId});
           libraries[libraryId] = {
             libraryId,
             name: meta.name || libraryId,
             description: meta["eluv.description"],
             imageUrl,
-            owner,
-            isOwner: EqualAddress(owner, currentAccountAddress),
             isContentSpaceLibrary: libraryId === Fabric.contentSpaceLibraryId
           };
         } catch(error) {
@@ -1202,9 +1194,6 @@ const Fabric = {
   async GetAccessGroup({contractAddress}) {
     const currentAccountAddress = await Fabric.CurrentAccountAddress();
 
-    const owner = await client.AccessGroupOwner({contractAddress});
-    const isOwner = EqualAddress(owner, currentAccountAddress);
-
     let isManager = false;
 
     try {
@@ -1222,8 +1211,6 @@ const Fabric = {
     return {
       address: contractAddress,
       name: contractAddress,
-      owner,
-      isOwner,
       isManager
     };
   },
