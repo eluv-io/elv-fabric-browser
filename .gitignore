@@ -4,7 +4,7 @@
 
 node_modules/
 
-configuration.js
+/configuration.js
 
 scratch/
 !.keep

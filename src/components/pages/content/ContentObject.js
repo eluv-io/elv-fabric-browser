@@ -257,7 +257,7 @@ class ContentObject extends React.Component {
       return (
         <div key={part.hash + "-" + partNumber} className="part-info">
           { name }
-          <LabelledField label="Hash" copyValue={part.hash}>
+          <LabelledField label="Hash">
             { part.hash }
           </LabelledField>
 
@@ -392,7 +392,7 @@ class ContentObject extends React.Component {
   ContractInfo() {
     let contractInfo = [];
     contractInfo.push(
-      <LabelledField key="contract-address" label="Contract Address" copyValue={this.props.object.contractAddress}>
+      <LabelledField key="contract-address" label="Contract Address">
         <Link className="inline-link" to={UrlJoin(this.props.match.url, "contract")}>
           { this.props.object.contractAddress }
         </Link>
@@ -403,7 +403,7 @@ class ContentObject extends React.Component {
       const customContractAddress = this.props.object.customContractAddress;
 
       contractInfo.push(
-        <LabelledField key={"contract-" + customContractAddress} label="Custom Contract" copyValue={customContractAddress}>
+        <LabelledField key={"contract-" + customContractAddress} label="Custom Contract">
           <Link className="inline-link" to={UrlJoin(this.props.match.url, "custom-contract")}>
             { customContractAddress }
           </Link>
@@ -471,11 +471,11 @@ class ContentObject extends React.Component {
 
         <br />
 
-        <LabelledField label="Library ID" copyValue={this.props.libraryId} hidden={this.props.object.isContentType}>
+        <LabelledField label="Library ID" hidden={this.props.object.isContentType}>
           <Link className="inline-link" to={UrlJoin("/content", this.props.libraryId)} >{ this.props.libraryId}</Link>
         </LabelledField>
 
-        <LabelledField label="Object ID" copyValue={this.props.objectId}>
+        <LabelledField label="Object ID">
           { this.props.objectId }
         </LabelledField>
 
@@ -485,13 +485,13 @@ class ContentObject extends React.Component {
           </Link>
         </LabelledField>
 
-        <LabelledField label="Type Hash" hidden={this.props.object.isContentType}>
+        <LabelledField label="Type Hash" hidden={this.props.object.isContentType} copyValue={this.state.typeHash}>
           { this.state.typeHash }
         </LabelledField>
 
         { this.ContractInfo() }
 
-        <LabelledField label="Owner" copyValue={this.props.object.owner}>
+        <LabelledField label="Owner">
           { this.props.object.owner }
         </LabelledField>
 

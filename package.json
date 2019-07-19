@@ -3,6 +3,7 @@
     "serve": "webpack-dev-server --hot",
     "build": "NODE_ENV=production node ./node_modules/webpack-cli/bin/cli.js -p --progress --colors --devtool none",
     "build-debug": "NODE_ENV=production node ./node_modules/webpack-cli/bin/cli.js -p --progress --colors --devtool eval-source-map",
+    "add-build": "git add dist/*",
     "lint": "npm run fix-scss ; npm run lint-scss ; npm run fix-js",
     "lint-show": "npm run lint-scss ; npm run lint-js",
     "lint-js": "./node_modules/.bin/eslint \"test/**/*.js\" \"src/**/*.js\"",
@@ -12,6 +13,13 @@
     "test": "jest",
     "test-update": "jest --updateSnapshot",
     "test:watch": "jest --watch"
+  },
+  "pre-commit": {
+    "run": [
+      "lint",
+      "build",
+      "add-build"
+    ]
   },
   "browserslist": [
     "> 1%",
@@ -80,6 +88,7 @@
     "jest": "^24.1.0",
     "node-sass": "^4.11.0",
     "postcss-loader": "^3.0.0",
+    "pre-commit": "^1.2.2",
     "raw-loader": "^0.5.1",
     "redux-mock-store": "^1.5.3",
     "regenerator-runtime": "^0.13.1",

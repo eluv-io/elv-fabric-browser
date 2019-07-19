@@ -103,11 +103,11 @@ class AccessGroup extends React.Component {
               { description }
             </LabelledField>
 
-            <LabelledField label="Owner" copyValue={this.props.accessGroup.owner}>
+            <LabelledField label="Owner">
               { this.props.accessGroup.owner }
             </LabelledField>
 
-            <LabelledField label="Contract Address" copyValue={this.props.accessGroup.address}>
+            <LabelledField label="Contract Address">
               <Link className="inline-link" to={UrlJoin(this.props.match.url, "contract")}>
                 { this.props.accessGroup.address }
               </Link>

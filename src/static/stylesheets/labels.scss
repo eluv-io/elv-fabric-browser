@@ -59,12 +59,15 @@
     }
 
     & > div,
-    & > span {
+    & > .copyable > div {
       @include elv-ellipsis;
-      align-items: center;
-      display: flex;
       flex-grow: 1;
       max-width: 500px;
+    }
+
+    & > span {
+      align-items: center;
+      display: flex;
     }
 
     // Increase specificity

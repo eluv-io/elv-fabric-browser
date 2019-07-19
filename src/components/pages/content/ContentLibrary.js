@@ -8,7 +8,7 @@ import { LabelledField } from "../../components/LabelledField";
 import Redirect from "react-router/es/Redirect";
 import ClippedText from "../../components/ClippedText";
 import {PageHeader} from "../../components/Page";
-import {Action, Confirm, LoadingElement, Tabs} from "elv-components-js";
+import {Action, LoadingElement, Tabs} from "elv-components-js";
 
 import {AccessChargeDisplay} from "../../../utils/Helpers";
 import Listing from "../../components/Listing";
@@ -189,21 +189,21 @@ class ContentLibrary extends React.Component {
 
         <br />
 
-        <LabelledField label="Library ID" copyValue={this.props.libraryId}>
+        <LabelledField label="Library ID">
           { this.props.libraryId }
         </LabelledField>
 
-        <LabelledField label="Owner" copyValue={this.props.library.owner}>
+        <LabelledField label="Owner">
           { this.props.library.owner }
         </LabelledField>
 
-        <LabelledField label={"Library Object"} copyValue={this.props.library.libraryObjectId}>
+        <LabelledField label={"Library Object"}>
           <Link className="inline-link" to={libraryObjectPath}>
             { this.props.library.libraryObjectId }
           </Link>
         </LabelledField>
 
-        <LabelledField label={"Contract Address"} copyValue={this.props.library.contractAddress}>
+        <LabelledField label={"Contract Address"}>
           <Link className="inline-link" to={UrlJoin(libraryObjectPath, "contract")}>
             { this.props.library.contractAddress }
           </Link>
@@ -264,12 +264,14 @@ class ContentLibrary extends React.Component {
 
     let manageGroupsButton, manageTypesButton, deleteLibraryButton;
     if(this.props.library.isOwner && !this.props.library.isContentSpaceLibrary) {
+      /*
       const Delete = async () => {
         await Confirm({
           message: "Are you sure you want to delete this library?",
           onConfirm: async () => await this.props.methods.DeleteContentLibrary({libraryId: this.props.libraryId})
         });
       };
+      */
 
       manageGroupsButton = <Action type="link" to={UrlJoin(this.props.match.url, "groups")}>Groups</Action>;
       manageTypesButton = <Action type="link" to={UrlJoin(this.props.match.url, "types")}>Types</Action>;
