@@ -193,10 +193,6 @@ class ContentLibrary extends React.Component {
           { this.props.libraryId }
         </LabelledField>
 
-        <LabelledField label="Owner">
-          { this.props.library.owner }
-        </LabelledField>
-
         <LabelledField label={"Library Object"}>
           <Link className="inline-link" to={libraryObjectPath}>
             { this.props.library.libraryObjectId }
@@ -207,6 +203,14 @@ class ContentLibrary extends React.Component {
           <Link className="inline-link" to={UrlJoin(libraryObjectPath, "contract")}>
             { this.props.library.contractAddress }
           </Link>
+        </LabelledField>
+
+        <LabelledField label="KMS ID">
+          { this.props.library.kmsId }
+        </LabelledField>
+
+        <LabelledField label="Owner">
+          { this.props.library.owner }
         </LabelledField>
 
         { objectCount }

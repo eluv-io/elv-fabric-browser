@@ -65,13 +65,14 @@ export const ListContentLibraryGroups = ({libraryId}) => {
   };
 };
 
-export const CreateContentLibrary = ({name, description, publicMetadata, privateMetadata, image}) => {
+export const CreateContentLibrary = ({name, description, publicMetadata, privateMetadata, image, kmsId}) => {
   return async (dispatch) => {
     const libraryId = await Fabric.CreateContentLibrary({
       name,
       description,
       publicMetadata: ParseInputJson(publicMetadata),
-      privateMetadata: ParseInputJson(privateMetadata)
+      privateMetadata: ParseInputJson(privateMetadata),
+      kmsId
     });
 
     if(image) {

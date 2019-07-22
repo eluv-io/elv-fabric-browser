@@ -16,6 +16,7 @@ class ContentLibraryForm extends React.Component {
       description: library.description || "",
       publicMetadata: JSON.stringify(library.meta, null, 2) || "",
       privateMetadata: JSON.stringify(library.privateMeta, null, 2) || "",
+      kmsId: library.kmsId || "",
       isContentSpaceLibrary: library.isContentSpaceLibrary || false,
       imageSelection: ""
     };
@@ -47,7 +48,8 @@ class ContentLibraryForm extends React.Component {
       description: this.state.description,
       publicMetadata: this.state.publicMetadata,
       privateMetadata: this.state.privateMetadata,
-      image: this.state.imageSelection
+      image: this.state.imageSelection,
+      kmsId: this.state.kmsId
     });
 
     this.setState({libraryId});
@@ -93,7 +95,7 @@ class ContentLibraryForm extends React.Component {
         >
           <div className="form-content">
             <label htmlFor="name">Name</label>
-            <input name="name" value={this.state.name} required={true} onChange={this.HandleInputChange} readOnly={this.state.isContentSpaceLibrary} />
+            <input name="name" value={this.state.name} required={true} onChange={this.HandleInputChange} disabled={this.state.isContentSpaceLibrary} />
 
             { this.Image() }
 
@@ -114,6 +116,12 @@ class ContentLibraryForm extends React.Component {
               onChange={this.HandleInputChange}
               UpdateValue={formattedMetadata => this.setState({privateMetadata: formattedMetadata})}
             />
+
+            <label htmlFor="kmsId">
+              KMS ID
+              <span className="help-text" hidden={!this.props.createForm}>(optional)</span>
+            </label>
+            <input name="kmsId" value={this.state.kmsId} required={false} onChange={this.HandleInputChange} disabled={!this.props.createForm}/>
           </div>
         </Form>
       </div>
