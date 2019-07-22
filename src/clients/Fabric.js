@@ -271,6 +271,12 @@ const Fabric = {
       console.error(error);
     }
 
+    const kmsAddress = await client.CallContractMethod({
+      contractAddress: client.utils.HashToAddress(libraryId),
+      abi: BaseLibraryContract.abi,
+      methodName: "addressKMS"
+    });
+    const kmsId = `ikms${client.utils.AddressToHash(kmsAddress)}`;
 
     /* Types */
     const types = await Fabric.ListLibraryContentTypes({libraryId});
@@ -285,6 +291,7 @@ const Fabric = {
       libraryObjectId: libraryId.replace("ilib", "iq__"),
       privateMeta,
       imageUrl,
+      kmsId,
       owner,
       isOwner: EqualAddress(owner, currentAccountAddress),
       isContentSpaceLibrary: libraryId === Fabric.contentSpaceLibraryId
@@ -316,13 +323,14 @@ const Fabric = {
     return await client.ContentLibraryOwner({libraryId});
   },
 
-  CreateContentLibrary: async ({name, description, publicMetadata, privateMetadata}) => {
+  CreateContentLibrary: async ({name, description, publicMetadata, privateMetadata, kmsId}) => {
     return await client.CreateContentLibrary({
       name,
       description,
       //publicMetadata,
       //privateMetadata,
-      metadata: {...(publicMetadata || {}), ...(privateMetadata || {})}
+      metadata: {...(publicMetadata || {}), ...(privateMetadata || {})},
+      kmsId
     });
   },
 
@@ -383,11 +391,15 @@ const Fabric = {
     }
 
     const knownGroups = await Fabric.AccessGroups({params: {}});
-    return {
-      accessor: await Fabric.CollectLibraryGroups({libraryId, type: "accessor", knownGroups}),
-      contributor: await Fabric.CollectLibraryGroups({libraryId, type: "contributor", knownGroups}),
-      reviewer: await Fabric.CollectLibraryGroups({libraryId, type: "reviewer", knownGroups})
-    };
+
+    const groupInfo = {};
+    await Promise.all(
+      ["accessor", "contributor", "reviewer"].map(async (type) => {
+        groupInfo[type] = await Fabric.CollectLibraryGroups({libraryId, type, knownGroups});
+      })
+    );
+
+    return groupInfo;
   },
 
   AddContentLibraryGroup: async ({libraryId, address, groupType}) => {
