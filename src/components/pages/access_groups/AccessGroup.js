@@ -7,8 +7,9 @@ import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
 import Redirect from "react-router/es/Redirect";
 import {PageHeader} from "../../components/Page";
-import {Action, Confirm, LoadingElement, Tabs} from "elv-components-js";
+import {Action, Confirm, IconButton, LoadingElement, Tabs} from "elv-components-js";
 import Listing from "../../components/Listing";
+import RemoveIcon from "../../../static/icons/close.svg";
 
 class AccessGroup extends React.Component {
   constructor(props) {
@@ -21,6 +22,7 @@ class AccessGroup extends React.Component {
     this.PageContent = this.PageContent.bind(this);
     this.DeleteAccessGroup = this.DeleteAccessGroup.bind(this);
     this.AccessGroupMembers = this.AccessGroupMembers.bind(this);
+    this.RemoveAccessGroupMember = this.RemoveAccessGroupMember.bind(this);
   }
 
   async DeleteAccessGroup() {
@@ -28,6 +30,23 @@ class AccessGroup extends React.Component {
       message: "Are you sure you want to delete this access group?",
       onConfirm: async () => await this.props.methods.RemoveAccessGroup({address: this.props.contractAddress})
     });
+  }
+
+  async RemoveAccessGroupMember(memberAddress) {
+    const manager = this.state.view === "managers";
+
+    await Confirm({
+      message: `Are you sure you want to remove this ${manager ? "manager" : "member"} from the group?`,
+      onConfirm: async () => await this.props.methods.RemoveAccessGroupMember({
+        contractAddress: this.props.contractAddress,
+        memberAddress,
+        manager
+      })
+    });
+
+    if(this.state.listingRef) {
+      this.state.listingRef.Load();
+    }
   }
 
   AccessGroupMembers() {
@@ -39,7 +58,19 @@ class AccessGroup extends React.Component {
         sortKey: member.name || "zz",
         key: `${this.state.view}-${member.address}`,
         title: member.name,
-        description: member.address
+        description: member.address,
+        status: (
+          <div className="listing-action-icon">
+            <IconButton
+              icon={RemoveIcon}
+              label={`Remove ${this.state.view === "managers" ? "Manager" : "Member"}`}
+              onClick={async () => await this.RemoveAccessGroupMember(member.address)}
+              hidden={!(this.props.accessGroup.isManager || this.props.accessGroup.isOwner)}
+            >
+              Remove
+            </IconButton>
+          </div>
+        )
       };
     });
 
@@ -49,6 +80,11 @@ class AccessGroup extends React.Component {
   AccessGroupMembersListing() {
     return (
       <Listing
+        ref={ref => {
+          if(!this.state.listingRef) {
+            this.setState({listingRef: ref});
+          }
+        }}
         key={`${this.state.view}-listing`}
         className="compact"
         pageId="AccessGroupMembers"
@@ -64,30 +100,17 @@ class AccessGroup extends React.Component {
         }}
         RenderContent={this.AccessGroupMembers}
         noIcon={true}
-        noStatus={true}
       />
     );
   }
 
   Actions() {
-    let editButton;
-    let deleteButton;
-    if(this.props.accessGroup.isOwner) {
-      editButton = <Action type="link" to={UrlJoin(this.props.match.url, "edit")}>Manage</Action>;
-      //deleteButton = <Action className="delete-action" onClick={this.DeleteAccessGroup}>Delete</Action>;
-    }
-
-    let membersButton;
-    if(this.props.accessGroup.isOwner || this.props.accessGroup.isManager) {
-      membersButton = <Action type="link" to={UrlJoin(this.props.match.url, "members")}>Members</Action>;
-    }
-
     return (
       <div className="actions-container">
         <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary" >Back</Action>
-        { editButton }
-        { membersButton }
-        { deleteButton }
+        <Action type="link" to={UrlJoin(this.props.match.url, "edit")} hidden={!this.props.accessGroup.isOwner}>Manage</Action>
+        <Action type="link" to={UrlJoin(this.props.match.url, "add-member")} hidden={!this.props.accessGroup.isManager}>Add Member</Action>
+        <Action className="delete-action" onClick={this.DeleteAccessGroup} hidden={true}>Delete</Action>
       </div>
     );
   }

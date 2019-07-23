@@ -1,7 +1,8 @@
+$aspect-ratio: 0.75; // 4/3
+$grid-listing-width: 215px;
+$table-listing-width: 125px;
+
 .listing {
-  $aspect-ratio: 0.75; // 4/3
-  $grid-listing-width: 215px;
-  $table-listing-width: 125px;
   $table-listing-height: calc(#{$table-listing-width} * #{$aspect-ratio});
 
   .loading {
@@ -245,7 +246,6 @@
     }
   }
 
-
   tbody {
     tr {
       height: calc(#{$table-listing-height} + #{$elv-spacing-xs});
@@ -254,7 +254,6 @@
       &:hover,
       &:focus {
         background-color: $elv-color-lightestgray;
-        cursor: pointer;
       }
 
       td {
@@ -305,11 +304,9 @@
 
   &.compact {
     thead {
-      tr {
-        th {
-          &.title-header {
-            width: 45%;
-          }
+      th {
+        &.title-header {
+          width: 45%;
         }
       }
     }
@@ -317,17 +314,33 @@
     tbody {
       tr {
         height: 70px;
+      }
 
-        td {
-          &.title-cell {
-            font-size: 16px;
-          }
+      td {
+        &.title-cell {
+          font-size: 16px;
+        }
 
-          &.description-cell {
-            font-size: 14px;
-          }
+        &.description-cell {
+          font-size: 14px;
         }
       }
+    }
+  }
+
+  .listing-link {
+    cursor: pointer;
+  }
+
+  .listing-action-icon {
+    align-items: center;
+    display: flex;
+    justify-content: flex-end;
+    padding-right: $elv-spacing-s;
+
+    button {
+      height: 25px;
+      width: 25px;
     }
   }
 }

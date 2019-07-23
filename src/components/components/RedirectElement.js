@@ -36,7 +36,7 @@ class RedirectElement extends React.Component {
 }
 
 RedirectElement.propTypes = {
-  to: PropTypes.string.isRequired,
+  to: PropTypes.string,
   children: PropTypes.element.isRequired
 };
 

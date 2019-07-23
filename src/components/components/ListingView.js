@@ -21,7 +21,7 @@ class ListingItem extends React.Component {
   AsTableRow() {
     return (
       <RedirectElement to={this.props.link}>
-        <tr title={this.props.title} aria-label={this.props.title}>
+        <tr title={this.props.title} aria-label={this.props.title} className={this.props.link ? "listing-link" : ""}>
           <td className="icon-cell" hidden={this.props.noIcon}>
             <CroppedIcon className="icon-container" icon={this.props.icon}/>
           </td>
@@ -79,9 +79,12 @@ ListingItem.propTypes = {
   id: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   description: PropTypes.string,
-  status: PropTypes.string,
+  status: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.node
+  ]),
   icon: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
-  link: PropTypes.string.isRequired,
+  link: PropTypes.string,
   noIcon: PropTypes.bool
 };
 
