@@ -30,7 +30,7 @@ import ContentAppFormContainer from "../containers/pages/content/ContentAppForm"
 import AccessGroupsContainer from "../containers/pages/access_groups/AccessGroups";
 import AccessGroupContainer from "../containers/pages/access_groups/AccessGroup";
 import AccessGroupFormContainer from "../containers/pages/access_groups/AccessGroupForm";
-import AccessGroupMembersFormContainer from "../containers/pages/access_groups/AccessGroupMembersForm";
+import AccessGroupMemberFormContainer from "../containers/pages/access_groups/AccessGroupMemberForm";
 
 /* Contracts */
 import ContractsContainer from "../containers/pages/contracts/Contracts";
@@ -119,7 +119,7 @@ class Router extends React.Component {
           <Route exact path="/access-groups/create" component={AccessGroupFormContainer}/>
           <Route exact path="/access-groups/:contractAddress" component={AccessGroupContainer}/>
           <Route exact path="/access-groups/:contractAddress/edit" component={AccessGroupFormContainer}/>
-          <Route exact path="/access-groups/:contractAddress/members" component={AccessGroupMembersFormContainer}/>
+          <Route exact path="/access-groups/:contractAddress/add-member" component={AccessGroupMemberFormContainer}/>
           <Route exact path="/access-groups/:contractAddress/contract" component={DeployedContractContainer}/>
           <Route exact path="/access-groups/:contractAddress/contract/logs" component={DeployedContractEventsContainer}/>
           <Route exact path="/access-groups/:contractAddress/contract/funds" component={DeployedContractFundsFormContainer}/>

@@ -3,7 +3,12 @@ import { connect } from "react-redux";
 import Thunk from "../../../utils/Thunk";
 import Container from "../../Container";
 import {SetCurrentAccount} from "../../../actions/Accounts";
-import {GetAccessGroup, ListAccessGroupMembers, RemoveAccessGroup} from "../../../actions/AccessGroups";
+import {
+  GetAccessGroup,
+  ListAccessGroupMembers,
+  RemoveAccessGroup,
+  RemoveAccessGroupMember
+} from "../../../actions/AccessGroups";
 import AccessGroup from "../../../components/pages/access_groups/AccessGroup";
 
 const mapStateToProps = (state, props) => ({
@@ -18,17 +23,22 @@ const mapDispatchToProps = dispatch =>
       SetCurrentAccount,
       GetAccessGroup,
       ListAccessGroupMembers,
+      RemoveAccessGroupMember,
       RemoveAccessGroup
     ]
   );
 
-const LoadAccessGroups = async ({props}) => {
+const LoadAccessGroup = async ({props}) => {
   await props.SetCurrentAccount();
   await props.GetAccessGroup({contractAddress: props.contractAddress});
 };
 
 const LoadMembers = async ({props, params}) => {
   await props.ListAccessGroupMembers(params);
+};
+
+const RemoveMember = async ({props, params}) => {
+  await props.RemoveAccessGroupMember(params);
 };
 
 const Delete = async ({props, params}) => {
@@ -43,9 +53,10 @@ const AccessGroupContainer = (props) => {
     <Component
       {...props}
       contractAddress={contractAddress}
-      Load={LoadAccessGroups}
+      Load={LoadAccessGroup}
       methods={{
         ListAccessGroupMembers: LoadMembers,
+        RemoveAccessGroupMember: RemoveMember,
         RemoveAccessGroup: Delete
       }}
     />

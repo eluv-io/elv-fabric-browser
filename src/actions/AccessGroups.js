@@ -85,47 +85,32 @@ export const ListAccessGroupMembers = ({contractAddress, showManagers=false, par
   };
 };
 
-// Determine diff between new and old members and add/remove access as necessary
-const UpdateMembers = async ({contractAddress, members, originalMembers}) => {
-  const newMembers = Object.values(members).filter(member => !member.manager).map(member => member.address);
-  const oldMembers = Object.values(originalMembers).filter(member => !member.manager).map(member => member.address);
-
-  const newManagers = Object.values(members).filter(member => member.manager).map(member => member.address);
-  const oldManagers = Object.values(originalMembers).filter(member => member.manager).map(member => member.address);
-
-  const membersToAdd = newMembers.filter(x => !oldMembers.includes(x));
-  for(const memberAddress of membersToAdd) {
-    await Fabric.AddAccessGroupMember({contractAddress, memberAddress});
-  }
-
-  const membersToRemove = oldMembers.filter(x => !newMembers.includes(x));
-  for(const memberAddress of membersToRemove) {
-    await Fabric.RemoveAccessGroupMember({contractAddress, memberAddress});
-  }
-
-  const managersToAdd = newManagers.filter(x => !oldManagers.includes(x));
-  for(const memberAddress of managersToAdd) {
-    await Fabric.AddAccessGroupManager({contractAddress, memberAddress});
-  }
-
-  const managersToRemove = oldManagers.filter(x => !newManagers.includes(x));
-  for(const memberAddress of managersToRemove) {
-    await Fabric.RemoveAccessGroupManager({contractAddress, memberAddress});
-  }
-};
-
-export const UpdateAccessGroupMembers = ({address, members, originalMembers}) => {
+export const AddAccessGroupMember = ({contractAddress, memberAddress, manager=false}) => {
   return async (dispatch) => {
-    const accessGroup = await Fabric.GetAccessGroup({contractAddress: address});
-
-    if(!accessGroup) { throw Error("Access group not found"); }
-
-    await UpdateMembers({contractAddress: address, members, originalMembers});
-
+    if(manager) {
+      await Fabric.AddAccessGroupManager({contractAddress, memberAddress});
+    } else {
+      await Fabric.AddAccessGroupMember({contractAddress, memberAddress});
+    }
 
     dispatch(SetNotificationMessage({
-      message: "Access group members successfully updated",
-      redirect: true
+      message: `${manager ? "Manager" : "Member"} successfully added`,
+      redirect: false
+    }));
+  };
+};
+
+export const RemoveAccessGroupMember = ({contractAddress, memberAddress, manager=false}) => {
+  return async (dispatch) => {
+    if(manager) {
+      await Fabric.RemoveAccessGroupManager({contractAddress, memberAddress});
+    } else {
+      await Fabric.RemoveAccessGroupMember({contractAddress, memberAddress});
+    }
+
+    dispatch(SetNotificationMessage({
+      message: `${manager ? "Manager" : "Member"} successfully removed`,
+      redirect: false
     }));
   };
 };
