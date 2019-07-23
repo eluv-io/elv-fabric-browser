@@ -603,7 +603,7 @@ const Fabric = {
     const imagePartHash = metadata["image"];
     if(!imagePartHash) { return; }
 
-    return await client.Rep({libraryId, objectId, versionHash, rep: "image", noAuth: true});
+    return await client.PublicRep({libraryId, objectId, versionHash, rep: "image"});
   },
 
   GetCustomContentContractAddress: async ({libraryId, objectId, metadata={}}) => {
