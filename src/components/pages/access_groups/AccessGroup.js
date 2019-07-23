@@ -67,13 +67,13 @@ class AccessGroup extends React.Component {
     let editButton;
     let deleteButton;
     if(this.props.accessGroup.isOwner) {
-      //editButton = <Action type="link" to={UrlJoin(this.props.match.url, "edit")}>Manage</Action>;
+      editButton = <Action type="link" to={UrlJoin(this.props.match.url, "edit")}>Manage</Action>;
       //deleteButton = <Action className="delete-action" onClick={this.DeleteAccessGroup}>Delete</Action>;
     }
 
     let membersButton;
     if(this.props.accessGroup.isOwner || this.props.accessGroup.isManager) {
-      //membersButton = <Action type="link" to={UrlJoin(this.props.match.url, "members")}>Members</Action>;
+      membersButton = <Action type="link" to={UrlJoin(this.props.match.url, "members")}>Members</Action>;
     }
 
     return (

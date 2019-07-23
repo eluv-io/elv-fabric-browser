@@ -97,8 +97,8 @@ const Fabric = {
 
   /* Access Groups */
 
-  CreateAccessGroup: async () => {
-    return await client.CreateAccessGroup();
+  CreateAccessGroup: async ({name, metadata={}}) => {
+    return await client.CreateAccessGroup({name, metadata});
   },
 
   DeleteAccessGroup: async ({address}) => {
@@ -1206,14 +1206,26 @@ const Fabric = {
   async GetAccessGroup({contractAddress}) {
     const currentAccountAddress = await Fabric.CurrentAccountAddress();
 
+    let owner, metadata;
     let isManager = false;
 
     try {
+      owner = await client.CallContractMethod({
+        contractAddress,
+        abi: BaseAccessGroupContract.abi,
+        methodName: "owner"
+      });
+
       isManager = await client.CallContractMethod({
         contractAddress,
         abi: BaseAccessGroupContract.abi,
         methodName: "hasManagerAccess",
         methodArgs: [client.utils.FormatAddress(currentAccountAddress)]
+      });
+
+      metadata = await client.ContentObjectMetadata({
+        libraryId: Fabric.contentSpaceLibraryId,
+        objectId: client.utils.AddressToObjectId(contractAddress)
       });
     } catch(error) {
       // eslint-disable-next-line no-console
@@ -1222,8 +1234,12 @@ const Fabric = {
 
     return {
       address: contractAddress,
-      name: contractAddress,
-      isManager
+      name: metadata.name || contractAddress,
+      description: metadata.description,
+      metadata,
+      owner,
+      isManager,
+      isOwner: client.utils.EqualAddress(owner, currentAccountAddress)
     };
   },
 
