@@ -205,7 +205,6 @@ class Listing extends React.Component {
           ListingOptions[this.props.pageId].perPage = perPage;
         }}
       >
-        <option value={1}>1</option>
         <option value={5}>5</option>
         <option value={10}>10</option>
         <option value={20}>20</option>
@@ -280,7 +279,7 @@ class Listing extends React.Component {
     }
 
     return (
-      <div className="listing">
+      <div className={`listing ${this.props.className || ""}`}>
         { this.Actions() }
         <LoadingElement loading={this.props.loadingStatus.loading} loadingClassname="loading" loadingIcon="rotate">
           { this.Count() }
@@ -288,6 +287,7 @@ class Listing extends React.Component {
             count={this.props.count}
             display={this.state.display}
             noIcon={this.props.noIcon}
+            noStatus={this.props.noStatus}
             RenderContent={this.props.RenderContent}
           />
         </LoadingElement>
@@ -298,7 +298,9 @@ class Listing extends React.Component {
 
 Listing.propTypes = {
   pageId: PropTypes.string.isRequired,
+  className: PropTypes.string,
   noIcon: PropTypes.bool,
+  noStatus: PropTypes.bool,
   paginate: PropTypes.bool,
   count: PropTypes.number,
   selectFilterLabel: PropTypes.string,

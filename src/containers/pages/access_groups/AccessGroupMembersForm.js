@@ -2,7 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import Thunk from "../../../utils/Thunk";
 import Container from "../../Container";
-import {GetAccessGroup, UpdateAccessGroupMembers} from "../../../actions/AccessGroups";
+import {GetAccessGroup, ListAccessGroupMembers, UpdateAccessGroupMembers} from "../../../actions/AccessGroups";
 import AccessGroupMembersForm from "../../../components/pages/access_groups/AccessGroupMembersForm";
 
 const mapStateToProps = (state, props) => ({
@@ -14,13 +14,15 @@ const mapDispatchToProps = dispatch =>
     dispatch,
     [
       GetAccessGroup,
-      UpdateAccessGroupMembers
+      ListAccessGroupMembers,
+      UpdateAccessGroupMembers,
     ]
   );
 
 const LoadAccessGroups = async ({props}) => {
   if(!props.createForm) {
     await props.GetAccessGroup({contractAddress: props.contractAddress});
+    await props.ListAccessGroupMembers({contractAddress: props.contractAddress, params: {}});
   }
 };
 

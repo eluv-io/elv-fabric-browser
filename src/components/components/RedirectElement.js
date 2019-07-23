@@ -12,6 +12,10 @@ class RedirectElement extends React.Component {
   }
 
   render() {
+    if(!this.props.to) {
+      return this.props.children;
+    }
+
     if(this.state.redirect) {
       return <Redirect push to={this.props.to} />;
     }

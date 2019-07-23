@@ -62,7 +62,7 @@
     & > .copyable > div {
       @include elv-ellipsis;
       flex-grow: 1;
-      max-width: 500px;
+      max-width: 525px;
     }
 
     & > span {
