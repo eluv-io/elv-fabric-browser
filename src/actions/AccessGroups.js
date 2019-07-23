@@ -31,16 +31,33 @@ export const GetAccessGroup = ({contractAddress}) => {
   };
 };
 
-export const SaveAccessGroup = ({address}) => {
+export const SaveAccessGroup = ({name, description, address}) => {
   return async (dispatch) => {
     if(address) {
+      const objectId = Fabric.utils.AddressToObjectId(address);
+      await Fabric.EditAndFinalizeContentObject({
+        libraryId: Fabric.contentSpaceLibraryId,
+        objectId,
+        todo: async (writeToken) => {
+          await Fabric.MergeMetadata({
+            libraryId: Fabric.contentSpaceLibraryId,
+            objectId,
+            writeToken,
+            metadata: {
+              name,
+              description
+            }
+          });
+        }
+      });
+
       dispatch(SetNotificationMessage({
         message: "Access group successfully updated",
         redirect: true
       }));
     } else {
       // New access group - deploy contract
-      address = await Fabric.CreateAccessGroup();
+      address = await Fabric.CreateAccessGroup({name, metadata: { description }});
 
       dispatch(SetNotificationMessage({
         message: "Access group successfully created",
