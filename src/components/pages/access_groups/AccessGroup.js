@@ -7,14 +7,15 @@ import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
 import Redirect from "react-router/es/Redirect";
 import {PageHeader} from "../../components/Page";
-import {Action, Confirm, LoadingElement} from "elv-components-js";
+import {Action, Confirm, LoadingElement, Tabs} from "elv-components-js";
 import Listing from "../../components/Listing";
 
 class AccessGroup extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      visibleElements: {}
+      visibleElements: {},
+      view: "members"
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -33,15 +34,12 @@ class AccessGroup extends React.Component {
     if(!this.props.accessGroup.members) { return []; }
 
     const members = Object.values(this.props.accessGroup.members).map(member => {
-      const type = member.manager ? "Manager" : "Member";
       return {
         id: member.address,
         sortKey: member.name || "zz",
-        key: `${type}-${member.address}`,
+        key: `${this.state.view}-${member.address}`,
         title: member.name,
-        description: member.address,
-        status: type,
-        link: "/"
+        description: member.address
       };
     });
 
@@ -51,14 +49,22 @@ class AccessGroup extends React.Component {
   AccessGroupMembersListing() {
     return (
       <Listing
+        key={`${this.state.view}-listing`}
+        className="compact"
         pageId="AccessGroupMembers"
         paginate={true}
         count={this.props.membersCount}
         loadingStatus={this.props.methodStatus.ListAccessGroupMembers}
-        LoadContent={({params}) =>
-          this.props.methods.ListAccessGroupMembers({contractAddress: this.props.contractAddress, params})}
+        LoadContent={({params}) => {
+          this.props.methods.ListAccessGroupMembers({
+            contractAddress: this.props.contractAddress,
+            showManagers: this.state.view === "managers",
+            params
+          });
+        }}
         RenderContent={this.AccessGroupMembers}
         noIcon={true}
+        noStatus={true}
       />
     );
   }
@@ -113,6 +119,15 @@ class AccessGroup extends React.Component {
               </Link>
             </LabelledField>
           </div>
+          <Tabs
+            options={[
+              ["Members", "members"],
+              ["Managers", "managers"]
+            ]}
+            selected={this.state.view}
+            onChange={(value) => this.setState({view: value})}
+          />
+          { this.AccessGroupMembersListing() }
         </div>
       </div>
     );

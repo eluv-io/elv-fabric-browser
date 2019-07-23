@@ -445,7 +445,7 @@ const Fabric = {
   // Make sure not to call anything requiring content object authorization
   ListContentObjects: async ({libraryId, params}) => {
     const filterOptions = {
-      select: ["name", "eluv.description", "image"],
+      select: ["name", "eluv.description", "image", "description"],
       sort: "name",
       limit: params.perPage
     };
@@ -492,7 +492,7 @@ const Fabric = {
           hash: object.hash,
           type: object.type,
           name: meta.name,
-          description: meta["eluv.description"],
+          description: meta["eluv.description"] || meta.description,
           accessInfo,
           imageUrl,
           contractAddress: client.utils.HashToAddress(object.id)
@@ -552,7 +552,7 @@ const Fabric = {
       ...appUrls,
       meta: metadata,
       name: metadata.name || object.id,
-      description: metadata["eluv.description"],
+      description: metadata["eluv.description"] || metadata.description,
       typeInfo,
       imageUrl,
       videoUrl,
@@ -801,7 +801,7 @@ const Fabric = {
         types[type.id] = {
           ...type,
           name: type.meta.name || "",
-          description: type.meta["eluv.description"],
+          description: type.meta["eluv.description"] || type.meta.description,
           owner,
           isOwner: EqualAddress(owner, await Fabric.CurrentAccountAddress())
         };
@@ -1231,7 +1231,6 @@ const Fabric = {
       // eslint-disable-next-line no-console
       console.error(error);
     }
-
     return {
       address: contractAddress,
       name: metadata.name || contractAddress,
@@ -1243,11 +1242,25 @@ const Fabric = {
     };
   },
 
-  async AccessGroupMembers({contractAddress, params}) {
-    const accessGroup = await Fabric.GetAccessGroup({contractAddress});
+  async ListAccessGroupMembers({contractAddress, showManagers=false, params}) {
+    const memberAddresses = showManagers ?
+      await client.AccessGroupManagers({contractAddress}) :
+      await client.AccessGroupMembers({contractAddress});
+
+    let members = await Promise.all(
+      memberAddresses.map(async address => {
+        const name = await client.userProfileClient.PublicUserMetadata({address, metadataSubtree: "name"});
+
+        return {
+          name: name || address,
+          address
+        };
+      })
+    );
+
     const currentAccountAddress = await Fabric.CurrentAccountAddress();
 
-    let filteredMembers = Object.values(accessGroup.members);
+    let filteredMembers = Object.values(members);
 
     filteredMembers = filteredMembers.map(member =>
       ({
@@ -1260,7 +1273,10 @@ const Fabric = {
     if(params.filter) {
       filteredMembers = filteredMembers.filter(member => {
         try {
-          return member.name.toLowerCase().includes(params.filter.toLowerCase());
+          return (
+            member.name.toLowerCase().includes(params.filter.toLowerCase()) ||
+            member.address.toLowerCase().includes(params.filter.toLowerCase())
+          );
         } catch(e) {
           return false;
         }
@@ -1285,7 +1301,7 @@ const Fabric = {
     }
 
     // Convert back to map
-    let members = {};
+    members = {};
     filteredMembers.forEach(member => members[member.address] = member);
 
     return {members, count};

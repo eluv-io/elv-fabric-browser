@@ -69,11 +69,11 @@ export const SaveAccessGroup = ({name, description, address}) => {
   };
 };
 
-export const ListAccessGroupMembers = ({contractAddress, params}) => {
+export const ListAccessGroupMembers = ({contractAddress, showManagers=false, params}) => {
   return async (dispatch) => {
     const {members, count} = await WithCancel(
       params.cancelable,
-      async () => await Fabric.AccessGroupMembers({contractAddress, params})
+      async () => await Fabric.ListAccessGroupMembers({contractAddress, showManagers, params})
     );
 
     dispatch({

@@ -47,6 +47,7 @@ class Contracts extends React.Component {
       return (
         <Listing
           key="contracts-listing"
+          className="compact"
           pageId="Contracts"
           paginate={true}
           count={this.props.count.contracts}

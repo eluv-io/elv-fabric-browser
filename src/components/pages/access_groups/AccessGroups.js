@@ -32,6 +32,7 @@ class AccessGroups extends React.Component {
   AccessGroupsListing() {
     return (
       <Listing
+        className="compact"
         pageId="AccessGroups"
         paginate={true}
         count={this.props.count}
@@ -39,6 +40,7 @@ class AccessGroups extends React.Component {
         LoadContent={({params}) => this.props.methods.ListAccessGroups(params)}
         RenderContent={this.AccessGroups}
         noIcon={true}
+        noStatus={true}
       />
     );
   }

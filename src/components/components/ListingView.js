@@ -19,19 +19,12 @@ class ListingItem extends React.Component {
   }
 
   AsTableRow() {
-    let iconCell;
-    if(!this.props.noIcon) {
-      iconCell = (
-        <td className="icon-cell">
-          <CroppedIcon className="icon-container" icon={this.props.icon}/>
-        </td>
-      );
-    }
-
     return (
       <RedirectElement to={this.props.link}>
         <tr title={this.props.title} aria-label={this.props.title}>
-          {iconCell}
+          <td className="icon-cell" hidden={this.props.noIcon}>
+            <CroppedIcon className="icon-container" icon={this.props.icon}/>
+          </td>
           <td className="title-cell" title={this.props.title}>
             <div className="cropped-text" tabIndex={-1}>
               {this.props.title}
@@ -42,7 +35,7 @@ class ListingItem extends React.Component {
               {this.props.description}
             </div>
           </td>
-          <td className="status-cell" title={this.props.status}>
+          <td className="status-cell" title={this.props.status} hidden={this.props.noStatus}>
             {this.props.status}
           </td>
         </tr>
@@ -103,25 +96,26 @@ class Listing extends React.Component {
       return null;
     }
 
-    let iconHeader;
-    if(!this.props.noIcon) {
-      iconHeader = <th className="icon-header" />;
-    }
-
     if(this.props.display === "list") {
       return (
         <table>
           <thead>
             <tr>
-              { iconHeader }
+              <th className="icon-header" hidden={this.props.noIcon} />
               <th className="title-header" />
               <th className="description-header" />
-              <th className="status-header" />
+              <th className="status-header" hidden={this.props.noStatus} />
             </tr>
           </thead>
           <tbody>
             { content.map(item =>
-              <ListingItem key={item.id} noIcon={this.props.noIcon} display={"list"} {...item} />)}
+              <ListingItem
+                key={item.id}
+                display={"list"}
+                noIcon={this.props.noIcon}
+                noStatus={this.props.noStatus}
+                {...item}
+              />)}
           </tbody>
         </table>
       );
@@ -129,7 +123,13 @@ class Listing extends React.Component {
       return (
         <div className="grid-listing">
           { content.map(item =>
-            <ListingItem key={item.id} noIcon={this.props.noIcon} display={"grid"} {...item} />)}
+            <ListingItem
+              key={item.id}
+              display={"grid"}
+              noIcon={this.props.noIcon}
+              noStatus={this.props.noStatus}
+              {...item}
+            />)}
         </div>
       );
     }
@@ -140,7 +140,8 @@ Listing.propTypes = {
   count: PropTypes.number,
   display: PropTypes.string.isRequired,
   RenderContent: PropTypes.func.isRequired,
-  noIcon: PropTypes.bool
+  noIcon: PropTypes.bool,
+  noStatus: PropTypes.bool
 };
 
 export default Listing;

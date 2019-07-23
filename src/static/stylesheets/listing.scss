@@ -302,4 +302,32 @@
       }
     }
   }
+
+  &.compact {
+    thead {
+      tr {
+        th {
+          &.title-header {
+            width: 45%;
+          }
+        }
+      }
+    }
+
+    tbody {
+      tr {
+        height: 70px;
+
+        td {
+          &.title-cell {
+            font-size: 16px;
+          }
+
+          &.description-cell {
+            font-size: 14px;
+          }
+        }
+      }
+    }
+  }
 }

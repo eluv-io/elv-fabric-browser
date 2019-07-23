@@ -81,16 +81,7 @@ class ContentObjectForm extends React.Component {
         types = allowedTypes;
       } else {
         // No allowed types specified on library - all types allowed
-        let allTypes = {};
-        Object.values(this.props.types).forEach(type => allTypes[type.hash] = type);
-
-        types = {
-          "": {
-            name: "[none]",
-            hash: ""
-          },
-          ...allTypes
-        };
+        Object.values(this.props.types).forEach(type => types[type.hash] = type);
       }
 
       Object.values(types).forEach(type => types[type.hash] = this.FormatType(type));
@@ -216,9 +207,18 @@ class ContentObjectForm extends React.Component {
 
   TypeField() {
     if(!this.props.createForm) { return; }
-    const options = Object.values(this.state.types).map(({name, hash}) => {
+
+    const types = Object.values(this.state.types).sort((a, b) => a.name > b.name ? 1 : -1);
+    let options = types.map(({name, hash}) => {
       return <option key={"type-" + hash} name="type" value={hash}>{ name }</option>;
     });
+
+    // If library types not restricted, allow creation of objects with no type
+    if(!this.props.library.types || Object.keys(this.props.library.types).length === 0) {
+      options.unshift(
+        <option key="type-none" name="type" value="">[none]</option>
+      );
+    }
 
     return [
       <label key="type-field-label" htmlFor="type">Content Type</label>,
