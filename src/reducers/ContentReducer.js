@@ -42,6 +42,13 @@ const ContentReducer = (state = {}, action) => {
             ...state.libraries[action.libraryId],
             groups: action.groups
           }
+        },
+        count: {
+          ...state.count,
+          libraryGroups: {
+            ...(state.count.libraryGroups || {}),
+            [action.libraryId]: action.count
+          }
         }
       };
 
@@ -124,7 +131,7 @@ const ContentReducer = (state = {}, action) => {
         objects: state.objects || {},
         types: state.types || {},
         allTypes: state.allTypes || {},
-        count: state.count || {libraries: 0, objects: {}, types: 0}
+        count: state.count || {libraries: 0, objects: {}, types: 0, libraryGroups: {}}
       };
   }
 };

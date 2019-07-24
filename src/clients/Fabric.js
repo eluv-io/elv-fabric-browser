@@ -344,62 +344,8 @@ const Fabric = {
 
   /* Library Groups */
 
-  // Get a list of library groups of the specified type
-  // - Get the number of groups by querying <type>GroupsLength
-  // - Iterate over the list of <type>Groups to collect the addresses
-  // - Check if the address matches a known group - if so include additional information
-  CollectLibraryGroups: async ({libraryId, type, knownGroups}) => {
-    let numGroups = await client.CallContractMethod({
-      contractAddress: client.utils.HashToAddress(libraryId),
-      abi: BaseLibraryContract.abi,
-      methodName: type + "GroupsLength"
-    });
-
-    numGroups = parseInt(numGroups._hex, 16);
-
-    let groups = [];
-    for(let i = 0; i < numGroups; i++) {
-      const groupAddress = await client.CallContractMethod({
-        contractAddress: client.utils.HashToAddress(libraryId),
-        abi: BaseLibraryContract.abi,
-        methodName: type + "Groups",
-        methodArgs: [i]
-      });
-
-      const knownGroup = Object.values(knownGroups)
-        .find(knownGroup => EqualAddress(knownGroup.address, groupAddress));
-
-      if(knownGroup) {
-        groups.push(knownGroup);
-      } else {
-        groups.push({
-          address: FormatAddress(groupAddress)
-        });
-      }
-    }
-
-    return groups;
-  },
-
-  GetContentLibraryGroups: async ({libraryId}) => {
-    if(libraryId === Fabric.contentSpaceLibraryId) {
-      return {
-        accessor: [],
-        contributor: [],
-        reviewer: []
-      };
-    }
-
-    const knownGroups = await Fabric.AccessGroups({params: {}});
-
-    const groupInfo = {};
-    await Promise.all(
-      ["accessor", "contributor", "reviewer"].map(async (type) => {
-        groupInfo[type] = await Fabric.CollectLibraryGroups({libraryId, type, knownGroups});
-      })
-    );
-
-    return groupInfo;
+  ListContentLibraryGroups: async ({libraryId, type, params}) => {
+    return await Fabric.ListAccessGroups({params: {libraryId, type, ...params}});
   },
 
   AddContentLibraryGroup: async ({libraryId, address, groupType}) => {
@@ -1162,8 +1108,33 @@ const Fabric = {
     });
   },
 
-  async AccessGroups({params}) {
-    const accessGroupAddresses = await client.Collection({collectionType: "accessGroups"});
+  async ListAccessGroups({params}) {
+    let accessGroupAddresses;
+    if(params.libraryId) {
+      // Get library access groups of the specified type
+      let numGroups = await client.CallContractMethod({
+        contractAddress: client.utils.HashToAddress(params.libraryId),
+        abi: BaseLibraryContract.abi,
+        methodName: params.type + "GroupsLength"
+      });
+
+      numGroups = parseInt(numGroups._hex, 16);
+
+      accessGroupAddresses = await Promise.all(
+        [...Array(numGroups)].map(async (_, i) => {
+          return await client.CallContractMethod({
+            contractAddress: client.utils.HashToAddress(params.libraryId),
+            abi: BaseLibraryContract.abi,
+            methodName: params.type + "Groups",
+            methodArgs: [i]
+          });
+        })
+      );
+    } else {
+      // Get all access groups
+      accessGroupAddresses = await client.Collection({collectionType: "accessGroups"});
+    }
+
     let filteredAccessGroups = await Promise.all(
       accessGroupAddresses.map(async contractAddress => await Fabric.GetAccessGroup({contractAddress}))
     );

@@ -8,7 +8,7 @@ export const ListAccessGroups = ({params}) => {
   return async (dispatch) => {
     const {accessGroups, count} = await WithCancel(
       params.cancelable,
-      async () => await Fabric.AccessGroups({params})
+      async () => await Fabric.ListAccessGroups({params})
     );
 
     dispatch({
