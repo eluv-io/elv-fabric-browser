@@ -19,11 +19,13 @@ class ContentLibrary extends React.Component {
 
     this.state = {
       visibleItems: {},
-      view: "content"
+      view: "content",
+      groupsView: "accessor"
     };
 
     this.PageContent = this.PageContent.bind(this);
     this.ContentObjects = this.ContentObjects.bind(this);
+    this.AccessGroups = this.AccessGroups.bind(this);
   }
 
   ToggleVisible(id) {
@@ -99,60 +101,90 @@ class ContentLibrary extends React.Component {
     );
   }
 
-  LibraryGroups() {
-    if(this.props.library.isContentSpaceLibrary) { return null; }
+  AccessGroups() {
+    if(!this.props.library.groups) { return []; }
 
-    // Return if no groups exist
-    if(!Object.values(this.props.library.groups).some(groups => groups.length > 0)) { return null; }
+    const groups = Object.keys(this.props.library.groups).map(address => {
+      const group = this.props.library.groups[address];
 
+      return {
+        id: address,
+        sortKey: (group.name || "zz").toLowerCase(),
+        title: group.name || address,
+        description: group.description,
+        link: UrlJoin("/access-groups", address)
+      };
+    });
+
+    return groups.sort((a, b) => a.sortKey > b.sortKey ? 1 : -1);
+  }
+
+  AccessGroupsListing() {
     return (
       <div>
-        <h3>Groups</h3>
-        {
-          Object.keys(this.props.library.groups).map(groupType => {
-            const groups = this.props.library.groups[groupType];
-
-            // Display nothing if no groups of this type exist
-            if(groups.length === 0) {
-              return null;
-            }
-
-            return (
-              <div className="library-groups-info indented" key={"library-group-" + groupType}>
-                <h4>{groupType.capitalize()}</h4>
-                {
-                  groups.map(group => {
-                    const accessGroupLink = UrlJoin("/access-groups", group.address);
-
-                    let groupInfo = <h4>Unknown Group</h4>;
-                    if(this.props.accessGroups[group.address]) {
-                      // Known group - Provide link to group page
-                      groupInfo = (
-                        <Link className="inline-link" to={accessGroupLink}>
-                          {this.props.accessGroups[group.address].name}
-                        </Link>
-                      );
-                    }
-
-                    return (
-                      <div className="group-info indented" key={"library-group-" + groupType + "-" + group.address}>
-                        <LabelledField label="Group">
-                          { groupInfo }
-                        </LabelledField>
-
-                        <LabelledField label="Address">
-                          <Link className="inline-link" to={UrlJoin(accessGroupLink, "contract")}>{group.address}</Link>
-                        </LabelledField>
-                      </div>
-                    );
-                  })
-                }
-
-              </div>
-            );
-          })
-        }
+        <Tabs
+          options={[
+            ["Accessors", "accessor"],
+            ["Contributors", "contributor"],
+            ["Reviewers", "reviewer"]
+          ]}
+          className="secondary"
+          selected={this.state.groupsView}
+          onChange={(value) => this.setState({groupsView: value})}
+        />
+        <Listing
+          key={`library-access-group-listing-${this.state.groupsView}`}
+          pageId="LibraryAccessGroups"
+          noIcon={true}
+          noStatus={true}
+          paginate={true}
+          count={this.props.count.libraryGroups[this.props.libraryId]}
+          loadingStatus={this.props.methodStatus.ListContentLibraryGroups}
+          LoadContent={({params}) => {
+            this.props.methods.ListContentLibraryGroups({type: this.state.groupsView, params});
+          }}
+          RenderContent={this.AccessGroups}
+        />
       </div>
+    );
+  }
+
+  ContentObjects() {
+    if(!this.props.objects) { return []; }
+
+    const objects = Object.keys(this.props.objects).map(objectId => {
+      const object = this.props.objects[objectId];
+
+      const status = AccessChargeDisplay(object.accessInfo.accessCharge);
+
+      return {
+        id: objectId,
+        sortKey: (object.name || "zz").toLowerCase(),
+        title: object.name || objectId,
+        description: object.description,
+        status: status,
+        icon: object.imageUrl || ContentIcon,
+        link: UrlJoin(this.props.match.url, objectId)
+      };
+    });
+
+    return objects.sort((a, b) => a.sortKey > b.sortKey ? 1 : -1);
+  }
+
+  ObjectListing() {
+    return (
+      <Listing
+        key="library-objects-view"
+        pageId="ContentObjects"
+        paginate={true}
+        count={this.props.count.objects[this.props.libraryId]}
+        loadingStatus={this.props.methodStatus.ListContentObjects}
+        LoadContent={({params}) => {
+          params.cacheId = this.props.cacheId;
+          this.props.methods.ListContentObjects({libraryId: this.props.libraryId, params});
+        }}
+        RenderContent={this.ContentObjects}
+      />
     );
   }
 
@@ -220,46 +252,7 @@ class ContentLibrary extends React.Component {
         { this.LibraryContentTypes() }
         { this.ToggleSection("Public Metadata", "public-metadata", this.props.library.meta, true) }
         { this.ToggleSection("Private Metadata", "private-metadata", this.props.library.privateMeta, true) }
-        { this.LibraryGroups() }
       </div>
-    );
-  }
-
-  ContentObjects() {
-    if(!this.props.objects) { return []; }
-
-    const objects = Object.keys(this.props.objects).map(objectId => {
-      const object = this.props.objects[objectId];
-
-      const status = AccessChargeDisplay(object.accessInfo.accessCharge);
-
-      return {
-        id: objectId,
-        sortKey: (object.name || "zz").toLowerCase(),
-        title: object.name || objectId,
-        description: object.description,
-        status: status,
-        icon: object.imageUrl || ContentIcon,
-        link: UrlJoin(this.props.match.url, objectId)
-      };
-    });
-
-    return objects.sort((a, b) => a.sortKey > b.sortKey ? 1 : -1);
-  }
-
-  ObjectListing() {
-    return (
-      <Listing
-        pageId="ContentObjects"
-        paginate={true}
-        count={this.props.count.objects[this.props.libraryId]}
-        loadingStatus={this.props.methodStatus.ListContentObjects}
-        LoadContent={({params}) => {
-          params.cacheId = this.props.cacheId;
-          this.props.methods.ListContentObjects({libraryId: this.props.libraryId, params});
-        }}
-        RenderContent={this.ContentObjects}
-      />
     );
   }
 
@@ -294,6 +287,16 @@ class ContentLibrary extends React.Component {
     );
   }
 
+  PageView() {
+    if(this.state.view === "content") {
+      return this.ObjectListing();
+    } else if(this.state.view === "info") {
+      return this.LibraryInfo();
+    } else if(this.state.view === "groups") {
+      return this.AccessGroupsListing();
+    }
+  }
+
   PageContent() {
     if(this.props.methodStatus.DeleteContentLibrary.completed) {
       return <Redirect push to={"/content"}/>;
@@ -303,7 +306,8 @@ class ContentLibrary extends React.Component {
       <Tabs
         options={[
           ["Content", "content"],
-          ["Library Info", "info"]
+          ["Library Info", "info"],
+          ["Access Groups", "groups"]
         ]}
         selected={this.state.view}
         onChange={(value) => this.setState({view: value})}
@@ -316,7 +320,7 @@ class ContentLibrary extends React.Component {
         <PageHeader header={this.props.library.name} subHeader={this.props.library.description}/>
         {tabs}
         <div className="page-content">
-          {this.state.view === "content" ? this.ObjectListing() : this.LibraryInfo()}
+          { this.PageView() }
         </div>
       </div>
     );
@@ -336,7 +340,6 @@ class ContentLibrary extends React.Component {
 ContentLibrary.propTypes = {
   libraryId: PropTypes.string.isRequired,
   library: PropTypes.object.isRequired,
-  accessGroups: PropTypes.object.isRequired,
   objects: PropTypes.object.isRequired,
   count: PropTypes.object.isRequired,
   methods: PropTypes.shape({

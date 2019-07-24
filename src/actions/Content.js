@@ -50,17 +50,18 @@ export const ListLibraryContentTypes = ({libraryId}) => {
   };
 };
 
-export const ListContentLibraryGroups = ({libraryId}) => {
+export const ListContentLibraryGroups = ({libraryId, type, params}) => {
   return async (dispatch) => {
     // Content space does not have groups
     if(libraryId === Fabric.contentSpaceLibraryId) { return; }
 
-    const groups = await Fabric.GetContentLibraryGroups({libraryId});
+    const {accessGroups, count} = await Fabric.ListContentLibraryGroups({libraryId, type, params});
 
     dispatch({
       type: ActionTypes.content.libraries.groups,
       libraryId,
-      groups
+      groups: accessGroups,
+      count
     });
   };
 };

@@ -13,8 +13,6 @@ import ContentLibrary from "../../../components/pages/content/ContentLibrary";
 
 const mapStateToProps = (state, props) => ({
   library: state.content.libraries[props.libraryId || props.match.params.libraryId],
-  accessGroups: state.accessGroups.accessGroups,
-  libraries: state.content.libraries,
   objects: state.content.objects,
   count: state.content.count,
   cacheId: state.content.cacheId
@@ -34,12 +32,14 @@ const mapDispatchToProps = dispatch =>
 
 const LoadLibrary = async ({props}) => {
   await props.GetContentLibrary({libraryId: props.libraryId});
-  await props.ListContentLibraryGroups({libraryId: props.libraryId});
-  await props.ListAccessGroups({params: {}});
 };
 
 const LoadObjects = async ({props, params}) => {
   await props.ListContentObjects(params);
+};
+
+const LoadGroups = async ({props, params}) => {
+  await props.ListContentLibraryGroups({libraryId: props.libraryId, ...params});
 };
 
 const DeleteLibrary = async ({props, params}) => {
@@ -56,6 +56,7 @@ const ContentLibrariesContainer = (props) => {
       Load={LoadLibrary}
       methods={{
         ListContentObjects: LoadObjects,
+        ListContentLibraryGroups: LoadGroups,
         DeleteContentLibrary: DeleteLibrary
       }}
     />
