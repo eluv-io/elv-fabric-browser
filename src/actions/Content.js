@@ -2,11 +2,10 @@ import ActionTypes from "./ActionTypes";
 import Fabric from "../clients/Fabric";
 import { SetNotificationMessage } from "./Notifications";
 import { ParseInputJson } from "../utils/Input";
-import {FormatAddress} from "../utils/Helpers";
-import {ToList} from "../utils/TypeSchema";
-import {DownloadFromUrl, FileInfo} from "../utils/Files";
+import { ToList } from "../utils/TypeSchema";
+import { DownloadFromUrl, FileInfo } from "../utils/Files";
 import Path from "path";
-import {WithCancel} from "../utils/Cancelable";
+import { WithCancel } from "../utils/Cancelable";
 
 export const ListContentLibraries = ({params}) => {
   return async (dispatch) => {
@@ -62,6 +61,34 @@ export const ListContentLibraryGroups = ({libraryId, type, params}) => {
       libraryId,
       groups: accessGroups,
       count
+    });
+  };
+};
+
+export const ListContentLibraryGroupPermissions = ({libraryId}) => {
+  return async (dispatch) => {
+    let permissions = {};
+    await Promise.all(
+      ["accessor", "contributor", "reviewer"].map(async type => {
+        const {accessGroups} = await Fabric.ListContentLibraryGroups({
+          libraryId,
+          type,
+          params: { paginate: false }
+        });
+
+        Object.keys(accessGroups).forEach(address => {
+          permissions[address] = {
+            [type]: true,
+            ...(permissions[address] || {})
+          };
+        });
+      })
+    );
+
+    dispatch({
+      type: ActionTypes.content.libraries.groupPermissions,
+      libraryId,
+      permissions
     });
   };
 };
@@ -175,27 +202,32 @@ export const SetLibraryContentTypes = ({libraryId, typeIds=[]}) => {
   };
 };
 
-export const UpdateContentLibraryGroups = ({libraryId, groups, originalGroups}) => {
+export const GetContentLibraryGroup = async ({libraryId, groupAddress, type}) => {
+  const {accessGroups} = await Fabric.ListContentLibraryGroups({libraryId, type, params: {filter: groupAddress}});
+
+  return accessGroups[groupAddress];
+};
+
+export const UpdateContentLibraryGroup = ({libraryId, groupAddress, accessor, contributor, reviewer}) => {
   return async (dispatch) => {
-    for(const groupType of Object.keys(groups)) {
-      const oldGroupAddresses = originalGroups[groupType].map(group => FormatAddress(group.address));
-      const newGroupAddresses = groups[groupType].map(group => FormatAddress(group.address));
+    const options = { accessor, contributor, reviewer};
 
-      // Remove groups in original groups but not in new groups
-      const toRemove = oldGroupAddresses.filter(address => !newGroupAddresses.includes(address));
-      for(const address of toRemove) {
-        await Fabric.RemoveContentLibraryGroup({libraryId, address, groupType});
-      }
+    await Promise.all(
+      ["accessor", "contributor", "reviewer"].map(async type => {
+        const accessGroup = await GetContentLibraryGroup({libraryId, groupAddress, type});
 
-      // Add groups in new groups but not in original groups
-      const toAdd = newGroupAddresses.filter(address => !oldGroupAddresses.includes(address));
-      for(const address of toAdd) {
-        await Fabric.AddContentLibraryGroup({libraryId, address, groupType});
-      }
-    }
+        if(!accessGroup && options[type]) {
+          // Add group
+          await Fabric.AddContentLibraryGroup({libraryId, address: groupAddress, groupType: type});
+        } else if(accessGroup && !options[type]) {
+          // Remove group
+          await Fabric.RemoveContentLibraryGroup({libraryId, address: groupAddress, groupType: type});
+        }
+      })
+    );
 
     dispatch(SetNotificationMessage({
-      message: "Successfully updated library groups",
+      message: "Successfully added library group",
       redirect: true
     }));
   };

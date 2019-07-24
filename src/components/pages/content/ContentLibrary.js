@@ -134,6 +134,7 @@ class ContentLibrary extends React.Component {
         />
         <Listing
           key={`library-access-group-listing-${this.state.groupsView}`}
+          className="compact"
           pageId="LibraryAccessGroups"
           noIcon={true}
           noStatus={true}
@@ -257,32 +258,19 @@ class ContentLibrary extends React.Component {
   }
 
   Actions() {
-    const contributeButton = <Action type="link" to={UrlJoin(this.props.match.url, "create")}>{this.props.library.isContentSpaceLibrary ? "New Content Type" : "Contribute"}</Action>;
-
-    let manageGroupsButton, manageTypesButton, deleteLibraryButton;
-    if(this.props.library.isOwner && !this.props.library.isContentSpaceLibrary) {
-      /*
-      const Delete = async () => {
-        await Confirm({
-          message: "Are you sure you want to delete this library?",
-          onConfirm: async () => await this.props.methods.DeleteContentLibrary({libraryId: this.props.libraryId})
-        });
-      };
-      */
-
-      manageGroupsButton = <Action type="link" to={UrlJoin(this.props.match.url, "groups")}>Groups</Action>;
-      manageTypesButton = <Action type="link" to={UrlJoin(this.props.match.url, "types")}>Types</Action>;
-      //deleteLibraryButton = <Action className="delete-action" onClick={Delete}>Delete</Action>;
-    }
+    const contributeButton = (
+      <Action type="link" to={UrlJoin(this.props.match.url, "create")}>
+        {this.props.library.isContentSpaceLibrary ? "New Content Type" : "Contribute"}
+      </Action>
+    );
 
     return (
       <div className="actions-container">
         <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
         <Action type="link" to={UrlJoin(this.props.match.url, "edit")}>Manage</Action>
-        { manageGroupsButton }
-        { manageTypesButton }
+        <Action type="link" to={UrlJoin(this.props.match.url, "types")} hidden={!this.props.library.isOwner}>Types</Action>
+        <Action type="link" to={UrlJoin(this.props.match.url, "groups")} hidden={!this.props.library.isOwner}>Groups</Action>
         { contributeButton }
-        { deleteLibraryButton }
       </div>
     );
   }

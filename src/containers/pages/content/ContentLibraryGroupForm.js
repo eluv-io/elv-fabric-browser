@@ -2,8 +2,13 @@ import React from "react";
 import { connect } from "react-redux";
 import Thunk from "../../../utils/Thunk";
 import Container from "../../Container";
-import ContentLibraryGroupsForm from "../../../components/pages/content/ContentLibraryGroupsForm";
-import {GetContentLibrary, ListContentLibraryGroups, UpdateContentLibraryGroups} from "../../../actions/Content";
+import ContentLibraryGroupForm from "../../../components/pages/content/ContentLibraryGroupForm";
+import {
+  GetContentLibrary,
+  ListContentLibraryGroupPermissions,
+  ListContentLibraryGroups,
+  UpdateContentLibraryGroup
+} from "../../../actions/Content";
 import {ListAccessGroups} from "../../../actions/AccessGroups";
 
 const mapStateToProps = (state, props) => ({
@@ -18,22 +23,23 @@ const mapDispatchToProps = dispatch =>
       GetContentLibrary,
       ListAccessGroups,
       ListContentLibraryGroups,
-      UpdateContentLibraryGroups
+      ListContentLibraryGroupPermissions,
+      UpdateContentLibraryGroup
     ]
   );
 
 const LoadLibrary = async ({props}) => {
-  await props.ListAccessGroups({params: {}});
   await props.GetContentLibrary({libraryId: props.libraryId});
-  await props.ListContentLibraryGroups({libraryId: props.libraryId});
+  await props.ListAccessGroups({params: {}});
+  await props.ListContentLibraryGroupPermissions({libraryId: props.libraryId});
 };
 
 const Submit = async ({props, params}) => {
-  await props.UpdateContentLibraryGroups(params);
+  await props.UpdateContentLibraryGroup({libraryId: props.libraryId, ...params});
 };
 
-const Component = Container(ContentLibraryGroupsForm);
-const ContentLibraryGroupsFormContainer = (props) => {
+const Component = Container(ContentLibraryGroupForm);
+const ContentLibraryGroupFormContainer = (props) => {
   const libraryId = props.libraryId || props.match.params.libraryId;
 
   return (
@@ -51,4 +57,4 @@ const ContentLibraryGroupsFormContainer = (props) => {
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(ContentLibraryGroupsFormContainer);
+)(ContentLibraryGroupFormContainer);
