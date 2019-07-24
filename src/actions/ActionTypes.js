@@ -16,6 +16,7 @@ const ActionTypes = {
       list: "LIST_LIBRARIES",
       get: "GET_LIBRARY",
       groups: "GET_LIBRARY_GROUPS",
+      groupPermissions: "GET_LIBRARY_GROUP_PERMISSIONS",
       types: "GET_LIBRARY_TYPES"
     },
     objects: {

@@ -12,7 +12,7 @@ import ContentLibrariesContainer from "../containers/pages/content/ContentLibrar
 import ContentLibraryContainer from "../containers/pages/content/ContentLibrary";
 import ContentLibraryFormContainer from "../containers/pages/content/ContentLibraryForm";
 import ContentLibraryTypesFormContainer from "../containers/pages/content/ContentLibraryTypesForm";
-import ContentLibraryGroupsFormContainer from "../containers/pages/content/ContentLibraryGroupsForm";
+import ContentLibraryGroupFormContainer from "../containers/pages/content/ContentLibraryGroupForm";
 
 /* Content Objects, Types and Apps */
 import ContentObjectContainer from "../containers/pages/content/ContentObject";
@@ -138,10 +138,7 @@ class Router extends React.Component {
           <Route exact path="/content-types/edit" render={(props) =>
             <ContentLibraryFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
 
-          <Route exact path="/content/:libraryId/groups" component={ContentLibraryGroupsFormContainer}/>
-          <Route exact path="/content-types/groups" render={(props) =>
-            <ContentLibraryGroupsFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
-
+          <Route exact path="/content/:libraryId/groups" component={ContentLibraryGroupFormContainer}/>
           <Route exact path="/content/:libraryId/types" component={ContentLibraryTypesFormContainer}/>
 
           <Route exact path="/content/:libraryId/create" component={ContentObjectFormContainer}/>

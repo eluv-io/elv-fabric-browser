@@ -1122,12 +1122,14 @@ const Fabric = {
 
       accessGroupAddresses = await Promise.all(
         [...Array(numGroups)].map(async (_, i) => {
-          return await client.CallContractMethod({
-            contractAddress: client.utils.HashToAddress(params.libraryId),
-            abi: BaseLibraryContract.abi,
-            methodName: params.type + "Groups",
-            methodArgs: [i]
-          });
+          return Fabric.utils.FormatAddress(
+            await client.CallContractMethod({
+              contractAddress: client.utils.HashToAddress(params.libraryId),
+              abi: BaseLibraryContract.abi,
+              methodName: params.type + "Groups",
+              methodArgs: [i]
+            })
+          );
         })
       );
     } else {
@@ -1143,7 +1145,10 @@ const Fabric = {
     if(params.filter) {
       filteredAccessGroups = filteredAccessGroups.filter(accessGroup => {
         try {
-          return accessGroup.name.toLowerCase().includes(params.filter.toLowerCase());
+          return (
+            accessGroup.name.toLowerCase().includes(params.filter.toLowerCase()) ||
+            accessGroup.address.toLowerCase().includes(params.filter.toLowerCase())
+          );
         } catch(e) {
           return false;
         }
@@ -1169,12 +1174,13 @@ const Fabric = {
 
     // Convert back to map
     let accessGroups = {};
-    filteredAccessGroups.forEach(accessGroup => accessGroups[accessGroup.address] = accessGroup);
+    filteredAccessGroups.forEach(accessGroup => accessGroups[Fabric.utils.FormatAddress(accessGroup.address)] = accessGroup);
 
     return {accessGroups, count};
   },
 
   async GetAccessGroup({contractAddress}) {
+    contractAddress = Fabric.utils.FormatAddress(contractAddress);
     const currentAccountAddress = await Fabric.CurrentAccountAddress();
 
     let owner, metadata;

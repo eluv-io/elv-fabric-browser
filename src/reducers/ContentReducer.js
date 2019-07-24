@@ -52,6 +52,18 @@ const ContentReducer = (state = {}, action) => {
         }
       };
 
+    case ActionTypes.content.libraries.groupPermissions:
+      return {
+        ...state,
+        libraries: {
+          ...state.libraries,
+          [action.libraryId]: {
+            ...state.libraries[action.libraryId],
+            groupPermissions: action.permissions
+          }
+        },
+      };
+
     case ActionTypes.content.objects.list:
       return {
         ...state,
