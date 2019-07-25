@@ -544,9 +544,15 @@ const Fabric = {
   },
 
   GetContentObjectImageUrl: async ({libraryId, objectId, versionHash, metadata}) => {
-    // Ensure image is set in metadata - if not, object has no image
-    if(!metadata) { metadata = await client.ContentObjectMetadata({libraryId, objectId}); }
-    const imagePartHash = metadata["image"];
+    let imagePartHash;
+    if(metadata) {
+      imagePartHash = metadata.public && metadata.public.image || metadata.image;
+    } else {
+      imagePartHash =
+        await client.ContentObjectMetadata({libraryId, objectId, versionHash, metadataSubtree: "public/image"}) ||
+        await client.ContentObjectMetadata({libraryId, objectId, versionHash, metadataSubtree: "image"});
+    }
+
     if(!imagePartHash) { return; }
 
     return await client.PublicRep({libraryId, objectId, versionHash, rep: "image"});

@@ -5,7 +5,7 @@ import {
   CreateContentType,
   GetContentObject,
   GetContentObjectVersions,
-  UpdateContentObject,
+  UpdateContentType,
 } from "../../../actions/Content";
 import Container from "../../Container";
 import ContentTypeForm from "../../../components/pages/content/ContentTypeForm";
@@ -23,7 +23,7 @@ const mapDispatchToProps = dispatch =>
       GetContentObject,
       GetContentObjectVersions,
       CreateContentType,
-      UpdateContentObject
+      UpdateContentType
     ]
   );
 
@@ -38,7 +38,7 @@ const Submit = async ({props, params}) => {
   if(props.createForm) {
     return await props.CreateContentType(params);
   } else {
-    return await props.UpdateContentObject(params);
+    return await props.UpdateContentType(params);
   }
 };
 
