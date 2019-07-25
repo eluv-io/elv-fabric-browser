@@ -94,7 +94,7 @@ class EventLogs extends React.PureComponent {
         <div className="inputs indented">
           <div className="labelled-field">
             <label>Transaction Hash</label>
-            <div className="value">{Fabric.utils.AddressToHash(log.transactionHash)}</div>
+            <div className="value">{log.transactionHash}</div>
           </div>
           { this.Id(eventName, log.address) }
           <div className="labelled-field">

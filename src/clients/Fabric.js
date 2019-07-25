@@ -393,7 +393,7 @@ const Fabric = {
   // Make sure not to call anything requiring content object authorization
   ListContentObjects: async ({libraryId, params}) => {
     const filterOptions = {
-      select: ["name", "eluv.description", "image", "description"],
+      select: ["name", "eluv.description", "image", "description", "public"],
       sort: "name",
       limit: params.perPage
     };
@@ -550,7 +550,7 @@ const Fabric = {
       let imagePartHash;
 
       if(metadata) {
-        imagePartHash = metadata.public && metadata.public.image || metadata.image;
+        imagePartHash = (metadata.public && metadata.public.image) || metadata.image;
       } else {
         imagePartHash =
           await client.ContentObjectMetadata({libraryId, objectId, versionHash, metadataSubtree: "public/image"}) ||
