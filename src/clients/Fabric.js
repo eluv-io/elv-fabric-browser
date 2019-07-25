@@ -34,6 +34,7 @@ const Fabric = {
   currentAccountAddress: undefined,
   utils: client.utils,
   isFrameClient,
+  cachedImages: {},
 
   async Initialize() {
     if(!isFrameClient) {
@@ -220,6 +221,7 @@ const Fabric = {
             objectId: libraryObjectId,
             metadata: meta
           });
+
           libraries[libraryId] = {
             libraryId,
             name: meta.name || libraryId,
@@ -544,18 +546,23 @@ const Fabric = {
   },
 
   GetContentObjectImageUrl: async ({libraryId, objectId, versionHash, metadata}) => {
-    let imagePartHash;
-    if(metadata) {
-      imagePartHash = metadata.public && metadata.public.image || metadata.image;
-    } else {
-      imagePartHash =
-        await client.ContentObjectMetadata({libraryId, objectId, versionHash, metadataSubtree: "public/image"}) ||
-        await client.ContentObjectMetadata({libraryId, objectId, versionHash, metadataSubtree: "image"});
+    if(!Fabric.cachedImages[objectId]) {
+      let imagePartHash;
+
+      if(metadata) {
+        imagePartHash = metadata.public && metadata.public.image || metadata.image;
+      } else {
+        imagePartHash =
+          await client.ContentObjectMetadata({libraryId, objectId, versionHash, metadataSubtree: "public/image"}) ||
+          await client.ContentObjectMetadata({libraryId, objectId, versionHash, metadataSubtree: "image"});
+      }
+
+      if(!imagePartHash) { return; }
+
+      Fabric.cachedImages[objectId] = await client.PublicRep({libraryId, objectId, versionHash, rep: "image"});
     }
 
-    if(!imagePartHash) { return; }
-
-    return await client.PublicRep({libraryId, objectId, versionHash, rep: "image"});
+    return Fabric.cachedImages[objectId];
   },
 
   GetCustomContentContractAddress: async ({libraryId, objectId, metadata={}}) => {
@@ -664,6 +671,8 @@ const Fabric = {
     objectId,
     writeToken
   }) => {
+    delete Fabric.cachedImages[objectId];
+
     return await client.FinalizeContentObject({
       libraryId,
       objectId,
