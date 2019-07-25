@@ -1187,11 +1187,13 @@ const Fabric = {
     let isManager = false;
 
     try {
-      owner = await client.CallContractMethod({
-        contractAddress,
-        abi: BaseAccessGroupContract.abi,
-        methodName: "owner"
-      });
+      owner = Fabric.utils.FormatAddress(
+        await client.CallContractMethod({
+          contractAddress,
+          abi: BaseAccessGroupContract.abi,
+          methodName: "owner"
+        })
+      );
 
       isManager = await client.CallContractMethod({
         contractAddress,
