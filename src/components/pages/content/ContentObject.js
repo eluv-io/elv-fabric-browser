@@ -466,7 +466,6 @@ class ContentObject extends React.Component {
           { description }
         </LabelledField>
 
-        { this.ObjectStatus() }
         { accessCharge }
 
         <br />
@@ -552,7 +551,6 @@ class ContentObject extends React.Component {
       <div className="actions-container">
         <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
         <Action type="link" to={UrlJoin(this.props.match.url, "edit")}>Manage</Action>
-        { this.PublishButton() }
         { setContractButton }
         <Action type="link" to={UrlJoin(this.props.match.url, "upload")}>Upload Parts</Action>
         { manageAppsLink }
