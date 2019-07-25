@@ -50,8 +50,6 @@ class ContentTypeForm extends React.Component {
   }
 
   BitcodeSelection() {
-    if(!this.props.createForm) { return null; }
-
     return [
       <label key="bitcode-selection-label" htmlFor="bitcode">Bitcode</label>,
       <BrowseWidget

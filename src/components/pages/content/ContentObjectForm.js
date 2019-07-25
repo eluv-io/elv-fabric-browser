@@ -88,7 +88,7 @@ class ContentObjectForm extends React.Component {
     } else {
       const object = this.props.object;
       metadata = JSON.stringify(object.meta, null, 2);
-      accessCharge = object.accessInfo.accessCharge;
+      accessCharge = object.accessInfo && object.accessInfo.accessCharge;
       type = object.type;
 
       if(object.typeInfo) {

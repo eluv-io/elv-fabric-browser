@@ -558,6 +558,52 @@ export const CreateContentType = ({name, description, metadata, bitcode}) => {
   };
 };
 
+export const UpdateContentType = ({libraryId, objectId, name, description, bitcode, metadata}) => {
+  return async (dispatch) => {
+    await Fabric.EditAndFinalizeContentObject({
+      libraryId,
+      objectId,
+      todo: async (writeToken) => {
+        metadata = ParseInputJson(metadata);
+        metadata.name = name;
+        metadata["eluv.description"] = description;
+
+        await Fabric.ReplaceMetadata({
+          libraryId,
+          objectId,
+          writeToken,
+          metadata
+        });
+
+        if(bitcode) {
+          const uploadResponse = await Fabric.UploadPart({
+            libraryId,
+            objectId,
+            writeToken,
+            file: bitcode,
+            encrypted: false
+          });
+
+          await Fabric.ReplaceMetadata({
+            libraryId,
+            objectId,
+            writeToken,
+            metadataSubtree: "bitcode_part",
+            metadata: uploadResponse.part.hash
+          });
+        }
+      }
+    });
+
+    dispatch(SetNotificationMessage({
+      message: "Successfully updated content type",
+      redirect: true
+    }));
+
+    return objectId;
+  };
+};
+
 export const ContentTypes = () => {
   return async (dispatch) => {
     dispatch({
