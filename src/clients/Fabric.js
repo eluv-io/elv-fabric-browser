@@ -716,7 +716,6 @@ const Fabric = {
         appUrls[`${appName}AppUrl`] = await Fabric.FileUrl({
           libraryId: Fabric.contentSpaceLibraryId,
           objectId: object.id,
-          versionHash: object.hash,
           filePath: object.meta[`eluv.${appName}App`]
         });
       }
