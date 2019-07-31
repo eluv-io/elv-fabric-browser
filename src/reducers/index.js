@@ -1,7 +1,6 @@
 import { combineReducers } from "redux";
 import {connectRouter} from "connected-react-router";
 
-import AccountsReducer from "./AccountsReducer";
 import ContentReducer from "./ContentReducer";
 import ContractsReducer from "./ContractsReducer";
 import NotificationsReducer from "./NotificationsReducer";
@@ -30,7 +29,6 @@ export default (history) => {
     router: connectRouter(history),
     frameRouting: FrameRoutingReducer,
     accessGroups: AccessGroupsReducer,
-    accounts: AccountsReducer,
     content: ContentReducer,
     contracts: ContractsReducer,
     notifications: NotificationsReducer,

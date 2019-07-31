@@ -11,7 +11,7 @@ import ContentLibraryTypesForm from "../../../components/pages/content/ContentLi
 
 const mapStateToProps = (state, props) => ({
   library: state.content.libraries[props.libraryId || props.match.params.libraryId],
-  types: state.content.allTypes
+  types: state.content.availableTypes
 });
 
 const mapDispatchToProps = dispatch =>

@@ -6,11 +6,6 @@ const ActionTypes = {
       list: "LIST_ACCESS_GROUP_MEMBERS"
     }
   },
-  accounts: {
-    get: {
-      currentAccountAddress: "GET_CURRENT_ACCOUNT_ADDRESS"
-    }
-  },
   content: {
     libraries: {
       list: "LIST_LIBRARIES",

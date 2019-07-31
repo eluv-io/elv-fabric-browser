@@ -7,111 +7,64 @@ const SortBlocks = (blocks) => {
   return Object.values(uniqueBlocks).sort((a, b) => a[0].blockNumber < b[0].blockNumber ? 1 : -1);
 };
 
-
 const ContractsReducer = (state = {}, action) => {
-  let contractState;
+  const newState = {
+    ...state,
+    count: state.count || {},
+    contracts: state.contracts || {},
+    deployedContracts: state.deployedContracts || {},
+    logs: state.logs || {}
+  };
 
   switch(action.type) {
     case ActionTypes.contracts.list:
-      return {
-        ...state,
-        contracts: action.contracts,
-        count: {
-          ...state.count,
-          contracts: action.count
-        }
-      };
+      newState.contracts = action.contracts;
+      newState.count.contracts = action.count;
+      break;
 
     case ActionTypes.contracts.compile:
-      return {
-        ...state,
-        contractData: action.contractData,
-        errors: undefined
-      };
+      newState.contractData = action.contractData;
+      newState.errors = undefined;
+      break;
 
     case ActionTypes.contracts.error.compile:
-      return {
-        ...state,
-        contractData: {},
-        errors: action.errors
-      };
+      newState.contractData = {};
+      newState.errors = action.errors;
+      break;
 
     case ActionTypes.contracts.deployed.list:
-      return {
-        ...state,
-        deployedContracts: action.contracts,
-        count: {
-          ...state.count,
-          deployedContracts: action.count
-        }
-      };
+      newState.deployedContracts = action.contracts;
+      newState.count.deployedContracts = action.count;
+      break;
 
     case ActionTypes.contracts.deployed.balance:
-      contractState = state.deployedContracts[action.contractAddress] || {};
-      return {
-        ...state,
-        deployedContracts: {
-          ...state.deployedContracts,
-          [action.contractAddress]: {
-            ...contractState,
-            balance: action.balance
-          }
-        }
-      };
+      const contractInfo = newState.deployedContracts[action.contractAddress] || {};
+      contractInfo.balance = action.balance;
+
+      newState.deployedContracts[action.contractAddress] = contractInfo;
+      break;
 
     case ActionTypes.contracts.deployed.events:
-      contractState = state.deployedContracts[action.contractAddress] || {};
+      const events = state.deployedContracts[action.contractAddress].events || [];
 
-      return {
-        ...state,
-        deployedContracts: {
-          ...state.deployedContracts,
-          [action.contractAddress]: {
-            ...contractState,
-            events: SortBlocks((contractState.events || []).concat(action.blocks))
-          }
-        }
-      };
+      newState.deployedContracts[action.contractAddress].events =
+        SortBlocks((events || []).concat(action.blocks));
+
+      break;
 
     case ActionTypes.contracts.deployed.clearEvents:
-      contractState = state.deployedContracts[action.contractAddress] || {};
-
-      return {
-        ...state,
-        deployedContracts: {
-          ...state.deployedContracts,
-          [action.contractAddress]: {
-            ...contractState,
-            events: []
-          }
-        }
-      };
+      newState.deployedContracts[action.contractAddress].events = [];
+      break;
 
     case ActionTypes.contracts.deployed.call:
-      contractState = state.deployedContracts[action.contractAddress] || {};
-      return {
-        ...state,
-        deployedContracts: {
-          ...state.deployedContracts,
-          [action.contractAddress]: {
-            ...contractState,
-            methodResults: {
-              ...contractState.methodResults,
-              [action.methodName]: action.methodResults
-            }
-          }
-        }
-      };
+      const methodResults = newState.deployedContracts[action.contractAddress].methodResults || {};
+      methodResults[action.methodName] = action.methodResults;
 
-    default:
-      return {
-        ...state,
-        count: state.count || {},
-        contracts: state.contracts || {},
-        deployedContracts: state.deployedContracts || {},
-        logs: state.logs || {}
-      };
+      newState.deployedContracts[action.contractAddress].methodResults = methodResults;
+      break;
   }
+
+  return newState;
 };
 
 export default ContractsReducer;

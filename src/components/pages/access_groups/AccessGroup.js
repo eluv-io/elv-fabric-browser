@@ -50,9 +50,9 @@ class AccessGroup extends React.Component {
   }
 
   AccessGroupMembers() {
-    if(!this.props.accessGroup.members) { return []; }
+    if(!this.props.accessGroupMembers) { return []; }
 
-    const members = Object.values(this.props.accessGroup.members).map(member => {
+    const members = Object.values(this.props.accessGroupMembers).map(member => {
       return {
         id: member.address,
         sortKey: member.name || "zz",
@@ -89,7 +89,7 @@ class AccessGroup extends React.Component {
         className="compact"
         pageId="AccessGroupMembers"
         paginate={true}
-        count={this.props.membersCount}
+        count={this.props.accessGroupMembersCount}
         loadingStatus={this.props.methodStatus.ListAccessGroupMembers}
         LoadContent={({params}) => {
           this.props.methods.ListAccessGroupMembers({
