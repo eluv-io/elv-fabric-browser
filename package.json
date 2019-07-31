@@ -71,6 +71,7 @@
     "babel-loader": "^8.0.5",
     "babel-plugin-react-css-modules": "^5.2.1",
     "babel-plugin-syntax-async-functions": "^6.13.0",
+    "babel-preset-mobx": "^2.0.0",
     "copy-webpack-plugin": "^4.6.0",
     "css-loader": "^1.0.1",
     "dashjs": "^2.9.3",
@@ -106,7 +107,8 @@
     "comments": true,
     "presets": [
       "@babel/preset-env",
-      "@babel/preset-react"
+      "@babel/preset-react",
+      "babel-preset-mobx"
     ],
     "plugins": [
       "syntax-async-functions",

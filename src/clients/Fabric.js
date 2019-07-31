@@ -390,6 +390,10 @@ const Fabric = {
 
   /* Objects */
 
+  IsNormalObject: async ({objectId}) => {
+    return (await client.AccessType({id: objectId})) === "object";
+  },
+
   // Make sure not to call anything requiring content object authorization
   ListContentObjects: async ({libraryId, params}) => {
     const filterOptions = {

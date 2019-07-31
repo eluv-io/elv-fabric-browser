@@ -2,7 +2,6 @@ import React from "react";
 import { connect } from "react-redux";
 import Thunk from "../../../utils/Thunk";
 import Container from "../../Container";
-import {SetCurrentAccount} from "../../../actions/Accounts";
 import {
   GetAccessGroup,
   ListAccessGroupMembers,
@@ -13,14 +12,14 @@ import AccessGroup from "../../../components/pages/access_groups/AccessGroup";
 
 const mapStateToProps = (state, props) => ({
   accessGroup: state.accessGroups.accessGroups[props.match.params.contractAddress],
-  membersCount: state.accessGroups.count.members[props.match.params.contractAddress]
+  accessGroupMembers: state.accessGroups.accessGroupMembers[props.match.params.contractAddress] || [],
+  accessGroupMembersCount: state.accessGroups.count.accessGroupMembers[props.match.params.contractAddress] || 0
 });
 
 const mapDispatchToProps = dispatch =>
   Thunk(
     dispatch,
     [
-      SetCurrentAccount,
       GetAccessGroup,
       ListAccessGroupMembers,
       RemoveAccessGroupMember,
@@ -29,7 +28,6 @@ const mapDispatchToProps = dispatch =>
   );
 
 const LoadAccessGroup = async ({props}) => {
-  await props.SetCurrentAccount();
   await props.GetAccessGroup({contractAddress: props.contractAddress});
 };
 

@@ -14,7 +14,7 @@ import ContentObjectForm from "../../../components/pages/content/ContentObjectFo
 const mapStateToProps = (state, props) => ({
   library: state.content.libraries[props.libraryId || props.match.params.libraryId],
   object: state.content.objects[props.match.params.objectId],
-  types: state.content.allTypes
+  types: state.content.availableTypes
 });
 
 const mapDispatchToProps = dispatch =>

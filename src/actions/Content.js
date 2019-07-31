@@ -432,7 +432,9 @@ export const UpdateFromContentTypeSchema = ({libraryId, objectId, metadata, acce
       }
     });
 
-    await Fabric.SetAccessCharge({objectId: objectId, accessCharge});
+    if(await Fabric.IsNormalObject({objectId})) {
+      await Fabric.SetAccessCharge({objectId: objectId, accessCharge});
+    }
 
     dispatch(SetNotificationMessage({
       message: "Successfully updated content",

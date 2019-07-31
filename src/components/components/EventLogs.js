@@ -99,11 +99,11 @@ class EventLogs extends React.PureComponent {
           { this.Id(eventName, log.address) }
           <div className="labelled-field">
             <label>Contract Address</label>
-            <div className="value">{log.address}</div>
+            <div className="value">{FormatAddress(log.address)}</div>
           </div>
           <div className="labelled-field">
             <label>From</label>
-            <div className="value">{log.from}</div>
+            <div className="value">{FormatAddress(log.from)}</div>
           </div>
           { this.Value(log.value) }
           { this.Inputs(log) }
