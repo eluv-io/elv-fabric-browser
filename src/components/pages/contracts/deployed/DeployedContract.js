@@ -34,7 +34,7 @@ class DeployedContract extends React.Component {
 
     return (
       <Action
-        className="delete-action"
+        className="danger"
         onClick={async () => {
           await Confirm({
             message: "Are you sure you want to stop watching this contract?",

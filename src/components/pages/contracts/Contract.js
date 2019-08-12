@@ -90,7 +90,7 @@ class Contract extends React.Component {
           <Action type="link" to={"/contracts/saved"} className="secondary">Back</Action>
           <Action type="link" to={UrlJoin(this.props.match.url, "edit")}>Edit Contract</Action>
           <Action type="link" to={UrlJoin(this.props.match.url, "deploy")}>Deploy Contract</Action>
-          <Action className="delete-action" onClick={this.DeleteContract}>Delete Contract</Action>
+          <Action className="danger" onClick={this.DeleteContract}>Delete Contract</Action>
         </div>
         <PageHeader header={this.props.contractName} />
         <div className="page-content">

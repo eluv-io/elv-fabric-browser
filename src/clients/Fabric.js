@@ -322,7 +322,7 @@ const Fabric = {
   },
 
   GetContentLibraryOwner: async ({libraryId}) => {
-    return await client.ContentLibraryOwner({libraryId});
+    return FormatAddress(await client.ContentLibraryOwner({libraryId}));
   },
 
   CreateContentLibrary: async ({name, description, publicMetadata, privateMetadata, kmsId}) => {

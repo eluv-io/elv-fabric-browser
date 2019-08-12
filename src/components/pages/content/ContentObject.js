@@ -91,7 +91,7 @@ class ContentObject extends React.Component {
     return (
       <LoadingElement loading={this.props.methodStatus.DeleteContentVersion.loading} loadingIcon="rotate" >
         <Action
-          className="delete-action action-compact action-wide"
+          className="danger action-compact action-wide"
           onClick={DeleteVersion}>
           Delete Content Version
         </Action>
@@ -541,7 +541,7 @@ class ContentObject extends React.Component {
     let deleteObjectButton;
     if(!this.props.object.isContentLibraryObject) {
       deleteObjectButton = (
-        <Action className="delete-action" onClick={() => this.DeleteContentObject()}>
+        <Action className="danger" onClick={() => this.DeleteContentObject()}>
           Delete
         </Action>
       );
@@ -572,10 +572,13 @@ class ContentObject extends React.Component {
   AppFrame() {
     if(!this.state.displayAppUrl) { return null; }
 
+    const latestVersion = this.props.object.versions[0];
+
     const queryParams = {
       contentSpaceId: Fabric.contentSpaceId,
       libraryId: this.props.libraryId,
       objectId: this.props.objectId,
+      versionHash: latestVersion.hash,
       type: this.state.typeHash,
       action: "display"
     };
