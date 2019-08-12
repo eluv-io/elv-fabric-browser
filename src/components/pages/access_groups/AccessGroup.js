@@ -110,7 +110,7 @@ class AccessGroup extends React.Component {
         <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary" >Back</Action>
         <Action type="link" to={UrlJoin(this.props.match.url, "edit")} hidden={!this.props.accessGroup.isOwner}>Manage</Action>
         <Action type="link" to={UrlJoin(this.props.match.url, "add-member")} hidden={!this.props.accessGroup.isManager}>Add Member</Action>
-        <Action className="delete-action" onClick={this.DeleteAccessGroup} hidden={true}>Delete</Action>
+        <Action className="danger" onClick={this.DeleteAccessGroup} hidden={true}>Delete</Action>
       </div>
     );
   }

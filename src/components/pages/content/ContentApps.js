@@ -55,7 +55,7 @@ class ContentApps extends React.Component {
     if(app) {
       // App set for this role - remove button
       action = (
-        <Action onClick={() => this.DeleteApp(role)} className="action delete-action action-compact action-wide">
+        <Action onClick={() => this.DeleteApp(role)} className="action danger action-compact action-wide">
           {`Remove ${role.capitalize()} App`}
         </Action>
       );
