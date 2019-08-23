@@ -1,10 +1,9 @@
 const ActionTypes = {
   accessGroups: {
     list: "LIST_ACCESS_GROUPS",
-  },
-  accounts: {
-    get: {
-      currentAccountAddress: "GET_CURRENT_ACCOUNT_ADDRESS"
+    get: "GET_ACCESS_GROUP",
+    members: {
+      list: "LIST_ACCESS_GROUP_MEMBERS"
     }
   },
   content: {
@@ -12,16 +11,19 @@ const ActionTypes = {
       list: "LIST_LIBRARIES",
       get: "GET_LIBRARY",
       groups: "GET_LIBRARY_GROUPS",
+      groupPermissions: "GET_LIBRARY_GROUP_PERMISSIONS",
       types: "GET_LIBRARY_TYPES"
     },
     objects: {
       list: "LIST_OBJECTS",
       get: "GET_OBJECTS",
-      versions: "GET_OBJECT_VERSIONS"
+      versions: "GET_OBJECT_VERSIONS",
+      permissions: "GET_OBJECT_PERMISSIONS"
     },
     types: {
       get: "GET_TYPE",
-      list: "LIST_TYPES"
+      list: "LIST_TYPES",
+      all: "ALL_TYPES"
     }
   },
   contracts: {

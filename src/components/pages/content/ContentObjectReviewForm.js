@@ -1,54 +1,24 @@
 import React from "react";
+import PropTypes from "prop-types";
 import Path from "path";
-import RequestPage from "../RequestPage";
-import RequestForm from "../../forms/RequestForm";
-import {ReviewContentObject} from "../../../actions/Content";
-import RadioSelect from "../../components/RadioSelect";
+import {Action, Form, RadioSelect} from "elv-components-js";
 import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
 import Redirect from "react-router/es/Redirect";
-import Action from "../../components/Action";
 
 class ContentObjectReviewForm extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      libraryId: this.props.libraryId || this.props.match.params.libraryId,
-      objectId: this.props.match.params.objectId,
-      approve: "no",
-      note: ""
+      approve: true,
+      note: "",
+      reviewAppUrl: props.object.reviewAppUrl || (props.object.typeInfo && props.object.typeInfo.reviewAppUrl)
     };
 
-    this.PageContent = this.PageContent.bind(this);
-    this.FormContent = this.FormContent.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
-    this.RequestComplete = this.RequestComplete.bind(this);
     this.FrameCompleted = this.FrameCompleted.bind(this);
-  }
-
-  // Load existing content object on edit
-  componentDidMount() {
-    this.setState({
-      loadRequestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.GetContentObject({
-            libraryId: this.state.libraryId,
-            objectId: this.state.objectId
-          });
-        }
-      })
-    });
-  }
-
-  RequestComplete() {
-    const object = this.props.objects[this.state.objectId];
-    const reviewAppUrl = object.reviewAppUrl || (object.typeInfo && object.typeInfo.reviewAppUrl);
-    this.setState({
-      object,
-      reviewAppUrl
-    });
   }
 
   HandleInputChange(event) {
@@ -57,37 +27,13 @@ class ContentObjectReviewForm extends React.Component {
     });
   }
 
-  HandleSubmit() {
-    this.setState({
-      submitRequestId: this.props.WrapRequest({
-        todo: async () => {
-          await ReviewContentObject({
-            libraryId: this.state.libraryId,
-            objectId: this.state.objectId,
-            approve: this.state.approve === "yes",
-            note: this.state.note
-          });
-        }
-      })
+  async HandleSubmit() {
+    await this.props.methods.Submit({
+      libraryId: this.props.libraryId,
+      objectId: this.props.objectId,
+      approve: this.state.approve,
+      note: this.state.note
     });
-  }
-
-  FormContent() {
-    return (
-      <div className="form-content">
-        <RadioSelect
-          name="approve"
-          label="Approve"
-          options={[["Yes", "yes"], ["No", "no"]]}
-          selected={this.state.approve}
-          onChange={this.HandleInputChange}
-        />
-        <div className="labelled-input">
-          <label className="textarea-label" htmlFor="note">Note</label>
-          <textarea name="note" value={this.state.note} onChange={this.HandleInputChange} />
-        </div>
-      </div>
-    );
   }
 
   FrameCompleted() {
@@ -97,9 +43,9 @@ class ContentObjectReviewForm extends React.Component {
   ReviewAppFrame(legend) {
     const queryParams = {
       contentSpaceId: Fabric.contentSpaceId,
-      libraryId: this.state.libraryId,
-      objectId: this.state.objectId,
-      type: this.state.object.type,
+      libraryId: this.props.libraryId,
+      objectId: this.props.objectId,
+      type: this.props.object.type,
       action: "review"
     };
 
@@ -121,43 +67,55 @@ class ContentObjectReviewForm extends React.Component {
     );
   }
 
-  PageContent() {
-    if(!this.state.object) { return null; }
-
+  render() {
     if(this.state.completed) {
       return <Redirect push to={Path.dirname(this.props.match.url)} />;
     }
 
-    const legend = `Review "${this.state.object.name}"`;
-
+    const legend = `Review "${this.props.object.name}"`;
 
     if(this.state.reviewAppUrl) {
       return this.ReviewAppFrame(legend);
     } else {
       return (
-        <RequestForm
-          requests={this.props.requests}
-          requestId={this.state.submitRequestId}
-          legend={legend}
-          formContent={this.FormContent()}
-          redirectPath={Path.dirname(this.props.match.url)}
-          cancelPath={Path.dirname(this.props.match.url)}
-          OnSubmit={this.HandleSubmit}
-        />
+        <div>
+          <div className="actions-container manage-actions">
+            <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+          </div>
+          <Form
+            legend={legend}
+            redirectPath={Path.dirname(this.props.match.url)}
+            cancelPath={Path.dirname(this.props.match.url)}
+            status={this.props.methodStatus.Submit}
+            OnSubmit={this.HandleSubmit}
+          >
+            <div className="form-content">
+              <label htmlFor="approve">Approval</label>
+              <RadioSelect
+                name="approve"
+                inline={true}
+                options={[["Approve", true], ["Reject", false]]}
+                selected={this.state.approve}
+                onChange={this.HandleInputChange}
+              />
+
+              <label className="align-top" htmlFor="note">Note</label>
+              <textarea name="note" value={this.state.note} onChange={this.HandleInputChange} />
+            </div>
+          </Form>
+        </div>
       );
     }
   }
-
-  render() {
-    return (
-      <RequestPage
-        requestId={this.state.loadRequestId}
-        requests={this.props.requests}
-        pageContent={this.PageContent}
-        OnRequestComplete={this.RequestComplete}
-      />
-    );
-  }
 }
+
+ContentObjectReviewForm.propTypes = {
+  libraryId: PropTypes.string.isRequired,
+  objectId: PropTypes.string.isRequired,
+  object: PropTypes.object.isRequired,
+  methods: PropTypes.shape({
+    Submit: PropTypes.func.isRequired
+  })
+};
 
 export default ContentObjectReviewForm;

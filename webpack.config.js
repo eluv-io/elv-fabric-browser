@@ -1,17 +1,18 @@
 const webpack = require("webpack");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
-const path = require("path");
+const Path = require("path");
 const autoprefixer = require("autoprefixer");
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const HtmlWebpackInlineSourcePlugin = require("html-webpack-inline-source-plugin");
+const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = {
   entry: "./src/index.js",
   target: "web",
   output: {
-    path: path.resolve(__dirname, "dist"),
+    path: Path.resolve(__dirname, "dist"),
     filename: "index.js",
+    chunkFilename: "[name].bundle.js"
   },
   devServer: {
     disableHostCheck: true,
@@ -23,39 +24,66 @@ module.exports = {
       "Access-Control-Allow-Methods": "POST"
     }
   },
-  resolve: {
-    alias: {
-      configuration: path.join(__dirname, "configuration.json")
-    }
-  },
   node: {
     fs: "empty"
   },
   mode: "development",
-  devtool: "source-map",
+  devtool: "eval-source-map",
+  optimization: {
+    minimizer: [
+      new TerserPlugin({
+        terserOptions: {
+          keep_classnames: true,
+          keep_fnames: true
+        }
+      })
+    ],
+    splitChunks: {
+      chunks: "all"
+    }
+  },
   plugins: [
-    //new CopyWebpackPlugin(['./src/index.html']),
-    new webpack.optimize.LimitChunkCountPlugin({
-      maxChunks: 1,
-    }),
+    new CopyWebpackPlugin([{
+      from: Path.join(__dirname, "configuration.js"),
+      to: Path.join(__dirname, "dist", "configuration.js")
+    }]),
     new HtmlWebpackPlugin({
       title: "Eluvio Fabric Browser",
-      template: path.join(__dirname, "src", "index.html"),
+      template: Path.join(__dirname, "src", "index.html"),
       inject: "body",
       cache: false,
       filename: "index.html",
-      inlineSource: ".(js|css)$"
-    }),
-    new HtmlWebpackInlineSourcePlugin()
+      inlineSource: ".(js|css)$",
+      favicon: "node_modules/elv-components-js/src/icons/favicon.png"
+    })
   ],
   module: {
     rules: [
       {
+        test: /\.scss$/,
+        use: [
+          "style-loader",
+          {
+            loader: "css-loader",
+            options: {
+              importLoaders: 2
+            }
+          },
+          {
+            loader: "postcss-loader",
+            options: {
+              plugins: () => [autoprefixer({})]
+            }
+          },
+          "sass-loader"
+        ]
+      },
+      {
         test: /\.(js|mjs)$/,
-        exclude: /node_modules/,
+        exclude: /node_modules\/(?!elv-components-js)/,
         loader: "babel-loader",
         options: {
-          presets: ['@babel/preset-env', "@babel/preset-react"],
+          presets: ["@babel/preset-env", "@babel/preset-react"],
           plugins: [
             require("@babel/plugin-proposal-object-rest-spread"),
             require("@babel/plugin-transform-regenerator"),
@@ -65,34 +93,20 @@ module.exports = {
       },
       {
         test: /\.svg$/,
-        loader: 'svg-inline-loader'
+        loader: "svg-inline-loader"
       },
       {
         test: /\.(gif|png|jpe?g)$/i,
         use: [
-          'file-loader',
+          "file-loader",
           {
-            loader: 'image-webpack-loader'
+            loader: "image-webpack-loader"
           },
         ],
       },
       {
-        test: /\.scss$/,
-        use: [
-          { loader: "style-loader" },
-          { loader: "css-loader" },
-          {
-            loader: "postcss-loader",
-            options: {
-              plugins: () => [autoprefixer({ grid: true })]
-            }
-          },
-          { loader: "sass-loader" }
-        ]
-      },
-      {
         test: /\.(txt|bin|abi)$/i,
-        loader: 'raw-loader'
+        loader: "raw-loader"
       }
     ]
   }

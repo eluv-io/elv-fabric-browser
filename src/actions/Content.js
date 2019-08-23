@@ -2,21 +2,25 @@ import ActionTypes from "./ActionTypes";
 import Fabric from "../clients/Fabric";
 import { SetNotificationMessage } from "./Notifications";
 import { ParseInputJson } from "../utils/Input";
-import {FormatAddress} from "../utils/Helpers";
-import {ToList} from "../utils/TypeSchema";
-import {DownloadFromUrl, FileInfo} from "../utils/Files";
+import { ToList } from "../utils/TypeSchema";
+import { DownloadFromUrl, FileInfo } from "../utils/Files";
 import Path from "path";
+import { WithCancel } from "../utils/Cancelable";
 
-export const ListContentLibraries = () => {
+export const ListContentLibraries = ({params}) => {
   return async (dispatch) => {
-    let libraries = await Fabric.ListContentLibraries();
+    let {libraries, count} = await WithCancel(
+      params.cancelable,
+      async () => await Fabric.ListContentLibraries({params})
+    );
 
     // Exclude special content space library
     delete libraries[Fabric.contentSpaceLibraryId];
 
     dispatch({
       type: ActionTypes.content.libraries.list,
-      libraries
+      libraries,
+      count
     });
   };
 };
@@ -45,28 +49,58 @@ export const ListLibraryContentTypes = ({libraryId}) => {
   };
 };
 
-export const ListContentLibraryGroups = ({libraryId}) => {
+export const ListContentLibraryGroups = ({libraryId, type, params}) => {
   return async (dispatch) => {
     // Content space does not have groups
     if(libraryId === Fabric.contentSpaceLibraryId) { return; }
 
-    const groups = await Fabric.GetContentLibraryGroups({libraryId});
+    const {accessGroups, count} = await Fabric.ListContentLibraryGroups({libraryId, type, params});
 
     dispatch({
       type: ActionTypes.content.libraries.groups,
       libraryId,
-      groups
+      groups: accessGroups,
+      count
     });
   };
 };
 
-export const CreateContentLibrary = ({name, description, publicMetadata, privateMetadata, image}) => {
+export const ListContentLibraryGroupPermissions = ({libraryId}) => {
+  return async (dispatch) => {
+    let permissions = {};
+    await Promise.all(
+      ["accessor", "contributor", "reviewer"].map(async type => {
+        const {accessGroups} = await Fabric.ListContentLibraryGroups({
+          libraryId,
+          type,
+          params: { paginate: false }
+        });
+
+        Object.keys(accessGroups).forEach(address => {
+          permissions[address] = {
+            [type]: true,
+            ...(permissions[address] || {})
+          };
+        });
+      })
+    );
+
+    dispatch({
+      type: ActionTypes.content.libraries.groupPermissions,
+      libraryId,
+      permissions
+    });
+  };
+};
+
+export const CreateContentLibrary = ({name, description, publicMetadata, privateMetadata, image, kmsId}) => {
   return async (dispatch) => {
     const libraryId = await Fabric.CreateContentLibrary({
       name,
       description,
       publicMetadata: ParseInputJson(publicMetadata),
-      privateMetadata: ParseInputJson(privateMetadata)
+      privateMetadata: ParseInputJson(privateMetadata),
+      kmsId
     });
 
     if(image) {
@@ -89,19 +123,13 @@ export const UpdateContentLibrary = ({
   libraryId,
   name,
   description,
-  publicMetadata,
-  privateMetadata,
+  metadata={},
   image
 }) => {
   return async (dispatch) => {
-    publicMetadata = ParseInputJson(publicMetadata);
-    publicMetadata.name = name;
-    publicMetadata["eluv.description"] = description;
-
-    await Fabric.ReplacePublicLibraryMetadata({
-      libraryId,
-      metadata: publicMetadata
-    });
+    metadata = ParseInputJson(metadata);
+    metadata.name = name;
+    metadata["eluv.description"] = description;
 
     const libraryObjectId = libraryId.replace("ilib", "iq__");
     await Fabric.EditAndFinalizeContentObject({
@@ -112,7 +140,7 @@ export const UpdateContentLibrary = ({
           libraryId,
           objectId: libraryObjectId,
           writeToken,
-          metadata: ParseInputJson(privateMetadata)
+          metadata
         });
       }
     });
@@ -128,6 +156,8 @@ export const UpdateContentLibrary = ({
       message: "Successfully updated content library '" + name + "'",
       redirect: true
     }));
+
+    return libraryId;
   };
 };
 
@@ -150,8 +180,8 @@ export const SetLibraryContentTypes = ({libraryId, typeIds=[]}) => {
     const idsToAdd = typeIds.filter(id => !currentTypeIds.includes(id));
 
     if(idsToAdd.length > 0) {
-      const contentTypes = Object.values(await Fabric.ListContentTypes({}));
-      for (const typeId of idsToAdd) {
+      const contentTypes = Object.values(await Fabric.ContentTypes());
+      for(const typeId of idsToAdd) {
         // When adding a content type, check for custom contract
         const type = contentTypes.find(type => type.id === typeId);
         const customContractAddress = type.meta.custom_contract && type.meta.custom_contract.address;
@@ -172,39 +202,65 @@ export const SetLibraryContentTypes = ({libraryId, typeIds=[]}) => {
   };
 };
 
-export const UpdateContentLibraryGroups = ({libraryId, groups, originalGroups}) => {
+export const GetContentLibraryGroup = async ({libraryId, groupAddress, type}) => {
+  const {accessGroups} = await Fabric.ListContentLibraryGroups({libraryId, type, params: {filter: groupAddress}});
+
+  return accessGroups[groupAddress];
+};
+
+export const UpdateContentLibraryGroup = ({libraryId, groupAddress, accessor, contributor, reviewer}) => {
   return async (dispatch) => {
-    for(const groupType of Object.keys(groups)) {
-      const oldGroupAddresses = originalGroups[groupType].map(group => FormatAddress(group.address));
-      const newGroupAddresses = groups[groupType].map(group => FormatAddress(group.address));
+    const options = { accessor, contributor, reviewer};
 
-      // Remove groups in original groups but not in new groups
-      const toRemove = oldGroupAddresses.filter(address => !newGroupAddresses.includes(address));
-      for(const address of toRemove) {
-        await Fabric.RemoveContentLibraryGroup({libraryId, address, groupType});
-      }
+    await Promise.all(
+      ["accessor", "contributor", "reviewer"].map(async type => {
+        const accessGroup = await GetContentLibraryGroup({libraryId, groupAddress, type});
 
-      // Add groups in new groups but not in original groups
-      const toAdd = newGroupAddresses.filter(address => !oldGroupAddresses.includes(address));
-      for(const address of toAdd) {
-        await Fabric.AddContentLibraryGroup({libraryId, address, groupType});
-      }
-    }
+        if(!accessGroup && options[type]) {
+          // Add group
+          await Fabric.AddContentLibraryGroup({libraryId, address: groupAddress, groupType: type});
+        } else if(accessGroup && !options[type]) {
+          // Remove group
+          await Fabric.RemoveContentLibraryGroup({libraryId, address: groupAddress, groupType: type});
+        }
+      })
+    );
 
     dispatch(SetNotificationMessage({
-      message: "Successfully updated library groups",
+      message: "Successfully added library group",
       redirect: true
     }));
   };
 };
 
-export const ListContentObjects = ({libraryId}) => {
+export const ListContentTypes = ({params}) => {
   return async (dispatch) => {
-    const objects = await Fabric.ListContentObjects({libraryId});
+    const {types, count} = await WithCancel(
+      params.cancelable,
+      async () => await Fabric.ListContentTypes({params})
+    );
+
+    dispatch({
+      type: ActionTypes.content.types.list,
+      types,
+      count
+    });
+  };
+};
+
+export const ListContentObjects = ({libraryId, params}) => {
+  return async (dispatch) => {
+    const {objects, count, cacheId} = await WithCancel(
+      params.cancelable,
+      async () => await Fabric.ListContentObjects({libraryId, params})
+    );
 
     dispatch({
       type: ActionTypes.content.objects.list,
-      objects
+      libraryId,
+      objects,
+      count,
+      cacheId
     });
   };
 };
@@ -233,53 +289,196 @@ export const GetContentObjectVersions = ({libraryId, objectId}) => {
   };
 };
 
-export const GetContentObjectPermissions = async ({libraryId, objectId}) => {
-  return await Fabric.GetContentObjectPermissions({libraryId, objectId});
-};
-
-export const PublishContentObject = async ({objectId}) => {
-  return await Fabric.PublishContentObject({objectId});
-};
-
-export const ReviewContentObject = async ({libraryId, objectId, approve, note}) => {
-  await Fabric.ReviewContentObject({libraryId, objectId, approve, note});
-
-  const currentAccountAddress = await Fabric.CurrentAccountAddress();
-
-  await Fabric.EditAndFinalizeContentObject({
-    libraryId,
-    objectId,
-    todo: async (writeToken) => {
-      await Fabric.MergeMetadata({
-        libraryId,
-        writeToken,
-        metadata: {
-          "eluv.reviewer": currentAccountAddress,
-          "eluv.reviewNote": note
-        }
-      });
-    }
-  });
-};
-
-export const CreateContentObject = ({libraryId, name, description, type, metadata}) => {
+export const GetContentObjectPermissions = ({libraryId, objectId}) => {
   return async (dispatch) => {
-    metadata = ParseInputJson(metadata);
-    metadata.name = name;
-    metadata["eluv.description"] = description;
+    const permissions = await Fabric.GetContentObjectPermissions({libraryId, objectId});
 
-    const objectInfo = await Fabric.CreateAndFinalizeContentObject({
+    dispatch({
+      type: ActionTypes.content.objects.permissions,
+      objectId,
+      permissions
+    });
+  };
+};
+
+const CollectMetadata = async ({libraryId, objectId, writeToken, schema, fields, callback}) => {
+  let metadata = {};
+
+  for(const entry of schema) {
+    switch(entry.type) {
+      case "label":
+      case "attachedFile":
+        break;
+      case "file":
+        // Freshly uploaded files will be a FileList
+        // previously uploaded files will either be a string or a list of strings
+        if(Array.isArray(fields[entry.key]) || typeof fields[entry.key] === "string") {
+          metadata[entry.key] = fields[entry.key];
+          break;
+        }
+
+        const files = Array.from(fields[entry.key]);
+        let partResponses = [];
+
+        for(const file of files) {
+          let uploadCallback;
+          if(callback) {
+            uploadCallback = ({status, uploaded, total}) =>
+              callback({key: entry.key, status, uploaded, total, filename: file.name});
+          }
+
+          partResponses.push(
+            await Fabric.UploadPart({
+              libraryId,
+              objectId,
+              writeToken,
+              file,
+              chunkSize: 2000000,
+              callback: uploadCallback
+            })
+          );
+        }
+
+        if(entry.multiple) {
+          metadata[entry.key] = partResponses.map(partResponse => partResponse.part.hash);
+        } else {
+          metadata[entry.key] = partResponses.length > 0 ? partResponses[0].part.hash : "";
+        }
+
+        break;
+
+      case "json":
+        metadata[entry.key] = ParseInputJson(fields[entry.key]);
+        break;
+
+      case "list":
+        metadata[entry.key] = ToList(fields[entry.key]).filter(item => item);
+        break;
+      case "object":
+        metadata[entry.key] = await CollectMetadata({
+          libraryId,
+          objectId,
+          writeToken,
+          schema: entry.fields,
+          fields: fields[entry.key]
+        });
+        break;
+
+      default:
+        metadata[entry.key] = fields[entry.key];
+    }
+  }
+
+  return metadata;
+};
+
+export const CreateFromContentTypeSchema = ({libraryId, type, metadata, accessCharge, schema, fields, callback}) => {
+  return async (dispatch) => {
+    let createResponse = await Fabric.CreateContentObject({
       libraryId,
       type,
-      metadata,
+      metadata
+    });
+
+    await Fabric.MergeMetadata({
+      libraryId,
+      objectId: createResponse.id,
+      writeToken: createResponse.write_token,
+      metadata: {
+        ...ParseInputJson(metadata),
+        ...(await CollectMetadata({
+          libraryId,
+          objectId: createResponse.id,
+          writeToken: createResponse.write_token,
+          schema,
+          fields,
+          callback
+        })),
+      }
+    });
+
+    await Fabric.FinalizeContentObject({
+      libraryId,
+      objectId: createResponse.id,
+      writeToken: createResponse.write_token
+    });
+
+    if(accessCharge > 0) {
+      await Fabric.SetAccessCharge({objectId: createResponse.id, accessCharge});
+    }
+
+    dispatch(SetNotificationMessage({
+      message: "Successfully created content",
+      redirect: true
+    }));
+  };
+};
+
+export const UpdateFromContentTypeSchema = ({libraryId, objectId, metadata, accessCharge, schema, fields, callback}) => {
+  return async (dispatch) => {
+    await Fabric.EditAndFinalizeContentObject({
+      libraryId,
+      objectId,
+      todo: async (writeToken) => {
+        await Fabric.ReplaceMetadata({
+          libraryId,
+          objectId,
+          writeToken,
+          metadata: {
+            ...ParseInputJson(metadata),
+            ...(await CollectMetadata({libraryId, writeToken, schema, fields, callback}))
+          }
+        });
+      }
+    });
+
+    if(await Fabric.IsNormalObject({objectId})) {
+      await Fabric.SetAccessCharge({objectId: objectId, accessCharge});
+    }
+
+    dispatch(SetNotificationMessage({
+      message: "Successfully updated content",
+      redirect: true
+    }));
+  };
+};
+
+export const PublishContentObject = ({objectId}) => {
+  return async (dispatch) => {
+    await Fabric.PublishContentObject({objectId});
+
+    dispatch(SetNotificationMessage({
+      message: "Successfully updated content object",
+      redirect: true
+    }));
+  };
+};
+
+export const ReviewContentObject = ({libraryId, objectId, approve, note}) => {
+  return async (dispatch) => {
+    await Fabric.ReviewContentObject({libraryId, objectId, approve, note});
+
+    const currentAccountAddress = await Fabric.CurrentAccountAddress();
+
+    await Fabric.EditAndFinalizeContentObject({
+      libraryId,
+      objectId,
+      todo: async (writeToken) => {
+        await Fabric.MergeMetadata({
+          libraryId,
+          writeToken,
+          metadata: {
+            "eluv.reviewer": currentAccountAddress,
+            "eluv.reviewNote": note
+          }
+        });
+      }
     });
 
     dispatch(SetNotificationMessage({
-      message: "Successfully created content object",
+      message: "Successfully updated content object",
       redirect: true
     }));
-
-    return objectInfo.id;
   };
 };
 
@@ -336,13 +535,13 @@ export const UpdateContentObject = ({libraryId, objectId, name, description, typ
       message: "Successfully updated content object",
       redirect: true
     }));
+
+    return objectId;
   };
 };
 
 export const CreateContentType = ({name, description, metadata, bitcode}) => {
   return async (dispatch) => {
-    bitcode = await new Response(bitcode).blob();
-
     const objectId = await Fabric.CreateContentType({
       name,
       description,
@@ -359,32 +558,67 @@ export const CreateContentType = ({name, description, metadata, bitcode}) => {
   };
 };
 
-export const ListContentTypes = ({latestOnly=true}) => {
+export const UpdateContentType = ({libraryId, objectId, name, description, bitcode, metadata}) => {
+  return async (dispatch) => {
+    await Fabric.EditAndFinalizeContentObject({
+      libraryId,
+      objectId,
+      todo: async (writeToken) => {
+        metadata = ParseInputJson(metadata);
+        metadata.name = name;
+        metadata["eluv.description"] = description;
+
+        await Fabric.ReplaceMetadata({
+          libraryId,
+          objectId,
+          writeToken,
+          metadata
+        });
+
+        if(bitcode) {
+          const uploadResponse = await Fabric.UploadPart({
+            libraryId,
+            objectId,
+            writeToken,
+            file: bitcode,
+            encrypted: false
+          });
+
+          await Fabric.ReplaceMetadata({
+            libraryId,
+            objectId,
+            writeToken,
+            metadataSubtree: "bitcode_part",
+            metadata: uploadResponse.part.hash
+          });
+        }
+      }
+    });
+
+    dispatch(SetNotificationMessage({
+      message: "Successfully updated content type",
+      redirect: true
+    }));
+
+    return objectId;
+  };
+};
+
+export const ContentTypes = () => {
   return async (dispatch) => {
     dispatch({
-      type: ActionTypes.content.types.list,
-      types: await Fabric.ListContentTypes({latestOnly})
+      type: ActionTypes.content.types.all,
+      types: await Fabric.ContentTypes()
     });
   };
 };
 
-export const GetContentType = ({versionHash}) => {
-  return async (dispatch) => {
-    dispatch({
-      type: ActionTypes.content.types.get,
-      contentType: await Fabric.GetContentType({versionHash})
-    });
-  };
-};
-
-export const UploadParts = ({libraryId, objectId, files, callback, encrypt}) => {
+export const UploadParts = ({libraryId, objectId, files, encrypt=false, callback}) => {
   return async (dispatch) => {
     let parts = {};
-    let contentDraft = await Fabric.EditContentObject({libraryId, objectId});
+    const contentDraft = await Fabric.EditContentObject({libraryId, objectId});
 
     await Promise.all(Array.from(files).map(async file => {
-      const data = await new Response(file).blob();
-
       let partCallback;
       if(callback) {
         partCallback = ({uploaded, total}) => callback({uploaded, total, filename: file.name});
@@ -395,10 +629,10 @@ export const UploadParts = ({libraryId, objectId, files, callback, encrypt}) => 
           libraryId,
           objectId,
           writeToken: contentDraft.write_token,
-          data,
-          chunkSize: 10000000,
-          callback: partCallback,
-          encrypted: encrypt
+          file,
+          encrypt,
+          chunkSize: 2000000,
+          callback: partCallback
         })
       ).part.hash;
     }));
@@ -427,11 +661,24 @@ export const UploadParts = ({libraryId, objectId, files, callback, encrypt}) => 
 };
 
 export const DownloadPart = ({libraryId, objectId, versionHash, partHash, callback}) => {
-  return async (dispatch) => {
-    let blob = await Fabric.DownloadPart({libraryId, objectId, versionHash, partHash, encrypted: false});
-    let url = window.URL.createObjectURL(blob);
+  return async () => {
+    callback({bytesFinished: 0, bytesTotal: 1});
+    let chunks = [];
+    await Fabric.DownloadPart({
+      libraryId,
+      objectId,
+      versionHash,
+      partHash,
+      format: "arrayBuffer",
+      chunked: true,
+      chunkSize: 1000000,
+      callback: ({bytesFinished, bytesTotal, chunk}) => {
+        callback({bytesFinished, bytesTotal});
+        chunks.push(chunk);
+      }
+    });
 
-    await callback(url);
+    return window.URL.createObjectURL(new Blob(chunks));
   };
 };
 
@@ -454,7 +701,7 @@ export const UploadFiles = ({libraryId, objectId, path, fileList}) => {
 };
 
 export const DownloadFile = ({libraryId, objectId, versionHash, filePath}) => {
-  return async (dispatch) => {
+  return async () => {
     let blob = await Fabric.DownloadFile({libraryId, objectId, versionHash, filePath});
     let url = window.URL.createObjectURL(blob);
 
@@ -463,126 +710,8 @@ export const DownloadFile = ({libraryId, objectId, versionHash, filePath}) => {
 };
 
 export const FileUrl = ({libraryId, objectId, versionHash, filePath}) => {
-  return async (dispatch) => {
+  return async () => {
     return await Fabric.FileUrl({libraryId, objectId, versionHash, filePath});
-  };
-};
-
-const CollectMetadata = async ({libraryId, writeToken, schema, fields}) => {
-  let metadata = {};
-
-  for(const entry of schema) {
-    switch(entry.type) {
-      case "label":
-      case "attachedFile":
-        break;
-      case "file":
-        // Freshly uploaded files will be a FileList
-        // previously uploaded files will either be a string or a list of strings
-        if(Array.isArray(fields[entry.key]) || typeof fields[entry.key] === "string") {
-          metadata[entry.key] = fields[entry.key];
-          break;
-        }
-
-        const files = Array.from(fields[entry.key]);
-        let partResponses = [];
-
-        for (const file of files) {
-          const data = await new Response(file).blob();
-
-          partResponses.push(
-            await Fabric.UploadPart({
-              libraryId,
-              writeToken,
-              data,
-              encrypted: !!(entry.encrypted)
-            })
-          );
-        }
-
-        if (entry.multiple) {
-          metadata[entry.key] = partResponses.map(partResponse => partResponse.part.hash);
-        } else {
-          metadata[entry.key] = partResponses.length > 0 ? partResponses[0].part.hash : "";
-        }
-
-        break;
-
-      case "json":
-        metadata[entry.key] = ParseInputJson(fields[entry.key]);
-        break;
-
-      case "list":
-        metadata[entry.key] = ToList(fields[entry.key]).filter(item => item);
-        break;
-      case "object":
-        metadata[entry.key] = await CollectMetadata({
-          libraryId,
-          writeToken,
-          schema: entry.fields,
-          fields: fields[entry.key]
-        });
-        break;
-
-      default:
-        metadata[entry.key] = fields[entry.key];
-    }
-  }
-
-  return metadata;
-};
-
-export const CreateFromContentTypeSchema = ({libraryId, type, metadata, accessCharge, schema, fields}) => {
-  return async (dispatch) => {
-    const createResponse = await Fabric.CreateAndFinalizeContentObject({
-      libraryId,
-      type,
-      todo: async (writeToken) => {
-        await Fabric.ReplaceMetadata({
-          libraryId,
-          writeToken,
-          metadata: {
-            ...ParseInputJson(metadata),
-            ...(await CollectMetadata({libraryId, writeToken, schema, fields})),
-          }
-        });
-      }
-    });
-
-    if(accessCharge > 0) {
-      await Fabric.SetAccessCharge({objectId: createResponse.id, accessCharge});
-    }
-
-    dispatch(SetNotificationMessage({
-      message: "Successfully created content",
-      redirect: true
-    }));
-  };
-};
-
-export const UpdateFromContentTypeSchema = ({libraryId, objectId, metadata, accessCharge, schema, fields}) => {
-  return async (dispatch) => {
-    await Fabric.EditAndFinalizeContentObject({
-      libraryId,
-      objectId,
-      todo: async (writeToken) => {
-        await Fabric.ReplaceMetadata({
-          libraryId,
-          writeToken,
-          metadata: {
-            ...ParseInputJson(metadata),
-            ...(await CollectMetadata({libraryId, writeToken, schema, fields}))
-          }
-        });
-      }
-    });
-
-    await Fabric.SetAccessCharge({objectId: objectId, accessCharge});
-
-    dispatch(SetNotificationMessage({
-      message: "Successfully updated content",
-      redirect: true
-    }));
   };
 };
 

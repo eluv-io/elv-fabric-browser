@@ -15,7 +15,7 @@ import ScrollToTop from "./router/ScrollToTop";
 import NavigationBar from "./containers/NavigationBar";
 import Notifications from "./containers/Notifications";
 import Routes from "./router";
-import Debug from "./components/Debug";
+//import Debug from "./components/Debug";
 
 const history = createHashHistory();
 

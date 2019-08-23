@@ -1,96 +1,11 @@
 import React from "react";
 import PropTypes from "prop-types";
-
-import RefreshIcon from "../../static/icons/refresh.svg";
-import ListIcon from "../../static/icons/list.svg";
+import {Action, LoadingElement, IconButton} from "elv-components-js";
 import GridIcon from "../../static/icons/grid.svg";
-import {CroppedIcon, IconButton} from "./Icons";
-import Redirect from "react-router/es/Redirect";
-import Link from "react-router-dom/es/Link";
-import RequestElement from "./RequestElement";
-
-class ListingItem extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {};
-  }
-
-  Redirect(to) {
-    this.setState({
-      redirect: to
-    });
-  }
-
-  AsTableRow() {
-    const onClick = () => this.Redirect(this.props.link);
-
-    let iconCell;
-    if(!this.props.noIcon) {
-      iconCell = (
-        <td className="icon-cell">
-          <CroppedIcon containerClassname="icon-container" className="dark" icon={this.props.icon}/>
-        </td>
-      );
-    }
-
-    return (
-      <tr onClick={onClick} onKeyPress={onClick} tabIndex={0} title={this.props.title}>
-        {iconCell}
-        <td className="title-cell" title={this.props.title} tabIndex={0}>
-          {this.props.title}
-        </td>
-        <td className="description-cell" title={this.props.description} tabIndex={0}>
-          <div className="description-text">
-            {this.props.description}
-          </div>
-        </td>
-        <td className="status-cell" title={this.props.status} tabIndex={0}>
-          {this.props.status}
-        </td>
-      </tr>
-    );
-  }
-
-  AsGridElement() {
-    return (
-      <Link to={this.props.link} title={this.props.title} className="grid-listing-element">
-        <CroppedIcon containerClassname="icon-container" className="dark" icon={this.props.icon}/>
-        <div className="title">
-          {this.props.title}
-        </div>
-        <div className="description">
-          {this.props.description}
-        </div>
-        <div className="status">
-          {this.props.status}
-        </div>
-      </Link>
-    );
-  }
-
-  render() {
-    if(this.state.redirect) {
-      return <Redirect to={this.state.redirect} />;
-    }
-
-    if(this.props.display === "list") {
-      return this.AsTableRow();
-    } else {
-      return this.AsGridElement();
-    }
-  }
-}
-
-ListingItem.propTypes = {
-  id: PropTypes.string.isRequired,
-  title: PropTypes.string.isRequired,
-  description: PropTypes.string,
-  status: PropTypes.string,
-  icon: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
-  link: PropTypes.string.isRequired,
-  noIcon: PropTypes.bool
-};
+import ListIcon from "../../static/icons/list.svg";
+import RefreshIcon from "../../static/icons/refresh.svg";
+import ListingView from "./ListingView";
+import {CancelableEvents} from "browser-cancelable-events";
 
 let ListingOptions = {};
 
@@ -98,16 +13,22 @@ class Listing extends React.Component {
   constructor(props) {
     super(props);
 
-    // Load last used view
-    const savedOptions = ListingOptions[props.pageId] || {};
+    // Load saved settings
+    const savedOptions = ListingOptions[props.pageId] || {display: "list", perPage: 10};
+    ListingOptions[props.pageId] = savedOptions;
 
     this.state = {
-      display: savedOptions.display || "list",
+      display: savedOptions.display,
+      perPage: savedOptions.perPage,
+      page: 1,
+      selectFilter: this.props.selectFilterOptions ? savedOptions.filter || this.props.selectFilterOptions[0][1] : "",
       filter: "",
+      filterTimeout: undefined
     };
 
+    this.Load = this.Load.bind(this);
     this.Filter = this.Filter.bind(this);
-    this.Content = this.Content.bind(this);
+    this.ChangeSelectFilter = this.ChangeSelectFilter.bind(this);
   }
 
   componentDidMount() {
@@ -115,105 +36,261 @@ class Listing extends React.Component {
   }
 
   Load() {
-    this.setState({
-      requestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.LoadContent();
-        }
-      })
-    });
-  }
+    if(this.cancelable) {
+      this.cancelable.cancelAll();
+    }
 
-  Filter(event) {
-    this.setState({
-      filter: event.target.value
+    this.cancelable = new CancelableEvents();
+
+    this.props.LoadContent({
+      params: {
+        paginate: true,
+        page: this.state.page,
+        perPage: this.state.perPage,
+        filter: this.state.filter,
+        selectFilter: this.state.selectFilter,
+        cancelable: this.cancelable
+      }
     });
   }
 
   SwitchView(view) {
     // Save preferred view
-    ListingOptions[this.props.pageId] = {
-      display: view
-    };
+    ListingOptions[this.props.pageId].display = view;
 
     this.setState({
       display: view
     });
   }
 
-  ActionBar() {
+  ChangePage(page) {
+    this.setState({
+      page
+    }, this.Load);
+  }
+
+  ChangeSelectFilter(event) {
+    // Save selected filter
+    ListingOptions[this.props.pageId].filter = event.target.value;
+
+    this.setState({
+      page: 1,
+      selectFilter: event.target.value,
+    }, this.Load);
+  }
+
+  // Debounced filter
+  Filter(event) {
+    const value = event.target.value;
+
+    if(this.state.filterTimeout) {
+      clearTimeout(this.state.filterTimeout);
+    }
+
+    this.setState({
+      page: 1,
+      filter: value,
+      filterTimeout: setTimeout(this.Load, 500)
+    });
+  }
+
+  SelectFilter() {
+    if(!this.props.selectFilterOptions) { return; }
+
+    const options = this.props.selectFilterOptions.map(([label, value]) =>
+      <option key={`select-option-${value}`} value={value}>{label}</option>
+    );
+
+    return (
+      <select
+        name="selectFilter"
+        value={this.state.selectFilter}
+        title={this.props.selectFilterLabel}
+        aria-label={this.props.selectFilterLabel}
+        onChange={this.ChangeSelectFilter}
+      >
+        {options}
+      </select>
+    );
+  }
+
+  PageButton(title, text, page, disabled) {
+    const isTextButton = text !== page;
+
+    return (
+      <li key={title}>
+        <button
+          title={"Page " + page}
+          aria-label={"Page " + page}
+          onClick={() => this.ChangePage(page)}
+          onKeyPress={() => this.ChangePage(page)}
+          disabled={disabled}
+          className={`page-button ${isTextButton ? "text-button" : ""} ${!isTextButton && disabled ? "selected" : ""}`}
+        >
+          {text.toString()}
+        </button>
+      </li>
+    );
+  }
+
+  PageSpread() {
+    if(!this.props.count) { return; }
+
+    const totalPages = Math.ceil(this.props.count / this.state.perPage);
+    let start = 1;
+    let end = Math.min(10, totalPages);
+
+    if(this.state.page >= 5) {
+      start = this.state.page - 4;
+      end = start + 9;
+
+      if(end > totalPages) {
+        end = totalPages;
+        start = Math.max(totalPages - 9, 1);
+      }
+    }
+
+    const spread = (end - start) + 1;
+
+    return [...Array(spread).keys()].map(i => {
+      const page = start + i;
+      return this.PageButton("Page " + page, page, page, page === this.state.page);
+    });
+  }
+
+  PreviousPageButtons() {
+    const disabled = this.state.page <= 1;
+
+    return [
+      this.PageButton("First Page", "First", 1, disabled),
+      this.PageButton("Previous Page", "Prev", this.state.page - 1, disabled)
+    ];
+  }
+
+  NextPageButtons() {
+    const totalPages = Math.ceil(this.props.count / this.state.perPage);
+    const disabled = (this.state.page * this.state.perPage) >= this.props.count;
+
+    return [
+      this.PageButton("Next Page", "Next", this.state.page + 1, disabled),
+      this.PageButton("Last Page", "Last", totalPages, disabled)
+    ];
+  }
+
+  PaginationControls() {
+    if(!this.props.paginate) { return; }
+
+    return (
+      <ul className="page-controls">
+        { this.PreviousPageButtons() }
+        { this.PageSpread() }
+        { this.NextPageButtons() }
+      </ul>
+    );
+  }
+
+  PerPageControls() {
+    return (
+      <select
+        className="per-page-controls"
+        disabled={this.props.loadingStatus.loading}
+        value={this.state.perPage}
+        onChange={(event) => {
+          const perPage = parseInt(event.target.value);
+          this.setState({
+            page: 1,
+            perPage
+          }, this.Load);
+
+          ListingOptions[this.props.pageId].perPage = perPage;
+        }}
+      >
+        <option value={5}>5</option>
+        <option value={10}>10</option>
+        <option value={20}>20</option>
+        <option value={50}>50</option>
+        <option value={100}>100</option>
+      </select>
+    );
+  }
+
+  Actions() {
     let switchViewButton;
     // No point in offering grid view if there is no icon
     if(!this.props.noIcon) {
-      if (this.state.display === "list") {
+      if(this.state.display === "list") {
         switchViewButton =
-          <IconButton src={GridIcon} title="Switch to grid view" onClick={() => this.SwitchView("grid")}/>;
+          <IconButton className="listing-action" icon={GridIcon} label="Switch to grid view" onClick={() => this.SwitchView("grid")}/>;
       } else {
         switchViewButton =
-          <IconButton src={ListIcon} title="Switch to list view" onClick={() => this.SwitchView("list")}/>;
+          <IconButton className="listing-action" icon={ListIcon} label="Switch to list view" onClick={() => this.SwitchView("list")}/>;
       }
     }
 
     return (
       <div className="listing-actions">
-        <input className="filter" placeholder="Filter" value={this.state.filter} onChange={this.Filter} />
-        { switchViewButton }
-        <RequestElement requestId={this.state.requestId} requests={this.props.requests} loadingIcon="rotate" >
-          <IconButton className="request-icon" src={RefreshIcon} title="Refresh" onClick={() => this.Load()} />
-        </RequestElement>
+        <div className="controls">
+          { this.PaginationControls() }
+          { this.PerPageControls() }
+        </div>
+        <div className="controls right-controls">
+          <input className="filter" placeholder="Filter" value={this.state.filter} onChange={this.Filter} />
+          { this.SelectFilter() }
+          { switchViewButton }
+          <LoadingElement loadingClassname="loading-action" loading={this.props.loadingStatus.loading} loadingIcon="rotate" >
+            <IconButton className="listing-action" icon={RefreshIcon} label="Refresh" onClick={this.Load} />
+          </LoadingElement>
+        </div>
       </div>
     );
   }
 
-  Content() {
-    const content = this.props.RenderContent();
-
-    if(!content || content.length === 0) {
-      return <h4>No Content Available</h4>;
-    }
-
-    let iconHeader;
-    if(!this.props.noIcon) {
-      iconHeader = <th className="icon-header" />;
-    }
-
-    if(this.state.display === "list") {
+  Count() {
+    if(this.props.count === 0) {
       return (
-        <table>
-          <thead>
-            <tr>
-              { iconHeader }
-              <th className="title-header" />
-              <th className="description-header" />
-              <th className="status-header" />
-            </tr>
-          </thead>
-          <tbody>
-            { content.map(item =>
-              <ListingItem key={item.id} noIcon={this.props.noIcon} display={"list"} {...item} />)}
-          </tbody>
-        </table>
-      );
-    } else {
-      return (
-        <div className="grid-listing">
-          { content.map(item =>
-            <ListingItem key={item.id} noIcon={this.props.noIcon} display={"grid"} {...item} />)}
+        <div className="listing-count">
+          No results to display
         </div>
       );
+    } else if(!this.props.count) {
+      return null;
     }
+
+    const start = ((this.state.page - 1) * this.state.perPage) + 1;
+    const end = Math.min(start + this.state.perPage - 1, this.props.count);
+    return (
+      <div className="listing-count">
+        {`Displaying results ${start} - ${end} of ${this.props.count}`}
+      </div>
+    );
   }
 
   render() {
+    if(this.props.loadingStatus.error) {
+      return (
+        <div className="error-page">
+          <div>There was a problem loading this page:</div>
+          <div className="error-message">{this.props.loadingStatus.errorMessage}</div>
+          <LoadingElement loading={this.props.loadingStatus.loading} loadingIcon="rotate">
+            <Action onClick={this.Load}>Try Again</Action>
+          </LoadingElement>
+        </div>
+      );
+    }
+
     return (
-      <div className="listing">
-        { this.ActionBar() }
-        <RequestElement
-          requestId={this.state.requestId}
-          requests={this.props.requests}
-          render={this.Content}
-          loadingClassname="loading"
-        />
+      <div className={`listing ${this.props.className || ""}`}>
+        { this.Actions() }
+        <LoadingElement loading={this.props.loadingStatus.loading} loadingClassname="loading" loadingIcon="rotate">
+          { this.Count() }
+          <ListingView
+            count={this.props.count}
+            display={this.state.display}
+            noIcon={this.props.noIcon}
+            noStatus={this.props.noStatus}
+            RenderContent={this.props.RenderContent}
+          />
+        </LoadingElement>
       </div>
     );
   }
@@ -221,8 +298,14 @@ class Listing extends React.Component {
 
 Listing.propTypes = {
   pageId: PropTypes.string.isRequired,
+  className: PropTypes.string,
   noIcon: PropTypes.bool,
-  requests: PropTypes.object.isRequired,
+  noStatus: PropTypes.bool,
+  paginate: PropTypes.bool,
+  count: PropTypes.number,
+  selectFilterLabel: PropTypes.string,
+  selectFilterOptions: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)),
+  loadingStatus: PropTypes.object.isRequired,
   RenderContent: PropTypes.func.isRequired,
   LoadContent: PropTypes.func.isRequired
 };

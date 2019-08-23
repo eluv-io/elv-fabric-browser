@@ -1,15 +1,14 @@
 import { combineReducers } from "redux";
 import {connectRouter} from "connected-react-router";
 
-import AccountsReducer from "./AccountsReducer";
 import ContentReducer from "./ContentReducer";
 import ContractsReducer from "./ContractsReducer";
 import NotificationsReducer from "./NotificationsReducer";
-import RequestsReducer from "./RequestsReducer";
 import AccessGroupsReducer from "./AccessGroupsReducer";
 import FrameRoutingReducer from "./FrameRoutingReducer";
 import LogsReducer from "./LogsReducer";
 
+/*
 // Collect all dispatched actions
 const DebugReducer = (state = {}, action) => {
   let actions = state.actions || [];
@@ -23,17 +22,16 @@ const DebugReducer = (state = {}, action) => {
     actions
   };
 };
+*/
 
 export default (history) => {
   return combineReducers({
     router: connectRouter(history),
     frameRouting: FrameRoutingReducer,
     accessGroups: AccessGroupsReducer,
-    accounts: AccountsReducer,
     content: ContentReducer,
     contracts: ContractsReducer,
     notifications: NotificationsReducer,
     logs: LogsReducer,
-    requests: RequestsReducer
   });
 };

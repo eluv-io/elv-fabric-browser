@@ -1,7 +1,8 @@
 import React from "react";
+import UrlJoin from "url-join";
 import Path from "path";
-import RequestForm from "../../forms/RequestForm";
 import {JsonTextArea} from "../../../utils/Input";
+import {Action, Form} from "elv-components-js";
 
 class WatchContractForm extends React.Component {
   constructor(props) {
@@ -11,8 +12,7 @@ class WatchContractForm extends React.Component {
       name: "",
       description: "",
       abi: "",
-      address: "",
-      submitRequestId: undefined
+      address: ""
     };
 
     this.HandleInputChange = this.HandleInputChange.bind(this);
@@ -25,68 +25,57 @@ class WatchContractForm extends React.Component {
     });
   }
 
-  HandleSubmit() {
-    this.setState({
-      submitRequestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.WatchContract({
-            name: this.state.name,
-            description: this.state.description,
-            address: this.state.address,
-            abi: this.state.abi
-          });
-        }
-      })
+  async HandleSubmit() {
+    await this.props.methods.Submit({
+      name: this.state.name,
+      description: this.state.description,
+      address: this.state.address,
+      abi: this.state.abi
     });
   }
 
-  FormContent() {
-    return (
-      <div className="contracts-form-data">
-        <div className="labelled-input">
-          <label className="label" htmlFor="name">Name</label>
-          <input name="name" value={this.state.name} onChange={this.HandleInputChange} />
-        </div>
-        <div className="labelled-input">
-          <label className="label" htmlFor="address">Address</label>
-          <input
-            name="address"
-            value={this.state.address}
-            required={true}
-            placeholder="0x0000000000000000000000000000000000000000"
-            onChange={this.HandleInputChange}
-          />
-        </div>
-        <div className="labelled-input">
-          <label className="label textarea-label" htmlFor="description">Description</label>
-          <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
-        </div>
-        <div className="labelled-input">
-          <label className="label textarea-label" htmlFor="abi">ABI</label>
-          <JsonTextArea
-            name="abi"
-            value={this.state.abi}
-            onChange={this.HandleInputChange}
-            UpdateValue={formattedAbi => this.setState({abi: formattedAbi})}
-          />
-        </div>
-      </div>
-    );
-  }
-
   render() {
-    const redirectPath = Path.join(Path.dirname(this.props.match.url), "deployed", this.state.address);
+    const redirectPath = UrlJoin(Path.dirname(this.props.match.url), "deployed", this.state.address);
 
     return (
-      <RequestForm
-        requests={this.props.requests}
-        requestId={this.state.submitRequestId}
-        legend={"Watch Deployed Contract"}
-        formContent={this.FormContent()}
-        redirectPath={redirectPath}
-        cancelPath={Path.dirname(this.props.match.url)}
-        OnSubmit={this.HandleSubmit}
-      />
+      <div>
+        <div className="actions-container manage-actions">
+          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+        </div>
+        <Form
+          legend={"Watch Deployed Contract"}
+          redirectPath={redirectPath}
+          cancelPath={Path.dirname(this.props.match.url)}
+          status={this.props.methodStatus.Submit}
+          OnSubmit={this.HandleSubmit}
+        >
+          <div className="form-content">
+            <label htmlFor="name">Name</label>
+            <input name="name" value={this.state.name} required={true} onChange={this.HandleInputChange} />
+
+            <label htmlFor="address">Address</label>
+            <input
+              name="address"
+              value={this.state.address}
+              required={true}
+              placeholder="0x0000000000000000000000000000000000000000"
+              onChange={this.HandleInputChange}
+            />
+
+            <label className="align-top" htmlFor="description">Description</label>
+            <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
+
+            <label className="align-top" htmlFor="abi">ABI</label>
+            <JsonTextArea
+              name="abi"
+              value={this.state.abi}
+              required={true}
+              onChange={this.HandleInputChange}
+              UpdateValue={formattedAbi => this.setState({abi: formattedAbi})}
+            />
+          </div>
+        </Form>
+      </div>
     );
   }
 }

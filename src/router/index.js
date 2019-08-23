@@ -1,47 +1,55 @@
 import React from "react";
 import {Route, Switch} from "react-router";
-
-import {
-  AccessGroupContainer,
-  AccessGroupFormContainer,
-  AccessGroupMembersFormContainer,
-  AccessGroupsContainer
-} from "../containers/pages/AccessGroups";
-
-import {
-  ContentLibrariesContainer,
-  ContentLibraryFormContainer,
-  ContentLibraryContainer,
-  ContentLibraryGroupsFormContainer,
-  ContentLibraryTypesFormContainer,
-  ContentObjectContainer,
-  ContentObjectUploadFormContainer,
-  ContentObjectReviewFormContainer,
-  ContentObjectFormContainer,
-  ContentTypeFormContainer,
-  ContentAppFormContainer,
-  ContentAppsContainer
-} from "../containers/pages/Content";
-
-import {
-  CompileContractFormContainer,
-  ContractContainer,
-  ContractFormContainer,
-  ContractsContainer,
-  DeployContractFormContainer,
-  DeployedContractContainer,
-  DeployedContractMethodFormContainer,
-  DeployedContractFundsFormContainer,
-  WatchContractFormContainer,
-  DeployedContractEventsContainer
-} from "../containers/pages/Contracts";
 import Fabric from "../clients/Fabric";
 import ErrorHandler from "./ErrorHandler";
 import Redirect from "react-router/es/Redirect";
 import connect from "react-redux/es/connect/connect";
 import Thunk from "../utils/Thunk";
 import {GetFramePath, StartRouteSynchronization} from "../actions/Routing";
-import {LogsContainer} from "../containers/pages/Logs";
+
+/* Content Libraries */
+import ContentLibrariesContainer from "../containers/pages/content/ContentLibraries";
+import ContentLibraryContainer from "../containers/pages/content/ContentLibrary";
+import ContentLibraryFormContainer from "../containers/pages/content/ContentLibraryForm";
+import ContentLibraryTypesFormContainer from "../containers/pages/content/ContentLibraryTypesForm";
+import ContentLibraryGroupFormContainer from "../containers/pages/content/ContentLibraryGroupForm";
+
+/* Content Objects, Types and Apps */
+import ContentObjectContainer from "../containers/pages/content/ContentObject";
+import ContentObjectFormContainer from "../containers/pages/content/ContentObjectForm";
+import ContentObjectPartsFormContainer from "../containers/pages/content/ContentObjectPartsForm";
+import ContentObjectReviewFormContainer from "../containers/pages/content/ContentObjectReviewForm";
+
+import ContentTypesContainer from "../containers/pages/content/ContentTypes";
+import ContentTypeFormContainer from "../containers/pages/content/ContentTypeForm";
+
+import ContentAppsContainer from "../containers/pages/content/ContentApps";
+import ContentAppFormContainer from "../containers/pages/content/ContentAppForm";
+
+/* Access Groups */
+import AccessGroupsContainer from "../containers/pages/access_groups/AccessGroups";
+import AccessGroupContainer from "../containers/pages/access_groups/AccessGroup";
+import AccessGroupFormContainer from "../containers/pages/access_groups/AccessGroupForm";
+import AccessGroupMemberFormContainer from "../containers/pages/access_groups/AccessGroupMemberForm";
+
+/* Contracts */
+import ContractsContainer from "../containers/pages/contracts/Contracts";
+import ContractContainer from "../containers/pages/contracts/Contract";
+import CompileContractFormContainer from "../containers/pages/contracts/CompileContractForm";
+import ContractFormContainer from "../containers/pages/contracts/ContractForm";
+import WatchContractFormContainer from "../containers/pages/contracts/WatchContractForm";
+import DeployContractFormContainer from "../containers/pages/contracts/DeployContractForm";
+
+/* Deployed Contracts */
+import DeployedContractContainer from "../containers/pages/contracts/deployed/DeployedContract";
+import DeployedContractFundsFormContainer from "../containers/pages/contracts/deployed/DeployedContractFundsForm";
+import DeployedContractEventsContainer from "../containers/pages/contracts/deployed/DeployedContractEvents";
+
+/* Blockchain Logs */
+import LogsContainer from "../containers/pages/Logs";
+
+const ConnectedSwitch =
+  connect(state => ({location: state.router.location}))(Switch);
 
 class Router extends React.Component {
   constructor(props) {
@@ -66,10 +74,13 @@ class Router extends React.Component {
       if(Fabric.isFrameClient) {
         if(this.props.frameRouting.path === undefined) { return; }
 
-        if (this.props.frameRouting.path !== this.props.router.location.pathname) {
+        await Fabric.Initialize();
+
+        if(this.props.frameRouting.path !== this.props.router.location.pathname) {
           this.setState({redirectPath: this.props.frameRouting.path});
         } else {
           this.setState({
+            contentSpaceLibraryId: Fabric.contentSpaceLibraryId,
             redirectPath: "",
             pathSynchronized: true
           });
@@ -77,7 +88,11 @@ class Router extends React.Component {
           this.props.StartRouteSynchronization();
         }
       } else {
-        this.setState({pathSynchronized: true});
+        await Fabric.Initialize();
+        this.setState({
+          contentSpaceLibraryId: Fabric.contentSpaceLibraryId,
+          pathSynchronized: true
+        });
       }
     }
   }
@@ -95,7 +110,7 @@ class Router extends React.Component {
 
     return (
       <div className="main-content-container">
-        <Switch>
+        <ConnectedSwitch>
           <Route exact path="/" component={ContentLibrariesContainer}/>
 
           /* Access Groups */
@@ -104,30 +119,26 @@ class Router extends React.Component {
           <Route exact path="/access-groups/create" component={AccessGroupFormContainer}/>
           <Route exact path="/access-groups/:contractAddress" component={AccessGroupContainer}/>
           <Route exact path="/access-groups/:contractAddress/edit" component={AccessGroupFormContainer}/>
-          <Route exact path="/access-groups/:contractAddress/members" component={AccessGroupMembersFormContainer}/>
+          <Route exact path="/access-groups/:contractAddress/add-member" component={AccessGroupMemberFormContainer}/>
           <Route exact path="/access-groups/:contractAddress/contract" component={DeployedContractContainer}/>
           <Route exact path="/access-groups/:contractAddress/contract/logs" component={DeployedContractEventsContainer}/>
-          <Route exact path="/access-groups/:contractAddress/contract/call/:method" component={DeployedContractMethodFormContainer}/>
           <Route exact path="/access-groups/:contractAddress/contract/funds" component={DeployedContractFundsFormContainer}/>
 
           /* Content */
           /* For most content routes, add content-types route corresponding to /content/:contentSpaceLibrary */
 
+          <Route exact path="/content-types" component={ContentTypesContainer} />
+
           <Route exact path="/content" component={ContentLibrariesContainer}/>
           <Route exact path="/content/create" component={ContentLibraryFormContainer}/>
 
           <Route exact path="/content/:libraryId" component={ContentLibraryContainer}/>
-          <Route exact path="/content-types" key="content-types" render={(props) =>
-            <ContentLibraryContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
 
           <Route exact path="/content/:libraryId/edit" component={ContentLibraryFormContainer}/>
           <Route exact path="/content-types/edit" render={(props) =>
             <ContentLibraryFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
 
-          <Route exact path="/content/:libraryId/groups" component={ContentLibraryGroupsFormContainer}/>
-          <Route exact path="/content-types/groups" render={(props) =>
-            <ContentLibraryGroupsFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
-
+          <Route exact path="/content/:libraryId/groups" component={ContentLibraryGroupFormContainer}/>
           <Route exact path="/content/:libraryId/types" component={ContentLibraryTypesFormContainer}/>
 
           <Route exact path="/content/:libraryId/create" component={ContentObjectFormContainer}/>
@@ -144,9 +155,9 @@ class Router extends React.Component {
 
           <Route exact path="/content/:libraryId/:objectId/review" component={ContentObjectReviewFormContainer}/>
 
-          <Route exact path="/content/:libraryId/:objectId/upload" component={ContentObjectUploadFormContainer}/>
+          <Route exact path="/content/:libraryId/:objectId/upload" component={ContentObjectPartsFormContainer}/>
           <Route exact path="/content-types/:objectId/upload" render={(props) =>
-            <ContentObjectUploadFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
+            <ContentObjectPartsFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
 
           <Route exact path="/content/:libraryId/:objectId/apps" component={ContentAppsContainer}/>
           <Route exact path="/content-types/:objectId/apps" render={(props) =>
@@ -175,11 +186,6 @@ class Router extends React.Component {
           <Route exact path="/content-types/:objectId/contract/funds" render={(props) =>
             <DeployedContractFundsFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
 
-          <Route exact path="/content/:libraryId/:objectId/contract/call/:method"
-            component={DeployedContractMethodFormContainer}/>
-          <Route exact path="/content-types/:objectId/contract/call/:method" render={(props) =>
-            <DeployedContractMethodFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
-
           /* Custom content contract */
           <Route exact path="/content/:libraryId/:objectId/custom-contract" component={DeployedContractContainer}/>
           <Route exact path="/content-types/:objectId/custom-contract" render={(props) =>
@@ -195,21 +201,17 @@ class Router extends React.Component {
           <Route exact path="/content-types/:objectId/custom-contract/funds" render={(props) =>
             <DeployedContractFundsFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
 
-          <Route exact path="/content/:libraryId/:objectId/custom-contract/call/:method"
-            component={DeployedContractMethodFormContainer}/>
-          <Route exact path="/content-types/:objectId/custom-contract/call/:method" render={(props) =>
-            <DeployedContractMethodFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
-
           /* Contracts */
 
           <Route exact path="/contracts" component={ContractsContainer}/>
+          <Route exact path="/contracts/saved" component={ContractsContainer}/>
+          <Route exact path="/contracts/deployed" component={ContractsContainer}/>
           <Route exact path="/contracts/compile" component={CompileContractFormContainer}/>
           <Route exact path="/contracts/save" component={ContractFormContainer}/>
           <Route exact path="/contracts/watch" component={WatchContractFormContainer}/>
           <Route exact path="/contracts/deploy" component={DeployContractFormContainer}/>
           <Route exact path="/contracts/deployed/:contractAddress" component={DeployedContractContainer}/>
           <Route exact path="/contracts/deployed/:contractAddress/logs" component={DeployedContractEventsContainer}/>
-          <Route exact path="/contracts/deployed/:contractAddress/call/:method" component={DeployedContractMethodFormContainer}/>
           <Route exact path="/contracts/deployed/:contractAddress/funds" component={DeployedContractFundsFormContainer}/>
           <Route exact path="/contracts/:contractName" component={ContractContainer}/>
           <Route exact path="/contracts/:contractName/edit" component={ContractFormContainer}/>
@@ -217,7 +219,7 @@ class Router extends React.Component {
 
           /* Logs */
           <Route exact path="/logs" component={LogsContainer} />
-        </Switch>
+        </ConnectedSwitch>
       </div>
     );
   }

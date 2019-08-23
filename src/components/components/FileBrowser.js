@@ -1,17 +1,17 @@
 import React from "react";
 import PropTypes from "prop-types";
 import PrettyBytes from "pretty-bytes";
+import UrlJoin from "url-join";
 import Path from "path";
-import { SafeTraverse } from "../../utils/Helpers";
+import {SafeTraverse} from "../../utils/Helpers";
+import {Action, AsyncCopy, Modal, IconButton, ImageIcon} from "elv-components-js";
+import FileUploadWidget from "./FileUploadWidget";
 
 import DirectoryIcon from "../../static/icons/directory.svg";
 import FileIcon from "../../static/icons/file.svg";
 import DownloadIcon from "../../static/icons/download.svg";
-import UploadIcon from "../../static/icons/upload.svg";
 import BackIcon from "../../static/icons/directory_back.svg";
-import Modal from "../modals/Modal";
-import UploadWidget from "./UploadWidget";
-import {Icon, IconButton} from "./Icons";
+import LinkIcon from "../../static/icons/link.svg";
 
 class FileBrowser extends React.Component {
   constructor(props) {
@@ -41,44 +41,51 @@ class FileBrowser extends React.Component {
     return (
       <tr key={`entry-${this.state.path}-${name}`}>
         <td className="item-icon">
-          <Icon src={FileIcon} title="File" />
+          <ImageIcon icon={FileIcon} label="File"/>
         </td>
-        <td title={name} tabIndex="0">{ name }</td>
-        <td title={size} tabIndex="0">{ size }</td>
-        <td>
+        <td title={name}>{ name }</td>
+        <td title={size} className="info-cell">{ size }</td>
+        <td className="actions-cell">
           <IconButton
-            src={DownloadIcon}
-            title={"Download " + name}
-            onClick={() => this.props.Download(Path.join(this.state.path, name))}
+            icon={DownloadIcon}
+            label={"Download " + name}
+            onClick={() => this.props.Download(UrlJoin(this.state.path, name))}
+            className="download-button"
           />
+          <AsyncCopy Load={async () => await this.props.FileUrl(UrlJoin(this.state.path, name))}>
+            <IconButton
+              icon={LinkIcon}
+              label={"Copy direct link to " + name}
+              className="copy-button"
+            />
+          </AsyncCopy>
         </td>
       </tr>
     );
   }
 
-  Directory(name) {
-    const changeDirectory = () => this.ChangeDirectory(Path.join(this.state.path, name));
+  Directory(item) {
+    const changeDirectory = () => this.ChangeDirectory(UrlJoin(this.state.path, item.name));
     return (
-      <tr key={`entry-${this.state.path}-${name}`} className="clickable" onClick={changeDirectory} onKeyPress={changeDirectory}>
+      <tr key={`entry-${this.state.path}-${item.name}`} className="directory" onClick={changeDirectory} onKeyPress={changeDirectory}>
         <td className="item-icon">
-          <Icon src={DirectoryIcon} title="Directory" />
+          <ImageIcon icon={DirectoryIcon} label="Directory" />
         </td>
-        <td tabIndex="0">{ name }</td>
-        <td />
+        <td tabIndex="0" title={item.name}>{item.name}</td>
+        <td className="info-cell">{(Object.keys(item.item).length - 1) + " Items"}</td>
         <td />
       </tr>
     );
   }
 
   Items() {
-    // TODO: Sort by name
     const items = Object.keys(this.state.currentDir)
       .filter(name => name !== ".")
       .map(name => {
         return {
           name,
           item: this.state.currentDir[name],
-          info: this.state.currentDir[name]["."]
+          info: this.state.currentDir[name]["."],
         };
       });
 
@@ -100,7 +107,7 @@ class FileBrowser extends React.Component {
         } else {
           return item1.name.toLowerCase() > item2.name.toLowerCase();
         }
-      }).map(item => item.info.type === "directory" ? this.Directory(item.name): this.File(item.name, item.info))
+      }).map(item => item.info.type === "directory" ? this.Directory(item): this.File(item.name, item.info))
     );
   }
 
@@ -109,26 +116,25 @@ class FileBrowser extends React.Component {
 
     const closeModal = () => this.setState({showUpload: false});
 
+    // TODO: Change modal to standalone
     return (
       <Modal
-        modalContent={
-          <UploadWidget
-            path={this.state.path}
-            displayPath={this.state.displayPath}
-            requests={this.props.requests}
-            files={this.props.files}
-            Upload={this.props.Upload}
-            WrapRequest={this.props.WrapRequest}
-            OnComplete={() => {
-              closeModal();
-              this.props.Reload();
-            }}
-            OnCancel={closeModal}
-          />
-        }
         closable={true}
         OnClickOutside={closeModal}
-      />
+      >
+        <FileUploadWidget
+          path={this.state.path}
+          displayPath={this.state.displayPath}
+          files={this.props.files}
+          uploadStatus={this.props.uploadStatus}
+          Upload={this.props.Upload}
+          OnComplete={() => {
+            closeModal();
+            this.props.Reload();
+          }}
+          OnCancel={closeModal}
+        />
+      </Modal>
     );
   }
 
@@ -137,8 +143,8 @@ class FileBrowser extends React.Component {
     if(this.state.path && this.state.path !== Path.dirname(this.state.path)) {
       backButton = (
         <IconButton
-          src={BackIcon}
-          title={"Back"}
+          icon={BackIcon}
+          label={"Back"}
           onClick={() => this.ChangeDirectory(Path.dirname(this.state.path))}
         />
       );
@@ -154,11 +160,11 @@ class FileBrowser extends React.Component {
               <th title={"Current Directory: " + this.state.displayPath} tabIndex="0">{this.state.displayPath}</th>
               <th className="size-header" />
               <th className="actions-header">
-                <IconButton
-                  src={UploadIcon}
-                  title={"Upload to " + this.state.displayPath}
+                <Action
                   onClick={() => this.setState({showUpload: true})}
-                />
+                >
+                  Upload
+                </Action>
               </th>
             </tr>
           </thead>
@@ -172,12 +178,12 @@ class FileBrowser extends React.Component {
 }
 
 FileBrowser.propTypes = {
-  requests: PropTypes.object.isRequired,
   files: PropTypes.object.isRequired,
-  Reload: PropTypes.func.isRequired,
+  uploadStatus: PropTypes.object.isRequired,
   Upload: PropTypes.func.isRequired,
   Download: PropTypes.func.isRequired,
-  WrapRequest: PropTypes.func.isRequired
+  FileUrl: PropTypes.func.isRequired,
+  Reload: PropTypes.func.isRequired
 };
 
 export default FileBrowser;

@@ -17,6 +17,7 @@
     border: 0;
     font-family: inherit;
     height: 100%;
+    margin: 0;
     overflow: hidden;
     padding: 0;
     width: 100%;
@@ -36,7 +37,15 @@
     }
 
     &.show-more {
-      background-image: linear-gradient(to bottom, transparent, transparent, transparent, $color-bg-white);
+      background-image: linear-gradient(to bottom, transparent, transparent, transparent, $elv-color-bg-white);
     }
+  }
+}
+
+.copyable {
+  .copy-icon {
+    height: 1.2em;
+    margin-left: $elv-spacing-xs;
+    width: 1.2em;
   }
 }

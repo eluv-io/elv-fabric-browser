@@ -1,103 +1,4 @@
-html,
-body {
-  font-family: Lato, sans-serif;
-  font-size: 16px;
-  height: 100%;
-  margin: 0;
-  //font-family: Helvetica, sans-serif;
-  padding: 0;
-}
-
-h1 {
-  font-size: 28px;
-  font-weight: bold;
-  margin: 0;
-}
-
-h2 {
-  font-size: 24px;
-  font-weight: bold;
-  margin: 0;
-}
-
-h3 {
-  font-size: 20px;
-  font-weight: normal;
-  margin: 0;
-
-  &.header-with-loader {
-    align-items: center;
-    display: flex;
-    justify-content: space-between;
-    height: 30px;
-  }
-}
-
-h4 {
-  color: $color-text-black;
-  font-size: 16px;
-  font-weight: normal;
-  margin: $spacing-xs 0 $spacing-xxs;
-}
-
-a {
-  text-decoration: none;
-
-  &,
-  &:visited {
-    color: $color-darkgray;
-  }
-
-  &.link {
-    display: block;
-  }
-
-  &.image-link {
-    display: flex;
-  }
-}
-
-input {
-  &[type="checkbox"] {
-    cursor: pointer;
-  }
-}
-
-pre {
-  background: $color-lightergray;
-  border: 1px solid $color-gray;
-  margin: 0;
-  overflow: auto;
-
-  padding: 10px;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-
-table {
-  border-collapse: collapse;
-  table-layout: fixed;
-  width: 100%;
-}
-
-th {
-  padding: $spacing-xs;
-  text-align: left;
-}
-
-tr {
-  border-top: 1px solid $color-lightergray;
-  margin: 0 $spacing-s;
-
-  td {
-    @include ellipsis;
-    padding: $spacing-xs 0 $spacing-xs $spacing-xs;
-
-    &.item-path {
-      max-width: 150px;
-    }
-  }
-}
+@import "~elv-components-js/src/stylesheets/defaults";
 
 // sass-lint:disable no-important
 .hidden {
@@ -110,4 +11,24 @@ tr {
 
 .full-width {
   width: 100%;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.actions-container {
+  &.manage-actions {
+    margin-bottom: $elv-spacing-m;
+  }
+
+  .-elv-button {
+    margin-right: $elv-spacing-xs;
+  }
+}
+
+.help-text {
+  color: $elv-color-text-lighter;
+  font-size: 12px;
+  margin-left: $elv-spacing-xxs;
 }

@@ -6,7 +6,7 @@ import GroupsIcon from "../static/icons/groups.svg";
 import ContentTypeIcon from "../static/icons/content_types.svg";
 import ContractsIcon from "../static/icons/contracts.svg";
 import LogsIcon from "../static/icons/logs.svg";
-import {Icon} from "./components/Icons";
+import {ImageIcon} from "elv-components-js";
 
 class NavigationBar extends React.Component {
   static Links() {
@@ -47,7 +47,7 @@ class NavigationBar extends React.Component {
       <div key={"navbar-link-" + linkInfo.link} className="navbar-link-container">
         <Link to={"/" + linkInfo.link} className={"navbar-link " + (active ? "active" : "")}>
           <span className="navbar-link-span">
-            <Icon className="navbar-link-icon" src={linkInfo.icon} />
+            <ImageIcon className="navbar-link-icon" icon={linkInfo.icon} />
             <div className="navbar-link-text">
               {linkInfo.text}
             </div>

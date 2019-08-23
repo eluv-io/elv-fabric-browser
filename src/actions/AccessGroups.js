@@ -2,22 +2,54 @@ import ActionTypes from "./ActionTypes";
 import Fabric from "../clients/Fabric";
 import {SetNotificationMessage} from "./Notifications";
 import { FormatAddress } from "../utils/Helpers";
+import {WithCancel} from "../utils/Cancelable";
 
-export const ListAccessGroups = () => {
+export const ListAccessGroups = ({params}) => {
   return async (dispatch) => {
-    const accessGroups = await Fabric.FabricBrowser.AccessGroups();
+    const {accessGroups, count} = await WithCancel(
+      params.cancelable,
+      async () => await Fabric.ListAccessGroups({params})
+    );
+
     dispatch({
       type: ActionTypes.accessGroups.list,
-      accessGroups
+      accessGroups,
+      count
     });
   };
 };
 
-export const SaveAccessGroup = ({address, name, description, members}) => {
+export const GetAccessGroup = ({contractAddress}) => {
+  return async (dispatch) => {
+    const accessGroup = await Fabric.GetAccessGroup({contractAddress});
+
+    dispatch({
+      type: ActionTypes.accessGroups.get,
+      contractAddress,
+      accessGroup
+    });
+  };
+};
+
+export const SaveAccessGroup = ({name, description, address}) => {
   return async (dispatch) => {
     if(address) {
-      // Existing access group - update attributes
-      await Fabric.FabricBrowser.AddAccessGroup({address, name, description, members});
+      const objectId = Fabric.utils.AddressToObjectId(address);
+      await Fabric.EditAndFinalizeContentObject({
+        libraryId: Fabric.contentSpaceLibraryId,
+        objectId,
+        todo: async (writeToken) => {
+          await Fabric.MergeMetadata({
+            libraryId: Fabric.contentSpaceLibraryId,
+            objectId,
+            writeToken,
+            metadata: {
+              name,
+              description
+            }
+          });
+        }
+      });
 
       dispatch(SetNotificationMessage({
         message: "Access group successfully updated",
@@ -25,8 +57,7 @@ export const SaveAccessGroup = ({address, name, description, members}) => {
       }));
     } else {
       // New access group - deploy contract
-      address = await Fabric.CreateAccessGroup();
-      await Fabric.FabricBrowser.AddAccessGroup({address, name, description, members});
+      address = await Fabric.CreateAccessGroup({name, metadata: { description }});
 
       dispatch(SetNotificationMessage({
         message: "Access group successfully created",
@@ -38,53 +69,48 @@ export const SaveAccessGroup = ({address, name, description, members}) => {
   };
 };
 
-// Determine diff between new and old members and add/remove access as necessary
-const UpdateMembers = async ({contractAddress, members, originalMembers}) => {
-  const newMembers = Object.values(members).filter(member => !member.manager).map(member => member.address);
-  const oldMembers = Object.values(originalMembers).filter(member => !member.manager).map(member => member.address);
+export const ListAccessGroupMembers = ({contractAddress, showManagers=false, params}) => {
+  return async (dispatch) => {
+    const {members, count} = await WithCancel(
+      params.cancelable,
+      async () => await Fabric.ListAccessGroupMembers({contractAddress, showManagers, params})
+    );
 
-  const newManagers = Object.values(members).filter(member => member.manager).map(member => member.address);
-  const oldManagers = Object.values(originalMembers).filter(member => member.manager).map(member => member.address);
-
-  const membersToAdd = newMembers.filter(x => !oldMembers.includes(x));
-  for(const memberAddress of membersToAdd) {
-    await Fabric.AddAccessGroupMember({contractAddress, memberAddress});
-  }
-
-  const membersToRemove = oldMembers.filter(x => !newMembers.includes(x));
-  for(const memberAddress of membersToRemove) {
-    await Fabric.RemoveAccessGroupMember({contractAddress, memberAddress});
-  }
-
-  const managersToAdd = newManagers.filter(x => !oldManagers.includes(x));
-  for(const memberAddress of managersToAdd) {
-    await Fabric.AddAccessGroupManager({contractAddress, memberAddress});
-  }
-
-  const managersToRemove = oldManagers.filter(x => !newManagers.includes(x));
-  for(const memberAddress of managersToRemove) {
-    await Fabric.RemoveAccessGroupManager({contractAddress, memberAddress});
-  }
+    dispatch({
+      type: ActionTypes.accessGroups.members.list,
+      contractAddress,
+      members,
+      count
+    });
+  };
 };
 
-export const UpdateAccessGroupMembers = ({address, members, originalMembers}) => {
+export const AddAccessGroupMember = ({contractAddress, memberAddress, manager=false}) => {
   return async (dispatch) => {
-    const accessGroup = (await Fabric.FabricBrowser.AccessGroups())[address];
-
-    if(!accessGroup) { throw Error("Access group not found"); }
-
-    await UpdateMembers({contractAddress: address, members, originalMembers});
-
-    await Fabric.FabricBrowser.AddAccessGroup({
-      name: accessGroup.name,
-      description: accessGroup.description,
-      address: accessGroup.address,
-      members
-    });
+    if(manager) {
+      await Fabric.AddAccessGroupManager({contractAddress, memberAddress});
+    } else {
+      await Fabric.AddAccessGroupMember({contractAddress, memberAddress});
+    }
 
     dispatch(SetNotificationMessage({
-      message: "Access group members successfully updated",
-      redirect: true
+      message: `${manager ? "Manager" : "Member"} successfully added`,
+      redirect: false
+    }));
+  };
+};
+
+export const RemoveAccessGroupMember = ({contractAddress, memberAddress, manager=false}) => {
+  return async (dispatch) => {
+    if(manager) {
+      await Fabric.RemoveAccessGroupManager({contractAddress, memberAddress});
+    } else {
+      await Fabric.RemoveAccessGroupMember({contractAddress, memberAddress});
+    }
+
+    dispatch(SetNotificationMessage({
+      message: `${manager ? "Manager" : "Member"} successfully removed`,
+      redirect: false
     }));
   };
 };
@@ -92,7 +118,6 @@ export const UpdateAccessGroupMembers = ({address, members, originalMembers}) =>
 export const RemoveAccessGroup = ({address}) => {
   return async (dispatch) => {
     await Fabric.DeleteAccessGroup({address});
-    await Fabric.FabricBrowser.RemoveAccessGroup({address});
 
     dispatch(SetNotificationMessage({
       message: "Access group successfully deleted",

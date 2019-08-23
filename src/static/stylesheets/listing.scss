@@ -1,88 +1,208 @@
+$aspect-ratio: 0.75; // 4/3
+$grid-listing-width: 215px;
+$table-listing-width: 125px;
+
 .listing {
-  height: 100%;
-  width: 100%;
+  $table-listing-height: calc(#{$table-listing-width} * #{$aspect-ratio});
 
   .loading {
     align-items: center;
     display: flex;
-    height: 50%;
     justify-content: center;
+    margin-top: 100px;
     width: 100%;
   }
 
   .listing-actions {
-    align-items: center;
     display: flex;
     height: 50px;
-    justify-content: flex-end;
+    justify-content: space-between;
     width: 100%;
 
-    .icon-button {
-      margin: 0 $spacing-xs;
-      padding: $spacing-xxs;
+    .controls {
+      align-items: center;
+      display: flex;
+      flex-grow: 1;
+      flex-shrink: 1;
+      height: 35px;
+      margin-right: $elv-spacing-xs;
 
-      .icon {
-        height: 30px;
-        width: 30px;
+      &.right-controls {
+        justify-content: flex-end;
       }
+
+      input {
+        max-width: 250px;
+      }
+
+      select {
+        max-width: 200px;
+      }
+
+      input,
+      select {
+        border: 1px solid $elv-color-lightgray;
+        flex-basis: 100px;
+        flex-grow: 1;
+        flex-shrink: 1;
+        height: 100%;
+        width: auto;
+
+        &.per-page-controls {
+          flex-grow: 0;
+        }
+      }
+    }
+
+    .page-controls {
+      align-items: center;
+      display: flex;
+      height: 100%;
+
+      li {
+        border: 1px solid $elv-color-lightgray;
+        border-right: 0;
+        height: 100%;
+
+        .page-button {
+          align-items: center;
+          background: transparent;
+          border: 0;
+          cursor: pointer;
+          display: flex;
+          font-size: 12px;
+          height: 100%;
+          justify-content: center;
+          margin: 0;
+          min-width: 2.5em;
+
+          &:hover {
+            background: $elv-color-lightgray;
+          }
+
+          &:active {
+            background: $elv-color-lightergray;
+          }
+
+          &:disabled {
+            color: $elv-color-text-dark;
+            font-weight: bold;
+
+            &:hover,
+            &:active {
+              background: transparent;
+              cursor: auto;
+            }
+
+            &.selected {
+              background: $elv-color-lightestgray;
+            }
+          }
+        }
+
+        .text-button {
+          &:disabled {
+            color: $elv-color-mediumgray;
+            font-weight: normal;
+
+            &:hover,
+            &:active {
+              background: transparent;
+              cursor: auto;
+            }
+          }
+        }
+
+        &:last-child {
+          border-right: 1px solid $elv-color-lightgray;
+        }
+      }
+    }
+
+    .per-page-controls {
+      flex-grow: 0;
+      margin-left: $elv-spacing-xs;
+      min-width: 4em;
+    }
+
+    .listing-action {
+      margin: 0 $elv-spacing-xxs;
+      padding: $elv-spacing-xxs;
+
+      i {
+        height: 25px;
+        width: 25px;
+      }
+    }
+
+    .loading-action {
+      width: 41px;
     }
 
     .filter {
       font-size: 16px;
       height: 30px;
-      padding: 0 $spacing-xs;
-      width: 300px;
+      margin-right: $elv-spacing-xs;
+      padding: 0 $elv-spacing-xs;
     }
+  }
+
+  .listing-count {
+    @include elv-no-select;
+
+    color: $elv-color-text-lighter;
+    display: flex;
+    justify-content: center;
+    margin: $elv-spacing-xs 0 $elv-spacing-s;
   }
 
   // Grid view
 
   .grid-listing {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    margin-top: $spacing-m;
+    display: grid;
+    grid-gap: $elv-spacing-l $elv-spacing-m;
+    grid-template-columns: repeat(auto-fill, $grid-listing-width);
   }
 
   .grid-listing-element {
-    color: $color-text-light;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    flex-shrink: 1;
-    height: 300px;
-    justify-content: space-between;
-    max-height: 300px;
-    max-width: 300px;
-    padding: $spacing-s $spacing-xs;
-    width: 40%;
-
-    &:hover {
-      background: $color-lightergray;
+    &:hover,
+    &:focus {
+      .listing-info {
+        background-color: $elv-color-lightgray;
+      }
     }
 
     .icon-container {
-      $image-size: 200px;
-      @include cropped-image($image-size, $image-size, 0%, $image-size, $image-size);
+      $image-height: calc(#{$grid-listing-width} * #{$aspect-ratio});
+      @include elv-cropped-image($grid-listing-width, $image-height, 0, $grid-listing-width, $image-height);
+
+      i {
+        padding: $elv-spacing-xs $elv-spacing-l $elv-spacing-l !important; // sass-lint:disable-line no-important
+      }
+    }
+
+    .listing-info {
+      height: 120px;
+      padding: $elv-spacing-xs $elv-spacing-xxs 0;
     }
 
     .title {
-      color: $color-text-black;
+      color: $elv-color-text-dark;
       font-size: 18px;
+      margin-bottom: $elv-spacing-xs;
     }
 
     .description {
       font-size: 14px;
-      height: 2.5em;
-      margin-bottom: $spacing-xs;
+      height: 50px;
+      margin-bottom: $elv-spacing-xs;
       max-height: 80px;
       overflow: hidden;
     }
 
     .title,
     .status {
-      @include ellipsis;
+      @include elv-ellipsis;
     }
 
     .title,
@@ -95,7 +215,10 @@
   // Table view
 
   table {
+    border-collapse: collapse;
     max-width: 100%;
+    table-layout: fixed;
+    width: 100%;
 
     * {
       border: 0;
@@ -104,22 +227,20 @@
 
   thead {
     tr {
-      height: 30px;
-
       th {
         margin: 0;
         padding: 0;
 
         &.icon-header {
-          width: 95px;
+          width: $table-listing-width;
         }
 
         &.title-header {
-          width: 30%;
+          width: 35%;
         }
 
         &.status-header {
-          width: 160px;
+          width: 150px;
         }
       }
     }
@@ -127,47 +248,49 @@
 
   tbody {
     tr {
-      height: 85px;
+      height: calc(#{$table-listing-height} + #{$elv-spacing-xs});
+      max-height: calc(#{$table-listing-height} + #{$elv-spacing-xs});
 
-      &:hover {
-        background: $color-lightergray;
-        cursor: pointer;
+      &:hover,
+      &:focus {
+        background-color: $elv-color-lightestgray;
       }
 
       td {
-        @include ellipsis;
-        color: $color-text-light;
-
+        color: $elv-color-text-light;
         margin: 0;
-        max-height: 100px;
-        padding: 0 0 0 $spacing-s;
+        overflow: hidden;
+        padding: $elv-spacing-xs 0 $elv-spacing-xs $elv-spacing-s;
         word-wrap: break-word;
 
         &.icon-cell {
-          padding: $spacing-xs $spacing-xxs;
+          padding: 0;
         }
 
         &.title-cell {
-          color: $color-text-black;
+          color: $elv-color-text-dark;
           font-size: 18px;
-        }
-
-        &.description-cell {
-          .description-text {
-            height: auto;
-            max-height: 75px;
-            overflow-x: visible;
-            white-space: normal;
-          }
         }
 
         &.status-cell {
           font-size: 14px;
         }
 
+        .cropped-text {
+          height: auto;
+          max-height: 70px;
+          overflow-x: visible;
+          overflow-y: hidden;
+          white-space: normal;
+        }
+
         .icon-container {
-          $image-size: 80px;
-          @include cropped-image($image-size, $image-size, 0%, $image-size, $image-size);
+          $image-height: calc(#{$table-listing-width} * #{$aspect-ratio});
+          @include elv-cropped-image($table-listing-width, $image-height, 0, $table-listing-width, $image-height);
+
+          i {
+            padding: 0 $elv-spacing-s !important; // sass-lint:disable-line no-important
+          }
         }
 
         a {
@@ -176,6 +299,48 @@
           width: 100%;
         }
       }
+    }
+  }
+
+  &.compact {
+    thead {
+      th {
+        &.title-header {
+          width: 45%;
+        }
+      }
+    }
+
+    tbody {
+      tr {
+        height: 70px;
+      }
+
+      td {
+        &.title-cell {
+          font-size: 16px;
+        }
+
+        &.description-cell {
+          font-size: 14px;
+        }
+      }
+    }
+  }
+
+  .listing-link {
+    cursor: pointer;
+  }
+
+  .listing-action-icon {
+    align-items: center;
+    display: flex;
+    justify-content: flex-end;
+    padding-right: $elv-spacing-s;
+
+    button {
+      height: 25px;
+      width: 25px;
     }
   }
 }

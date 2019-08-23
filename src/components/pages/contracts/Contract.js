@@ -1,34 +1,22 @@
 import React from "react";
+import PropTypes from "prop-types";
+import UrlJoin from "url-join";
 import Path from "path";
-
-import RequestPage from "../RequestPage";
 import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
 import Redirect from "react-router/es/Redirect";
 import {PageHeader} from "../../components/Page";
-import Action from "../../components/Action";
+import {Action, Confirm, LoadingElement} from "elv-components-js";
 
 class Contract extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      contractName: this.props.match.params.contractName,
       visibleMethods: {}
     };
 
     this.PageContent = this.PageContent.bind(this);
-    this.RequestComplete = this.RequestComplete.bind(this);
     this.DeleteContract = this.DeleteContract.bind(this);
-  }
-
-  componentDidMount() {
-    this.setState({
-      requestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.ListContracts();
-        }
-      })
-    });
   }
 
   ToggleElement(methodName) {
@@ -46,35 +34,17 @@ class Contract extends React.Component {
     const toggleButtonText = (visible ? "Hide " : "Show ") + label;
 
     return (
-      <div className="actions-container">
-        <button className={"action action-compact action-wide " + (visible ? "" : "secondary")} onClick={toggleVisible}>{ toggleButtonText }</button>
-      </div>
+      <Action className={visible ? "" : "secondary"} onClick={toggleVisible}>
+        { toggleButtonText }
+      </Action>
     );
   }
 
-  RequestComplete() {
-    if(this.state.deleting && this.props.requests[this.state.requestId].completed) {
-      this.setState({
-        deleted: true
-      });
-    } else {
-      this.setState({
-        contract: this.props.contracts[this.state.contractName]
-      });
-    }
-  }
-
-  DeleteContract(contractName) {
-    if (confirm("Are you sure you want to remove this contract?")) {
-      this.setState({
-        requestId: this.props.WrapRequest({
-          todo: async () => {
-            await this.props.RemoveContract({name: contractName});
-          }
-        }),
-        deleting: true
-      });
-    }
+  async DeleteContract() {
+    await Confirm({
+      message: "Are you sure you want to remove this contract?",
+      onConfirm: async () => await this.props.methods.RemoveContract({name: this.props.contractName})
+    });
   }
 
   ContractInfo(info) {
@@ -87,7 +57,10 @@ class Contract extends React.Component {
 
       return (
         <div className="indented" key={"contract-method-" + entry.name}>
-          <LabelledField label={entry.name} value={this.ToggleButton(entry.type.capitalize() + " Info", entry.name)} wideLabel={true} />
+          <LabelledField label={entry.name} wideLabel={true}>
+            { this.ToggleButton(entry.type.capitalize() + " Info", entry.name) }
+          </LabelledField>
+
           { methodDisplayInfo }
         </div>
       );
@@ -95,15 +68,16 @@ class Contract extends React.Component {
   }
 
   PageContent() {
-    if(this.state.deleted) {
+    if(this.props.methodStatus.RemoveContract.completed) {
       return <Redirect push to={Path.dirname(this.props.match.url)}/>;
     }
 
-    const description = <ClippedText className="object-description" text={this.state.contract.description} />;
-    const abiDisplayInfo = this.state.visibleMethods["__abi"] ? <pre>{JSON.stringify(this.state.contract.abi, null, 2)}</pre> : null;
-    const bytecodeDisplayInfo = this.state.visibleMethods["__bytecode"] ? <pre>{this.state.contract.bytecode}</pre> : null;
+    const description = <ClippedText className="object-description" text={this.props.contract.description} />;
+    const abiDisplayInfo = this.state.visibleMethods["__abi"] ? <pre>{JSON.stringify(this.props.contract.abi, null, 2)}</pre> : null;
+    const bytecodeDisplayInfo = this.state.visibleMethods["__bytecode"] ? <pre>{this.props.contract.bytecode}</pre> : null;
 
-    const contractElements = Object.values(this.state.contract.abi);
+    const abi = this.props.contract.abi || [];
+    const contractElements = Object.values(abi);
     const contractConstructor = contractElements.filter(element => element.type === "constructor");
     const contractEvents = contractElements.filter(element => element.type === "event");
     const contractMethods = contractElements.filter(element => element.type === "function");
@@ -113,20 +87,31 @@ class Contract extends React.Component {
     return (
       <div className="page-container contracts-page-container">
         <div className="actions-container">
-          <Action type="link" to={Path.dirname(this.props.match.url)}>Back</Action>
-          <Action type="link" to={Path.join(this.props.match.url, "edit")}>Edit Contract</Action>
-          <Action type="link" to={Path.join(this.props.match.url, "deploy")}>Deploy Contract</Action>
-          <Action className="delete-action" onClick={() => this.DeleteContract(this.state.contractName)}>Delete Contract</Action>
+          <Action type="link" to={"/contracts/saved"} className="secondary">Back</Action>
+          <Action type="link" to={UrlJoin(this.props.match.url, "edit")}>Edit Contract</Action>
+          <Action type="link" to={UrlJoin(this.props.match.url, "deploy")}>Deploy Contract</Action>
+          <Action className="danger" onClick={this.DeleteContract}>Delete Contract</Action>
         </div>
-        <PageHeader header={this.state.contractName} />
+        <PageHeader header={this.props.contractName} />
         <div className="page-content">
           <div className="label-box">
             <h3>Contract Info</h3>
-            <LabelledField label="Description" value={description} />
-            <LabelledField label="ABI" value={this.ToggleButton("Full ABI", "__abi")} />
+            <LabelledField label="Description">
+              { description }
+            </LabelledField>
+
+            <LabelledField label="ABI">
+              { this.ToggleButton("Full ABI", "__abi") }
+            </LabelledField>
+
             { abiDisplayInfo }
-            <LabelledField label="Bytecode" value={this.ToggleButton("Bytecode", "__bytecode")} />
+
+            <LabelledField label="Bytecode">
+              { this.ToggleButton("Bytecode", "__bytecode") }
+            </LabelledField>
+
             { bytecodeDisplayInfo }
+
             <h3>Contract Constructor</h3>
             { this.ContractInfo(contractConstructor) }
             <h3>Constant Methods</h3>
@@ -143,14 +128,21 @@ class Contract extends React.Component {
 
   render() {
     return (
-      <RequestPage
-        requestId={this.state.requestId}
-        requests={this.props.requests}
-        pageContent={this.PageContent}
-        OnRequestComplete={this.RequestComplete}
+      <LoadingElement
+        fullPage={true}
+        loading={this.props.methodStatus.RemoveContract.loading}
+        render={this.PageContent}
       />
     );
   }
 }
+
+Contract.propTypes = {
+  contract: PropTypes.object.isRequired,
+  contractName: PropTypes.string.isRequired,
+  methods: PropTypes.shape({
+    RemoveContract: PropTypes.func.isRequired
+  })
+};
 
 export default Contract;

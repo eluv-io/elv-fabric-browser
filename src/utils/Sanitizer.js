@@ -15,9 +15,9 @@ class Sanitizer {
 
   static s(value, type){
     switch(type.toLowerCase()){
-      case("integer"):
+      case ("integer"):
         return value.toString().replace(/[^0-9]/gi,"");
-      case("float"):
+      case ("float"):
         return (
           this.enforce_first("-",
             this.enforce_one("-",
@@ -27,7 +27,7 @@ class Sanitizer {
             )
           )
         );
-      case("boolean"):
+      case ("boolean"):
         return value === true || value === "true";
       default:
         return value;

@@ -20,10 +20,26 @@
     "no-case-declarations": "off",
     "no-undef": "off",
     "no-useless-escape": "off",
+    "template-curly-spacing" : "off",
+    "keyword-spacing": [
+      "warn", {
+        "before": true,
+        "after": true,
+        "overrides": {
+          "if": { "after": false },
+          "for": { "after": false },
+          "switch": { "after": false },
+          "while": { "after": false },
+          "catch": { "after": false }
+        }
+      }],
     "indent": [
       "error",
       2,
-      { "SwitchCase": 1 }
+      {
+        "SwitchCase": 1,
+        "ignoredNodes": ["TemplateLiteral"]
+      }
     ],
     "linebreak-style": [
       "error",

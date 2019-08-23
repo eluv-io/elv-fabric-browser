@@ -11,7 +11,7 @@ import PropTypes from "prop-types";
 import URI from "urijs";
 
 // Ensure error objects can be properly serialized in messages
-if (!("toJSON" in Error.prototype)) {
+if(!("toJSON" in Error.prototype)) {
   const excludedAttributes = [
     "columnNumber",
     "fileName",
@@ -97,6 +97,7 @@ class IFrameBase extends React.Component {
       <iframe
         ref={this.props.appRef}
         src={this.props.appUrl}
+        allow="encrypted-media *"
         sandbox={this.SandboxPermissions()}
         className={"app-frame " + (this.props.className || "")}
       />
@@ -179,7 +180,7 @@ class AppFrame extends React.Component {
       });
     } else {
 
-      switch (event.data.operation) {
+      switch(event.data.operation) {
         case "Complete":
           if(this.props.onComplete) { await this.props.onComplete(); }
           break;

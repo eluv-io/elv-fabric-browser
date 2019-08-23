@@ -1,50 +1,109 @@
 .upload-widget {
-  padding: $spacing-s;
+  padding: $elv-spacing-s;
 }
 
-.browse-widget-files,
 .file-browser {
-  border: 1px solid $color-lightgray;
-  margin: $spacing-s 0;
-  max-height: 450px;
+  border: 1px solid $elv-color-lightgray;
+  margin: $elv-spacing-s 0;
+  max-height: 50vh;
   overflow-y: auto;
-  padding-top: $spacing-s 0;
   width: 100%;
 
+  i,
+  .download-button,
+  .copy-button {
+    height: 20px;
+    margin: 0;
+    padding: 0;
+    width: 20px;
+  }
+
+  button {
+    &:hover {
+      svg {
+        color: $elv-color-mediumgray;
+      }
+    }
+  }
+
+  table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  thead {
+    height: 45px;
+  }
+
   th {
-    &.type-header,
+    text-align: left;
+
+    &.type-header {
+      width: 40px;
+
+      button {
+        align-items: center;
+        display: flex;
+        height: 100%;
+        justify-content: center;
+        width: 100%;
+
+        i {
+          width: 20px;
+        }
+      }
+    }
+
     &.actions-header {
-      width: 20px;
+      padding: $elv-spacing-xxs 0;
+      text-align: center;
+      width: 130px;
     }
 
     &.size-header {
       width: 5em;
     }
-
-    .icon {
-      height: 20px;
-      margin: 0;
-      padding: 0;
-      width: 20px;
-    }
   }
 
   tr {
+    border-top: 1px solid $elv-color-lightergray;
+    height: 35px;
+
     &.directory {
       cursor: pointer;
+
+      &:hover {
+        background-color: $elv-color-lightestgray;
+      }
     }
 
     td {
+      @include elv-ellipsis;
+      height: 35px;
+
+      &.item-icon {
+        align-items: center;
+        display: flex;
+        justify-content: center;
+      }
+
+      &.info-cell {
+        text-align: right;
+      }
+
+      &.actions-cell {
+        text-align: center;
+
+        button {
+          margin-right: $elv-spacing-xs;
+        }
+      }
+
       .item-path {
         max-width: 150px;
       }
     }
-
-    .icon {
-      height: 20px;
-      margin: 0;
-      padding: 0;
-      width: 20px;
-    }
   }
 }
+

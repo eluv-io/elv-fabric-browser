@@ -1,13 +1,12 @@
-!.keep
-
 .idea/
 
 **.DS_STORE
 
 node_modules/
 
-build/*
+/configuration.js
+
+deploy.sh
 
 scratch/
-
-configuration.json
+!.keep

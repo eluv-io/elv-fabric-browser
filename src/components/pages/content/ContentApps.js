@@ -1,58 +1,18 @@
 import React from "react";
+import PropTypes from "prop-types";
+import UrlJoin from "url-join";
 import Path from "path";
-import RequestPage from "../RequestPage";
 import {PageHeader} from "../../components/Page";
 import {LabelledField} from "../../components/LabelledField";
-import RequestButton from "../../components/RequestButton";
-import Action from "../../components/Action";
+import {Action, Confirm, LoadingElement} from "elv-components-js";
 
 class ContentApps extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      libraryId: this.props.libraryId || this.props.match.params.libraryId,
-      objectId: this.props.match.params.objectId
-    };
-
-    this.RequestComplete = this.RequestComplete.bind(this);
-    this.PageContent = this.PageContent.bind(this);
-    this.Reload = this.Reload.bind(this);
-    this.DeleteApp = this.DeleteApp.bind(this);
-  }
-
-  AppRoles() {
-    return ["display", "manage", "review"];
-  }
-
-  Reload() {
-    this.setState({
-      requestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.GetContentLibrary({
-            libraryId: this.state.libraryId
-          });
-          await this.props.GetContentObject({
-            libraryId: this.state.libraryId,
-            objectId: this.state.objectId
-          });
-        }
-      })
-    });
-  }
-
-  componentDidMount() {
-    this.Reload();
-  }
-
-  RequestComplete() {
-    const library = this.props.libraries[this.state.libraryId];
-    const object = this.props.objects[this.state.objectId];
-    const metadata = object.meta;
-
     let apps = {};
     this.AppRoles().map(role => {
-      const appFile = metadata[`eluv.${role}App`];
+      const appFile = props.object.meta[`eluv.${role}App`];
       if(appFile) {
         apps[role] = {
           filename: appFile
@@ -60,29 +20,31 @@ class ContentApps extends React.Component {
       }
     });
 
-    this.setState({
-      library,
-      object,
+    this.state = {
       apps
-    });
+    };
+
+    this.PageContent = this.PageContent.bind(this);
+    this.DeleteApp = this.DeleteApp.bind(this);
   }
 
-  DeleteApp(role) {
-    if(confirm(`Are you sure you want to remove the ${role} app?`)) {
-      this.setState({
-        deleteRequestId: this.props.WrapRequest({
-          todo: async () => {
-            await this.props.RemoveApp({
-              libraryId: this.state.libraryId,
-              objectId: this.state.objectId,
-              role
-            });
+  AppRoles() {
+    return ["display", "manage", "review"];
+  }
 
-            this.Reload();
-          }
-        })
-      });
-    }
+  async DeleteApp(role) {
+    await Confirm({
+      message: `Are you sure you want to remove the ${role} app?`,
+      onConfirm: async () => {
+        await this.props.methods.RemoveApp({
+          libraryId: this.props.libraryId,
+          objectId: this.props.objectId,
+          role
+        });
+
+        await this.props.Load();
+      }
+    });
   }
 
   AppEntry(role) {
@@ -92,26 +54,32 @@ class ContentApps extends React.Component {
     let action;
     if(app) {
       // App set for this role - remove button
-      action = <RequestButton
-        requests={this.props.requests}
-        requestId={this.state.deleteRequestId}
-        onClick={() => this.DeleteApp(role)}
-        className="action delete-action action-compact action-wide"
-        text={`Remove ${role.capitalize()} App`}
-      />;
-      info = <LabelledField label="Name" value={app.filename} />;
+      action = (
+        <Action onClick={() => this.DeleteApp(role)} className="action danger action-compact action-wide">
+          {`Remove ${role.capitalize()} App`}
+        </Action>
+      );
+      info = (
+        <LabelledField label="Name">
+          { app.filename }
+        </LabelledField>
+      );
     } else {
       // App not set for this role - add button
       action = (
-        <Action type="link" to={Path.join(this.props.match.url, role, "add")} className="action-compact action-wide">
+        <Action type="link" to={UrlJoin(this.props.match.url, role, "add")} className="action-compact action-wide">
           {`Add ${role.capitalize()} App`}
         </Action>
       );
-      const typeMeta = (this.state.object.typeInfo && this.state.object.typeInfo.meta) || {};
+      const typeMeta = (this.props.object.typeInfo && this.props.object.typeInfo.meta) || {};
       const typeApp = typeMeta[`eluv.${role}App`];
       if(typeApp) {
         const typeName = typeMeta.name || "content type";
-        info = <LabelledField label="Name" value={`${typeApp} (${typeName})`} />;
+        info = (
+          <LabelledField label="Name">
+            { `${typeApp} (${typeName})` }
+          </LabelledField>
+        );
       }
     }
 
@@ -122,22 +90,18 @@ class ContentApps extends React.Component {
         </h3>
         <div className="indented">
           { info }
-          <LabelledField
-            value={
-              <div className="actions-container">
-                { action }
-              </div>
-            }
-          />
+          <LabelledField>
+            { action }
+          </LabelledField>
         </div>
       </div>
     );
   }
 
   PageContent() {
-    const header = this.state.object.isContentLibraryObject ?
-      this.state.library.name + " > Library Object" :
-      this.state.library.name + " > " + this.state.object.name;
+    const header = this.props.object.isContentLibraryObject ?
+      this.props.library.name + " > Library Object" :
+      this.props.library.name + " > " + this.props.object.name;
 
     return (
       <div className="page-container contracts-page-container">
@@ -156,14 +120,23 @@ class ContentApps extends React.Component {
 
   render() {
     return (
-      <RequestPage
-        pageContent={this.PageContent}
-        requestId={this.state.requestId}
-        requests={this.props.requests}
-        OnRequestComplete={this.RequestComplete}
+      <LoadingElement
+        fullPage={true}
+        render={this.PageContent}
+        loading={this.props.methodStatus.RemoveApp.loading}
       />
     );
   }
 }
+
+ContentApps.propTypes = {
+  libraryId: PropTypes.string.isRequired,
+  library: PropTypes.object.isRequired,
+  objectId: PropTypes.string.isRequired,
+  object: PropTypes.object.isRequired,
+  methods: PropTypes.shape({
+    RemoveApp: PropTypes.func.isRequired
+  })
+};
 
 export default ContentApps;

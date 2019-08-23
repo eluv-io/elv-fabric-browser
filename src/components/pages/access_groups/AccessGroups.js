@@ -1,9 +1,10 @@
 import React from "react";
-import Path from "path";
+import PropTypes from "prop-types";
+import UrlJoin from "url-join";
 import AccessGroupIcon from "../../../static/icons/groups.svg";
 import {PageHeader} from "../../components/Page";
-import Action from "../../components/Action";
-import {ListingContainer} from "../../../containers/pages/Components";
+import {Action} from "elv-components-js";
+import Listing from "../../components/Listing";
 
 class AccessGroups extends React.Component {
   constructor(props) {
@@ -11,36 +12,35 @@ class AccessGroups extends React.Component {
     this.state = {};
 
     this.AccessGroups = this.AccessGroups.bind(this);
-    this.LoadAccessGroups = this.LoadAccessGroups.bind(this);
-  }
-
-  async LoadAccessGroups() {
-    await this.props.ListAccessGroups();
   }
 
   AccessGroups() {
-    return Object.values(this.props.accessGroups).map(accessGroup => {
-      let members = Object.keys(accessGroup.members).length;
-      members = members === 1 ? members + " member" : members + " members";
+    if(!this.props.accessGroups) { return []; }
 
+    return Object.values(this.props.accessGroups).map(accessGroup => {
       return {
         id: accessGroup.address,
         title: accessGroup.name,
-        description: accessGroup.description,
-        status: members,
+        description: accessGroup.name,
+        status: "",
         icon: AccessGroupIcon,
-        link: Path.join(this.props.match.url, accessGroup.address)
+        link: UrlJoin(this.props.match.url, accessGroup.address)
       };
     });
   }
 
   AccessGroupsListing() {
     return (
-      <ListingContainer
+      <Listing
+        className="compact"
         pageId="AccessGroups"
-        LoadContent={this.LoadAccessGroups}
+        paginate={true}
+        count={this.props.count}
+        loadingStatus={this.props.methodStatus.ListAccessGroups}
+        LoadContent={({params}) => this.props.methods.ListAccessGroups(params)}
         RenderContent={this.AccessGroups}
         noIcon={true}
+        noStatus={true}
       />
     );
   }
@@ -57,5 +57,14 @@ class AccessGroups extends React.Component {
     );
   }
 }
+
+AccessGroups.propTypes = {
+  accessGroups: PropTypes.object.isRequired,
+  count: PropTypes.number.isRequired,
+  methods: PropTypes.shape({
+    ListAccessGroups: PropTypes.func.isRequired
+  })
+};
+
 
 export default AccessGroups;

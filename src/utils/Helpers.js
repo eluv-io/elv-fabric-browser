@@ -1,5 +1,7 @@
+import React from "react";
 import Utils from "elv-client-js/src/Utils";
 import BigNumber from "bignumber.js";
+import {Balance} from "elv-components-js";
 
 // Traverse through a hashmap without throwing errors on undefined keys
 // If any keys undefined, returns undefined
@@ -32,10 +34,10 @@ export const EqualAddress = (address1, address2) => {
 };
 
 export const AccessChargeDisplay = (accessCharge) => {
-  if(accessCharge === 0) {
+  if(accessCharge === 0 || accessCharge === "0") {
     return "Free";
   } else {
-    return `φ${accessCharge}`;
+    return <Balance balance={accessCharge} />;
   }
 };
 
@@ -61,7 +63,7 @@ export const Bytes32ToUtf8 = (bytes32String) => {
   while(i < bytes.length) {
     let c = bytes[i++];
     // 0xxx xxxx
-    if (c >> 7 === 0) {
+    if(c >> 7 === 0) {
       result += String.fromCharCode(c);
       continue;
     }
@@ -69,34 +71,34 @@ export const Bytes32ToUtf8 = (bytes32String) => {
     let extraLength = null;
     let overlongMask = null;
     // 110x xxxx 10xx xxxx
-    if ((c & 0xe0) === 0xc0) {
+    if((c & 0xe0) === 0xc0) {
       extraLength = 1;
       overlongMask = 0x7f;
       // 1110 xxxx 10xx xxxx 10xx xxxx
-    } else if ((c & 0xf0) === 0xe0) {
+    } else if((c & 0xf0) === 0xe0) {
       extraLength = 2;
       overlongMask = 0x7ff;
       // 1111 0xxx 10xx xxxx 10xx xxxx 10xx xxxx
-    } else if ((c & 0xf8) === 0xf0) {
+    } else if((c & 0xf8) === 0xf0) {
       extraLength = 3;
       overlongMask = 0xffff;
     } else {
-      if ((c & 0xc0) === 0x80) {
+      if((c & 0xc0) === 0x80) {
         throw new Error("invalid utf8 byte sequence; unexpected continuation byte");
       }
       throw new Error("invalid utf8 byte sequence; invalid prefix");
     }
 
-    if (i + extraLength > bytes.length) {
+    if(i + extraLength > bytes.length) {
       throw new Error("invalid utf8 byte sequence; too short");
     }
 
     // Remove the length prefix from the char
     let res = c & ((1 << (8 - extraLength - 1)) - 1);
-    for (let j = 0; j < extraLength; j++) {
+    for(let j = 0; j < extraLength; j++) {
       let nextChar = bytes[i];
       // Invalid continuation byte
-      if ((nextChar & 0xc0) !== 0x80) {
+      if((nextChar & 0xc0) !== 0x80) {
         res = null;
         break;
       }
@@ -104,26 +106,26 @@ export const Bytes32ToUtf8 = (bytes32String) => {
       i++;
     }
 
-    if (res === null) {
+    if(res === null) {
       throw new Error("invalid utf8 byte sequence; invalid continuation byte");
     }
 
     // Check for overlong seuences (more bytes than needed)
-    if (res <= overlongMask) {
+    if(res <= overlongMask) {
       throw new Error("invalid utf8 byte sequence; overlong");
     }
 
     // Maximum code point
-    if (res > 0x10ffff) {
+    if(res > 0x10ffff) {
       throw new Error("invalid utf8 byte sequence; out-of-range");
     }
 
     // Reserved for UTF-16 surrogate halves
-    if (res >= 0xd800 && res <= 0xdfff) {
+    if(res >= 0xd800 && res <= 0xdfff) {
       throw new Error("invalid utf8 byte sequence; utf-16 surrogate");
     }
 
-    if (res <= 0xffff) {
+    if(res <= 0xffff) {
       result += String.fromCharCode(res);
       continue;
     }

@@ -1,8 +1,7 @@
 import React from "react";
-import "browser-solc";
-import RequestForm from "../../forms/RequestForm";
-import BrowseWidget from "../../components/BrowseWidget";
-import RadioSelect from "../../components/RadioSelect";
+import PropTypes from "prop-types";
+import {Action, BrowseWidget, Form, RadioSelect} from "elv-components-js";
+import UrlJoin from "url-join";
 import Path from "path";
 import {JsonTextArea} from "../../../utils/Input";
 
@@ -12,7 +11,6 @@ class CompileContractForm extends React.Component {
 
     this.state = {
       compileFromSource: true,
-      submitRequestId: undefined,
       files: [],
       name: "",
       description: "",
@@ -37,27 +35,15 @@ class CompileContractForm extends React.Component {
     });
   }
 
-  HandleSubmit() {
+  async HandleSubmit() {
     if(this.state.compileFromSource) {
-      this.setState({
-        submitRequestId: this.props.WrapRequest({
-          todo: async () => {
-            await this.props.CompileContracts(this.state.files);
-          }
-        })
-      });
+      await this.props.methods.CompileContracts(this.state.files);
     } else {
-      this.setState({
-        submitRequestId: this.props.WrapRequest({
-          todo: async () => {
-            await this.props.SaveContract({
-              name: this.state.name,
-              description: this.state.description,
-              abi: this.state.abi,
-              bytecode: this.state.bytecode
-            });
-          }
-        })
+      await this.props.methods.Submit({
+        name: this.state.name,
+        description: this.state.description,
+        abi: this.state.abi,
+        bytecode: this.state.bytecode,
       });
     }
   }
@@ -76,28 +62,24 @@ class CompileContractForm extends React.Component {
     if(this.state.compileFromSource) { return null; }
 
     return (
-      <div className="contracts-form-data">
-        <div className="labelled-input">
-          <label className="label" htmlFor="name">Name</label>
-          <input name="name" required={true} value={this.state.name} onChange={this.HandleInputChange} />
-        </div>
-        <div className="labelled-input">
-          <label className="label" htmlFor="description">Description</label>
-          <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
-        </div>
-        <div className="labelled-input">
-          <label className="label" htmlFor="abi">ABI</label>
-          <JsonTextArea
-            name="abi"
-            value={this.state.abi}
-            onChange={this.HandleInputChange}
-            UpdateValue={formattedAbi => this.setState({abi: formattedAbi})}
-          />
-        </div>
-        <div className="labelled-input">
-          <label className="label" htmlFor="bytecode">Bytecode</label>
-          <textarea name="bytecode" value={this.state.bytecode} onChange={this.HandleInputChange} />
-        </div>
+      <div className="form-content">
+        <label htmlFor="name">Name</label>
+        <input name="name" required={true} value={this.state.name} onChange={this.HandleInputChange} />
+
+        <label className="align-top" htmlFor="description">Description</label>
+        <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
+
+        <label className="align-top" htmlFor="abi">ABI</label>
+        <JsonTextArea
+          name="abi"
+          value={this.state.abi}
+          required={true}
+          onChange={this.HandleInputChange}
+          UpdateValue={formattedAbi => this.setState({abi: formattedAbi})}
+        />
+
+        <label className="align-top" htmlFor="bytecode">Bytecode</label>
+        <textarea name="bytecode" required={true} value={this.state.bytecode} onChange={this.HandleInputChange} />
       </div>
     );
   }
@@ -106,61 +88,69 @@ class CompileContractForm extends React.Component {
     if(!this.state.compileFromSource) { return null; }
 
     return (
-      <div>
+      <div className="form-content">
+        <label htmlFor="contractFiles" className="align-top">Contract Files</label>
         <BrowseWidget
-          label="Contract File(s)"
+          name="contractFiles"
           onChange={this.HandleFileSelect}
           required={true}
           multiple={true}
           accept=".sol"
         />
-        { this.Errors() }
-      </div>
-    );
-  }
-
-  ContractForm() {
-    return (
-      <div className="contracts-form-data">
-        <RadioSelect
-          name="compileFromSource"
-          label="Source"
-          options={[
-            ["Solidity", true],
-            ["ABI and Bytecode", false]
-          ]}
-          inline={true}
-          selected={this.state.compileFromSource}
-          onChange={this.HandleInputChange}
-        />
-        { this.FileSelection() }
-        { this.AbiForm() }
       </div>
     );
   }
 
   render() {
-    let redirectPath;
-    if(this.state.compileFromSource) {
-      // If compiling from source, must go to "save" form to finish
-      redirectPath = Path.join(Path.dirname(this.props.match.url), "save");
-    } else {
-      // Otherwise, redirect to newly saved contract
-      redirectPath = Path.join(Path.dirname(this.props.match.url), this.state.name);
-    }
+    const status = this.state.compileFromSource ?
+      this.props.methodStatus.CompileContracts : this.props.methodStatus.Submit;
+
+    const backPath = Path.dirname(this.props.match.url);
+    const redirectPath = this.state.compileFromSource ? UrlJoin(backPath, "save") : UrlJoin(backPath, "saved");
 
     return (
-      <RequestForm
-        requests={this.props.requests}
-        requestId={this.state.submitRequestId}
-        legend={"Compile contracts"}
-        formContent={this.ContractForm()}
-        redirectPath={redirectPath}
-        cancelPath="/contracts"
-        OnSubmit={this.HandleSubmit}
-      />
+      <div>
+        <div className="actions-container manage-actions">
+          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+        </div>
+        <Form
+          legend={"Compile contracts"}
+          redirectPath={redirectPath}
+          cancelPath={backPath}
+          status={status}
+          OnSubmit={this.HandleSubmit}
+        >
+          <div>
+            <div className="form-content">
+              <label htmlFor="source">Source</label>
+              <RadioSelect
+                name="compileFromSource"
+                options={[
+                  ["Solidity", true],
+                  ["ABI and Bytecode", false]
+                ]}
+                inline={true}
+                selected={this.state.compileFromSource}
+                onChange={this.HandleInputChange}
+              />
+            </div>
+
+            { this.FileSelection() }
+            { this.AbiForm() }
+            { this.Errors() }
+          </div>
+        </Form>
+      </div>
     );
   }
 }
+
+CompileContractForm.propTypes = {
+  errors: PropTypes.array,
+  methods: PropTypes.shape({
+    CompileContracts: PropTypes.func.isRequired,
+    Submit: PropTypes.func.isRequired
+  })
+};
 
 export default CompileContractForm;

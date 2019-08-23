@@ -1,28 +1,11 @@
 import React from "react";
 import Path from "path";
 import PropTypes from "prop-types";
-import DeployedContractWrapper from "./DeployedContractWrapper";
 import {PageHeader} from "../../../components/Page";
-import EventLogs from "../../../components/EventLogs";
-import Action from "../../../components/Action";
+import Events from "../../../components/Events";
+import {Action} from "elv-components-js";
 
 class DeployedContractEvents extends React.Component {
-  ContractEvents() {
-    const contractState = this.props.deployedContracts[this.props.contract.address];
-
-    if(!contractState) { return null; }
-
-    return <EventLogs
-      WrapRequest={this.props.WrapRequest}
-      requests={this.props.requests}
-      events={contractState.events || []}
-      RequestMethod={this.props.GetContractEvents}
-      ClearMethod={this.props.ClearContractEvents}
-      contractAddress={this.props.contract.address}
-      abi={this.props.contract.abi}
-    />;
-  }
-
   render() {
     return (
       <div className="page-container contracts-page-container">
@@ -33,7 +16,15 @@ class DeployedContractEvents extends React.Component {
         <div className="page-content">
           <div className="label-box">
             <div className="contract-events">
-              { this.ContractEvents() }
+              <Events
+                events={this.props.deployedContract.events || []}
+                GetBlockNumber={this.props.GetBlockNumber}
+                RequestMethod={this.props.methods.GetContractEvents}
+                ClearMethod={this.props.ClearContractEvents}
+                loading={this.props.methodStatus.GetContractEvents.loading}
+                contractAddress={this.props.contract.address}
+                abi={this.props.contract.abi}
+              />
             </div>
           </div>
         </div>
@@ -43,7 +34,13 @@ class DeployedContractEvents extends React.Component {
 }
 
 DeployedContractEvents.propTypes = {
-  contract: PropTypes.object.isRequired
+  contract: PropTypes.object.isRequired,
+  deployedContract: PropTypes.object.isRequired,
+  GetBlockNumber: PropTypes.func.isRequired,
+  ClearContractEvents: PropTypes.func.isRequired,
+  methods: PropTypes.shape({
+    GetContractEvents: PropTypes.func.isRequired
+  })
 };
 
-export default DeployedContractWrapper(DeployedContractEvents);
+export default DeployedContractEvents;

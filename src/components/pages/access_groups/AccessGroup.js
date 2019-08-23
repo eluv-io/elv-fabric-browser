@@ -1,90 +1,103 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
+import UrlJoin from "url-join";
 import Path from "path";
-
-import RequestPage from "../RequestPage";
 import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
 import Redirect from "react-router/es/Redirect";
-import {EqualAddress} from "../../../utils/Helpers";
 import {PageHeader} from "../../components/Page";
-import Action from "../../components/Action";
-import {ListingContainer} from "../../../containers/pages/Components";
+import {Action, Confirm, IconButton, LoadingElement, Tabs} from "elv-components-js";
+import Listing from "../../components/Listing";
+import RemoveIcon from "../../../static/icons/close.svg";
 
 class AccessGroup extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      contractAddress: this.props.match.params.contractAddress,
-      visibleElements: {}
+      visibleElements: {},
+      view: "members"
     };
 
     this.PageContent = this.PageContent.bind(this);
-    this.RequestComplete = this.RequestComplete.bind(this);
     this.DeleteAccessGroup = this.DeleteAccessGroup.bind(this);
-    this.LoadAccessGroupMembers = this.LoadAccessGroupMembers.bind(this);
     this.AccessGroupMembers = this.AccessGroupMembers.bind(this);
+    this.RemoveAccessGroupMember = this.RemoveAccessGroupMember.bind(this);
   }
 
-  componentDidMount() {
-    this.setState({
-      requestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.LoadAccessGroupMembers();
-        }
-      })
+  async DeleteAccessGroup() {
+    await Confirm({
+      message: "Are you sure you want to delete this access group?",
+      onConfirm: async () => await this.props.methods.RemoveAccessGroup({address: this.props.contractAddress})
     });
   }
 
-  async LoadAccessGroupMembers() {
-    await this.props.SetCurrentAccount();
-    await this.props.ListAccessGroups();
-  }
+  async RemoveAccessGroupMember(memberAddress) {
+    const manager = this.state.view === "managers";
 
-  RequestComplete() {
-    if(this.state.deleting && this.props.requests[this.state.requestId].completed) {
-      this.setState({
-        deleted: true
-      });
-    } else {
-      this.setState({
-        accessGroup: this.props.accessGroups[this.state.contractAddress]
-      });
-    }
-  }
+    await Confirm({
+      message: `Are you sure you want to remove this ${manager ? "manager" : "member"} from the group?`,
+      onConfirm: async () => await this.props.methods.RemoveAccessGroupMember({
+        contractAddress: this.props.contractAddress,
+        memberAddress,
+        manager
+      })
+    });
 
-  DeleteAccessGroup() {
-    if (confirm("Are you sure you want to delete this access group?")) {
-      const deleteRequestId = this.props.WrapRequest({
-        todo: async () => {
-          await this.props.RemoveAccessGroup({address: this.state.contractAddress});
-        }
-      });
-
-      this.setState({
-        requestId: deleteRequestId,
-        deleting: true
-      });
+    if(this.state.listingRef) {
+      this.state.listingRef.Load();
     }
   }
 
   AccessGroupMembers() {
-    return Object.values(this.state.accessGroup.members).map(member => {
+    if(!this.props.accessGroupMembers) { return []; }
+
+    const members = Object.values(this.props.accessGroupMembers).map(member => {
       return {
         id: member.address,
+        sortKey: member.name || "zz",
+        key: `${this.state.view}-${member.address}`,
         title: member.name,
         description: member.address,
-        status: member.manager ? "Manager" : "Member",
-        link: "/"
+        status: (
+          <div className="listing-action-icon">
+            <IconButton
+              icon={RemoveIcon}
+              label={`Remove ${this.state.view === "managers" ? "Manager" : "Member"}`}
+              onClick={async () => await this.RemoveAccessGroupMember(member.address)}
+              hidden={!(this.props.accessGroup.isManager || this.props.accessGroup.isOwner)}
+            >
+              Remove
+            </IconButton>
+          </div>
+        )
       };
     });
+
+    return members.sort((a, b) => a.sortKey > b.sortKey ? 1 : -1);
   }
 
   AccessGroupMembersListing() {
     return (
-      <ListingContainer
+      <Listing
+        ref={ref => {
+          if(!this.state.listingRef) {
+            this.setState({listingRef: ref});
+          }
+        }}
+        key={`${this.state.view}-listing`}
+        className="compact"
         pageId="AccessGroupMembers"
-        LoadContent={this.LoadAccessGroupMembers}
+        paginate={true}
+        count={this.props.accessGroupMembersCount}
+        loadingStatus={this.props.methodStatus.ListAccessGroupMembers}
+        LoadContent={({params}) => {
+          this.props.methods.ListAccessGroupMembers({
+            contractAddress: this.props.contractAddress,
+            showManagers: this.state.view === "managers",
+            params
+          });
+        }}
         RenderContent={this.AccessGroupMembers}
         noIcon={true}
       />
@@ -92,54 +105,52 @@ class AccessGroup extends React.Component {
   }
 
   Actions() {
-    const isManager = Object.values(this.state.accessGroup.members)
-      .some(member => EqualAddress(member.address, this.props.currentAccountAddress) && member.manager);
-
-    let editButton;
-    let deleteButton;
-    if(this.state.accessGroup.isOwner) {
-      editButton = <Action type="link" to={Path.join(this.props.match.url, "edit")}>Manage Group</Action>;
-      deleteButton = <Action className="delete-action" onClick={this.DeleteAccessGroup}>Delete</Action>;
-    }
-
-    let manageButton;
-    if(isManager || this.state.accessGroup.isOwner) {
-      manageButton = <Action type="link" to={Path.join(this.props.match.url, "members")}>Manage Members</Action>;
-    }
-
     return (
       <div className="actions-container">
         <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary" >Back</Action>
-        { editButton }
-        { manageButton }
-        { deleteButton }
+        <Action type="link" to={UrlJoin(this.props.match.url, "edit")} hidden={!this.props.accessGroup.isOwner}>Manage</Action>
+        <Action type="link" to={UrlJoin(this.props.match.url, "add-member")} hidden={!this.props.accessGroup.isManager}>Add Member</Action>
+        <Action className="danger" onClick={this.DeleteAccessGroup} hidden={true}>Delete</Action>
       </div>
     );
   }
 
   PageContent() {
-    if(this.state.deleted) {
+    if(this.props.methodStatus.RemoveAccessGroup.completed) {
       return <Redirect push to={Path.dirname(this.props.match.url)}/>;
     }
 
-    const description = <ClippedText className="object-description" text={this.state.accessGroup.description} />;
+    const description = <ClippedText className="object-description" text={this.props.accessGroup.description} />;
 
     return (
       <div className="page-container access-group-page-container">
         { this.Actions() }
-        <PageHeader header={this.state.accessGroup.name} />
+        <PageHeader header={this.props.accessGroup.name} />
         <div className="page-content">
           <div className="label-box">
-            <LabelledField label="Description" value={description} />
-            <LabelledField label="Owner" value={this.state.accessGroup.owner} />
-            <LabelledField label="Contract Address" value={
-              <Link className="inline-link" to={Path.join(this.props.match.url, "contract")}>
-                { this.state.accessGroup.address }
+            <LabelledField label="Description">
+              { description }
+            </LabelledField>
+
+            <LabelledField label="Owner">
+              { this.props.accessGroup.owner }
+            </LabelledField>
+
+            <LabelledField label="Contract Address">
+              <Link className="inline-link" to={UrlJoin(this.props.match.url, "contract")}>
+                { this.props.accessGroup.address }
               </Link>
-            } />
-            <h3>Members</h3>
-            { this.AccessGroupMembersListing() }
+            </LabelledField>
           </div>
+          <Tabs
+            options={[
+              ["Members", "members"],
+              ["Managers", "managers"]
+            ]}
+            selected={this.state.view}
+            onChange={(value) => this.setState({view: value})}
+          />
+          { this.AccessGroupMembersListing() }
         </div>
       </div>
     );
@@ -147,14 +158,22 @@ class AccessGroup extends React.Component {
 
   render() {
     return (
-      <RequestPage
-        pageContent={this.PageContent}
-        requestId={this.state.requestId}
-        requests={this.props.requests}
-        OnRequestComplete={this.RequestComplete}
+      <LoadingElement
+        fullPage={true}
+        loading={this.props.methodStatus.RemoveAccessGroup.loading}
+        render={this.PageContent}
       />
     );
   }
 }
+
+AccessGroup.propTypes = {
+  accessGroup: PropTypes.object.isRequired,
+  contractAddress: PropTypes.string.isRequired,
+  membersCount: PropTypes.number,
+  methods: PropTypes.shape({
+    RemoveAccessGroup: PropTypes.func.isRequired
+  })
+};
 
 export default AccessGroup;

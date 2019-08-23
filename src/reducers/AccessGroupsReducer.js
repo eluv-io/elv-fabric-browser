@@ -1,19 +1,30 @@
 import ActionTypes from "../actions/ActionTypes";
 
 const AccessGroupsReducer = (state = {}, action) => {
-  switch (action.type) {
-    case ActionTypes.accessGroups.list:
-      return {
-        ...state,
-        accessGroups: action.accessGroups
-      };
+  const newState = {
+    ...state,
+    accessGroups: state.accessGroups || {},
+    accessGroupMembers: state.accessGroupMembers || {},
+    count: state.count || {accessGroups: 0, accessGroupMembers: {}}
+  };
 
-    default:
-      return {
-        ...state,
-        accessGroups: state.accessGroups || {}
-      };
+  switch(action.type) {
+    case ActionTypes.accessGroups.list:
+      newState.accessGroups = action.accessGroups;
+      newState.count.accessGroups = action.count;
+      break;
+
+    case ActionTypes.accessGroups.get:
+      newState.accessGroups[action.contractAddress] = action.accessGroup;
+      break;
+
+    case ActionTypes.accessGroups.members.list:
+      newState.accessGroupMembers[action.contractAddress] = action.members;
+      newState.count.accessGroupMembers[action.contractAddress] = action.count;
+      break;
   }
+
+  return newState;
 };
 
 export default AccessGroupsReducer;

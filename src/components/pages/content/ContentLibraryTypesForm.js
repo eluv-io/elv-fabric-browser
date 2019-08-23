@@ -1,25 +1,21 @@
 import React from "react";
-import RequestForm from "../../forms/RequestForm";
-import RequestPage from "../RequestPage";
+import PropTypes from "prop-types";
 import Path from "path";
-import {IconButton} from "../../components/Icons";
+import {Action, Form, IconButton} from "elv-components-js";
 import DeleteIcon from "../../../static/icons/trash.svg";
-import Action from "../../components/Action";
 
 class ContentLibraryTypesForm extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      libraryId: this.props.libraryId || this.props.match.params.libraryId,
-      name: "",
-      description: "",
-      submitRequestId: undefined,
-      loadRequestId: undefined,
+      libraryTypes: {
+        ...props.library.types
+      },
+      selectedTypeIds: Object.values(props.library.types).map(type => type.id),
+      selectedTypeId: ""
     };
 
-    this.PageContent = this.PageContent.bind(this);
-    this.RequestComplete = this.RequestComplete.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleAddType = this.HandleAddType.bind(this);
     this.HandleRemoveType = this.HandleRemoveType.bind(this);
@@ -27,28 +23,7 @@ class ContentLibraryTypesForm extends React.Component {
   }
 
   componentDidMount() {
-    this.setState({
-      loadRequestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.GetContentLibrary({libraryId: this.state.libraryId});
-          await this.props.ListContentTypes({});
-        }
-      })
-    });
-  }
-
-  RequestComplete() {
-    const library = this.props.libraries[this.state.libraryId];
-    const contentTypes = Object.values(this.props.types);
-
-    this.setState({
-      contentTypes,
-      libraryTypes: {
-        ...library.types
-      },
-      selectedTypeIds: Object.values(library.types).map(type => type.id),
-      selectedTypeId: ""
-    }, this.SetSelectedType);
+    this.SetSelectedType();
   }
 
   SetSelectedType() {
@@ -76,21 +51,15 @@ class ContentLibraryTypesForm extends React.Component {
     }, this.SetSelectedType);
   }
 
-  HandleSubmit() {
-    this.setState({
-      submitRequestId: this.props.WrapRequest({
-        todo: async () => {
-          await this.props.SetLibraryContentTypes({
-            libraryId: this.state.libraryId,
-            typeIds: this.state.selectedTypeIds
-          });
-        }
-      })
+  async HandleSubmit() {
+    await this.props.methods.Submit({
+      libraryId: this.props.libraryId,
+      typeIds: this.state.selectedTypeIds
     });
   }
 
   AvailableTypes() {
-    return this.state.contentTypes
+    return Object.values(this.props.types)
       .filter(type => !this.state.selectedTypeIds.includes(type.id));
   }
 
@@ -104,27 +73,22 @@ class ContentLibraryTypesForm extends React.Component {
     const disabled = typeOptions.length === 0;
 
     return (
-      <div className="labelled-input">
-        <label htmlFor={"typeId"}>Content Types</label>
-        <div className="inline-input">
-          <select
-            name="selectedTypeId"
-            value={this.state.selectedTypeId}
-            onChange={this.HandleInputChange}
-            disabled={disabled}
-          >
-            { typeOptions }
-          </select>
-          <div className="actions-container compact">
-            <Action
-              className="action-compact"
-              onClick={this.HandleAddType}
-              disabled={disabled}
-            >
-              Add
-            </Action>
-          </div>
-        </div>
+      <div className="inline-inputs">
+        <select
+          name="selectedTypeId"
+          value={this.state.selectedTypeId}
+          onChange={this.HandleInputChange}
+          disabled={disabled}
+        >
+          { typeOptions }
+        </select>
+        <Action
+          className="action-compact"
+          onClick={this.HandleAddType}
+          disabled={disabled}
+        >
+          Add
+        </Action>
       </div>
     );
   }
@@ -132,68 +96,56 @@ class ContentLibraryTypesForm extends React.Component {
   SelectedTypes() {
     if(this.state.selectedTypeIds.length === 0) { return null; }
 
-    const selectedTypes = this.state.selectedTypeIds.map(typeId => {
-      const type = this.state.contentTypes.find(type => type.id === typeId);
+    return this.state.selectedTypeIds.map(typeId => {
+      const type = Object.values(this.props.types).find(type => type.id === typeId);
+
       return (
         <div className="list-item" key={"added-type-" + type.id}>
           <span>{type.meta.name || type.id}</span>
           <IconButton
-            src={DeleteIcon}
+            icon={DeleteIcon}
             onClick={() => this.HandleRemoveType(type.id)}
           />
         </div>
       );
     });
-
-    return (
-      <div className="labelled-input">
-        <label />
-        <div className="list bordered-list">
-          { selectedTypes }
-        </div>
-      </div>
-    );
-  }
-
-  FormContent() {
-    if(!this.state.libraryTypes) { return null; }
-
-    return (
-      <div>
-        { this.TypeSelector() }
-        { this.SelectedTypes() }
-      </div>
-    );
-  }
-
-  PageContent() {
-    return (
-      <RequestForm
-        requests={this.props.requests}
-        requestId={this.state.submitRequestId}
-        legend={"Manage Library groups"}
-        formContent={this.FormContent()}
-        redirectPath={Path.dirname(this.props.match.url)}
-        cancelPath={Path.dirname(this.props.match.url)}
-        OnSubmit={this.HandleSubmit}
-      />
-    );
   }
 
   render() {
-    if (this.state.createForm) {
-      return this.PageContent();
-    } else {
-      return (
-        <RequestPage
-          requests={this.props.requests}
-          requestId={this.state.loadRequestId}
-          pageContent={this.PageContent}
-          OnRequestComplete={this.RequestComplete}
-        />
-      );
-    }
+    return (
+      <div>
+        <div className="actions-container manage-actions">
+          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+        </div>
+        <Form
+          legend={"Manage Library Types"}
+          redirectPath={Path.dirname(this.props.match.url)}
+          cancelPath={Path.dirname(this.props.match.url)}
+          status={this.props.methodStatus.Submit}
+          OnSubmit={this.HandleSubmit}
+        >
+          <div className="form-content">
+            <label htmlFor={"typeId"}>Content Types</label>
+            { this.TypeSelector() }
+
+            <label />
+            <div className="list bordered-list">
+              { this.SelectedTypes() }
+            </div>
+          </div>
+        </Form>
+      </div>
+    );
   }
 }
+
+ContentLibraryTypesForm.propTypes = {
+  libraryId: PropTypes.string.isRequired,
+  library: PropTypes.object.isRequired,
+  types: PropTypes.object.isRequired,
+  methods: PropTypes.shape({
+    Submit: PropTypes.func.isRequired
+  })
+};
 
 export default ContentLibraryTypesForm;

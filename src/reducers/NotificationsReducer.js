@@ -1,47 +1,45 @@
 import ActionTypes from "../actions/ActionTypes";
 
 const NotificationsReducer = (state = {}, action) => {
-  switch (action.type) {
+  const newState = {
+    ...state,
+    notificationMessage: state.notificationMessage || "",
+    errorMessage: state.errorMessage || "",
+    redirect: state.redirect || false
+  };
+
+  switch(action.type) {
     case ActionTypes.notifications.error:
-      return {
-        ...state,
-        errorMessage: action.message,
-        notificationMessage: "",
-        redirect: action.redirect || false
-      };
+      newState.errorMessage = action.message;
+      newState.notificationMessage = "";
+      newState.redirect = action.redirect || false;
+      break;
+
     case ActionTypes.notifications.notification:
-      return {
-        ...state,
-        errorMessage: "",
-        notificationMessage: action.message,
-        redirect: action.redirect || false
-      };
+      newState.errorMessage = "";
+      newState.notificationMessage = action.message;
+      newState.redirect = action.redirect || false;
+      break;
+
+    case ActionTypes.notifications.clear:
+      newState.errorMessage = "";
+      newState.notificationMessage = "";
+      break;
+
     case "@@router/LOCATION_CHANGE":
       // Automatically clear notifications when changing pages
-
       // Notifications survive one redirect if specified
       if(state.redirect) {
-        return {
-          ...state,
-          redirect: false
-        };
+        newState.redirect = false;
+      } else {
+        newState.errorMessage = "";
+        newState.notificationMessage = "";
       }
 
-      // Fallthrough
-    case ActionTypes.notifications.clear:
-      return {
-        ...state,
-        errorMessage: "",
-        notificationMessage: ""
-      };
-    default:
-      return {
-        ...state,
-        notificationMessage: state.notificationMessage || "",
-        errorMessage: state.errorMessage || "",
-        redirect: state.redirect || false
-      };
+      break;
   }
+
+  return newState;
 };
 
 export default NotificationsReducer;

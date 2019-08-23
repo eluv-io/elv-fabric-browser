@@ -1,13 +1,15 @@
 import React from "react";
+import {IconButton} from "elv-components-js";
+import CloseIcon from "../static/icons/close.svg";
 
 class Notifications extends React.Component {
   render() {
     if(this.props.notifications.errorMessage !== "") {
       return (
         <div className="notification-container">
-          <div className="notification-message error-message-container">
-            { this.props.notifications.errorMessage }
-            <div className="clear-notification" onClick={this.props.ClearNotifications}>X</div>
+          <div className="notification-message-container error-message-container">
+            <span>{ this.props.notifications.errorMessage }</span>
+            <IconButton icon={CloseIcon} label="close" onClick={this.props.ClearNotifications} className="clear-notification" />
           </div>
         </div>
       );
@@ -15,8 +17,8 @@ class Notifications extends React.Component {
       return (
         <div className="notification-container">
           <div className="notification-message-container">
-            { this.props.notifications.notificationMessage }
-            <div className="clear-notification" onClick={this.props.ClearNotifications}>X</div>
+            <span>{ this.props.notifications.notificationMessage }</span>
+            <IconButton icon={CloseIcon} label="close" onClick={this.props.ClearNotifications} className="clear-notification" />
           </div>
         </div>
       );

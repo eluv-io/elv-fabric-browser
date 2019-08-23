@@ -1,26 +1,41 @@
+import React from "react";
 import { connect } from "react-redux";
 import Thunk from "../../utils/Thunk";
-
-import {WrapRequest} from "../../actions/Requests";
+import Container from "../Container";
 import Logs from "../../components/pages/logs/Logs";
-import {ClearBlockchainEvents, GetBlockchainEvents} from "../../actions/Contracts";
+import {ClearBlockchainEvents, GetBlockchainEvents, GetBlockNumber} from "../../actions/Contracts";
 
-const mapStateToProps = state => ({
-  ...state
+const mapStateToProps = (state) => ({
+  logs: state.logs
 });
 
 const mapDispatchToProps = dispatch =>
   Thunk(
     dispatch,
     [
-      WrapRequest,
       GetBlockchainEvents,
-      ClearBlockchainEvents
+      ClearBlockchainEvents,
     ]
   );
 
-export const LogsContainer = connect(
+const Events = async ({props, params}) => {
+  await props.GetBlockchainEvents(params);
+};
+
+const Component = Container(Logs);
+const LogsContainer = (props) => {
+  return (
+    <Component
+      {...props}
+      GetBlockNumber={GetBlockNumber}
+      methods={{
+        GetBlockchainEvents: Events
+      }}
+    />
+  );
+};
+
+export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(Logs);
-
+)(LogsContainer);

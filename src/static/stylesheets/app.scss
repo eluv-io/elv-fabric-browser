@@ -1,20 +1,17 @@
-@import "variables/colors";
-@import "variables/spacing";
-@import "variables/mixins";
-@import "animations/animated-icons";
-@import "fonts";
-@import "icons";
+@import "~elv-components-js/src/stylesheets/styles";
+
 @import "defaults";
 @import "components";
 @import "layout";
-@import "actions";
-@import "forms";
 @import "modals";
 @import "navbar";
 @import "notifications";
 @import "content";
 @import "labels";
-@import "radio";
 @import "events";
 @import "file_browser";
 @import "listing";
+@import "forms";
+
+
+

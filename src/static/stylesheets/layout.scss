@@ -1,6 +1,6 @@
 .app {
   height: 100%;
-  max-width: 100%;
+  max-width: 100vw;
   width: 100%;
 }
 
@@ -22,8 +22,7 @@
 
 .main-content-container {
   grid-area: main-content;
-  overflow-y: auto;
-  padding: $spacing-xs $spacing-ml $spacing-xl;
+  padding: $elv-spacing-s $elv-spacing-ml $elv-spacing-xl;
 }
 
 .page-container {
@@ -31,27 +30,19 @@
   width: 100%;
 
   .page-header-container {
-    margin: $spacing-m 0;
+    margin: $elv-spacing-m 0;
 
     .page-subheader {
-      color: $color-text-light;
-      font-size: 16px;
-      margin-top: 5px;
-      min-height: 3.5em;
-      z-index: 1000;
+      @include elv-ellipsis;
+      color: $elv-color-text-light;
 
-      &.hide {
-        height: 3.5em;
-      }
-
-      &.show {
-        height: auto;
-      }
+      font-size: 14px;
+      margin-top: $elv-spacing-xxs;
+      width: 70vw;
     }
   }
 
   .page-content {
-    height: 100%;
     width: 100%;
   }
 }
@@ -59,24 +50,26 @@
 .view-container {
   display: grid;
   grid-template:
-          "navbar notifications" 40px
-          "navbar main-content" 1fr
-  / 225px;
-
-  // sass-lint:disable-block indentation trailing-semicolon
+  "navbar notifications" 35px
+  "navbar main-content" 1fr
+  / 200px;
   min-height: 100%;
-  overflow: hidden;
-
-  &.navbar-hidden {
-    grid-template:
-            "notifications" 40px
-            "main-content" 1fr
-  }
 }
 
-.loading-page-container {
+.error-page {
   align-items: center;
   display: flex;
-  height: 100%;
+  flex-direction: column;
   justify-content: center;
+  margin-top: 100px;
+  width: 100%;
+
+  .error-message {
+    color: $elv-color-mediumred;
+    margin: $elv-spacing-m 0;
+  }
+
+  .actions-container {
+    height: 35px;
+  }
 }

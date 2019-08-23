@@ -1,98 +1,71 @@
 import ActionTypes from "../actions/ActionTypes";
 
 const ContentReducer = (state = {}, action) => {
-  switch (action.type) {
+  const newState = {
+    ...state,
+    libraries: state.libraries || {},
+    objects: state.objects || {},
+    types: state.types || {},
+    availableTypes: state.availableTypes || {},
+    count: state.count || {libraries: 0, objects: {}, types: 0, libraryGroups: {}}
+  };
+
+  switch(action.type) {
     case ActionTypes.content.libraries.list:
-      return {
-        ...state,
-        libraries: action.libraries
-      };
+      newState.libraries = action.libraries;
+      newState.count.libraries = action.count;
+      break;
 
     case ActionTypes.content.libraries.get:
-      return {
-        ...state,
-        libraries: {
-          ...state.libraries,
-          [action.libraryId]: action.library
-        }
-      };
+      newState.libraries[action.libraryId] = action.library;
+      break;
 
     case ActionTypes.content.libraries.types:
-      return {
-        ...state,
-        libraries: {
-          ...state.libraries,
-          [action.libraryId]: {
-            ...state.libraries[action.libraryId],
-            types: action.types
-          }
-        }
-      };
+      newState.libraries[action.libraryId].types = action.types;
+      break;
 
     case ActionTypes.content.libraries.groups:
-      return {
-        ...state,
-        libraries: {
-          ...state.libraries,
-          [action.libraryId]: {
-            ...state.libraries[action.libraryId],
-            groups: action.groups
-          }
-        }
-      };
+      newState.libraries[action.libraryId].groups = action.groups;
+      newState.count.libraryGroups[action.libraryId] = action.count;
+      break;
+
+    case ActionTypes.content.libraries.groupPermissions:
+      newState.libraries[action.libraryId].groupPermissions = action.permissions;
+      break;
 
     case ActionTypes.content.objects.list:
-      return {
-        ...state,
-        objects: {
-          ...state.objects,
-          ...action.objects
-        }
-      };
+      newState.objects = action.objects;
+      newState.count.objects[action.libraryId] = action.count;
+      newState.cacheId = action.cacheId;
+      break;
 
     case ActionTypes.content.objects.get:
-      return {
-        ...state,
-        objects: {
-          ...state.objects,
-          [action.objectId]: action.object
-        }
-      };
+      newState.objects[action.objectId] = action.object;
+      break;
 
     case ActionTypes.content.objects.versions:
-      return {
-        ...state,
-        objects: {
-          ...state.objects,
-          [action.objectId]: {
-            ...state.objects[action.objectId],
-            versions: action.versions
-          }
-        }
-      };
+      newState.objects[action.objectId].versions = action.versions;
+      break;
+
+    case ActionTypes.content.objects.permissions:
+      newState.objects[action.objectId].permissions = action.permissions;
+      break;
+
+    case ActionTypes.content.types.all:
+      newState.availableTypes = action.types;
+      break;
 
     case ActionTypes.content.types.list:
-      return {
-        ...state,
-        types: action.types
-      };
-    case ActionTypes.content.types.get:
-      return {
-        ...state,
-        types: {
-          ...state.types,
-          [action.contentType.hash]: action.contentType
-        }
-      };
+      newState.types = action.types;
+      newState.count.types = action.count;
+      break;
 
-    default:
-      return {
-        ...state,
-        libraries: state.libraries || {},
-        objects: state.objects || {},
-        types: state.types || {}
-      };
+    case ActionTypes.content.types.get:
+      newState.types[action.contentType.hash] = action.contentType;
+      break;
   }
+
+  return newState;
 };
 
 export default ContentReducer;
