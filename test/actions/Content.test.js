@@ -68,7 +68,7 @@ describe("Content Actions", () => {
 
     const signer = wallet.AddAccount({
       accountName: "Alice",
-      privateKey: "0x0000000000000000000000000000000000000000000000000000000000000000"
+      privateKey: "0xbf092a5c94988e2f7a1d00d0db309fc492fe38ddb57fc6d102d777373389c5e6"
     });
 
     const requestId = store.dispatch(CreateContentLibrary({

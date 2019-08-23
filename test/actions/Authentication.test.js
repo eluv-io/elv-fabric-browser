@@ -142,11 +142,11 @@ describe("Authentication Actions", () => {
       wallet = new ElvWallet();
       wallet.AddAccount({
         accountName: "Alice",
-        privateKey: "0x0000000000000000000000000000000000000000000000000000000000000000"
+        privateKey: "0xbf092a5c94988e2f7a1d00d0db309fc492fe38ddb57fc6d102d777373389c5e6"
       });
       wallet.AddAccount({
         accountName: "Bob",
-        privateKey: "0x0000000000000000000000000000000000000000000000000000000000000000"
+        privateKey: "0x2d953561666c11a5bec2b9d5fd1203f21eb0aff02b074daa4897fee6b4726a98"
       });
     });
 
@@ -186,7 +186,7 @@ describe("Authentication Actions", () => {
 
       wallet.AddAccount({
         accountName: "Alice",
-        privateKey: "0x0000000000000000000000000000000000000000000000000000000000000000"
+        privateKey: "0xbf092a5c94988e2f7a1d00d0db309fc492fe38ddb57fc6d102d777373389c5e6"
       });
 
       store.dispatch(LogOut({ wallet }));
@@ -203,11 +203,11 @@ describe("Authentication Actions", () => {
       global.localStorage.setItem("currentAccount", "0x71b011b67dc8f5c323a34cd14b952721d5750c93");
       wallet.AddAccount({
         accountName: "Alice",
-        privateKey: "0x0000000000000000000000000000000000000000000000000000000000000000"
+        privateKey: "0xbf092a5c94988e2f7a1d00d0db309fc492fe38ddb57fc6d102d777373389c5e6"
       });
       wallet.AddAccount({
         accountName: "Bob",
-        privateKey: "0x0000000000000000000000000000000000000000000000000000000000000000"
+        privateKey: "0x2d953561666c11a5bec2b9d5fd1203f21eb0aff02b074daa4897fee6b4726a98"
       });
 
       store.dispatch(LogOut({ wallet }));
