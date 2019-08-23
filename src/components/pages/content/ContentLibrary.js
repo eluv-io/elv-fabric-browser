@@ -156,7 +156,10 @@ class ContentLibrary extends React.Component {
     const objects = Object.keys(this.props.objects).map(objectId => {
       const object = this.props.objects[objectId];
 
-      const status = AccessChargeDisplay(object.accessInfo.accessCharge);
+      let status;
+      if(object.accessInfo) {
+        status = AccessChargeDisplay(object.accessInfo.accessCharge);
+      }
 
       return {
         id: objectId,

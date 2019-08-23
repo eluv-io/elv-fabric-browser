@@ -146,7 +146,7 @@ describe("Authentication Actions", () => {
       });
       wallet.AddAccount({
         accountName: "Bob",
-        privateKey: "0x0000000000000000000000000000000000000000000000000000000000000000"
+        privateKey: "0x2d953561666c11a5bec2b9d5fd1203f21eb0aff02b074daa4897fee6b4726a98"
       });
     });
 
@@ -207,7 +207,7 @@ describe("Authentication Actions", () => {
       });
       wallet.AddAccount({
         accountName: "Bob",
-        privateKey: "0x0000000000000000000000000000000000000000000000000000000000000000"
+        privateKey: "0x2d953561666c11a5bec2b9d5fd1203f21eb0aff02b074daa4897fee6b4726a98"
       });
 
       store.dispatch(LogOut({ wallet }));
