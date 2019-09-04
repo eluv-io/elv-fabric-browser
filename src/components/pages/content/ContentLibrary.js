@@ -212,6 +212,10 @@ class ContentLibrary extends React.Component {
     const objectCount = count || count === 0 ?
       <LabelledField label="Content Objects" value={count} /> : null;
 
+    const ownerText = this.props.library.ownerName ?
+      <span>{this.props.library.ownerName}<span className="help-text">({this.props.library.owner})</span></span> :
+      this.props.library.owner;
+
     return (
       <div className="object-info label-box">
         { this.LibraryImage() }
@@ -246,7 +250,7 @@ class ContentLibrary extends React.Component {
         </LabelledField>
 
         <LabelledField label="Owner">
-          { this.props.library.owner }
+          { ownerText }
         </LabelledField>
 
         { objectCount }

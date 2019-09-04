@@ -139,6 +139,10 @@ class AccessGroup extends React.Component {
       return <Redirect push to={Path.dirname(this.props.match.url)}/>;
     }
 
+    const ownerText = this.props.accessGroup.ownerName ?
+      <span>{this.props.accessGroup.ownerName}<span className="help-text">({this.props.accessGroup.owner})</span></span> :
+      this.props.accessGroup.owner;
+
     const description = <ClippedText className="object-description" text={this.props.accessGroup.description} />;
 
     return (
@@ -152,7 +156,7 @@ class AccessGroup extends React.Component {
             </LabelledField>
 
             <LabelledField label="Owner">
-              { this.props.accessGroup.owner }
+              { ownerText }
             </LabelledField>
 
             <LabelledField label="Contract Address">

@@ -257,6 +257,11 @@ const Fabric = {
     const owner = await Fabric.GetContentLibraryOwner({libraryId});
     const currentAccountAddress = await Fabric.CurrentAccountAddress();
 
+    const ownerName = await client.userProfileClient.PublicUserMetadata({
+      address: owner,
+      metadataSubtree: "name"
+    });
+
     /* Library object and private metadata */
     const libraryObjectId = libraryId.replace("ilib", "iq__");
     let privateMeta = {};
@@ -302,6 +307,7 @@ const Fabric = {
       imageUrl,
       kmsId,
       owner,
+      ownerName,
       isOwner: EqualAddress(owner, currentAccountAddress),
       isContentSpaceLibrary: libraryId === Fabric.contentSpaceLibraryId
     };
@@ -485,6 +491,11 @@ const Fabric = {
 
     const owner = await Fabric.GetContentObjectOwner({objectId: objectId});
 
+    const ownerName = await client.userProfileClient.PublicUserMetadata({
+      address: owner,
+      metadataSubtree: "name"
+    });
+
     const object = await client.ContentObject({libraryId, objectId});
     const metadata = await client.ContentObjectMetadata({libraryId, objectId});
     const imageUrl = await Fabric.GetContentObjectImageUrl({libraryId, objectId, versionHash: object.hash, metadata});
@@ -518,6 +529,7 @@ const Fabric = {
       contractAddress: FormatAddress(client.utils.HashToAddress(objectId)),
       customContractAddress,
       owner,
+      ownerName,
       isOwner: EqualAddress(owner, await Fabric.CurrentAccountAddress()),
       accessInfo,
       status,
@@ -993,20 +1005,74 @@ const Fabric = {
     });
   },
 
-  ContractEvent: ({abi, transactionHash}) => {
-    return client.ContractEvent({abi, transactionHash});
+  FormatEvents: async (events) => {
+    let accountNames = {};
+
+    // Get all from accounts in list of events
+    let accounts = [];
+    events.forEach(eventList => {
+      eventList.forEach(event => {
+        const from = Fabric.utils.FormatAddress(event.from);
+
+        if(!accounts.includes(from)) {
+          accounts.push(from);
+        }
+
+        if(event.to) {
+          const to = Fabric.utils.FormatAddress(event.to);
+
+          if(!accounts.includes(to)) {
+            accounts.push(to);
+          }
+        }
+      });
+    });
+
+    // Retrieve names for all addresses
+    await Promise.all(
+      accounts.map(async address => {
+        accountNames[address] = await client.userProfileClient.PublicUserMetadata({
+          address: address,
+          metadataSubtree: "name"
+        });
+      })
+    );
+
+    // Inject fromName into all events
+    return (
+      events.map(eventList =>
+        eventList.map(event => {
+          const fromName = accountNames[Fabric.utils.FormatAddress(event.from)];
+          const toName = event.to ? accountNames[Fabric.utils.FormatAddress(event.to)] : undefined;
+
+          return {
+            ...event,
+            fromName,
+            toName
+          };
+        })
+      )
+    );
+  },
+
+  ContractEvent: async ({abi, transactionHash}) => {
+    return await client.ContractEvent({abi, transactionHash});
   },
 
   ContractEvents: async ({contractAddress, abi, fromBlock, toBlock}) => {
-    return await client.ContractEvents({contractAddress, abi, fromBlock, toBlock, includeTransaction: true});
+    return await Fabric.FormatEvents(
+      await client.ContractEvents({contractAddress, abi, fromBlock, toBlock, includeTransaction: true})
+    );
   },
 
   WithdrawContractFunds: ({contractAddress, abi, ether}) => {
     return client.WithdrawContractFunds({contractAddress, abi, ether});
   },
 
-  GetBlockchainEvents: ({toBlock, fromBlock, count=10}) => {
-    return client.Events({toBlock, fromBlock, count, includeTransaction: true});
+  GetBlockchainEvents: async ({toBlock, fromBlock, count=10}) => {
+    return await Fabric.FormatEvents(
+      await client.Events({toBlock, fromBlock, count, includeTransaction: true})
+    );
   },
 
   GetBlockNumber: async () => {
@@ -1208,7 +1274,7 @@ const Fabric = {
     contractAddress = Fabric.utils.FormatAddress(contractAddress);
     const currentAccountAddress = await Fabric.CurrentAccountAddress();
 
-    let owner, metadata;
+    let owner, ownerName, metadata;
     let isManager = false;
 
     try {
@@ -1219,6 +1285,11 @@ const Fabric = {
           methodName: "owner"
         })
       );
+
+      ownerName = await client.userProfileClient.PublicUserMetadata({
+        address: owner,
+        metadataSubtree: "name"
+      });
 
       isManager = await client.CallContractMethod({
         contractAddress,
@@ -1235,12 +1306,14 @@ const Fabric = {
       // eslint-disable-next-line no-console
       console.error(error);
     }
+
     return {
       address: contractAddress,
       name: metadata.name || contractAddress,
       description: metadata.description,
       metadata,
       owner,
+      ownerName,
       isManager,
       isOwner: client.utils.EqualAddress(owner, currentAccountAddress)
     };

@@ -82,6 +82,22 @@ class EventLogs extends React.PureComponent {
     );
   }
 
+  From(log) {
+    return log.fromName ?
+      <span>{log.fromName}<span className="help-text">({FormatAddress(log.from)})</span></span> :
+      FormatAddress(log.from);
+  }
+
+  To(log) {
+    if(!log.to) {
+      return FormatAddress(log.contractAddress);
+    }
+
+    return log.toName ?
+      <span>{log.toName}<span className="help-text">({FormatAddress(log.to)})</span></span> :
+      FormatAddress(log.to);
+  }
+
   ParsedLog(log) {
     const eventName = log.contract ? `${log.contract} :: ${log.name}` : log.name;
 
@@ -103,7 +119,7 @@ class EventLogs extends React.PureComponent {
           </div>
           <div className="labelled-field">
             <label>From</label>
-            <div className="value">{FormatAddress(log.from)}</div>
+            <div className="value">{this.From(log)}</div>
           </div>
           { this.Value(log.value) }
           { this.Inputs(log) }
@@ -126,11 +142,11 @@ class EventLogs extends React.PureComponent {
           </div>
           <div className="labelled-field">
             <label>From</label>
-            <div className="value">{FormatAddress(log.from)}</div>
+            <div className="value">{this.From(log)}</div>
           </div>
           <div className="labelled-field">
             <label>{!log.to && log.contractAddress ? "Contract Address" : "To"}</label>
-            <div className="value">{FormatAddress(log.to) || `${FormatAddress(log.contractAddress)}`}</div>
+            <div className="value">{this.To(log)}</div>
           </div>
           { this.Value(log.value) }
         </div>

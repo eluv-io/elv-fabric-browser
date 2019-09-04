@@ -21,7 +21,7 @@ class AccessGroups extends React.Component {
       return {
         id: accessGroup.address,
         title: accessGroup.name,
-        description: accessGroup.name,
+        description: accessGroup.address,
         status: "",
         icon: AccessGroupIcon,
         link: UrlJoin(this.props.match.url, accessGroup.address)

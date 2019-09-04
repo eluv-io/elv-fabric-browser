@@ -456,6 +456,10 @@ class ContentObject extends React.Component {
       );
     }
 
+    const ownerText = this.props.object.ownerName ?
+      <span>{this.props.object.ownerName}<span className="help-text">({this.props.object.owner})</span></span> :
+      this.props.object.owner;
+
     return (
       <div className="object-info label-box">
         <LabelledField label="Name">
@@ -491,7 +495,7 @@ class ContentObject extends React.Component {
         { this.ContractInfo() }
 
         <LabelledField label="Owner">
-          { this.props.object.owner }
+          { ownerText }
         </LabelledField>
 
         <br />
