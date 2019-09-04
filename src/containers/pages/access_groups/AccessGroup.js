@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import Thunk from "../../../utils/Thunk";
 import Container from "../../Container";
 import {
-  GetAccessGroup,
+  GetAccessGroup, LeaveAccessGroup,
   ListAccessGroupMembers,
   RemoveAccessGroup,
   RemoveAccessGroupMember
@@ -23,7 +23,8 @@ const mapDispatchToProps = dispatch =>
       GetAccessGroup,
       ListAccessGroupMembers,
       RemoveAccessGroupMember,
-      RemoveAccessGroup
+      RemoveAccessGroup,
+      LeaveAccessGroup
     ]
   );
 
@@ -37,6 +38,10 @@ const LoadMembers = async ({props, params}) => {
 
 const RemoveMember = async ({props, params}) => {
   await props.RemoveAccessGroupMember(params);
+};
+
+const Leave = async ({props, params}) => {
+  await props.LeaveAccessGroup(params);
 };
 
 const Delete = async ({props, params}) => {
@@ -55,7 +60,8 @@ const AccessGroupContainer = (props) => {
       methods={{
         ListAccessGroupMembers: LoadMembers,
         RemoveAccessGroupMember: RemoveMember,
-        RemoveAccessGroup: Delete
+        RemoveAccessGroup: Delete,
+        LeaveAccessGroup: Leave
       }}
     />
   );

@@ -106,6 +106,13 @@ const Fabric = {
     return await client.DeleteAccessGroup({contractAddress: address});
   },
 
+  async LeaveAccessGroup({contractAddress}) {
+    const currentAccountAddress = await Fabric.CurrentAccountAddress();
+
+    await Fabric.RemoveAccessGroupManager({contractAddress, memberAddress: currentAccountAddress});
+    await Fabric.RemoveAccessGroupMember({contractAddress, memberAddress: currentAccountAddress});
+  },
+
   async AddAccessGroupMember({contractAddress, memberAddress}) {
     return await client.AddAccessGroupMember({
       contractAddress,

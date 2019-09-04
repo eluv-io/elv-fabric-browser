@@ -100,6 +100,17 @@ export const AddAccessGroupMember = ({contractAddress, memberAddress, manager=fa
   };
 };
 
+export const LeaveAccessGroup = ({contractAddress}) => {
+  return async (dispatch) => {
+    await Fabric.LeaveAccessGroup({contractAddress});
+
+    dispatch(SetNotificationMessage({
+      message: "Access group successfully left",
+      redirect: true
+    }));
+  };
+};
+
 export const RemoveAccessGroupMember = ({contractAddress, memberAddress, manager=false}) => {
   return async (dispatch) => {
     if(manager) {

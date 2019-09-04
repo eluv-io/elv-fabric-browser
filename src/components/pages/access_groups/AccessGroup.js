@@ -23,6 +23,7 @@ class AccessGroup extends React.Component {
     this.DeleteAccessGroup = this.DeleteAccessGroup.bind(this);
     this.AccessGroupMembers = this.AccessGroupMembers.bind(this);
     this.RemoveAccessGroupMember = this.RemoveAccessGroupMember.bind(this);
+    this.LeaveAccessGroup = this.LeaveAccessGroup.bind(this);
   }
 
   async DeleteAccessGroup() {
@@ -49,10 +50,24 @@ class AccessGroup extends React.Component {
     }
   }
 
+  async LeaveAccessGroup() {
+    await Confirm({
+      message: "Are you sure you want to leave this group?",
+      onConfirm: async () => await this.props.methods.LeaveAccessGroup({
+        contractAddress: this.props.contractAddress
+      })
+    });
+  }
+
   AccessGroupMembers() {
     if(!this.props.accessGroupMembers) { return []; }
 
     const members = Object.values(this.props.accessGroupMembers).map(member => {
+      const canRemove = (
+        this.props.accessGroup.isManager ||
+        this.props.accessGroup.isOwner
+      );
+
       return {
         id: member.address,
         sortKey: member.name || "zz",
@@ -65,7 +80,7 @@ class AccessGroup extends React.Component {
               icon={RemoveIcon}
               label={`Remove ${this.state.view === "managers" ? "Manager" : "Member"}`}
               onClick={async () => await this.RemoveAccessGroupMember(member.address)}
-              hidden={!(this.props.accessGroup.isManager || this.props.accessGroup.isOwner)}
+              hidden={!canRemove}
             >
               Remove
             </IconButton>
@@ -110,13 +125,17 @@ class AccessGroup extends React.Component {
         <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary" >Back</Action>
         <Action type="link" to={UrlJoin(this.props.match.url, "edit")} hidden={!this.props.accessGroup.isOwner}>Manage</Action>
         <Action type="link" to={UrlJoin(this.props.match.url, "add-member")} hidden={!this.props.accessGroup.isManager}>Add Member</Action>
+        <Action className="danger" onClick={this.LeaveAccessGroup} hidden={this.props.accessGroup.isOwner}>Leave Group</Action>
         <Action className="danger" onClick={this.DeleteAccessGroup} hidden={true}>Delete</Action>
       </div>
     );
   }
 
   PageContent() {
-    if(this.props.methodStatus.RemoveAccessGroup.completed) {
+    if(
+      this.props.methodStatus.RemoveAccessGroup.completed ||
+      this.props.methodStatus.LeaveAccessGroup.completed
+    ) {
       return <Redirect push to={Path.dirname(this.props.match.url)}/>;
     }
 
