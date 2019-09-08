@@ -128,6 +128,11 @@ class AppFrame extends React.Component {
     this.ApiRequestListener = this.ApiRequestListener.bind(this);
   }
 
+  async componentWillUnmount() {
+    // Ensure region is reset after app is unloaded in case app changed it
+    await Fabric.ResetRegion();
+  }
+
   AppUrl() {
     // Inject any query parameters into the given URL
     let appUrl = this.props.appUrl;

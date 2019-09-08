@@ -286,6 +286,24 @@ export const GetContentObjectVersions = ({libraryId, objectId}) => {
       objectId,
       versions
     });
+
+    dispatch(
+      GetContentObjectVersion({versionHash: versions[0].hash})
+    );
+  };
+};
+
+export const GetContentObjectVersion = ({versionHash}) => {
+  return async (dispatch) => {
+    const objectId = Fabric.utils.DecodeVersionHash(versionHash).objectId;
+    const version = await Fabric.GetContentObjectVersion({versionHash});
+
+    dispatch({
+      type: ActionTypes.content.objects.version,
+      objectId,
+      versionHash,
+      version
+    });
   };
 };
 

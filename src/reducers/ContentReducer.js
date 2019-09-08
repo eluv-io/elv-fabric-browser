@@ -43,6 +43,17 @@ const ContentReducer = (state = {}, action) => {
       newState.objects[action.objectId] = action.object;
       break;
 
+    case ActionTypes.content.objects.version:
+      newState.objects[action.objectId].versions =
+        newState.objects[action.objectId].versions.map(version => {
+          if(version.hash === action.versionHash) {
+            version = action.version;
+          }
+
+          return version;
+        });
+      break;
+
     case ActionTypes.content.objects.versions:
       newState.objects[action.objectId].versions = action.versions;
       break;

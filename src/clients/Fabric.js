@@ -59,6 +59,10 @@ const Fabric = {
     this.contentSpaceLibraryId = this.contentSpaceId.replace("ispc", "ilib");
   },
 
+  async ResetRegion() {
+    await client.ResetRegion();
+  },
+
   async GetFramePath() {
     if(Fabric.isFrameClient) {
       return await client.SendMessage({
@@ -546,26 +550,29 @@ const Fabric = {
   // Get all versions of the specified content object, along with metadata,
   // parts with proofs, and verification
   GetContentObjectVersions: async({libraryId, objectId}) => {
-    const versions = (await client.ContentObjectVersions({libraryId, objectId})).versions;
+    return (await client.ContentObjectVersions({libraryId, objectId})).versions
+      .map(version => ({
+        ...version,
+        parts: [],
+        meta: {}
+      }));
+  },
 
-    let fullVersions = [];
-    await Promise.all(
-      versions.map(async (version, index) => {
-        const metadata = await Fabric.GetContentObjectMetadata({libraryId, objectId, versionHash: version.hash});
-        //const verification = await Fabric.VerifyContentObject({libraryId, objectId, versionHash: version.hash});
-        const parts = (await Fabric.ListParts({libraryId, objectId, versionHash: version.hash}));
+  // Get all versions of the specified content object, along with metadata,
+  // parts with proofs, and verification
+  GetContentObjectVersion: async ({versionHash}) => {
+    const version = await client.ContentObject({versionHash});
+    const metadata = await Fabric.GetContentObjectMetadata({versionHash});
+    //const verification = await Fabric.VerifyContentObject({libraryId, objectId, versionHash: version.hash});
+    const parts = (await Fabric.ListParts({versionHash}));
 
-        // Must keep versions in order from newest to oldest
-        fullVersions[index] = {
-          ...version,
-          meta: metadata,
-          verification: {},
-          parts
-        };
-      })
-    );
-
-    return fullVersions;
+    // Must keep versions in order from newest to oldest
+    return {
+      ...version,
+      meta: metadata,
+      verification: {},
+      parts
+    };
   },
 
   GetContentObjectImageUrl: async ({libraryId, objectId, versionHash, metadata}) => {

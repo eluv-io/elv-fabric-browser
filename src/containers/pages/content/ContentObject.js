@@ -10,6 +10,7 @@ import {
   GetContentLibrary,
   GetContentObject,
   GetContentObjectPermissions,
+  GetContentObjectVersion,
   GetContentObjectVersions,
   ListContentLibraryGroups,
   PublishContentObject,
@@ -29,6 +30,7 @@ const mapDispatchToProps = dispatch =>
     [
       GetContentLibrary,
       GetContentObject,
+      GetContentObjectVersion,
       GetContentObjectVersions,
       ListContentLibraryGroups,
       GetContentObjectPermissions,
@@ -46,8 +48,11 @@ const LoadObject = async ({props}) => {
   const libraryId = props.libraryId;
   const objectId = props.objectId;
 
-  await props.GetContentLibrary({libraryId});
-  await props.GetContentObject({libraryId, objectId});
+  await Promise.all([
+    props.GetContentLibrary({libraryId}),
+    props.GetContentObject({libraryId, objectId})
+  ]);
+
   await props.GetContentObjectVersions({libraryId, objectId});
 
   /*
@@ -60,6 +65,10 @@ const LoadObject = async ({props}) => {
       await props.GetContentObjectPermissions({libraryId, objectId});
     }
   */
+};
+
+const LoadVersion = async ({props, params}) => {
+  await props.GetContentObjectVersion(params);
 };
 
 const Publish = async ({props, params}) => {
@@ -90,6 +99,7 @@ const ContentObjectContainer = (props) => {
       objectId={objectId}
       Load={LoadObject}
       methods={{
+        GetContentObjectVersion: LoadVersion,
         PublishContentObject: Publish,
         UploadFiles: Upload,
         DeleteContentVersion: DeleteVersion,

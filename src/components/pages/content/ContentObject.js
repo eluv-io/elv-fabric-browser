@@ -100,6 +100,10 @@ class ContentObject extends React.Component {
   }
 
   ToggleVersion(hash) {
+    if(hash.startsWith("hq__")) {
+      this.props.methods.GetContentObjectVersion({versionHash: hash});
+    }
+
     this.setState({
       visibleVersions: {
         ...this.state.visibleVersions,
@@ -366,7 +370,7 @@ class ContentObject extends React.Component {
 
           <br/>
 
-          <LabelledField hidden={true}>
+          <LabelledField hidden={!this.props.object.isOwner}>
             { this.DeleteVersionButton(version.hash) }
           </LabelledField>
         </div>

@@ -18,6 +18,7 @@ const ActionTypes = {
       list: "LIST_OBJECTS",
       get: "GET_OBJECTS",
       versions: "GET_OBJECT_VERSIONS",
+      version: "GET_OBJECT_VERSION",
       permissions: "GET_OBJECT_PERMISSIONS"
     },
     types: {
