@@ -76,7 +76,7 @@ class IFrameBase extends React.Component {
       "allow-orientation-lock",
       "allow-popups",
       "allow-presentation",
-      "allow-same-origin"
+      "allow-same-origin",
     ].join(" ");
   }
 
@@ -99,6 +99,7 @@ class IFrameBase extends React.Component {
         ref={this.props.appRef}
         src={this.props.appUrl}
         allow="encrypted-media *"
+        allowFullScreen
         sandbox={this.SandboxPermissions()}
         className={"app-frame " + (this.props.className || "")}
       />
@@ -196,12 +197,14 @@ class AppFrame extends React.Component {
           break;
 
         case "SetFrameDimensions":
+          if(this.props.fixedDimensions) { return; }
+
           if(event.data.width) {
-            this.state.appRef.current.style.width = Math.min(parseInt(event.data.width), 1200) + "px";
+            this.state.appRef.current.style.width = Math.min(parseInt(event.data.width), 3000) + "px";
           }
 
           if(event.data.height) {
-            this.state.appRef.current.style.height = Math.min(parseInt(event.data.height), 1200) + "px";
+            this.state.appRef.current.style.height = Math.min(parseInt(event.data.height), 5000) + "px";
           }
 
           break;
@@ -226,7 +229,8 @@ AppFrame.propTypes = {
   queryParams: PropTypes.object,
   onComplete: PropTypes.func,
   onCancel: PropTypes.func,
-  className: PropTypes.string
+  className: PropTypes.string,
+  fixedDimensions: PropTypes.bool
 };
 
 export default AppFrame;

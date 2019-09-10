@@ -1,3 +1,22 @@
+.content-page-container {
+  display: flex;
+  flex-direction: column;
+
+  .page-header-container {
+    margin: $elv-spacing-l 0 0;
+  }
+
+  .page-content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .page-content,
+  .display-frame {
+    flex: 1 1 auto;
+  }
+}
+
 .object-image {
   float: right;
 
@@ -26,7 +45,7 @@
 .app-frame {
   border: 1px solid $elv-color-lightergray;
   display: block;
-  height: 55vh;
+  height: 100%;
   width: 100%;
 
   &.display-frame {

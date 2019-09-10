@@ -598,6 +598,7 @@ class ContentObject extends React.Component {
         queryParams={queryParams}
         onComplete={this.LoadObject}
         onCancel={() => this.setState({deleted: true})}
+        fixedDimensions
       />
     );
   }
