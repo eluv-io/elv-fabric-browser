@@ -95,11 +95,17 @@ export const ListContentLibraryGroupPermissions = ({libraryId}) => {
 
 export const CreateContentLibrary = ({name, description, publicMetadata, privateMetadata, image, kmsId}) => {
   return async (dispatch) => {
+    privateMetadata = ParseInputJson(privateMetadata);
+    publicMetadata = ParseInputJson(publicMetadata);
+
+    publicMetadata.name = name;
+    publicMetadata["eluv.description"] = description;
+
     const libraryId = await Fabric.CreateContentLibrary({
       name,
       description,
-      publicMetadata: ParseInputJson(publicMetadata),
-      privateMetadata: ParseInputJson(privateMetadata),
+      publicMetadata,
+      privateMetadata,
       kmsId
     });
 
@@ -123,13 +129,20 @@ export const UpdateContentLibrary = ({
   libraryId,
   name,
   description,
-  metadata={},
+  privateMetadata={},
+  publicMetadata={},
   image
 }) => {
   return async (dispatch) => {
-    metadata = ParseInputJson(metadata);
-    metadata.name = name;
-    metadata["eluv.description"] = description;
+    privateMetadata = ParseInputJson(privateMetadata);
+    privateMetadata.name = name;
+    privateMetadata["eluv.description"] = description;
+
+    publicMetadata = ParseInputJson(publicMetadata);
+    publicMetadata.name = name;
+    publicMetadata["eluv.description"] = description;
+
+    delete privateMetadata.public;
 
     const libraryObjectId = libraryId.replace("ilib", "iq__");
     await Fabric.EditAndFinalizeContentObject({
@@ -140,7 +153,10 @@ export const UpdateContentLibrary = ({
           libraryId,
           objectId: libraryObjectId,
           writeToken,
-          metadata
+          metadata: {
+            ...privateMetadata,
+            public: publicMetadata
+          }
         });
       }
     });

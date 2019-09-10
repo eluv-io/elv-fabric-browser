@@ -258,7 +258,7 @@ class ContentLibrary extends React.Component {
         <br />
 
         { this.LibraryContentTypes() }
-        { this.ToggleSection("Public Metadata", "public-metadata", this.props.library.meta, true) }
+        { this.ToggleSection("Public Metadata", "public-metadata", this.props.library.publicMeta || {}, true) }
         { this.ToggleSection("Private Metadata", "private-metadata", this.props.library.privateMeta, true) }
       </div>
     );

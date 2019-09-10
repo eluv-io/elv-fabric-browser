@@ -14,7 +14,7 @@ class ContentLibraryForm extends React.Component {
     this.state = {
       name: library.name || "",
       description: library.description || "",
-      publicMetadata: JSON.stringify(library.meta, null, 2) || "",
+      publicMetadata: JSON.stringify(library.publicMeta, null, 2) || "",
       privateMetadata: JSON.stringify(library.privateMeta, null, 2) || "",
       kmsId: library.kmsId || "",
       isContentSpaceLibrary: library.isContentSpaceLibrary || false,

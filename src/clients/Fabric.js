@@ -269,6 +269,7 @@ const Fabric = {
     /* Library object and private metadata */
     const libraryObjectId = libraryId.replace("ilib", "iq__");
     let privateMeta = {};
+    let publicMeta = {};
     let imageUrl;
     try {
       const libraryObject = await Fabric.GetContentObject({libraryId, objectId: libraryObjectId});
@@ -284,6 +285,9 @@ const Fabric = {
         versionHash: libraryObject.hash, // Specify version hash to break cache if image is updated,
         metadata: privateMeta
       });
+
+      publicMeta = {...(privateMeta.public || {})};
+      delete privateMeta.public;
     } catch(error) {
       // eslint-disable-next-line no-console
       console.error(error);
@@ -308,6 +312,7 @@ const Fabric = {
       contractAddress: FormatAddress(client.utils.HashToAddress(libraryId)),
       libraryObjectId: libraryId.replace("ilib", "iq__"),
       privateMeta,
+      publicMeta,
       imageUrl,
       kmsId,
       owner,
@@ -342,13 +347,14 @@ const Fabric = {
     return FormatAddress(await client.ContentLibraryOwner({libraryId}));
   },
 
-  CreateContentLibrary: async ({name, description, publicMetadata, privateMetadata, kmsId}) => {
+  CreateContentLibrary: async ({name, description, publicMetadata={}, privateMetadata={}, kmsId}) => {
     return await client.CreateContentLibrary({
       name,
       description,
-      //publicMetadata,
-      //privateMetadata,
-      metadata: {...(publicMetadata || {}), ...(privateMetadata || {})},
+      metadata: {
+        ...privateMetadata,
+        public: publicMetadata
+      },
       kmsId
     });
   },
