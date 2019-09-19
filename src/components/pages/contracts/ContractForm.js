@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import Redirect from "react-router/es/Redirect";
 import {Action, Form} from "elv-components-js";
 import Path from "path";
+import UrlJoin from "url-join";
 
 class ContractForm extends React.Component {
   constructor(props) {
@@ -17,7 +18,8 @@ class ContractForm extends React.Component {
       name: contract.name || "",
       description: contract.description || "",
       abi: contract.abi || "",
-      bytecode: contract.bytecode || ""
+      bytecode: contract.bytecode || "",
+      submitted: false
     };
 
     this.SwitchContract = this.SwitchContract.bind(this);
@@ -61,6 +63,8 @@ class ContractForm extends React.Component {
       abi: this.state.contract.interface || this.state.contract.abi,
       bytecode: this.state.contract.bytecode
     });
+
+    this.setState({submitted: true});
   }
 
   AvailableContracts() {
@@ -85,8 +89,6 @@ class ContractForm extends React.Component {
   }
 
   render() {
-    const backPath = Path.dirname(this.props.match.url);
-
     if(this.props.createForm) {
       // Ensure contract data is set from compilation
       if(!this.props.contractData) {
@@ -95,8 +97,13 @@ class ContractForm extends React.Component {
           redirect: true
         });
 
-        return <Redirect to={backPath} />;
+        return <Redirect to={Path.dirname(this.props.match.url)}/>;
       }
+    }
+
+    let backPath = Path.dirname(this.props.match.url);
+    if(this.props.contract) {
+      backPath = UrlJoin(Path.dirname(Path.dirname(this.props.match.url)), this.state.name);
     }
 
     return (

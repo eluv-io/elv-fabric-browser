@@ -6,8 +6,6 @@ import BaseContentContract from "elv-client-js/src/contracts/BaseContent";
 import BaseAccessGroupContract from "elv-client-js/src/contracts/BaseAccessControlGroup";
 import {Bytes32ToUtf8, EqualAddress, FormatAddress} from "../utils/Helpers";
 
-const APP_REQUESTOR_NAME = "Eluvio Fabric Browser";
-
 /* Undocumented feature: If privateKey param is set, use that to intialize the client */
 let privateKey;
 let queryParams = window.location.search.split("?")[1];
@@ -712,7 +710,8 @@ const Fabric = {
     return await client.FinalizeContentObject({
       libraryId,
       objectId,
-      writeToken
+      writeToken,
+      awaitCommitConfirmation: true
     });
   },
 
@@ -1152,8 +1151,7 @@ const Fabric = {
 
   Contracts: async () => {
     const contracts = (await client.userProfileClient.UserMetadata({
-      metadataSubtree: UrlJoin("elv-fabric-browser", "contracts"),
-      requestor: APP_REQUESTOR_NAME
+      metadataSubtree: "contracts"
     })) || {};
 
     return {contracts, count: Object.keys(contracts).length};
@@ -1161,8 +1159,7 @@ const Fabric = {
 
   DeployedContracts: async () => {
     const contracts = (await client.userProfileClient.UserMetadata({
-      metadataSubtree: UrlJoin("elv-fabric-browser", "deployedContracts"),
-      requestor: APP_REQUESTOR_NAME
+      metadataSubtree: "deployedContracts"
     })) || {};
 
     return {contracts, count: Object.keys(contracts).length};
@@ -1170,21 +1167,19 @@ const Fabric = {
 
   AddContract: async ({name, description, abi, bytecode}) => {
     await client.userProfileClient.MergeUserMetadata({
-      metadataSubtree: UrlJoin("elv-fabric-browser", "contracts", name),
+      metadataSubtree: UrlJoin("contracts", name),
       metadata: {
         name,
         description,
         abi,
         bytecode
-      },
-      requestor: APP_REQUESTOR_NAME
+      }
     });
   },
 
   RemoveContract: async ({name}) => {
     await client.userProfileClient.DeleteUserMetadata({
-      metadataSubtree: UrlJoin("elv-fabric-browser", "contracts", name),
-      requestor: APP_REQUESTOR_NAME
+      metadataSubtree: UrlJoin("contracts", name)
     });
   },
 
@@ -1192,7 +1187,7 @@ const Fabric = {
     address = FormatAddress(address);
 
     await client.userProfileClient.MergeUserMetadata({
-      metadataSubtree: UrlJoin("elv-fabric-browser", "deployedContracts", address),
+      metadataSubtree: UrlJoin("deployedContracts", address),
       metadata: {
         name,
         description,
@@ -1200,15 +1195,13 @@ const Fabric = {
         abi,
         bytecode,
         owner
-      },
-      requestor: APP_REQUESTOR_NAME
+      }
     });
   },
 
   RemoveDeployedContract: async ({address}) => {
     await client.userProfileClient.DeleteUserMetadata({
-      metadataSubtree: UrlJoin("elv-fabric-browser", "deployedContracts", address),
-      requestor: APP_REQUESTOR_NAME
+      metadataSubtree: UrlJoin("deployedContracts", address)
     });
   },
 

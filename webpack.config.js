@@ -43,10 +43,16 @@ module.exports = {
     }
   },
   plugins: [
-    new CopyWebpackPlugin([{
-      from: Path.join(__dirname, "configuration.js"),
-      to: Path.join(__dirname, "dist", "configuration.js")
-    }]),
+    new CopyWebpackPlugin([
+      {
+        from: Path.join(__dirname, "configuration.js"),
+        to: Path.join(__dirname, "dist", "configuration.js")
+      },
+      {
+        from: Path.join(__dirname, "Logo.png"),
+        to: Path.join(__dirname, "dist", "Logo.png")
+      }
+    ]),
     new HtmlWebpackPlugin({
       title: "Eluvio Fabric Browser",
       template: Path.join(__dirname, "src", "index.html"),
