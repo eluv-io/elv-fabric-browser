@@ -14,6 +14,7 @@
 
   .labelled-field {
     display: flex;
+    max-width: 100%;
     min-height: 1.8em;
     padding: $elv-spacing-xxs $elv-spacing-s $elv-spacing-xxs 0;
 

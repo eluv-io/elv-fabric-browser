@@ -1,6 +1,7 @@
 .content-page-container {
   display: flex;
   flex-direction: column;
+  position: relative;
 
   .page-header-container {
     margin: $elv-spacing-l 0 0;
@@ -15,6 +16,15 @@
   .display-frame {
     flex: 1 1 auto;
   }
+}
+
+.object-media {
+  position: absolute;
+  right: $elv-spacing-s;
+}
+
+.object-info {
+  max-width: 100%;
 }
 
 .object-image {
@@ -92,4 +102,11 @@
     flex-grow: 1;
     margin-right: $elv-spacing-xs;
   }
+}
+
+.traversable-json {
+  border: 1px solid $elv-color-lightgray;
+  margin: $elv-spacing-s 0;
+  padding: $elv-spacing-xs $elv-spacing-s;
+  word-break: break-all;
 }

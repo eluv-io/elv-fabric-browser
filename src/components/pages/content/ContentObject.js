@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import PropTypes from "prop-types";
 import {Link} from "react-router-dom";
 import UrlJoin from "url-join";
@@ -13,8 +13,47 @@ import {DownloadFromUrl} from "../../../utils/Files";
 import FileBrowser from "../../components/FileBrowser";
 import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
-import {Action, Confirm, LoadingElement, Tabs} from "elv-components-js";
+import {Action, Confirm, LoadingElement, Tabs, TraversableJSON} from "elv-components-js";
 import {AccessChargeDisplay} from "../../../utils/Helpers";
+
+const ToggleSection = ({label, children, className=""}) => {
+  const [show, setShow] = useState(false);
+
+  return (
+    <div className={`formatted-data ${className || ""}`}>
+      <LabelledField label={label}>
+        <Action className={"action-compact action-wide " + (show ? "" : "secondary")} onClick={() => setShow(!show)}>
+          { `${show ? "Hide" : "Show"} ${label}` }
+        </Action>
+      </LabelledField>
+      { show ? children : null }
+    </div>
+  );
+};
+
+const JSONField = ({json}) => {
+  const [showRaw, setShowRaw] = useState(false);
+
+  const tabs = (
+    <Tabs
+      selected={showRaw}
+      onChange={value => setShowRaw(value)}
+      options={[["Formatted", false], ["Raw", true]]}
+      className="secondary"
+    />
+  );
+
+  const content = showRaw ?
+    <pre className="content-object-data">{JSON.stringify(json, null, 2)}</pre> :
+    <TraversableJSON json={json} />;
+
+  return (
+    <React.Fragment>
+      { tabs }
+      { content }
+    </React.Fragment>
+  );
+};
 
 class ContentObject extends React.Component {
   constructor(props) {
@@ -32,7 +71,6 @@ class ContentObject extends React.Component {
     }
 
     this.state = {
-      visibleVersions: {},
       appRef: React.createRef(),
       view: initialView,
       displayAppUrl,
@@ -99,31 +137,6 @@ class ContentObject extends React.Component {
     );
   }
 
-  ToggleVersion(hash) {
-    if(hash.startsWith("hq__")) {
-      this.props.methods.GetContentObjectVersion({versionHash: hash});
-    }
-
-    this.setState({
-      visibleVersions: {
-        ...this.state.visibleVersions,
-        [hash]: !this.state.visibleVersions[hash]
-      }
-    });
-  }
-
-  ToggleButton(label, id) {
-    const toggleVisible = () => this.ToggleVersion(id);
-    const visible = this.state.visibleVersions[id];
-    const toggleButtonText = (visible ? "Hide " : "Show ") + label;
-
-    return (
-      <Action className={"action-compact action-wide " + (visible ? "" : "secondary")} onClick={toggleVisible}>
-        { toggleButtonText }
-      </Action>
-    );
-  }
-
   PublishButton() {
     if(!this.props.object.isNormalObject) { return null; }
 
@@ -154,26 +167,6 @@ class ContentObject extends React.Component {
 
   VersionSize(version) {
     return PrettyBytes(version.parts.reduce((a, part) => a + part.size, 0));
-  }
-
-  ToggleSection(label, id, value, format=true) {
-    const visible = this.state.visibleVersions[id];
-
-    let content;
-    if(visible) {
-      if(format) {
-        content = <pre className="content-object-data">{JSON.stringify(value, null, 2)}</pre>;
-      } else { content = value; }
-    }
-
-    return (
-      <div className="formatted-data">
-        <LabelledField label={label}>
-          { this.ToggleButton(label, id) }
-        </LabelledField>
-        { content }
-      </div>
-    );
   }
 
   ObjectMedia() {
@@ -326,30 +319,9 @@ class ContentObject extends React.Component {
   }
 
   ObjectVersion(version, versionNumber, latestVersion=false) {
-    const visible = latestVersion || this.state.visibleVersions[version.hash];
-
-    let versionHeader;
-    if(!latestVersion) {
-      versionHeader = (
-        <LabelledField label={"Version " + versionNumber}>
-          { this.ToggleButton("Version", version.hash) }
-        </LabelledField>
-      );
-    } else {
-      versionHeader = <h3>{"Latest Version"}</h3>;
-    }
-
-    if(!visible) {
-      return (
-        <div key={"version-" + versionNumber} className="version-info indented">
-          { versionHeader }
-        </div>
-      );
-    }
-
     return (
-      <div key={"version-" + versionNumber} className={"version-info " + (latestVersion ? "" : "indented version-visible")}>
-        { versionHeader }
+      <div className={"version-info " + (latestVersion ? "" : "indented version-visible")}>
+        <h3>{latestVersion ? "Latest Version" : `Version ${versionNumber}`}</h3>
 
         <div className="indented">
           <LabelledField label="Hash" copyValue={version.hash}>
@@ -364,9 +336,19 @@ class ContentObject extends React.Component {
             { this.VersionSize(version) }
           </LabelledField>
 
-          { this.ToggleSection("Metadata", "metadata-" + versionNumber, version.meta) }
-          { this.ToggleSection("Verification", "verification-" + versionNumber, version.verification) }
-          { this.ToggleSection("Parts", "parts-" + versionNumber, this.ObjectParts(version), false) }
+          <ToggleSection label="Metadata">
+            <div className="indented">
+              <JSONField json={version.meta} />
+            </div>
+          </ToggleSection>
+
+          <ToggleSection label="Verification">
+            <pre className="content-object-data">{JSON.stringify(version.verification, null, 2)}</pre>
+          </ToggleSection>
+
+          <ToggleSection label="Parts">
+            { this.ObjectParts(version) }
+          </ToggleSection>
 
           <br/>
 
@@ -382,14 +364,23 @@ class ContentObject extends React.Component {
     if(this.props.object.versions.length < 2) { return null; }
 
     return (
-      <div>
+      <React.Fragment>
         <h3>Previous Versions</h3>
 
         { this.props.object.versions.slice(1).map((version, i) => {
           const versionNumber = (i+1 - this.props.object.versions.length) * -1;
-          return this.ObjectVersion(version, versionNumber);
+
+          return (
+            <ToggleSection
+              label={`Version ${versionNumber}`}
+              key={`version-${versionNumber}`}
+              className="version-info indented"
+            >
+              { this.ObjectVersion(version, versionNumber) }
+            </ToggleSection>
+          );
         })}
-      </div>
+      </React.Fragment>
     );
   }
 
@@ -438,13 +429,13 @@ class ContentObject extends React.Component {
     }
 
     return (
-      <div>
+      <React.Fragment>
         <LabelledField label="Status">
           { this.props.object.status.description }
         </LabelledField>
         { reviewer }
         { reviewNote }
-      </div>
+      </React.Fragment>
     );
   }
 
@@ -645,10 +636,10 @@ class ContentObject extends React.Component {
       }
     } else if(this.state.view === "info") {
       pageContent = (
-        <div>
+        <React.Fragment>
           { this.ObjectMedia() }
           { this.ObjectInfo() }
-        </div>
+        </React.Fragment>
       );
     } else {
       pageContent = this.ObjectFiles();
