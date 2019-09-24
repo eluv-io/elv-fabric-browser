@@ -183,8 +183,12 @@ class ContentLibrary extends React.Component {
         paginate={true}
         count={this.props.count.objects[this.props.libraryId]}
         loadingStatus={this.props.methodStatus.ListContentObjects}
-        LoadContent={({params}) => {
-          params.cacheId = this.props.cacheId;
+        LoadContent={({action, params}) => {
+          // When reloading, clear listing cache
+          if(action !== Listing.ACTIONS.reload) {
+            params.cacheId = this.props.cacheId;
+          }
+
           this.props.methods.ListContentObjects({libraryId: this.props.libraryId, params});
         }}
         RenderContent={this.ContentObjects}

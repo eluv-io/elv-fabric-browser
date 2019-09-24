@@ -10,6 +10,13 @@ import {CancelableEvents} from "browser-cancelable-events";
 let ListingOptions = {};
 
 class Listing extends React.Component {
+  static ACTIONS = {
+    initial: "INITIAL",
+    page: "PAGE_CHANGE",
+    filter: "FILTER",
+    reload: "RELOAD"
+  };
+
   constructor(props) {
     super(props);
 
@@ -32,10 +39,10 @@ class Listing extends React.Component {
   }
 
   componentDidMount() {
-    this.Load();
+    this.Load(Listing.ACTIONS.initial);
   }
 
-  Load() {
+  Load(action) {
     if(this.cancelable) {
       this.cancelable.cancelAll();
     }
@@ -43,6 +50,7 @@ class Listing extends React.Component {
     this.cancelable = new CancelableEvents();
 
     this.props.LoadContent({
+      action,
       params: {
         paginate: true,
         page: this.state.page,
@@ -66,7 +74,7 @@ class Listing extends React.Component {
   ChangePage(page) {
     this.setState({
       page
-    }, this.Load);
+    }, () => this.Load(Listing.ACTIONS.page));
   }
 
   ChangeSelectFilter(event) {
@@ -76,7 +84,7 @@ class Listing extends React.Component {
     this.setState({
       page: 1,
       selectFilter: event.target.value,
-    }, this.Load);
+    }, () => this.Load(Listing.ACTIONS.filter));
   }
 
   // Debounced filter
@@ -90,7 +98,7 @@ class Listing extends React.Component {
     this.setState({
       page: 1,
       filter: value,
-      filterTimeout: setTimeout(this.Load, 500)
+      filterTimeout: setTimeout(() => this.Load(Listing.ACTIONS.filter), 500)
     });
   }
 
@@ -200,7 +208,7 @@ class Listing extends React.Component {
           this.setState({
             page: 1,
             perPage
-          }, this.Load);
+          }, () => this.Load(Listing.ACTIONS.page));
 
           ListingOptions[this.props.pageId].perPage = perPage;
         }}
@@ -238,7 +246,12 @@ class Listing extends React.Component {
           { this.SelectFilter() }
           { switchViewButton }
           <LoadingElement loadingClassname="loading-action" loading={this.props.loadingStatus.loading} loadingIcon="rotate" >
-            <IconButton className="listing-action" icon={RefreshIcon} label="Refresh" onClick={this.Load} />
+            <IconButton
+              className="listing-action"
+              icon={RefreshIcon}
+              label="Refresh"
+              onClick={() => this.Load(Listing.ACTIONS.reload)}
+            />
           </LoadingElement>
         </div>
       </div>
@@ -272,7 +285,7 @@ class Listing extends React.Component {
           <div>There was a problem loading this page:</div>
           <div className="error-message">{this.props.loadingStatus.errorMessage}</div>
           <LoadingElement loading={this.props.loadingStatus.loading} loadingIcon="rotate">
-            <Action onClick={this.Load}>Try Again</Action>
+            <Action onClick={() => this.Load(Listing.ACTIONS.reload)}>Try Again</Action>
           </LoadingElement>
         </div>
       );

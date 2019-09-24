@@ -13,7 +13,9 @@ const ActionTypes = {
       groups: "GET_LIBRARY_GROUPS",
       groupPermissions: "GET_LIBRARY_GROUP_PERMISSIONS",
       types: "GET_LIBRARY_TYPES",
-      invalidateListingCache: "INVALIDATE_LISTING_CACHE"
+      setListingCacheId: "SET_LISTING_CACHE",
+      invalidateListingCacheId: "INVALIDATE_LISTING_CACHE",
+      invalidateAllListingCacheIds: "INVALIDATE_ALL_LISTING_CACHES"
     },
     objects: {
       list: "LIST_OBJECTS",

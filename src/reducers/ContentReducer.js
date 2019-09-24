@@ -34,8 +34,16 @@ const ContentReducer = (state = {}, action) => {
       newState.libraries[action.libraryId].groupPermissions = action.permissions;
       break;
 
-    case ActionTypes.content.libraries.invalidateListingCache:
+    case ActionTypes.content.libraries.setListingCacheId:
+      newState.cacheIds[action.libraryId] = action.cacheId;
+      break;
+
+    case ActionTypes.content.libraries.invalidateListingCacheId:
       delete newState.cacheIds[action.libraryId];
+      break;
+
+    case ActionTypes.content.libraries.invalidateAllListingCacheIds:
+      newState.cacheIds = {};
       break;
 
     case ActionTypes.content.objects.list:

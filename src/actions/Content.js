@@ -22,6 +22,8 @@ export const ListContentLibraries = ({params}) => {
       libraries,
       count
     });
+
+    dispatch(ClearAllLibraryListingCacheIds());
   };
 };
 
@@ -275,10 +277,33 @@ export const ListContentObjects = ({libraryId, params}) => {
       type: ActionTypes.content.objects.list,
       libraryId,
       objects,
-      count,
-      cacheId
+      count
     });
+
+    dispatch(SetLibraryListingCacheId({libraryId, cacheId}));
   };
+};
+
+export const SetLibraryListingCacheId = ({libraryId, cacheId}) => {
+  return ({
+    type: ActionTypes.content.libraries.setListingCacheId,
+    libraryId,
+    cacheId
+  });
+};
+
+export const ClearLibraryListingCacheId = ({libraryId}) => {
+  return ({
+    type: ActionTypes.content.libraries.invalidateListingCacheId,
+    libraryId
+  });
+};
+
+
+export const ClearAllLibraryListingCacheIds = () => {
+  return ({
+    type: ActionTypes.content.libraries.invalidateAllListingCacheIds
+  });
 };
 
 export const GetContentObject = ({libraryId, objectId}) => {
@@ -441,10 +466,7 @@ export const CreateFromContentTypeSchema = ({libraryId, type, metadata, accessCh
       await Fabric.SetAccessCharge({objectId: createResponse.id, accessCharge});
     }
 
-    dispatch({
-      type: ActionTypes.content.libraries.invalidateListingCache,
-      libraryId
-    });
+    dispatch(ClearLibraryListingCacheId({libraryId}));
 
     dispatch(SetNotificationMessage({
       message: "Successfully created content",
@@ -475,10 +497,7 @@ export const UpdateFromContentTypeSchema = ({libraryId, objectId, metadata, acce
       await Fabric.SetAccessCharge({objectId: objectId, accessCharge});
     }
 
-    dispatch({
-      type: ActionTypes.content.libraries.invalidateListingCache,
-      libraryId
-    });
+    dispatch(ClearLibraryListingCacheId({libraryId}));
 
     dispatch(SetNotificationMessage({
       message: "Successfully updated content",
@@ -530,10 +549,7 @@ export const DeleteContentObject = ({ libraryId, objectId }) => {
   return async (dispatch) => {
     await Fabric.DeleteContentObject({libraryId, objectId});
 
-    dispatch({
-      type: ActionTypes.content.libraries.invalidateListingCache,
-      libraryId
-    });
+    dispatch(ClearLibraryListingCacheId({libraryId}));
 
     dispatch(SetNotificationMessage({
       message: "Successfully deleted content object",
@@ -580,10 +596,7 @@ export const UpdateContentObject = ({libraryId, objectId, name, description, typ
       writeToken: contentDraft.write_token
     });
 
-    dispatch({
-      type: ActionTypes.content.libraries.invalidateListingCache,
-      libraryId
-    });
+    dispatch(ClearLibraryListingCacheId({libraryId}));
 
     dispatch(SetNotificationMessage({
       message: "Successfully updated content object",
