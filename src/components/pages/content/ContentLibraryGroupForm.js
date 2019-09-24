@@ -46,14 +46,32 @@ class ContentLibraryGroupForm extends React.Component {
   }
 
   Groups() {
-    const options = Object.values(this.props.accessGroups).map(group =>
+    let options = Object.values(this.props.accessGroups).map(group =>
       <option key={`group-${group.address}`} value={group.address}>{ group.name }</option>
     );
 
+    options = (
+      [
+        ...options,
+        <option key="group-address-other" value="">{"<other>"}</option>
+      ]
+    );
+
     return (
-      <select name="groupAddress" onChange={this.HandleGroupChange}>
-        { options }
-      </select>
+      <React.Fragment>
+        <label htmlFor="groupAddress">Access Group</label>
+        <select name="groupAddress" onChange={this.HandleGroupChange}>
+          { options }
+        </select>
+
+        <label htmlFor="groupAddress">Address</label>
+        <input
+          name="groupAddress"
+          value={this.state.groupAddress}
+          disabled={Object.keys(this.props.accessGroups).includes(this.state.groupAddress)}
+          onChange={event => this.setState({groupAddress: event.target.value})}
+        />
+      </React.Fragment>
     );
   }
 
@@ -75,7 +93,6 @@ class ContentLibraryGroupForm extends React.Component {
           OnSubmit={this.HandleSubmit}
         >
           <div className="form-content">
-            <label htmlFor="groupAddress">Access Group</label>
             { this.Groups() }
 
             <label htmlFor="accessor">Accessor</label>

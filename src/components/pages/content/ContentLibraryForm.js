@@ -1,9 +1,8 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { JsonTextArea } from "../../../utils/Input";
 import UrlJoin from "url-join";
 import Path from "path";
-import {Action, BrowseWidget, Form, LoadingElement} from "elv-components-js";
+import {Action, BrowseWidget, Form, JsonInput, LoadingElement} from "elv-components-js";
 
 class ContentLibraryForm extends React.Component {
   constructor(props) {
@@ -103,18 +102,16 @@ class ContentLibraryForm extends React.Component {
             <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
 
             <label className="align-top" htmlFor="publicMetadata">Public Metadata</label>
-            <JsonTextArea
+            <JsonInput
               name="publicMetadata"
               value={this.state.publicMetadata}
               onChange={this.HandleInputChange}
-              UpdateValue={formattedMetadata => this.setState({publicMetadata: formattedMetadata})}
             />
             <label className="align-top" htmlFor="privateMetadata">Private Metadata</label>
-            <JsonTextArea
+            <JsonInput
               name="privateMetadata"
               value={this.state.privateMetadata}
               onChange={this.HandleInputChange}
-              UpdateValue={formattedMetadata => this.setState({privateMetadata: formattedMetadata})}
             />
 
             <label htmlFor="kmsId">

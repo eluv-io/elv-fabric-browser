@@ -15,7 +15,7 @@ const mapStateToProps = (state, props) => ({
   library: state.content.libraries[props.libraryId || props.match.params.libraryId],
   objects: state.content.objects,
   count: state.content.count,
-  cacheId: state.content.cacheId
+  cacheId: state.content.cacheIds[props.libraryId || props.match.params.libraryId]
 });
 
 const mapDispatchToProps = dispatch =>
@@ -49,6 +49,7 @@ const DeleteLibrary = async ({props, params}) => {
 const Component = Container(ContentLibrary);
 const ContentLibrariesContainer = (props) => {
   const libraryId = props.libraryId || props.match.params.libraryId;
+
   return (
     <Component
       {...props}

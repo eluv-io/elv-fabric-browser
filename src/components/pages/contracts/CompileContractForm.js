@@ -1,9 +1,8 @@
 import React from "react";
 import PropTypes from "prop-types";
-import {Action, BrowseWidget, Form, RadioSelect} from "elv-components-js";
+import {Action, BrowseWidget, Form, JsonInput, RadioSelect} from "elv-components-js";
 import UrlJoin from "url-join";
 import Path from "path";
-import {JsonTextArea} from "../../../utils/Input";
 
 class CompileContractForm extends React.Component {
   constructor(props) {
@@ -70,12 +69,11 @@ class CompileContractForm extends React.Component {
         <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
 
         <label className="align-top" htmlFor="abi">ABI</label>
-        <JsonTextArea
+        <JsonInput
           name="abi"
           value={this.state.abi}
           required={true}
           onChange={this.HandleInputChange}
-          UpdateValue={formattedAbi => this.setState({abi: formattedAbi})}
         />
 
         <label className="align-top" htmlFor="bytecode">Bytecode</label>

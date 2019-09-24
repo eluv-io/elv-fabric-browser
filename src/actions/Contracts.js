@@ -5,7 +5,7 @@ import {SetErrorMessage, SetNotificationMessage} from "./Notifications";
 // TODO: Get this thing to work like a normal module
 import "browser-solc";
 import { FormatAddress } from "../utils/Helpers";
-import { ParseInputJson } from "../utils/Input";
+import { ParseInputJson } from "elv-components-js";
 import {ContractTypes} from "../utils/Contracts";
 import {GetContentLibrary, GetContentObject} from "./Content";
 import {ListAccessGroups} from "./AccessGroups";

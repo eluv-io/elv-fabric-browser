@@ -1,8 +1,7 @@
 import React from "react";
 import UrlJoin from "url-join";
 import Path from "path";
-import {JsonTextArea} from "../../../utils/Input";
-import {Action, Form} from "elv-components-js";
+import {Action, Form, JsonInput} from "elv-components-js";
 
 class WatchContractForm extends React.Component {
   constructor(props) {
@@ -66,12 +65,11 @@ class WatchContractForm extends React.Component {
             <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
 
             <label className="align-top" htmlFor="abi">ABI</label>
-            <JsonTextArea
+            <JsonInput
               name="abi"
               value={this.state.abi}
               required={true}
               onChange={this.HandleInputChange}
-              UpdateValue={formattedAbi => this.setState({abi: formattedAbi})}
             />
           </div>
         </Form>

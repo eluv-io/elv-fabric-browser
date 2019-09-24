@@ -3,8 +3,7 @@ import PropTypes from "prop-types";
 import UrlJoin from "url-join";
 import Path from "path";
 import Fabric from "../../../clients/Fabric";
-import {JsonTextArea} from "../../../utils/Input";
-import {Action, Form, RadioSelect} from "elv-components-js";
+import {Action, Form, JsonInput, RadioSelect} from "elv-components-js";
 
 class DeployContractForm extends React.Component {
   constructor(props) {
@@ -273,12 +272,11 @@ class DeployContractForm extends React.Component {
         </div>,
 
         <label key="contract-factory-abi-label" className="align-top" htmlFor="factoryAbi"/>,
-        <JsonTextArea
+        <JsonInput
           key="contract-factory-abi"
           name="factoryAbi"
           value={this.state.factoryAbi}
           onChange={this.HandleInputChange}
-          UpdateValue={formattedAbi => this.setState({factoryAbi: formattedAbi})}
         />
       ];
     }

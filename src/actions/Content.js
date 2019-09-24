@@ -1,7 +1,7 @@
 import ActionTypes from "./ActionTypes";
 import Fabric from "../clients/Fabric";
 import { SetNotificationMessage } from "./Notifications";
-import { ParseInputJson } from "../utils/Input";
+import { ParseInputJson } from "elv-components-js";
 import { ToList } from "../utils/TypeSchema";
 import { DownloadFromUrl, FileInfo } from "../utils/Files";
 import Path from "path";
@@ -441,6 +441,11 @@ export const CreateFromContentTypeSchema = ({libraryId, type, metadata, accessCh
       await Fabric.SetAccessCharge({objectId: createResponse.id, accessCharge});
     }
 
+    dispatch({
+      type: ActionTypes.content.libraries.invalidateListingCache,
+      libraryId
+    });
+
     dispatch(SetNotificationMessage({
       message: "Successfully created content",
       redirect: true
@@ -469,6 +474,11 @@ export const UpdateFromContentTypeSchema = ({libraryId, objectId, metadata, acce
     if(await Fabric.IsNormalObject({objectId})) {
       await Fabric.SetAccessCharge({objectId: objectId, accessCharge});
     }
+
+    dispatch({
+      type: ActionTypes.content.libraries.invalidateListingCache,
+      libraryId
+    });
 
     dispatch(SetNotificationMessage({
       message: "Successfully updated content",
@@ -520,6 +530,11 @@ export const DeleteContentObject = ({ libraryId, objectId }) => {
   return async (dispatch) => {
     await Fabric.DeleteContentObject({libraryId, objectId});
 
+    dispatch({
+      type: ActionTypes.content.libraries.invalidateListingCache,
+      libraryId
+    });
+
     dispatch(SetNotificationMessage({
       message: "Successfully deleted content object",
       redirect: true
@@ -563,6 +578,11 @@ export const UpdateContentObject = ({libraryId, objectId, name, description, typ
       libraryId,
       objectId,
       writeToken: contentDraft.write_token
+    });
+
+    dispatch({
+      type: ActionTypes.content.libraries.invalidateListingCache,
+      libraryId
     });
 
     dispatch(SetNotificationMessage({

@@ -7,7 +7,8 @@ const ContentReducer = (state = {}, action) => {
     objects: state.objects || {},
     types: state.types || {},
     availableTypes: state.availableTypes || {},
-    count: state.count || {libraries: 0, objects: {}, types: 0, libraryGroups: {}}
+    count: state.count || {libraries: 0, objects: {}, types: 0, libraryGroups: {}},
+    cacheIds: state.cacheIds || {}
   };
 
   switch(action.type) {
@@ -33,10 +34,14 @@ const ContentReducer = (state = {}, action) => {
       newState.libraries[action.libraryId].groupPermissions = action.permissions;
       break;
 
+    case ActionTypes.content.libraries.invalidateListingCache:
+      delete newState.cacheIds[action.libraryId];
+      break;
+
     case ActionTypes.content.objects.list:
       newState.objects = action.objects;
       newState.count.objects[action.libraryId] = action.count;
-      newState.cacheId = action.cacheId;
+      newState.cacheIds[action.libraryId] = action.cacheId;
       break;
 
     case ActionTypes.content.objects.get:

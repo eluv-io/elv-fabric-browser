@@ -12,14 +12,15 @@ const ActionTypes = {
       get: "GET_LIBRARY",
       groups: "GET_LIBRARY_GROUPS",
       groupPermissions: "GET_LIBRARY_GROUP_PERMISSIONS",
-      types: "GET_LIBRARY_TYPES"
+      types: "GET_LIBRARY_TYPES",
+      invalidateListingCache: "INVALIDATE_LISTING_CACHE"
     },
     objects: {
       list: "LIST_OBJECTS",
       get: "GET_OBJECTS",
       versions: "GET_OBJECT_VERSIONS",
       version: "GET_OBJECT_VERSION",
-      permissions: "GET_OBJECT_PERMISSIONS"
+      permissions: "GET_OBJECT_PERMISSIONS",
     },
     types: {
       get: "GET_TYPE",

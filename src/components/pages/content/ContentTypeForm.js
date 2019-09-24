@@ -2,8 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import UrlJoin from "url-join";
 import Path from "path";
-import { JsonTextArea } from "../../../utils/Input";
-import {Action, BrowseWidget, Form} from "elv-components-js";
+import {Action, BrowseWidget, Form, JsonInput} from "elv-components-js";
 
 class ContentTypeForm extends React.Component {
   constructor(props) {
@@ -94,11 +93,10 @@ class ContentTypeForm extends React.Component {
             <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
 
             <label className="align-top" htmlFor="metadata">Metadata</label>
-            <JsonTextArea
+            <JsonInput
               name={"metadata"}
               value={this.state.metadata}
               onChange={this.HandleInputChange}
-              UpdateValue={formattedMetadata => this.setState({metadata: formattedMetadata})}
             />
           </div>
         </Form>

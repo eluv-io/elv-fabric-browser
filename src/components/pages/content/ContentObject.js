@@ -32,6 +32,10 @@ const ToggleSection = ({label, children, className=""}) => {
 };
 
 const JSONField = ({json}) => {
+  if(!json || Object.keys(json).length === 0) {
+    return <pre className="content-object-data">{JSON.stringify(json, null, 2)}</pre>;
+  }
+
   const [showRaw, setShowRaw] = useState(false);
 
   const tabs = (

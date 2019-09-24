@@ -1,7 +1,14 @@
 import React from "react";
 import PropTypes from "prop-types";
-import {Action, BrowseWidget, Form, IconButton, RadioSelect, Tabs} from "elv-components-js";
-import {JsonTextArea} from "../../../utils/Input";
+import {
+  Action,
+  BrowseWidget,
+  Form,
+  JsonInput,
+  IconButton,
+  RadioSelect,
+  Tabs
+} from "elv-components-js";
 import UrlJoin from "url-join";
 import Path from "path";
 import {InitializeSchema, GetValue, SetValue, RemoveValue} from "../../../utils/TypeSchema";
@@ -295,12 +302,11 @@ class ContentObjectForm extends React.Component {
           onChange={onChange}
         />;
       case "json":
-        field = <JsonTextArea
+        field = <JsonInput
           key={key}
-          UpdateValue={formattedMetadata => this.HandleFieldChange({target: {value: formattedMetadata}}, entry, subtree) }
-          onChange={onChange}
           name={entry.key}
           value={value}
+          onChange={event => this.HandleFieldChange(event, entry, subtree)}
         />;
         break;
       case "file":
@@ -378,16 +384,16 @@ class ContentObjectForm extends React.Component {
 
   MetadataField() {
     //if(!this.state.allowCustomMetadata) { return null; }
-    return [
-      <label key="metadata-input-label" className="align-top">Metadata</label>,
-      <JsonTextArea
-        key="metadata-input"
-        UpdateValue={formattedMetadata => this.setState({metadata: formattedMetadata}) }
-        onChange={this.HandleInputChange}
-        name="metadata"
-        value={this.state.metadata}
-      />
-    ];
+    return (
+      <React.Fragment>
+        <label className="align-top">Metadata</label>
+        <JsonInput
+          onChange={this.HandleInputChange}
+          name="metadata"
+          value={this.state.metadata}
+        />
+      </React.Fragment>
+    );
   }
 
   AccessChargeField() {
