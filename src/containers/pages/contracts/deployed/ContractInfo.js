@@ -68,6 +68,7 @@ const ContractInfoContainer = (Component, componentStateToProps, componentDispat
           abi
         },
         loaded: false,
+        setup: false,
       };
     }
 
@@ -84,11 +85,11 @@ const ContractInfoContainer = (Component, componentStateToProps, componentDispat
           await this.props.GetContractBalance({
             contractAddress: this.state.contract.address
           });
-
-          this.setState({
-            loaded: true
-          });
         }
+
+        this.setState({
+          loaded: true
+        });
       } catch(error) {
         /* eslint-disable no-console */
         console.error("Failed to load contract info:");
@@ -100,7 +101,7 @@ const ContractInfoContainer = (Component, componentStateToProps, componentDispat
     // Some contract types require waiting for other information (e.g. object metadata) to load
     async componentDidUpdate() {
       try {
-        if(!this.state.loaded) {
+        if(this.state.loaded && !this.state.setup) {
           let contract = this.state.contract;
 
           // Add additional information about the contract if necessary
@@ -125,7 +126,8 @@ const ContractInfoContainer = (Component, componentStateToProps, componentDispat
 
           this.setState({
             contract,
-            loaded: true
+            loaded: true,
+            setup: true
           });
         }
       } catch(error) {
@@ -138,7 +140,7 @@ const ContractInfoContainer = (Component, componentStateToProps, componentDispat
 
     render() {
       return (
-        <LoadingElement fullPage={true} loading={!this.state.loaded}>
+        <LoadingElement fullPage={true} loading={!this.state.setup}>
           <Component
             {...this.props}
             libraryId={this.state.libraryId}

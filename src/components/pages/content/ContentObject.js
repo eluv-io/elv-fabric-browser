@@ -13,7 +13,7 @@ import {DownloadFromUrl} from "../../../utils/Files";
 import FileBrowser from "../../components/FileBrowser";
 import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
-import {Action, Confirm, LoadingElement, Tabs, TraversableJSON} from "elv-components-js";
+import {Action, Confirm, LoadingElement, Tabs, TraversableJson} from "elv-components-js";
 import {AccessChargeDisplay} from "../../../utils/Helpers";
 
 const ToggleSection = ({label, children, className=""}) => {
@@ -49,7 +49,7 @@ const JSONField = ({json}) => {
 
   const content = showRaw ?
     <pre className="content-object-data">{JSON.stringify(json, null, 2)}</pre> :
-    <TraversableJSON json={json} />;
+    <TraversableJson json={json} />;
 
   return (
     <React.Fragment>

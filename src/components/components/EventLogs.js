@@ -13,13 +13,15 @@ class EventLogs extends React.PureComponent {
     const inputs = Object.entries(log.values)
       .filter(([key]) => key !== "length" && parseInt(key).toString() !== key)
       .map(([key, value]) => {
-        if(typeof value === "object" && value._hex) {
+        if(value === null || value === undefined) {
+          return [key, "null"];
+        } else if(typeof value === "object" && value._hex) {
           return [key, `${parseInt(value._hex, 16)} (${value._hex})`];
         } else if(value.length === 66) {
           // bytes32
           return [key, ParseBytes32(value), value];
         } else {
-          return [key, value];
+          return [key, value.toString()];
         }
       });
 
