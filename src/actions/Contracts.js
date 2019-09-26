@@ -140,7 +140,11 @@ export const CompileContracts = (contractFiles) => {
 export const SaveContract = ({name, oldContractName, description, abi, bytecode}) => {
   return async (dispatch) => {
     if(typeof abi === "string") {
-      abi = ParseInputJson(abi);
+      try {
+        abi = ParseInputJson(abi);
+      } catch(error) {
+        throw `Invalid ABI: ${error.message}`;
+      }
     }
 
     await Fabric.AddContract({
@@ -166,7 +170,13 @@ export const SaveContract = ({name, oldContractName, description, abi, bytecode}
 export const WatchContract = ({name, address, description, abi}) => {
   return async (dispatch) => {
     address = FormatAddress(address);
-    abi = ParseInputJson(abi);
+
+    try {
+      abi = ParseInputJson(abi);
+    } catch(error) {
+      throw `Invalid ABI: ${error.message}`;
+    }
+
     const owner = await Fabric.CurrentAccountAddress();
 
     try {
@@ -266,6 +276,14 @@ export const SetCustomContentContract = ({
   funds
 }) => {
   return async (dispatch) => {
+    if(factoryAbi) {
+      try {
+        factoryAbi = ParseInputJson(factoryAbi);
+      } catch(error) {
+        throw `Invalid Factory ABI: ${error.message}`;
+      }
+    }
+
     const isContentType = libraryId === Fabric.contentSpaceLibraryId;
 
     let constructorArgs = [];
@@ -317,7 +335,7 @@ export const SetCustomContentContract = ({
           description: contractDescription,
           address: FormatAddress(address),
           abi,
-          factoryAbi: ParseInputJson(factoryAbi)
+          factoryAbi
         }
       });
 

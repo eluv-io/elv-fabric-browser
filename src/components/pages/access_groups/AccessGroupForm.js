@@ -60,7 +60,7 @@ class AccessGroupForm extends React.Component {
             <label htmlFor="name">Name</label>
             <input name="name" value={this.state.name} onChange={this.HandleInputChange} />
 
-            <label htmlFor="description">Description</label>
+            <label htmlFor="description" className="align-top">Description</label>
             <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
           </div>
         </Form>

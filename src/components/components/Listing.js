@@ -10,6 +10,8 @@ import {CancelableEvents} from "browser-cancelable-events";
 let ListingOptions = {};
 
 class Listing extends React.Component {
+
+  // Include intent when calling provided load method
   static ACTIONS = {
     initial: "INITIAL",
     page: "PAGE_CHANGE",

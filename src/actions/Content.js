@@ -97,8 +97,17 @@ export const ListContentLibraryGroupPermissions = ({libraryId}) => {
 
 export const CreateContentLibrary = ({name, description, publicMetadata, privateMetadata, image, kmsId}) => {
   return async (dispatch) => {
-    privateMetadata = ParseInputJson(privateMetadata);
-    publicMetadata = ParseInputJson(publicMetadata);
+    try {
+      privateMetadata = ParseInputJson(privateMetadata);
+    } catch(error) {
+      throw `Invalid Private Metadata: ${error.message}`;
+    }
+
+    try {
+      publicMetadata = ParseInputJson(publicMetadata);
+    } catch(error) {
+      throw `Invalid Public Metadata: ${error.message}`;
+    }
 
     publicMetadata.name = name;
     publicMetadata["eluv.description"] = description;
@@ -136,11 +145,21 @@ export const UpdateContentLibrary = ({
   image
 }) => {
   return async (dispatch) => {
-    privateMetadata = ParseInputJson(privateMetadata);
+    try {
+      privateMetadata = ParseInputJson(privateMetadata);
+    } catch(error) {
+      throw `Invalid Private Metadata: ${error.message}`;
+    }
+
+    try {
+      publicMetadata = ParseInputJson(publicMetadata);
+    } catch(error) {
+      throw `Invalid Public Metadata: ${error.message}`;
+    }
+
     privateMetadata.name = name;
     privateMetadata["eluv.description"] = description;
 
-    publicMetadata = ParseInputJson(publicMetadata);
     publicMetadata.name = name;
     publicMetadata["eluv.description"] = description;
 
@@ -407,7 +426,11 @@ const CollectMetadata = async ({libraryId, objectId, writeToken, schema, fields,
         break;
 
       case "json":
-        metadata[entry.key] = ParseInputJson(fields[entry.key]);
+        try {
+          metadata[entry.key] = ParseInputJson(fields[entry.key]);
+        } catch(error) {
+          throw `Invalid ${entry.key}: ${error.message}`;
+        }
         break;
 
       case "list":
@@ -433,6 +456,12 @@ const CollectMetadata = async ({libraryId, objectId, writeToken, schema, fields,
 
 export const CreateFromContentTypeSchema = ({libraryId, type, metadata, accessCharge, schema, fields, callback}) => {
   return async (dispatch) => {
+    try {
+      metadata = ParseInputJson(metadata);
+    } catch(error) {
+      throw `Invalid Metadata: ${error.message}`;
+    }
+
     let createResponse = await Fabric.CreateContentObject({
       libraryId,
       type,
@@ -444,7 +473,7 @@ export const CreateFromContentTypeSchema = ({libraryId, type, metadata, accessCh
       objectId: createResponse.id,
       writeToken: createResponse.write_token,
       metadata: {
-        ...ParseInputJson(metadata),
+        ...metadata,
         ...(await CollectMetadata({
           libraryId,
           objectId: createResponse.id,
@@ -477,6 +506,12 @@ export const CreateFromContentTypeSchema = ({libraryId, type, metadata, accessCh
 
 export const UpdateFromContentTypeSchema = ({libraryId, objectId, metadata, accessCharge, schema, fields, callback}) => {
   return async (dispatch) => {
+    try {
+      metadata = ParseInputJson(metadata);
+    } catch(error) {
+      throw `Invalid Metadata: ${error.message}`;
+    }
+
     await Fabric.EditAndFinalizeContentObject({
       libraryId,
       objectId,
@@ -486,7 +521,7 @@ export const UpdateFromContentTypeSchema = ({libraryId, objectId, metadata, acce
           objectId,
           writeToken,
           metadata: {
-            ...ParseInputJson(metadata),
+            ...metadata,
             ...(await CollectMetadata({libraryId, writeToken, schema, fields, callback}))
           }
         });
@@ -571,6 +606,12 @@ export const DeleteContentVersion = ({ libraryId, objectId, versionHash }) => {
 
 export const UpdateContentObject = ({libraryId, objectId, name, description, type, metadata}) => {
   return async (dispatch) => {
+    try {
+      metadata = ParseInputJson(metadata);
+    } catch(error) {
+      throw `Invalid Metadata: ${error.message}`;
+    }
+
     let contentDraft = await Fabric.EditContentObject({
       libraryId,
       objectId,
@@ -579,7 +620,6 @@ export const UpdateContentObject = ({libraryId, objectId, name, description, typ
       }
     });
 
-    metadata = ParseInputJson(metadata);
     metadata.name = name;
     metadata["eluv.description"] = description;
 
@@ -609,10 +649,16 @@ export const UpdateContentObject = ({libraryId, objectId, name, description, typ
 
 export const CreateContentType = ({name, description, metadata, bitcode}) => {
   return async (dispatch) => {
+    try {
+      metadata = ParseInputJson(metadata);
+    } catch(error) {
+      throw `Invalid Metadata: ${error.message}`;
+    }
+
     const objectId = await Fabric.CreateContentType({
       name,
       description,
-      metadata: ParseInputJson(metadata),
+      metadata,
       bitcode
     });
 
@@ -627,11 +673,16 @@ export const CreateContentType = ({name, description, metadata, bitcode}) => {
 
 export const UpdateContentType = ({libraryId, objectId, name, description, bitcode, metadata}) => {
   return async (dispatch) => {
+    try {
+      metadata = ParseInputJson(metadata);
+    } catch(error) {
+      throw `Invalid Metadata: ${error.message}`;
+    }
+
     await Fabric.EditAndFinalizeContentObject({
       libraryId,
       objectId,
       todo: async (writeToken) => {
-        metadata = ParseInputJson(metadata);
         metadata.name = name;
         metadata["eluv.description"] = description;
 
