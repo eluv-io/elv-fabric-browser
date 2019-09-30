@@ -920,8 +920,12 @@ const Fabric = {
 
   /* Files */
 
-  UploadFiles: ({libraryId, objectId, writeToken, fileInfo}) => {
-    return client.UploadFiles({libraryId, objectId, writeToken, fileInfo});
+  UploadFiles: async ({libraryId, objectId, writeToken, fileInfo}) => {
+    return await client.UploadFiles({libraryId, objectId, writeToken, fileInfo});
+  },
+
+  DeleteFiles: async ({libraryId, objectId, writeToken, filePaths}) => {
+    return await client.DeleteFiles({libraryId, objectId, writeToken, filePaths});
   },
 
   DownloadFile: ({libraryId, objectId, versionHash, filePath}) => {

@@ -1,10 +1,10 @@
 import React from "react";
 import PropTypes from "prop-types";
-import UrlJoin from "url-join";
 import Path from "path";
 import {PageHeader} from "../../components/Page";
 import {LabelledField} from "../../components/LabelledField";
-import {Action, Confirm, LoadingElement} from "elv-components-js";
+import {Action, Confirm, LoadingElement, Modal} from "elv-components-js";
+import FileUploadWidget from "../../components/FileUploadWidget";
 
 class ContentApps extends React.Component {
   constructor(props) {
@@ -21,11 +21,48 @@ class ContentApps extends React.Component {
     });
 
     this.state = {
-      apps
+      apps,
+      role: "",
+      showUpload: false
     };
 
     this.PageContent = this.PageContent.bind(this);
     this.DeleteApp = this.DeleteApp.bind(this);
+    this.HandleSubmit = this.HandleSubmit.bind(this);
+  }
+
+  async HandleSubmit(path, fileList, isDirectory) {
+    await this.props.methods.Submit({
+      libraryId: this.props.libraryId,
+      objectId: this.props.objectId,
+      role: this.state.role,
+      isDirectory,
+      fileList
+    });
+  }
+
+  UploadModal() {
+    if(!this.state.showUpload) { return null; }
+
+    const closeModal = () => this.setState({showUpload: false});
+
+    return (
+      <Modal
+        closable={true}
+        OnClickOutside={closeModal}
+      >
+        <FileUploadWidget
+          legend={`Upload ${this.state.role} Application`}
+          path={this.state.path}
+          displayPath={this.state.displayPath}
+          files={this.props.files}
+          uploadStatus={this.props.methodStatus.Submit}
+          Upload={this.HandleSubmit}
+          OnCancel={closeModal}
+          OnComplete={() => {closeModal() ; this.props.Load();}}
+        />
+      </Modal>
+    );
   }
 
   AppRoles() {
@@ -52,9 +89,10 @@ class ContentApps extends React.Component {
 
     let info;
     let action;
+    let deleteButton;
     if(app) {
       // App set for this role - remove button
-      action = (
+      deleteButton = (
         <Action onClick={() => this.DeleteApp(role)} className="action danger action-compact action-wide">
           {`Remove ${role.capitalize()} App`}
         </Action>
@@ -65,12 +103,7 @@ class ContentApps extends React.Component {
         </LabelledField>
       );
     } else {
-      // App not set for this role - add button
-      action = (
-        <Action type="link" to={UrlJoin(this.props.match.url, role, "add")} className="action-compact action-wide">
-          {`Add ${role.capitalize()} App`}
-        </Action>
-      );
+
       const typeMeta = (this.props.object.typeInfo && this.props.object.typeInfo.meta) || {};
       const typeApp = typeMeta[`eluv.${role}App`];
       if(typeApp) {
@@ -83,6 +116,12 @@ class ContentApps extends React.Component {
       }
     }
 
+    action = (
+      <Action onClick={() => this.setState({showUpload: true, role})} className="action-compact action-wide">
+        {`Add ${role.capitalize()} App`}
+      </Action>
+    );
+
     return (
       <div key={"app-entry" + role}>
         <h3>
@@ -92,6 +131,7 @@ class ContentApps extends React.Component {
           { info }
           <LabelledField>
             { action }
+            { deleteButton }
           </LabelledField>
         </div>
       </div>
@@ -114,6 +154,7 @@ class ContentApps extends React.Component {
             { this.AppRoles().map(role => this.AppEntry(role))}
           </div>
         </div>
+        { this.UploadModal() }
       </div>
     );
   }

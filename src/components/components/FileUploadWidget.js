@@ -15,7 +15,7 @@ class FileUploadWidget extends React.Component {
   }
 
   async HandleSubmit() {
-    await this.props.Upload(this.props.path, this.state.files);
+    await this.props.Upload(this.props.path, this.state.files, this.state.directories);
   }
 
   render() {
@@ -23,7 +23,7 @@ class FileUploadWidget extends React.Component {
       <div className="upload-widget">
         <div className="modal-error">{this.state.error}</div>
         <Form
-          legend={"Upload files to " + this.props.displayPath}
+          legend={this.props.legend}
           status={this.props.uploadStatus}
           OnSubmit={this.HandleSubmit}
           OnCancel={this.props.OnCancel}
@@ -56,8 +56,8 @@ class FileUploadWidget extends React.Component {
 }
 
 FileUploadWidget.propTypes = {
-  path: PropTypes.string.isRequired,
-  displayPath: PropTypes.string.isRequired,
+  legend: PropTypes.string.isRequired,
+  path: PropTypes.string,
   progress: PropTypes.object,
   uploadStatus: PropTypes.object,
   Upload: PropTypes.func.isRequired,

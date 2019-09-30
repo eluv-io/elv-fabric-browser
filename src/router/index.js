@@ -24,7 +24,6 @@ import ContentTypesContainer from "../containers/pages/content/ContentTypes";
 import ContentTypeFormContainer from "../containers/pages/content/ContentTypeForm";
 
 import ContentAppsContainer from "../containers/pages/content/ContentApps";
-import ContentAppFormContainer from "../containers/pages/content/ContentAppForm";
 
 /* Access Groups */
 import AccessGroupsContainer from "../containers/pages/access_groups/AccessGroups";
@@ -162,10 +161,6 @@ class Router extends React.Component {
           <Route exact path="/content/:libraryId/:objectId/apps" component={ContentAppsContainer}/>
           <Route exact path="/content-types/:objectId/apps" render={(props) =>
             <ContentAppsContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
-
-          <Route exact path="/content/:libraryId/:objectId/apps/:role/add" component={ContentAppFormContainer}/>
-          <Route exact path="/content-types/:objectId/apps/:role/add" render={(props) =>
-            <ContentAppFormContainer libraryId={Fabric.contentSpaceLibraryId} {...props} />}/>
 
           <Route exact path="/content/:libraryId/:objectId/deploy" component={DeployContractFormContainer}/>
           <Route exact path="/content-types/:objectId/deploy" render={(props) =>

@@ -1,5 +1,9 @@
 @import "~elv-components-js/src/stylesheets/defaults";
 
+.app-version {
+  display: none;
+}
+
 // sass-lint:disable no-important
 .hidden {
   display: none !important;

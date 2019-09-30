@@ -2,6 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import Thunk from "../../../utils/Thunk";
 import {
+  AddApp,
   GetContentLibrary,
   GetContentObject,
   RemoveApp
@@ -20,6 +21,7 @@ const mapDispatchToProps = dispatch =>
     [
       GetContentLibrary,
       GetContentObject,
+      AddApp,
       RemoveApp
     ]
   );
@@ -27,6 +29,10 @@ const mapDispatchToProps = dispatch =>
 const LoadObject = async ({props}) => {
   await props.GetContentLibrary({libraryId: props.libraryId});
   await props.GetContentObject({libraryId: props.libraryId, objectId: props.objectId});
+};
+
+const Submit = async ({props, params}) => {
+  await props.AddApp(params);
 };
 
 const Remove = async ({props, params}) => {
@@ -45,6 +51,7 @@ const ContentAppsContainer = (props) => {
       objectId={objectId}
       Load={LoadObject}
       methods={{
+        Submit: Submit,
         RemoveApp: Remove
       }}
     />

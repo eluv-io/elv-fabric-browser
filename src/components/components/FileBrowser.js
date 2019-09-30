@@ -124,7 +124,7 @@ class FileBrowser extends React.Component {
       >
         <FileUploadWidget
           path={this.state.path}
-          displayPath={this.state.displayPath}
+          legend={`Upload files to ${this.state.displayPath}`}
           files={this.props.files}
           uploadStatus={this.props.uploadStatus}
           Upload={this.props.Upload}

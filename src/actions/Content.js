@@ -6,6 +6,7 @@ import { ToList } from "../utils/TypeSchema";
 import { DownloadFromUrl, FileInfo } from "../utils/Files";
 import Path from "path";
 import { WithCancel } from "../utils/Cancelable";
+import UrlJoin from "url-join";
 
 export const ListContentLibraries = ({params}) => {
   return async (dispatch) => {
@@ -833,17 +834,27 @@ export const FileUrl = ({libraryId, objectId, versionHash, filePath}) => {
   };
 };
 
-export const AddApp = ({libraryId, objectId, role, file}) => {
+export const AddApp = ({libraryId, objectId, role, isDirectory, fileList}) => {
   return async (dispatch) => {
+    const app = `${role}App`;
+    const fileInfo = await FileInfo(app, fileList, false, isDirectory);
+
+    if(!fileInfo.find(file => file.path.endsWith("index.html"))) {
+      throw Error("App must contain an index.html file");
+    }
+
     await Fabric.EditAndFinalizeContentObject({
       libraryId,
       objectId,
       todo: async (writeToken) => {
-        // Override given filename
-        const fileName = `${role}App.html`;
-        file[0].overrideName = fileName;
-
-        const fileInfo = await FileInfo("/", file);
+        await Fabric.DeleteFiles({
+          libraryId,
+          objectId,
+          writeToken,
+          filePaths: [
+            app
+          ]
+        });
 
         await Fabric.UploadFiles({
           libraryId,
@@ -857,7 +868,7 @@ export const AddApp = ({libraryId, objectId, role, file}) => {
           objectId,
           writeToken,
           metadataSubtree: `eluv.${role}App`,
-          metadata: fileName
+          metadata: UrlJoin(app, "index.html")
         });
       }
     });
@@ -875,6 +886,15 @@ export const RemoveApp = ({libraryId, objectId, role}) => {
       libraryId,
       objectId,
       todo: async (writeToken) => {
+        await Fabric.DeleteFiles({
+          libraryId,
+          objectId,
+          writeToken,
+          filePaths: [
+            `${role}App`
+          ]
+        });
+
         await Fabric.DeleteMetadata({
           libraryId,
           objectId,

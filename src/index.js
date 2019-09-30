@@ -27,19 +27,22 @@ const store = createStore(
 );
 
 render(
-  <Provider store={store}>
-    <div className="app-container">
-      <ConnectedRouter history={history}>
-        <ScrollToTop>
-          <div className="view-container">
-            <NavigationBar />
-            <Notifications />
-            <Routes />
-          </div>
-        </ScrollToTop>
-      </ConnectedRouter>
-    </div>
-  </Provider>,
+  <React.Fragment>
+    <Provider store={store}>
+      <div className="app-container">
+        <ConnectedRouter history={history}>
+          <ScrollToTop>
+            <div className="view-container">
+              <NavigationBar />
+              <Notifications />
+              <Routes />
+            </div>
+          </ScrollToTop>
+        </ConnectedRouter>
+      </div>
+    </Provider>
+    <div className="app-version">{EluvioConfiguration.version}</div>
+  </React.Fragment>,
   document.getElementById("app")
 );
 

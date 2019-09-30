@@ -3,6 +3,10 @@
 form {
   @include elv-form;
 
+  &.small-form {
+    width: 40rem;
+  }
+
   input {
     height: 2em;
   }
