@@ -750,7 +750,7 @@ export const UploadParts = ({libraryId, objectId, files, encrypt=false, callback
           writeToken: contentDraft.write_token,
           file,
           encrypt,
-          chunkSize: 2000000,
+          chunkSize: 10000000,
           callback: partCallback
         })
       ).part.hash;
@@ -790,7 +790,7 @@ export const DownloadPart = ({libraryId, objectId, versionHash, partHash, callba
       partHash,
       format: "arrayBuffer",
       chunked: true,
-      chunkSize: 1000000,
+      chunkSize: 10000000,
       callback: ({bytesFinished, bytesTotal, chunk}) => {
         callback({bytesFinished, bytesTotal});
         chunks.push(chunk);

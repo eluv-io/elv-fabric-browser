@@ -54,6 +54,7 @@ class ContentObjectPartsForm extends React.Component {
           redirectPath={Path.dirname(this.props.match.url)}
           cancelPath={Path.dirname(this.props.match.url)}
           status={this.props.methodStatus.Submit}
+          className="small-form"
           OnSubmit={this.HandleSubmit}
         >
           <div className="form-content">

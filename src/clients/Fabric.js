@@ -955,23 +955,43 @@ const Fabric = {
       callback({uploaded: 0, total: file.size});
     }
 
+    let lastUpload;
+    let uploaded = 0;
     const totalChunks = Math.ceil(file.size / chunkSize);
     for(let chunkNumber = 0; chunkNumber < totalChunks; chunkNumber++) {
       const from = chunkNumber * chunkSize;
       const to = Math.min(from + chunkSize, file.size);
 
-      await client.UploadPartChunk({
+      // Encrypt next chunk (if necessary) while previous chunk is in flight
+      let chunk = await file.slice(from, to).arrayBuffer();
+      if(encrypt) {
+        chunk = await client.Encrypt({libraryId, objectId, writeToken, chunk});
+      }
+
+      if(lastUpload) {
+        await lastUpload;
+
+        if(callback) {
+          callback({uploaded, total: file.size});
+        }
+      }
+
+      lastUpload = client.UploadPartChunk({
         libraryId,
         objectId,
         writeToken,
         partWriteToken,
-        chunk: await new Response(file.slice(from, to)).arrayBuffer(),
-        encryption
+        chunk,
+        encryption: "none"
       });
 
-      if(callback) {
-        callback({uploaded: to, total: file.size});
-      }
+      uploaded = to;
+    }
+
+    await lastUpload;
+
+    if(callback) {
+      callback({uploaded, total: file.size});
     }
 
     return await client.FinalizePart({libraryId, objectId, writeToken, partWriteToken, encryption});
