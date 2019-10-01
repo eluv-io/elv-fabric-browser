@@ -847,15 +847,6 @@ export const AddApp = ({libraryId, objectId, role, isDirectory, fileList}) => {
       libraryId,
       objectId,
       todo: async (writeToken) => {
-        await Fabric.DeleteFiles({
-          libraryId,
-          objectId,
-          writeToken,
-          filePaths: [
-            app
-          ]
-        });
-
         await Fabric.UploadFiles({
           libraryId,
           objectId,
@@ -886,15 +877,6 @@ export const RemoveApp = ({libraryId, objectId, role}) => {
       libraryId,
       objectId,
       todo: async (writeToken) => {
-        await Fabric.DeleteFiles({
-          libraryId,
-          objectId,
-          writeToken,
-          filePaths: [
-            `${role}App`
-          ]
-        });
-
         await Fabric.DeleteMetadata({
           libraryId,
           objectId,
