@@ -5,9 +5,12 @@ import ContentIcon from "../static/icons/content.svg";
 import GroupsIcon from "../static/icons/groups.svg";
 import ContentTypeIcon from "../static/icons/content_types.svg";
 import ContractsIcon from "../static/icons/contracts.svg";
-import LogsIcon from "../static/icons/logs.svg";
+import EventsIcon from "../static/icons/logs.svg";
 import {ImageIcon} from "elv-components-js";
+import {inject, observer} from "mobx-react";
 
+@inject("routeStore")
+@observer
 class NavigationBar extends React.Component {
   static Links() {
     return [
@@ -33,16 +36,16 @@ class NavigationBar extends React.Component {
         icon: ContractsIcon
       },
       {
-        link: "logs",
-        text: "Logs",
-        icon: LogsIcon
+        link: "events",
+        text: "Events",
+        icon: EventsIcon
       }
     ];
   }
 
   NavLink({linkInfo}) {
-    let active = linkInfo.rootPath && !this.props.currentBasePath ||
-      this.props.currentBasePath === linkInfo.link;
+    const basePath = (this.props.routeStore.path || "").split("/")[1];
+    let active = linkInfo.rootPath && !basePath || basePath === linkInfo.link;
     return (
       <div key={"navbar-link-" + linkInfo.link} className="navbar-link-container">
         <Link to={"/" + linkInfo.link} className={"navbar-link " + (active ? "active" : "")}>

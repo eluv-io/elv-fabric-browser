@@ -1,9 +1,11 @@
 import React from "react";
-import PropTypes from "prop-types";
 import {Action, BrowseWidget, Form, JsonInput, RadioSelect} from "elv-components-js";
 import UrlJoin from "url-join";
 import Path from "path";
+import {inject, observer} from "mobx-react";
 
+@inject("contractStore")
+@observer
 class CompileContractForm extends React.Component {
   constructor(props) {
     super(props);
@@ -26,6 +28,10 @@ class CompileContractForm extends React.Component {
     this.setState({
       [event.target.name]: event.target.value
     });
+
+    if(event.target.name === "compileFromSource") {
+      this.setState({errors: undefined});
+    }
   }
 
   HandleFileSelect(event) {
@@ -36,9 +42,17 @@ class CompileContractForm extends React.Component {
 
   async HandleSubmit() {
     if(this.state.compileFromSource) {
-      await this.props.methods.CompileContracts(this.state.files);
+      try {
+        await this.props.contractStore.CompileContracts(this.state.files);
+      } catch(errors) {
+        this.setState({
+          errors
+        });
+
+        throw "Compilation Error";
+      }
     } else {
-      await this.props.methods.Submit({
+      await this.props.contractStore.SaveContract({
         name: this.state.name,
         description: this.state.description,
         abi: this.state.abi,
@@ -48,11 +62,11 @@ class CompileContractForm extends React.Component {
   }
 
   Errors() {
-    if(!this.props.errors) { return null; }
+    if(!this.state.errors) { return null; }
 
     return (
       <pre>
-        { "Compilation errors: \n\n" + this.props.errors }
+        { "Compilation errors: \n\n" + this.state.errors }
       </pre>
     );
   }
@@ -93,16 +107,13 @@ class CompileContractForm extends React.Component {
           onChange={this.HandleFileSelect}
           required={true}
           multiple={true}
-          accept=".sol"
+          //accept=".sol"
         />
       </div>
     );
   }
 
   render() {
-    const status = this.state.compileFromSource ?
-      this.props.methodStatus.CompileContracts : this.props.methodStatus.Submit;
-
     const backPath = Path.dirname(this.props.match.url);
     const redirectPath = this.state.compileFromSource ? UrlJoin(backPath, "save") : UrlJoin(backPath, "saved");
 
@@ -117,6 +128,7 @@ class CompileContractForm extends React.Component {
           cancelPath={backPath}
           status={status}
           OnSubmit={this.HandleSubmit}
+          className="small-form"
         >
           <div>
             <div className="form-content">
@@ -142,13 +154,5 @@ class CompileContractForm extends React.Component {
     );
   }
 }
-
-CompileContractForm.propTypes = {
-  errors: PropTypes.array,
-  methods: PropTypes.shape({
-    CompileContracts: PropTypes.func.isRequired,
-    Submit: PropTypes.func.isRequired
-  })
-};
 
 export default CompileContractForm;

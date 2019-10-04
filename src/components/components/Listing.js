@@ -5,10 +5,13 @@ import GridIcon from "../../static/icons/grid.svg";
 import ListIcon from "../../static/icons/list.svg";
 import RefreshIcon from "../../static/icons/refresh.svg";
 import ListingView from "./ListingView";
-import {CancelableEvents} from "browser-cancelable-events";
+import {CancelableEvents, isCancelledPromiseError} from "browser-cancelable-events";
+import {inject, observer} from "mobx-react";
 
 let ListingOptions = {};
 
+@inject("libraryStore")
+@observer
 class Listing extends React.Component {
 
   // Include intent when calling provided load method
@@ -32,7 +35,11 @@ class Listing extends React.Component {
       page: 1,
       selectFilter: this.props.selectFilterOptions ? savedOptions.filter || this.props.selectFilterOptions[0][1] : "",
       filter: "",
-      filterTimeout: undefined
+      filterTimeout: undefined,
+      status: {
+        loading: true,
+        error: ""
+      }
     };
 
     this.Load = this.Load.bind(this);
@@ -44,24 +51,55 @@ class Listing extends React.Component {
     this.Load(Listing.ACTIONS.initial);
   }
 
-  Load(action) {
+  componentWillUnmount() {
     if(this.cancelable) {
       this.cancelable.cancelAll();
     }
+  }
 
-    this.cancelable = new CancelableEvents();
-
-    this.props.LoadContent({
-      action,
-      params: {
-        paginate: true,
-        page: this.state.page,
-        perPage: this.state.perPage,
-        filter: this.state.filter,
-        selectFilter: this.state.selectFilter,
-        cancelable: this.cancelable
+  async Load(action) {
+    this.setState({
+      status: {
+        loading: true,
+        error: ""
       }
     });
+
+    try {
+      if(this.cancelable) {
+        this.cancelable.cancelAll();
+      }
+
+      this.cancelable = new CancelableEvents();
+
+      await this.props.LoadContent({
+        action,
+        params: {
+          paginate: true,
+          page: this.state.page,
+          perPage: this.state.perPage,
+          filter: this.state.filter,
+          selectFilter: this.state.selectFilter,
+          cancelable: this.cancelable
+        }
+      });
+
+      this.setState({
+        status: {
+          loading: false,
+          error: ""
+        }
+      });
+    } catch(error) {
+      if(isCancelledPromiseError(error)) { return; }
+
+      this.setState({
+        status: {
+          loading: false,
+          error: error.message
+        }
+      });
+    }
   }
 
   SwitchView(view) {
@@ -203,7 +241,7 @@ class Listing extends React.Component {
     return (
       <select
         className="per-page-controls"
-        disabled={this.props.loadingStatus.loading}
+        disabled={this.state.status.loading}
         value={this.state.perPage}
         onChange={(event) => {
           const perPage = parseInt(event.target.value);
@@ -247,7 +285,7 @@ class Listing extends React.Component {
           <input className="filter" placeholder="Filter" value={this.state.filter} onChange={this.Filter} />
           { this.SelectFilter() }
           { switchViewButton }
-          <LoadingElement loadingClassname="loading-action" loading={this.props.loadingStatus.loading} loadingIcon="rotate" >
+          <LoadingElement loadingClassname="loading-action" loading={this.state.status.loading} loadingIcon="rotate" >
             <IconButton
               className="listing-action"
               icon={RefreshIcon}
@@ -281,12 +319,12 @@ class Listing extends React.Component {
   }
 
   render() {
-    if(this.props.loadingStatus.error) {
+    if(this.state.status.error) {
       return (
         <div className="error-page">
           <div>There was a problem loading this page:</div>
-          <div className="error-message">{this.props.loadingStatus.errorMessage}</div>
-          <LoadingElement loading={this.props.loadingStatus.loading} loadingIcon="rotate">
+          <div className="error-message">{this.state.status.error}</div>
+          <LoadingElement loading={this.state.status.loading} loadingIcon="rotate">
             <Action onClick={() => this.Load(Listing.ACTIONS.reload)}>Try Again</Action>
           </LoadingElement>
         </div>
@@ -294,9 +332,9 @@ class Listing extends React.Component {
     }
 
     return (
-      <div className={`listing ${this.props.className || ""}`}>
+      <div key={`listing-${this.props.pageId}`} className={`listing ${this.props.className || ""}`}>
         { this.Actions() }
-        <LoadingElement loading={this.props.loadingStatus.loading} loadingClassname="loading" loadingIcon="rotate">
+        <LoadingElement loading={this.state.status.loading} loadingClassname="loading" loadingIcon="rotate">
           { this.Count() }
           <ListingView
             count={this.props.count}
@@ -320,7 +358,6 @@ Listing.propTypes = {
   count: PropTypes.number,
   selectFilterLabel: PropTypes.string,
   selectFilterOptions: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)),
-  loadingStatus: PropTypes.object.isRequired,
   RenderContent: PropTypes.func.isRequired,
   LoadContent: PropTypes.func.isRequired
 };

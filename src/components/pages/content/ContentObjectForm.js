@@ -1,5 +1,4 @@
 import React from "react";
-import PropTypes from "prop-types";
 import {
   Action,
   BrowseWidget,
@@ -7,7 +6,7 @@ import {
   JsonInput,
   IconButton,
   RadioSelect,
-  Tabs
+  Tabs, AsyncComponent
 } from "elv-components-js";
 import UrlJoin from "url-join";
 import Path from "path";
@@ -18,6 +17,7 @@ import {DownloadFromUrl} from "../../../utils/Files";
 import Fabric from "../../../clients/Fabric";
 import AppFrame from "../../components/AppFrame";
 import Redirect from "react-router/es/Redirect";
+import {inject, observer} from "mobx-react";
 
 const defaultSchema = [
   {
@@ -35,6 +35,10 @@ const defaultSchema = [
 ];
 
 // Build a form from a JSON schema
+@inject("libraryStore")
+@inject("objectStore")
+@inject("typeStore")
+@observer
 class ContentObjectForm extends React.Component {
   constructor(props) {
     super(props);
@@ -45,6 +49,7 @@ class ContentObjectForm extends React.Component {
       uploadStatus: {}
     };
 
+    this.PageContent = this.PageContent.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleFieldChange = this.HandleFieldChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
@@ -52,10 +57,6 @@ class ContentObjectForm extends React.Component {
     this.RemoveElement = this.RemoveElement.bind(this);
     this.FrameCompleted = this.FrameCompleted.bind(this);
     this.UploadStatusCallback = this.UploadStatusCallback.bind(this);
-  }
-
-  componentDidMount() {
-    this.Initialize();
   }
 
   FormatType(type) {
@@ -78,9 +79,9 @@ class ContentObjectForm extends React.Component {
 
     let metadata = "";
     let accessCharge = 0;
-    if(this.props.createForm) {
+    if(this.state.createForm) {
       let allowedTypes = {};
-      Object.values(this.props.library.types).forEach(type => allowedTypes[type.hash] = type);
+      Object.values(this.props.libraryStore.library.types).forEach(type => allowedTypes[type.hash] = type);
 
       if(Object.keys(allowedTypes).length > 0) {
         // Allowed types specified on library - limit options to that list
@@ -88,12 +89,12 @@ class ContentObjectForm extends React.Component {
         types = allowedTypes;
       } else {
         // No allowed types specified on library - all types allowed
-        Object.values(this.props.types).forEach(type => types[type.hash] = type);
+        Object.values(this.props.typeStore.allTypes).forEach(type => types[type.hash] = type);
       }
 
       Object.values(types).forEach(type => types[type.hash] = this.FormatType(type));
     } else {
-      const object = this.props.object;
+      const object = this.props.objectStore.object;
       metadata = JSON.stringify(object.meta, null, 2);
       accessCharge = object.accessInfo && object.accessInfo.accessCharge;
       type = object.type;
@@ -116,7 +117,7 @@ class ContentObjectForm extends React.Component {
   }
 
   SwitchType(types, type) {
-    const object = this.props.object;
+    const object = this.props.objectStore.object;
     let typeOptions = type && types[type] || {};
 
     let manageAppUrl;
@@ -131,7 +132,7 @@ class ContentObjectForm extends React.Component {
     }
 
     const allowCustomMetadata = typeOptions.schema ? typeOptions.allowCustomMetadata : true;
-    const data = this.props.createForm ? undefined : this.props.object.meta;
+    const data = this.state.createForm ? undefined : object.meta;
 
     const initialFields = InitializeSchema({schema, initialData: data});
 
@@ -200,20 +201,35 @@ class ContentObjectForm extends React.Component {
   async HandleSubmit() {
     const type = this.state.type === "[none]" ? "" : this.state.type;
 
-    await this.props.methods.Submit({
-      type,
-      libraryId: this.props.libraryId,
-      objectId: this.props.objectId,
-      schema: this.state.schema,
-      fields: this.state.fields,
-      metadata: this.state.metadata,
-      accessCharge: this.state.accessCharge,
-      callback: this.UploadStatusCallback
-    });
+    let objectId;
+    if(this.state.createForm) {
+      objectId = await this.props.objectStore.CreateFromContentTypeSchema({
+        type,
+        libraryId: this.props.objectStore.libraryId,
+        schema: this.state.schema,
+        fields: this.state.fields,
+        metadata: this.state.metadata,
+        accessCharge: this.state.accessCharge,
+        callback: this.UploadStatusCallback
+      });
+    } else {
+      objectId = await this.props.objectStore.UpdateFromContentTypeSchema({
+        type,
+        libraryId: this.props.objectStore.libraryId,
+        objectId: this.props.objectStore.objectId,
+        schema: this.state.schema,
+        fields: this.state.fields,
+        metadata: this.state.metadata,
+        accessCharge: this.state.accessCharge,
+        callback: this.UploadStatusCallback
+      });
+    }
+
+    this.setState({objectId});
   }
 
   TypeField() {
-    if(!this.props.createForm) { return; }
+    if(!this.state.createForm) { return; }
 
     const types = Object.values(this.state.types).sort((a, b) => a.name > b.name ? 1 : -1);
     let options = types.map(({name, hash}) => {
@@ -221,7 +237,7 @@ class ContentObjectForm extends React.Component {
     });
 
     // If library types not restricted, allow creation of objects with no type
-    if(!this.props.library.types || Object.keys(this.props.library.types).length === 0) {
+    if(!this.props.libraryStore.library.types || Object.keys(this.props.libraryStore.library.types).length === 0) {
       options.unshift(
         <option key="type-none" name="type" value="">[none]</option>
       );
@@ -258,7 +274,7 @@ class ContentObjectForm extends React.Component {
               async () => {
                 const type = this.state.types[this.state.type];
                 if(entry.hash) {
-                  await this.props.DownloadPart({
+                  await this.props.objectStore.DownloadPart({
                     libraryId: Fabric.contentSpaceLibraryId,
                     objectId: type.id,
                     versionHash: type.hash,
@@ -310,7 +326,7 @@ class ContentObjectForm extends React.Component {
         />;
         break;
       case "file":
-        const required = entry.required && this.props.createForm;
+        const required = entry.required && this.state.createForm;
 
         field = (
           <BrowseWidget
@@ -423,8 +439,8 @@ class ContentObjectForm extends React.Component {
   AppFrame(legend) {
     const queryParams = {
       contentSpaceId: Fabric.contentSpaceId,
-      libraryId: this.props.libraryId,
-      objectId: this.props.objectId,
+      libraryId: this.props.objectStore.libraryId,
+      objectId: this.props.objectStore.objectId,
       type: this.state.type,
       action: "manage"
     };
@@ -461,7 +477,6 @@ class ContentObjectForm extends React.Component {
           legend={legend}
           redirectPath={redirectPath}
           cancelPath={cancelPath}
-          status={this.props.methodStatus.Submit}
           OnSubmit={this.HandleSubmit}
         >
           <div>
@@ -478,16 +493,14 @@ class ContentObjectForm extends React.Component {
     );
   }
 
-  render() {
+  PageContent() {
     if(!this.state.schema && !this.state.manageAppUrl) { return null; }
 
-    const legend = this.props.createForm ? "Contribute content" : "Manage content";
+    const legend = this.state.createForm ? "Contribute content" : "Manage content";
 
     let redirectPath = Path.dirname(this.props.match.url);
-    if(this.props.createForm) {
-      // On creation, objectId won't exist until submission
-      redirectPath = this.props.objectId ?
-        UrlJoin(Path.dirname(this.props.match.url), this.props.objectId) : Path.dirname(this.props.match.url);
+    if(this.state.createForm && this.state.objectId) {
+      redirectPath = UrlJoin(Path.dirname(this.props.match.url), this.state.objectId);
     }
     const cancelPath = Path.dirname(this.props.match.url);
 
@@ -501,18 +514,37 @@ class ContentObjectForm extends React.Component {
       return this.FormContent(legend, redirectPath, cancelPath);
     }
   }
-}
 
-ContentObjectForm.propTypes = {
-  libraryId: PropTypes.string.isRequired,
-  library: PropTypes.object.isRequired,
-  objectId: PropTypes.string,
-  object: PropTypes.object,
-  types: PropTypes.object.isRequired,
-  createForm: PropTypes.bool.isRequired,
-  methods: PropTypes.shape({
-    Submit: PropTypes.func.isRequired
-  })
-};
+  render() {
+    return (
+      <AsyncComponent
+        key={`object-page-${this.state.version}`}
+        Load={
+          async () => {
+            await this.props.typeStore.ContentTypes();
+
+            await this.props.libraryStore.ContentLibrary({
+              libraryId: this.props.objectStore.libraryId
+            });
+
+            if(this.props.objectStore.objectId) {
+              await this.props.objectStore.ContentObject({
+                libraryId: this.props.objectStore.libraryId,
+                objectId: this.props.objectStore.objectId
+              });
+            }
+
+            this.setState({
+              createForm: !this.props.objectStore.objectId
+            });
+
+            this.Initialize();
+          }
+        }
+        render={this.PageContent}
+      />
+    );
+  }
+}
 
 export default ContentObjectForm;

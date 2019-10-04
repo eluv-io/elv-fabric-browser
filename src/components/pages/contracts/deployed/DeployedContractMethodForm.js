@@ -1,16 +1,19 @@
 import React from "react";
 import {LabelledField} from "../../../components/LabelledField";
-
 import PropTypes from "prop-types";
 import {Bytes32ToUtf8} from "../../../../utils/Helpers";
 import EventLogs from "../../../components/EventLogs";
 import {Form} from "elv-components-js";
+import {inject, observer} from "mobx-react";
 
+@inject("contractStore")
+@observer
 class DeployedContractMethodForm extends React.Component {
   constructor(props) {
     super(props);
 
     const contractMethods = Array.isArray(props.contract.abi) ? props.contract.abi.filter(element => element.type === "function") : [];
+
     this.state = {
       contractMethods
     };
@@ -75,32 +78,31 @@ class DeployedContractMethodForm extends React.Component {
 
     const methodArgs = Object.values(inputs);
 
-    await this.props.methods.CallContractMethod({
-      contractAddress: this.props.contract.address,
+    const methodResults = await this.props.contractStore.CallContractMethod({
+      contractAddress: this.props.contract.contractAddress,
       abi: this.props.contract.abi,
       methodName: this.state.method,
       methodArgs,
       value: funds
     });
 
-    await this.props.methods.GetContractBalance({
-      contractAddress: this.props.contract.address
+    this.setState({
+      methodResults,
+      contract: {
+        ...this.props.contract,
+        balance: await this.props.contractStore.GetContractBalance({
+          contractAddress: this.props.contract.contractAddress
+        })
+      }
     });
   }
 
   HandleComplete() {
-    const contractState = this.props.deployedContract;
-
-    // Ensure results are set
-    if(!contractState || !contractState.methodResults || contractState.methodResults[this.state.method] === undefined) {
-      return;
-    }
-
     if(this.state.methodInterface.constant) {
       // Constant method called - format output with names from interface (if available)
       const outputInterface = this.state.methodInterface.outputs;
 
-      let results = contractState.methodResults[this.state.method];
+      let results = this.state.methodResults;
 
       if(!Array.isArray(results)) {
         results = [results];
@@ -119,14 +121,16 @@ class DeployedContractMethodForm extends React.Component {
       });
 
       this.setState({
-        methodResults: displayResults
+        methodResults: displayResults,
+        transactionResults: undefined
       });
     } else {
       // Transaction - display event info
-      let results = contractState.methodResults[this.state.method];
+      let results = this.state.methodResults;
       if(!Array.isArray(results)) { results = [results]; }
 
       this.setState({
+        methodResults: undefined,
         transactionResults: results
       });
     }
@@ -134,8 +138,14 @@ class DeployedContractMethodForm extends React.Component {
 
   ContractMethodSelection() {
     // Collect and sort methods
-    const constantMethods = this.state.contractMethods.filter(element => element.constant).sort((a, b) => a.name > b.name);
-    const transactions = this.state.contractMethods.filter(element => !element.constant).sort((a, b) => a.name > b.name);
+    const constantMethods = this.state.contractMethods
+      .filter(element => element.constant)
+      .sort((a, b) => a.name < b.name ? -1 : 1);
+
+    const transactions = this.state.contractMethods
+      .filter(element => !element.constant)
+      .sort((a, b) => a.name < b.name ? -1 : 1);
+
 
     // Create lists of options
     let constantOptions = constantMethods.map(method => {
@@ -214,7 +224,11 @@ class DeployedContractMethodForm extends React.Component {
 
   MethodResults() {
     if(this.state.methodResults) {
-      const results = this.state.methodResults.map(result => {
+      let methodResults = Array.isArray(this.state.methodResults) ?
+        this.state.methodResults :
+        [ this.state.methodResults ];
+
+      const results = methodResults.map(result => {
         return <LabelledField key={"result-" + result[0]} label={result[0]} value={result[1]}/>;
       });
 
@@ -239,9 +253,9 @@ class DeployedContractMethodForm extends React.Component {
       <div className="contract-method-form">
         <Form
           legend="Call Contract Method"
-          status={this.props.methodStatus.CallContractMethod}
           OnSubmit={this.HandleSubmit}
           OnComplete={this.HandleComplete}
+          className="small-form"
         >
           { this.ContractMethodForm() }
         </Form>
@@ -252,12 +266,7 @@ class DeployedContractMethodForm extends React.Component {
 }
 
 DeployedContractMethodForm.propTypes = {
-  contract: PropTypes.object.isRequired,
-  deployedContract: PropTypes.object.isRequired,
-  methods: PropTypes.shape({
-    CallContractMethod: PropTypes.func.isRequired,
-    GetContractBalance: PropTypes.func.isRequired
-  })
+  contract: PropTypes.object.isRequired
 };
 
 export default DeployedContractMethodForm;

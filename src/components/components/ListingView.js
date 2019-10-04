@@ -4,7 +4,9 @@ import {CroppedIcon} from "elv-components-js";
 import Redirect from "react-router/es/Redirect";
 import Link from "react-router-dom/es/Link";
 import RedirectElement from "./RedirectElement";
+import {observer} from "mobx-react";
 
+@observer
 class ListingItem extends React.Component {
   constructor(props) {
     super(props);
@@ -88,6 +90,7 @@ ListingItem.propTypes = {
   noIcon: PropTypes.bool
 };
 
+@observer
 class Listing extends React.Component {
   render() {
     if(!this.props.count || this.props.count === 0) {

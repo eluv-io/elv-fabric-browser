@@ -1,18 +1,21 @@
 import React from "react";
-import PropTypes from "prop-types";
 import UrlJoin from "url-join";
 import Path from "path";
 import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
 import Redirect from "react-router/es/Redirect";
 import {PageHeader} from "../../components/Page";
-import {Action, Confirm, LoadingElement} from "elv-components-js";
+import {Action, AsyncComponent, Confirm} from "elv-components-js";
+import {inject, observer} from "mobx-react";
 
+@inject("contractStore")
+@observer
 class Contract extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      visibleMethods: {}
+      visibleMethods: {},
+      deleted: false
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -43,7 +46,13 @@ class Contract extends React.Component {
   async DeleteContract() {
     await Confirm({
       message: "Are you sure you want to remove this contract?",
-      onConfirm: async () => await this.props.methods.RemoveContract({name: this.props.contractName})
+      onConfirm: async () => {
+        await this.props.contractStore.RemoveContract({
+          name: this.props.contractStore.contractName
+        });
+
+        this.setState({deleted: true});
+      }
     });
   }
 
@@ -68,15 +77,15 @@ class Contract extends React.Component {
   }
 
   PageContent() {
-    if(this.props.methodStatus.RemoveContract.completed) {
+    if(this.state.deleted) {
       return <Redirect push to={Path.dirname(this.props.match.url)}/>;
     }
 
-    const description = <ClippedText className="object-description" text={this.props.contract.description} />;
-    const abiDisplayInfo = this.state.visibleMethods["__abi"] ? <pre>{JSON.stringify(this.props.contract.abi, null, 2)}</pre> : null;
-    const bytecodeDisplayInfo = this.state.visibleMethods["__bytecode"] ? <pre>{this.props.contract.bytecode}</pre> : null;
+    const description = <ClippedText className="object-description" text={this.props.contractStore.contract.description} />;
+    const abiDisplayInfo = this.state.visibleMethods["__abi"] ? <pre>{JSON.stringify(this.props.contractStore.contract.abi, null, 2)}</pre> : null;
+    const bytecodeDisplayInfo = this.state.visibleMethods["__bytecode"] ? <pre>{this.props.contractStore.contract.bytecode}</pre> : null;
 
-    const abi = this.props.contract.abi || [];
+    const abi = this.props.contractStore.contract.abi || [];
     const contractElements = Object.values(abi);
     const contractConstructor = contractElements.filter(element => element.type === "constructor");
     const contractEvents = contractElements.filter(element => element.type === "event");
@@ -92,7 +101,7 @@ class Contract extends React.Component {
           <Action type="link" to={UrlJoin(this.props.match.url, "deploy")}>Deploy Contract</Action>
           <Action className="danger" onClick={this.DeleteContract}>Delete Contract</Action>
         </div>
-        <PageHeader header={this.props.contractName} />
+        <PageHeader header={this.props.contractStore.contractName} />
         <div className="page-content">
           <div className="label-box">
             <h3>Contract Info</h3>
@@ -128,21 +137,16 @@ class Contract extends React.Component {
 
   render() {
     return (
-      <LoadingElement
-        fullPage={true}
-        loading={this.props.methodStatus.RemoveContract.loading}
+      <AsyncComponent
+        Load={
+          async () => {
+            await this.props.contractStore.ListContracts({params: {paginate: false}});
+          }
+        }
         render={this.PageContent}
       />
     );
   }
 }
-
-Contract.propTypes = {
-  contract: PropTypes.object.isRequired,
-  contractName: PropTypes.string.isRequired,
-  methods: PropTypes.shape({
-    RemoveContract: PropTypes.func.isRequired
-  })
-};
 
 export default Contract;

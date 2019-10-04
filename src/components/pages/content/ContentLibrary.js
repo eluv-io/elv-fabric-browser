@@ -1,18 +1,19 @@
 import React from "react";
-import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import UrlJoin from "url-join";
 import Path from "path";
 import ContentIcon from "../../../static/icons/content.svg";
-import { LabelledField } from "../../components/LabelledField";
-import Redirect from "react-router/es/Redirect";
+import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
 import {PageHeader} from "../../components/Page";
-import {Action, LoadingElement, Tabs} from "elv-components-js";
+import {Action, AsyncComponent, Tabs} from "elv-components-js";
 
 import {AccessChargeDisplay} from "../../../utils/Helpers";
 import Listing from "../../components/Listing";
+import {inject, observer} from "mobx-react";
 
+@inject("libraryStore")
+@observer
 class ContentLibrary extends React.Component {
   constructor(props) {
     super(props);
@@ -20,7 +21,8 @@ class ContentLibrary extends React.Component {
     this.state = {
       visibleItems: {},
       view: "content",
-      groupsView: "accessor"
+      groupsView: "accessor",
+      version: 0
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -73,11 +75,13 @@ class ContentLibrary extends React.Component {
   }
 
   LibraryContentTypes() {
-    const contentTypesCount = Object.keys(this.props.library.types).length;
+    const types = this.props.libraryStore.library.types;
+
+    const contentTypesCount = Object.keys(types).length;
 
     if(contentTypesCount === 0) { return null; }
 
-    const contentTypes = Object.values(this.props.library.types).map(type => {
+    const contentTypes = Object.values(types).map(type => {
       return (
         <Link
           key={`library-content-type-${type.id}`}
@@ -102,10 +106,12 @@ class ContentLibrary extends React.Component {
   }
 
   AccessGroups() {
-    if(!this.props.library.groups) { return []; }
+    const groups = this.props.libraryStore.library[`${this.state.groupsView}Groups`];
 
-    const groups = Object.keys(this.props.library.groups).map(address => {
-      const group = this.props.library.groups[address];
+    if(!groups) { return []; }
+
+    const groupsInfo = Object.keys(groups).map(address => {
+      const group = groups[address];
 
       return {
         id: address,
@@ -116,10 +122,11 @@ class ContentLibrary extends React.Component {
       };
     });
 
-    return groups.sort((a, b) => a.sortKey > b.sortKey ? 1 : -1);
+    return groupsInfo.sort((a, b) => a.sortKey > b.sortKey ? 1 : -1);
   }
 
   AccessGroupsListing() {
+    const type = this.state.groupsView;
     return (
       <div>
         <Tabs
@@ -139,10 +146,15 @@ class ContentLibrary extends React.Component {
           noIcon={true}
           noStatus={true}
           paginate={true}
-          count={this.props.count.libraryGroups[this.props.libraryId]}
-          loadingStatus={this.props.methodStatus.ListContentLibraryGroups}
-          LoadContent={({params}) => {
-            this.props.methods.ListContentLibraryGroups({type: this.state.groupsView, params});
+          count={this.props.libraryStore.library[`${type}GroupsCount`] || 0}
+          LoadContent={async ({params}) => {
+            await this.props.libraryStore.ListLibraryGroups({
+              libraryId: this.props.libraryStore.libraryId,
+              type: this.state.groupsView,
+              params
+            });
+
+            this.setState({version: this.state.version + 1});
           }}
           RenderContent={this.AccessGroups}
         />
@@ -151,10 +163,10 @@ class ContentLibrary extends React.Component {
   }
 
   ContentObjects() {
-    if(!this.props.objects) { return []; }
+    if(!this.props.libraryStore.library.objects) { return []; }
 
-    const objects = Object.keys(this.props.objects).map(objectId => {
-      const object = this.props.objects[objectId];
+    const objects = Object.keys(this.props.libraryStore.library.objects).map(objectId => {
+      const object = this.props.libraryStore.library.objects[objectId];
 
       let status;
       if(object.accessInfo) {
@@ -181,15 +193,19 @@ class ContentLibrary extends React.Component {
         key="library-objects-view"
         pageId="ContentObjects"
         paginate={true}
-        count={this.props.count.objects[this.props.libraryId]}
-        loadingStatus={this.props.methodStatus.ListContentObjects}
-        LoadContent={({action, params}) => {
-          // When reloading, clear listing cache
-          if(action !== Listing.ACTIONS.reload) {
-            params.cacheId = this.props.cacheId;
+        count={this.props.libraryStore.library.objectsCount}
+        LoadContent={async ({action, params}) => {
+          // When reloading or filtering, clear listing cache
+          if(action !== Listing.ACTIONS.reload && action !== Listing.ACTIONS.filter) {
+            params.cacheId = this.props.libraryStore.library.listingCacheId;
           }
 
-          this.props.methods.ListContentObjects({libraryId: this.props.libraryId, params});
+          await this.props.libraryStore.ListContentObjects({
+            libraryId: this.props.libraryStore.libraryId,
+            params
+          });
+
+          this.setState({version: this.state.version + 1});
         }}
         RenderContent={this.ContentObjects}
       />
@@ -197,34 +213,35 @@ class ContentLibrary extends React.Component {
   }
 
   LibraryImage() {
-    if(this.props.library.imageUrl) {
-      return (
-        <div className="object-image">
-          <img src={this.props.library.imageUrl} />
-        </div>
-      );
-    }
+    if(!this.props.libraryStore.library.imageUrl) { return null; }
 
-    return null;
+    return (
+      <div className="object-image">
+        <img src={this.props.libraryStore.library.imageUrl}/>
+      </div>
+    );
   }
 
   LibraryInfo() {
-    const description = <ClippedText className="object-description" text={this.props.library.description} />;
-    const libraryObjectPath = UrlJoin(this.props.match.url, this.props.library.libraryObjectId);
+    const library = this.props.libraryStore.library;
 
-    const count = this.props.count.objects[this.props.libraryId];
+    const description = <ClippedText className="object-description" text={library.description} />;
+    const libraryObjectPath = UrlJoin(this.props.match.url, library.libraryObjectId);
+
+    //const count = this.props.count.objects[this.props.libraryStore.libraryId];
+    const count = this.props.libraryStore.library.objectsCount;
     const objectCount = count || count === 0 ?
       <LabelledField label="Content Objects" value={count} /> : null;
 
-    const ownerText = this.props.library.ownerName ?
-      <span>{this.props.library.ownerName}<span className="help-text">({this.props.library.owner})</span></span> :
-      this.props.library.owner;
+    const ownerText = library.ownerName ?
+      <span>{library.ownerName}<span className="help-text">({library.owner})</span></span> :
+      library.owner;
 
     return (
       <div className="object-info label-box">
         { this.LibraryImage() }
         <LabelledField label="Name">
-          { this.props.library.name }
+          { library.name }
         </LabelledField>
 
         <LabelledField label="Description" alignTop={true}>
@@ -234,23 +251,23 @@ class ContentLibrary extends React.Component {
         <br />
 
         <LabelledField label="Library ID">
-          { this.props.libraryId }
+          { this.props.libraryStore.libraryId }
         </LabelledField>
 
         <LabelledField label={"Library Object"}>
           <Link className="inline-link" to={libraryObjectPath}>
-            { this.props.library.libraryObjectId }
+            { library.libraryObjectId }
           </Link>
         </LabelledField>
 
         <LabelledField label={"Contract Address"}>
           <Link className="inline-link" to={UrlJoin(libraryObjectPath, "contract")}>
-            { this.props.library.contractAddress }
+            { library.contractAddress }
           </Link>
         </LabelledField>
 
         <LabelledField label="KMS ID">
-          { this.props.library.kmsId }
+          { library.kmsId }
         </LabelledField>
 
         <LabelledField label="Owner">
@@ -262,8 +279,8 @@ class ContentLibrary extends React.Component {
         <br />
 
         { this.LibraryContentTypes() }
-        { this.ToggleSection("Public Metadata", "public-metadata", this.props.library.publicMeta || {}, true) }
-        { this.ToggleSection("Private Metadata", "private-metadata", this.props.library.privateMeta, true) }
+        { this.ToggleSection("Public Metadata", "public-metadata", library.publicMeta || {}, true) }
+        { this.ToggleSection("Private Metadata", "private-metadata", library.privateMeta, true) }
       </div>
     );
   }
@@ -271,7 +288,7 @@ class ContentLibrary extends React.Component {
   Actions() {
     const contributeButton = (
       <Action type="link" to={UrlJoin(this.props.match.url, "create")}>
-        {this.props.library.isContentSpaceLibrary ? "New Content Type" : "Contribute"}
+        { this.props.libraryStore.library.isContentSpaceLibrary ? "New Content Type" : "Contribute" }
       </Action>
     );
 
@@ -279,8 +296,8 @@ class ContentLibrary extends React.Component {
       <div className="actions-container">
         <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
         <Action type="link" to={UrlJoin(this.props.match.url, "edit")}>Manage</Action>
-        <Action type="link" to={UrlJoin(this.props.match.url, "types")} hidden={!this.props.library.isOwner}>Types</Action>
-        <Action type="link" to={UrlJoin(this.props.match.url, "groups")} hidden={!this.props.library.isOwner}>Groups</Action>
+        <Action type="link" to={UrlJoin(this.props.match.url, "types")} hidden={!this.props.libraryStore.library.isOwner}>Types</Action>
+        <Action type="link" to={UrlJoin(this.props.match.url, "groups")} hidden={!this.props.libraryStore.library.isOwner}>Groups</Action>
         { contributeButton }
       </div>
     );
@@ -297,10 +314,6 @@ class ContentLibrary extends React.Component {
   }
 
   PageContent() {
-    if(this.props.methodStatus.DeleteContentLibrary.completed) {
-      return <Redirect push to={"/content"}/>;
-    }
-
     const tabs = (
       <Tabs
         options={[
@@ -315,9 +328,12 @@ class ContentLibrary extends React.Component {
 
     return (
       <div className="page-container contents-page-container">
-        {this.Actions()}
-        <PageHeader header={this.props.library.name} subHeader={this.props.library.description}/>
-        {tabs}
+        { this.Actions() }
+        <PageHeader
+          header={this.props.libraryStore.library.name}
+          subHeader={this.props.libraryStore.library.description}
+        />
+        { tabs }
         <div className="page-content">
           { this.PageView() }
         </div>
@@ -327,24 +343,16 @@ class ContentLibrary extends React.Component {
 
   render() {
     return (
-      <LoadingElement
-        fullPage={true}
-        loading={this.props.methodStatus.DeleteContentLibrary.loading}
+      <AsyncComponent
+        Load={
+          async () => await this.props.libraryStore.ContentLibrary({
+            libraryId: this.props.libraryStore.libraryId
+          })
+        }
         render={this.PageContent}
       />
     );
   }
 }
-
-ContentLibrary.propTypes = {
-  libraryId: PropTypes.string.isRequired,
-  library: PropTypes.object.isRequired,
-  objects: PropTypes.object.isRequired,
-  count: PropTypes.object.isRequired,
-  methods: PropTypes.shape({
-    ListContentObjects: PropTypes.func.isRequired,
-    DeleteContentLibrary: PropTypes.func.isRequired
-  })
-};
 
 export default ContentLibrary;

@@ -555,11 +555,7 @@ const Fabric = {
   // parts with proofs, and verification
   GetContentObjectVersions: async({libraryId, objectId}) => {
     return (await client.ContentObjectVersions({libraryId, objectId})).versions
-      .map(version => ({
-        ...version,
-        parts: [],
-        meta: {}
-      }));
+      .map(version => version.hash);
   },
 
   // Get all versions of the specified content object, along with metadata,
@@ -928,8 +924,8 @@ const Fabric = {
     return await client.DeleteFiles({libraryId, objectId, writeToken, filePaths});
   },
 
-  DownloadFile: ({libraryId, objectId, versionHash, filePath}) => {
-    return client.DownloadFile({libraryId, objectId, versionHash, filePath});
+  DownloadFile: ({libraryId, objectId, versionHash, filePath, format="arrayBuffer"}) => {
+    return client.DownloadFile({libraryId, objectId, versionHash, filePath, format});
   },
 
   FileUrl: ({libraryId, objectId, versionHash, filePath}) => {
@@ -1243,14 +1239,19 @@ const Fabric = {
 
       accessGroupAddresses = await Promise.all(
         [...Array(numGroups)].map(async (_, i) => {
-          return Fabric.utils.FormatAddress(
-            await client.CallContractMethod({
-              contractAddress: client.utils.HashToAddress(params.libraryId),
-              abi: BaseLibraryContract.abi,
-              methodName: params.type + "Groups",
-              methodArgs: [i]
-            })
-          );
+          try {
+            return Fabric.utils.FormatAddress(
+              await client.CallContractMethod({
+                contractAddress: client.utils.HashToAddress(params.libraryId),
+                abi: BaseLibraryContract.abi,
+                methodName: params.type + "Groups",
+                methodArgs: [i]
+              })
+            );
+          } catch(error) {
+            // eslint-disable-next-line no-console
+            console.error(error);
+          }
         })
       );
     } else {
@@ -1331,7 +1332,7 @@ const Fabric = {
       metadata = await client.ContentObjectMetadata({
         libraryId: Fabric.contentSpaceLibraryId,
         objectId: client.utils.AddressToObjectId(contractAddress)
-      });
+      }) || {};
     } catch(error) {
       // eslint-disable-next-line no-console
       console.error(error);

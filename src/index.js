@@ -2,35 +2,22 @@ import "./static/stylesheets/app.scss";
 
 import React from "react";
 import { render } from "react-dom";
-import { Provider } from "react-redux";
-import { createHashHistory } from "history";
-import {createStore, applyMiddleware, compose} from "redux";
-import Thunk from "redux-thunk";
-import { ConnectedRouter } from "connected-react-router";
-
-import RootReducer from "./reducers";
+import HashRouter from "react-router-dom/es/HashRouter";
 
 import "./utils/StringExtensions";
 import ScrollToTop from "./router/ScrollToTop";
-import NavigationBar from "./containers/NavigationBar";
-import Notifications from "./containers/Notifications";
+import NavigationBar from "./components/NavigationBar";
+import Notifications from "./components/Notifications";
 import Routes from "./router";
-//import Debug from "./components/Debug";
 
-const history = createHashHistory();
-
-const store = createStore(
-  RootReducer(history),
-  compose(
-    applyMiddleware(Thunk)
-  )
-);
+import * as Stores from "./stores";
+import {Provider} from "mobx-react";
 
 render(
   <React.Fragment>
-    <Provider store={store}>
+    <Provider {...Stores}>
       <div className="app-container">
-        <ConnectedRouter history={history}>
+        <HashRouter>
           <ScrollToTop>
             <div className="view-container">
               <NavigationBar />
@@ -38,10 +25,12 @@ render(
               <Routes />
             </div>
           </ScrollToTop>
-        </ConnectedRouter>
+        </HashRouter>
       </div>
     </Provider>
-    <div className="app-version">{EluvioConfiguration.version}</div>
+    <div className="app-version">
+      {EluvioConfiguration.version}
+    </div>
   </React.Fragment>,
   document.getElementById("app")
 );

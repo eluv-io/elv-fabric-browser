@@ -5,7 +5,10 @@ import {Action, LoadingElement, IconButton, onEnterPressed} from "elv-components
 
 import WatchIcon from "../../static/icons/eye.svg";
 import StopWatchingIcon from "../../static/icons/eye-off.svg";
+import {inject, observer} from "mobx-react";
 
+@inject("eventsStore")
+@observer
 class Events extends React.Component {
   constructor(props) {
     super(props);
@@ -20,7 +23,8 @@ class Events extends React.Component {
       toBlock: 0,
       scrollToBottom: false,
       watchEvents: false,
-      watcher: undefined
+      watcher: undefined,
+      loading: false
     };
 
     this.Reset = this.Reset.bind(this);
@@ -38,11 +42,15 @@ class Events extends React.Component {
     this.CancelWatch();
 
     // Clear logs to free up memory
-    this.props.ClearMethod({contractAddress: this.props.contractAddress});
+    if(this.props.contractAddress) {
+      this.props.eventsStore.ClearContractEvents({contractAddress: this.props.contractAddress});
+    } else {
+      this.props.eventsStore.ClearEvents();
+    }
   }
 
   Loading() {
-    return (this.props.loading && !this.state.watchEvents) || this.state.filtering;
+    return (this.state.loading && !this.state.watchEvents) || this.state.filtering;
   }
 
   HandleInputChange(event) {
@@ -117,7 +125,7 @@ class Events extends React.Component {
       this.CancelWatch();
     }
 
-    const latestBlock = await this.props.GetBlockNumber();
+    const latestBlock = await this.props.eventsStore.BlockNumber();
 
     if(!toBlock || toBlock > latestBlock) {
       toBlock = latestBlock;
@@ -135,17 +143,32 @@ class Events extends React.Component {
       fromBlock = toBlock;
     }
 
-    this.props.RequestMethod({
-      contractAddress: this.props.contractAddress,
-      abi: this.props.abi,
-      fromBlock,
-      toBlock,
-      clear
+    this.setState({
+      loading: true
     });
+
+    if(this.props.contractAddress) {
+      // Contract events
+      await this.props.eventsStore.ContractEvents({
+        contractAddress: this.props.contractAddress,
+        abi: this.props.abi,
+        fromBlock,
+        toBlock,
+        clear
+      });
+    } else {
+      // All events
+      await this.props.eventsStore.Events({
+        fromBlock,
+        toBlock,
+        clear
+      });
+    }
 
     this.setState({
       fromBlock: updateFrom ? fromBlock : this.state.fromBlock,
-      toBlock: updateTo ? toBlock : this.state.toBlock
+      toBlock: updateTo ? toBlock : this.state.toBlock,
+      loading: false
     });
   }
 
@@ -229,13 +252,15 @@ class Events extends React.Component {
   }
 
   render() {
+    const events = this.props.contractAddress ?
+      (this.props.eventsStore.contractEvents[this.props.contractAddress] || []) :
+      this.props.eventsStore.events;
+
     return (
       <div className="events">
         { this.FilterControls()}
 
-        <LoadingElement loading={this.Loading()} noIndicator={true}>
-          <EventLogs events={this.props.events} filter={this.state.filter} scrollToBottom={this.state.scrollToBottom}/>
-        </LoadingElement>
+        <EventLogs events={events} filter={this.state.filter} scrollToBottom={this.state.scrollToBottom}/>
 
         <div className="load-more">
           { this.LoadMoreEventsButton() }
@@ -246,11 +271,6 @@ class Events extends React.Component {
 }
 
 Events.propTypes = {
-  events: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.object)).isRequired,
-  RequestMethod: PropTypes.func.isRequired,
-  ClearMethod: PropTypes.func.isRequired,
-  GetBlockNumber: PropTypes.func.isRequired,
-  loading: PropTypes.bool.isRequired,
   contractAddress: PropTypes.string,
   abi: PropTypes.array
 };

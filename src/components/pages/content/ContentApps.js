@@ -1,29 +1,22 @@
 import React from "react";
-import PropTypes from "prop-types";
 import Path from "path";
 import {PageHeader} from "../../components/Page";
 import {LabelledField} from "../../components/LabelledField";
-import {Action, Confirm, LoadingElement, Modal} from "elv-components-js";
+import {Action, AsyncComponent, Confirm, Modal} from "elv-components-js";
 import FileUploadWidget from "../../components/FileUploadWidget";
+import {inject, observer} from "mobx-react";
 
+@inject("libraryStore")
+@inject("objectStore")
+@observer
 class ContentApps extends React.Component {
   constructor(props) {
     super(props);
 
-    let apps = {};
-    this.AppRoles().map(role => {
-      const appFile = props.object.meta[`eluv.${role}App`];
-      if(appFile) {
-        apps[role] = {
-          filename: appFile
-        };
-      }
-    });
-
     this.state = {
-      apps,
       role: "",
-      showUpload: false
+      showUpload: false,
+      version: 0
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -32,9 +25,9 @@ class ContentApps extends React.Component {
   }
 
   async HandleSubmit(path, fileList, isDirectory) {
-    await this.props.methods.Submit({
-      libraryId: this.props.libraryId,
-      objectId: this.props.objectId,
+    await this.props.objectStore.AddApp({
+      libraryId: this.props.objectStore.libraryId,
+      objectId: this.props.objectStore.objectId,
       role: this.state.role,
       isDirectory,
       fileList
@@ -55,11 +48,12 @@ class ContentApps extends React.Component {
           legend={`Upload ${this.state.role} Application`}
           path={this.state.path}
           displayPath={this.state.displayPath}
-          files={this.props.files}
-          uploadStatus={this.props.methodStatus.Submit}
           Upload={this.HandleSubmit}
           OnCancel={closeModal}
-          OnComplete={() => {closeModal() ; this.props.Load();}}
+          OnComplete={() => {
+            closeModal();
+            this.setState({version: this.state.version + 1});
+          }}
         />
       </Modal>
     );
@@ -73,13 +67,13 @@ class ContentApps extends React.Component {
     await Confirm({
       message: `Are you sure you want to remove the ${role} app?`,
       onConfirm: async () => {
-        await this.props.methods.RemoveApp({
-          libraryId: this.props.libraryId,
-          objectId: this.props.objectId,
+        await this.props.objectStore.RemoveApp({
+          libraryId: this.props.objectStore.libraryId,
+          objectId: this.props.objectStore.objectId,
           role
         });
 
-        await this.props.Load();
+        this.setState({version: this.state.version + 1});
       }
     });
   }
@@ -104,7 +98,7 @@ class ContentApps extends React.Component {
       );
     } else {
 
-      const typeMeta = (this.props.object.typeInfo && this.props.object.typeInfo.meta) || {};
+      const typeMeta = (this.props.objectStore.object.typeInfo && this.props.objectStore.object.typeInfo.meta) || {};
       const typeApp = typeMeta[`eluv.${role}App`];
       if(typeApp) {
         const typeName = typeMeta.name || "content type";
@@ -139,9 +133,9 @@ class ContentApps extends React.Component {
   }
 
   PageContent() {
-    const header = this.props.object.isContentLibraryObject ?
-      this.props.library.name + " > Library Object" :
-      this.props.library.name + " > " + this.props.object.name;
+    const header = this.props.objectStore.object.isContentLibraryObject ?
+      this.props.libraryStore.library.name + " > Library Object" :
+      this.props.libraryStore.library.name + " > " + this.props.objectStore.object.name;
 
     return (
       <div className="page-container contracts-page-container">
@@ -161,23 +155,39 @@ class ContentApps extends React.Component {
 
   render() {
     return (
-      <LoadingElement
-        fullPage={true}
+      <AsyncComponent
+        key={`page-version-${this.state.version}`}
+        Load={
+          async () => {
+            await this.props.libraryStore.ContentLibrary({
+              libraryId: this.props.objectStore.libraryId,
+            });
+
+            await this.props.objectStore.ContentObject({
+              libraryId: this.props.objectStore.libraryId,
+              objectId: this.props.objectStore.objectId
+            });
+
+            let apps = {};
+            this.AppRoles().map(role => {
+              const appFile = this.props.objectStore.object.meta[`eluv.${role}App`];
+
+              if(appFile) {
+                apps[role] = {
+                  filename: appFile
+                };
+              }
+            });
+
+            this.setState({
+              apps
+            });
+          }
+        }
         render={this.PageContent}
-        loading={this.props.methodStatus.RemoveApp.loading}
       />
     );
   }
 }
-
-ContentApps.propTypes = {
-  libraryId: PropTypes.string.isRequired,
-  library: PropTypes.object.isRequired,
-  objectId: PropTypes.string.isRequired,
-  object: PropTypes.object.isRequired,
-  methods: PropTypes.shape({
-    RemoveApp: PropTypes.func.isRequired
-  })
-};
 
 export default ContentApps;

@@ -1,8 +1,11 @@
 import React from "react";
-import PropTypes from "prop-types";
 import Path from "path";
-import {Action, Form} from "elv-components-js";
+import {Action, AsyncComponent, Form} from "elv-components-js";
+import {inject, observer} from "mobx-react";
 
+@inject("libraryStore")
+@inject("groupStore")
+@observer
 class ContentLibraryGroupForm extends React.Component {
   constructor(props) {
     super(props);
@@ -14,20 +17,14 @@ class ContentLibraryGroupForm extends React.Component {
       contributor: false
     };
 
+    this.PageContent = this.PageContent.bind(this);
     this.HandleGroupChange = this.HandleGroupChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
   }
 
-  componentDidMount() {
-    const initialGroupAddress = Object.keys(this.props.accessGroups)[0];
-
-    if(!initialGroupAddress) { return; }
-
-    this.HandleGroupChange({target: {value: initialGroupAddress}});
-  }
-
   HandleGroupChange(event) {
-    const permissions = this.props.library.groupPermissions[event.target.value] || {};
+    const permissions = this.props.libraryStore.library.groupPermissions[event.target.value] || {};
+
     this.setState({
       groupAddress: event.target.value,
       accessor: !!permissions.accessor,
@@ -37,7 +34,8 @@ class ContentLibraryGroupForm extends React.Component {
   }
 
   async HandleSubmit() {
-    await this.props.methods.Submit({
+    await this.props.libraryStore.UpdateContentLibraryGroup({
+      libraryId: this.props.libraryStore.libraryId,
       groupAddress: this.state.groupAddress,
       accessor: this.state.accessor,
       reviewer: this.state.reviewer,
@@ -46,7 +44,7 @@ class ContentLibraryGroupForm extends React.Component {
   }
 
   Groups() {
-    let options = Object.values(this.props.accessGroups).map(group =>
+    let options = Object.values(this.props.groupStore.accessGroups).map(group =>
       <option key={`group-${group.address}`} value={group.address}>{ group.name }</option>
     );
 
@@ -68,16 +66,14 @@ class ContentLibraryGroupForm extends React.Component {
         <input
           name="groupAddress"
           value={this.state.groupAddress}
-          disabled={Object.keys(this.props.accessGroups).includes(this.state.groupAddress)}
+          disabled={Object.keys(this.props.groupStore.accessGroups).includes(this.state.groupAddress)}
           onChange={event => this.setState({groupAddress: event.target.value})}
         />
       </React.Fragment>
     );
   }
 
-  render() {
-    let status = {...this.props.methodStatus.Submit};
-
+  PageContent() {
     const backPath = Path.dirname(this.props.match.url);
 
     return (
@@ -86,11 +82,11 @@ class ContentLibraryGroupForm extends React.Component {
           <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
         </div>
         <Form
-          legend={`Add access group to '${this.props.library.name}'`}
+          legend={`Manage access group permissions for '${this.props.libraryStore.library.name || this.props.libraryStore.libraryId}'`}
           redirectPath={backPath}
           cancelPath={backPath}
-          status={status}
           OnSubmit={this.HandleSubmit}
+          className="small-form"
         >
           <div className="form-content">
             { this.Groups() }
@@ -120,14 +116,27 @@ class ContentLibraryGroupForm extends React.Component {
       </div>
     );
   }
-}
 
-ContentLibraryGroupForm.propTypes = {
-  library: PropTypes.object,
-  accessGroups: PropTypes.object,
-  methods: PropTypes.shape({
-    Submit: PropTypes.func.isRequired
-  })
-};
+  render() {
+    return (
+      <AsyncComponent
+        Load={
+          async () => {
+            await this.props.groupStore.ListAccessGroups({params: {}});
+            await this.props.libraryStore.ContentLibrary({libraryId: this.props.libraryStore.libraryId});
+            await this.props.libraryStore.ContentLibraryGroupPermissions({libraryId: this.props.libraryStore.libraryId});
+
+            const initialGroupAddress = Object.keys(this.props.groupStore.accessGroups)[0];
+
+            if(initialGroupAddress) {
+              this.HandleGroupChange({target: {value: initialGroupAddress}});
+            }
+          }
+        }
+        render={this.PageContent}
+      />
+    );
+  }
+}
 
 export default ContentLibraryGroupForm;

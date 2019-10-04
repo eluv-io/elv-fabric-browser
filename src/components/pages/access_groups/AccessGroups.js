@@ -1,23 +1,27 @@
 import React from "react";
-import PropTypes from "prop-types";
 import UrlJoin from "url-join";
 import AccessGroupIcon from "../../../static/icons/groups.svg";
 import {PageHeader} from "../../components/Page";
 import {Action} from "elv-components-js";
 import Listing from "../../components/Listing";
+import {inject, observer} from "mobx-react";
 
+@inject("groupStore")
+@observer
 class AccessGroups extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      version: 0
+    };
 
     this.AccessGroups = this.AccessGroups.bind(this);
   }
 
   AccessGroups() {
-    if(!this.props.accessGroups) { return []; }
+    if(!this.props.groupStore.accessGroups) { return []; }
 
-    return Object.values(this.props.accessGroups).map(accessGroup => {
+    return Object.values(this.props.groupStore.accessGroups).map(accessGroup => {
       return {
         id: accessGroup.address,
         title: accessGroup.name,
@@ -35,9 +39,13 @@ class AccessGroups extends React.Component {
         className="compact"
         pageId="AccessGroups"
         paginate={true}
-        count={this.props.count}
-        loadingStatus={this.props.methodStatus.ListAccessGroups}
-        LoadContent={({params}) => this.props.methods.ListAccessGroups(params)}
+        count={this.props.groupStore.accessGroupsCount}
+        LoadContent={
+          async ({params}) => {
+            await this.props.groupStore.ListAccessGroups({params});
+            this.setState({version: this.state.version + 1});
+          }
+        }
         RenderContent={this.AccessGroups}
         noIcon={true}
         noStatus={true}
@@ -57,14 +65,5 @@ class AccessGroups extends React.Component {
     );
   }
 }
-
-AccessGroups.propTypes = {
-  accessGroups: PropTypes.object.isRequired,
-  count: PropTypes.number.isRequired,
-  methods: PropTypes.shape({
-    ListAccessGroups: PropTypes.func.isRequired
-  })
-};
-
 
 export default AccessGroups;

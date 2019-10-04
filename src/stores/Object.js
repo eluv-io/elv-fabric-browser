@@ -1,0 +1,433 @@
+import Fabric from "../clients/Fabric";
+import {action, computed, flow, observable} from "mobx";
+import {DownloadFromUrl, FileInfo} from "../utils/Files";
+import UrlJoin from "url-join";
+import {ParseInputJson} from "elv-components-js";
+import {ToList} from "../utils/TypeSchema";
+import Path from "path";
+
+class ObjectStore {
+  @observable objects = {};
+  @observable versions = {};
+
+  @computed get libraryId() {
+    return this.rootStore.routerStore.libraryId;
+  }
+
+  @computed get objectId() {
+    return this.rootStore.routerStore.objectId;
+  }
+
+  @computed get object() {
+    const objectId = this.rootStore.routerStore.objectId;
+    return this.objects[objectId];
+  }
+
+  constructor(rootStore) {
+    this.rootStore = rootStore;
+  }
+
+  @action.bound
+  ContentObject = flow(function * ({libraryId, objectId}) {
+    this.objects[objectId] = yield Fabric.GetContentObject({libraryId, objectId});
+  });
+
+  @action.bound
+  ContentObjectVersions = flow(function * ({libraryId, objectId}) {
+    this.objects[objectId].versions = yield Fabric.GetContentObjectVersions({libraryId, objectId});
+
+    // Load first version
+    yield this.ContentObjectVersion({
+      versionHash: this.objects[objectId].versions[0]
+    });
+  });
+
+  @action.bound
+  ContentObjectVersion = flow(function * ({versionHash}) {
+    if(this.versions[versionHash]) { return; }
+
+    this.versions[versionHash] = yield Fabric.GetContentObjectVersion({versionHash});
+  });
+
+  @action.bound
+  ContentObjectPermissions = flow(function * ({libraryId, objectId}) {
+    this.objects[objectId].permissions = yield Fabric.GetContentObjectPermissions({libraryId, objectId});
+  });
+
+  @action.bound
+  CreateFromContentTypeSchema = flow(function * ({libraryId, type, metadata, accessCharge, schema, fields, callback}) {
+    try {
+      metadata = ParseInputJson(metadata);
+    } catch(error) {
+      throw `Invalid Metadata: ${error.message}`;
+    }
+
+    let createResponse = yield Fabric.CreateContentObject({
+      libraryId,
+      type,
+      metadata
+    });
+
+    yield Fabric.MergeMetadata({
+      libraryId,
+      objectId: createResponse.id,
+      writeToken: createResponse.write_token,
+      metadata: {
+        ...metadata,
+        ...(yield this.CollectMetadata({
+          libraryId,
+          objectId: createResponse.id,
+          writeToken: createResponse.write_token,
+          schema,
+          fields,
+          callback
+        })),
+      }
+    });
+
+    yield Fabric.FinalizeContentObject({
+      libraryId,
+      objectId: createResponse.id,
+      writeToken: createResponse.write_token
+    });
+
+    if(accessCharge > 0) {
+      yield Fabric.SetAccessCharge({objectId: createResponse.id, accessCharge});
+    }
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully created content",
+      redirect: true
+    });
+
+    return createResponse.id;
+
+    //dispatch(ClearLibraryListingCacheId({libraryId}));
+  });
+
+  @action.bound
+  UpdateFromContentTypeSchema = flow(function * ({libraryId, objectId, metadata, accessCharge, schema, fields, callback}) {
+    try {
+      metadata = ParseInputJson(metadata);
+    } catch(error) {
+      throw `Invalid Metadata: ${error.message}`;
+    }
+
+    yield Fabric.EditAndFinalizeContentObject({
+      libraryId,
+      objectId,
+      todo: async (writeToken) => {
+        await Fabric.ReplaceMetadata({
+          libraryId,
+          objectId,
+          writeToken,
+          metadata: {
+            ...metadata,
+            ...(await this.CollectMetadata({libraryId, writeToken, schema, fields, callback}))
+          }
+        });
+      }
+    });
+
+    if(yield Fabric.IsNormalObject({objectId})) {
+      yield Fabric.SetAccessCharge({objectId: objectId, accessCharge});
+    }
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully updated content",
+      redirect: true
+    });
+
+    return objectId;
+
+    //dispatch(ClearLibraryListingCacheId({libraryId}));
+  });
+
+  @action.bound
+  DeleteContentObject = flow(function * ({libraryId, objectId}) {
+    yield Fabric.DeleteContentObject({libraryId, objectId});
+
+    //dispatch(ClearLibraryListingCacheId({libraryId}));
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully deleted content object",
+      redirect: true
+    });
+  });
+
+  @action.bound
+  DeleteContentObjectVersion = flow(function * ({libraryId, objectId, versionHash}) {
+    yield Fabric.DeleteContentVersion({libraryId, objectId, versionHash});
+
+    delete this.versions[versionHash];
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully deleted content version",
+      redirect: true
+    });
+  });
+
+  @action.bound
+  UploadParts = flow(function * ({libraryId, objectId, files, encrypt=false, callback}) {
+    let parts = {};
+    const contentDraft = yield Fabric.EditContentObject({libraryId, objectId});
+
+    yield Promise.all(Array.from(files).map(async file => {
+      let partCallback;
+      if(callback) {
+        partCallback = ({uploaded, total}) => callback({uploaded, total, filename: file.name});
+      }
+
+      parts[file.name] = (
+        await Fabric.UploadPart({
+          libraryId,
+          objectId,
+          writeToken: contentDraft.write_token,
+          file,
+          encrypt,
+          chunkSize: 10000000,
+          callback: partCallback
+        })
+      ).part.hash;
+    }));
+
+    yield Fabric.MergeMetadata({
+      libraryId,
+      objectId,
+      writeToken: contentDraft.write_token,
+      metadataSubtree: "eluv-fb.parts",
+      metadata: parts
+    });
+
+    yield Fabric.FinalizeContentObject({
+      libraryId,
+      objectId,
+      writeToken: contentDraft.write_token
+    });
+
+    const partsText = files.length > 1 ? "parts" : "part";
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully uploaded " + partsText,
+      redirect: true
+    });
+  });
+
+  async DownloadPart({libraryId, objectId, versionHash, partHash, callback}) {
+    callback({bytesFinished: 0, bytesTotal: 1});
+    let chunks = [];
+    await Fabric.DownloadPart({
+      libraryId,
+      objectId,
+      versionHash,
+      partHash,
+      format: "arrayBuffer",
+      chunked: true,
+      chunkSize: 10000000,
+      callback: ({bytesFinished, bytesTotal, chunk}) => {
+        callback({bytesFinished, bytesTotal});
+        chunks.push(chunk);
+      }
+    });
+
+    return window.URL.createObjectURL(new Blob(chunks));
+  }
+
+  async UploadFiles({libraryId, objectId, path, fileList}) {
+    await Fabric.EditAndFinalizeContentObject({
+      libraryId,
+      objectId,
+      todo: async (writeToken) => {
+        const fileInfo = await FileInfo(path, fileList);
+
+        await Fabric.UploadFiles({libraryId, objectId, writeToken, fileInfo});
+      }
+    });
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully uploaded files"
+    });
+  }
+
+  async DownloadFile({libraryId, objectId, versionHash, filePath}) {
+    let blob = await Fabric.DownloadFile({libraryId, objectId, versionHash, filePath, format: "blob"});
+    let url = window.URL.createObjectURL(blob);
+
+    await DownloadFromUrl(url, Path.basename(filePath));
+  }
+
+  async FileUrl({libraryId, objectId, versionHash, filePath}) {
+    return await Fabric.FileUrl({libraryId, objectId, versionHash, filePath});
+  }
+
+  @action.bound
+  AddApp = flow(function * ({libraryId, objectId, role, isDirectory, fileList}) {
+    const app = `${role}App`;
+    const fileInfo = yield FileInfo(app, fileList, false, isDirectory);
+
+    if(!fileInfo.find(file => file.path.endsWith("index.html"))) {
+      throw Error("App must contain an index.html file");
+    }
+
+    yield Fabric.EditAndFinalizeContentObject({
+      libraryId,
+      objectId,
+      todo: async (writeToken) => {
+        await Fabric.UploadFiles({
+          libraryId,
+          objectId,
+          writeToken,
+          fileInfo
+        });
+
+        await Fabric.ReplaceMetadata({
+          libraryId,
+          objectId,
+          writeToken,
+          metadataSubtree: `eluv.${role}App`,
+          metadata: UrlJoin(app, "index.html")
+        });
+      }
+    });
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully added " + role + " app",
+      redirect: true
+    });
+  });
+
+  @action.bound
+  RemoveApp = flow(function * ({libraryId, objectId, role}) {
+    yield Fabric.EditAndFinalizeContentObject({
+      libraryId,
+      objectId,
+      todo: async (writeToken) => {
+        await Fabric.DeleteMetadata({
+          libraryId,
+          objectId,
+          writeToken,
+          metadataSubtree: `eluv.${role}App`
+        });
+      }
+    });
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully removed " + role + " app",
+      redirect: true
+    });
+  });
+
+  async CollectMetadata({libraryId, objectId, writeToken, schema, fields, callback}) {
+    let metadata = {};
+
+    for(const entry of schema) {
+      switch(entry.type) {
+        case "label":
+        case "attachedFile":
+          break;
+        case "file":
+          // Freshly uploaded files will be a FileList
+          // previously uploaded files will either be a string or a list of strings
+          if(Array.isArray(fields[entry.key]) || typeof fields[entry.key] === "string") {
+            metadata[entry.key] = fields[entry.key];
+            break;
+          }
+
+          const files = Array.from(fields[entry.key]);
+          let partResponses = [];
+
+          for(const file of files) {
+            let uploadCallback;
+            if(callback) {
+              uploadCallback = ({status, uploaded, total}) =>
+                callback({key: entry.key, status, uploaded, total, filename: file.name});
+            }
+
+            partResponses.push(
+              await Fabric.UploadPart({
+                libraryId,
+                objectId,
+                writeToken,
+                file,
+                chunkSize: 2000000,
+                callback: uploadCallback
+              })
+            );
+          }
+
+          if(entry.multiple) {
+            metadata[entry.key] = partResponses.map(partResponse => partResponse.part.hash);
+          } else {
+            metadata[entry.key] = partResponses.length > 0 ? partResponses[0].part.hash : "";
+          }
+
+          break;
+
+        case "json":
+          try {
+            metadata[entry.key] = ParseInputJson(fields[entry.key]);
+          } catch(error) {
+            throw `Invalid ${entry.key}: ${error.message}`;
+          }
+          break;
+
+        case "list":
+          metadata[entry.key] = ToList(fields[entry.key]).filter(item => item);
+          break;
+        case "object":
+          metadata[entry.key] = await CollectMetadata({
+            libraryId,
+            objectId,
+            writeToken,
+            schema: entry.fields,
+            fields: fields[entry.key]
+          });
+          break;
+
+        default:
+          metadata[entry.key] = fields[entry.key];
+      }
+    }
+
+    return metadata;
+  }
+
+  @action.bound
+  PublishContentObject = flow(function * ({objectId}) {
+    yield Fabric.PublishContentObject({objectId});
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully updated content object",
+      redirect: true
+    });
+  });
+
+  @action.bound
+  RevewContentObject = flow(function * ({libraryId, objectId, approve, note}) {
+    yield Fabric.ReviewContentObject({libraryId, objectId, approve, note});
+
+    const currentAccountAddress = yield Fabric.CurrentAccountAddress();
+
+    yield Fabric.EditAndFinalizeContentObject({
+      libraryId,
+      objectId,
+      todo: async (writeToken) => {
+        await Fabric.MergeMetadata({
+          libraryId,
+          writeToken,
+          metadata: {
+            "eluv.reviewer": currentAccountAddress,
+            "eluv.reviewNote": note
+          }
+        });
+      }
+    });
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully updated content object",
+      redirect: true
+    });
+  });
+}
+
+export default ObjectStore;

@@ -1,21 +1,22 @@
 import React from "react";
-import PropTypes from "prop-types";
 import UrlJoin from "url-join";
 import Path from "path";
-import {Action, Form} from "elv-components-js";
+import {Action, AsyncComponent, Form} from "elv-components-js";
+import {inject, observer} from "mobx-react";
 
+@inject("groupStore")
+@observer
 class AccessGroupForm extends React.Component {
   constructor(props) {
     super(props);
 
-    const accessGroup = props.accessGroup || {};
-
     this.state = {
-      name: accessGroup.name || "",
-      description: accessGroup.description || "",
-      members: accessGroup.members || {}
+      createForm: !props.groupStore.contractAddress,
+      name: "",
+      description: "",
     };
 
+    this.PageContent = this.PageContent.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
   }
@@ -27,22 +28,20 @@ class AccessGroupForm extends React.Component {
   }
 
   async HandleSubmit() {
-    const contractAddress = await this.props.methods.Submit({
-      address: this.props.contractAddress,
+    const contractAddress = await this.props.groupStore.SaveAccessGroup({
+      address: this.props.groupStore.contractAddress,
       name: this.state.name,
       description: this.state.description,
-      members: this.state.members
     });
 
-    this.setState({contractAddress});
+    this.setState({
+      contractAddress,
+    });
   }
 
-  render() {
-    let status = {...this.props.methodStatus.Submit};
-    status.completed = status.completed && !!this.state.contractAddress;
-
+  PageContent() {
     const backPath = Path.dirname(this.props.match.url);
-    const redirectPath = this.props.createForm ? UrlJoin(backPath, this.state.contractAddress || "") : backPath;
+    const redirectPath = this.state.createForm ? UrlJoin(backPath, this.state.contractAddress || "") : backPath;
 
     return (
       <div>
@@ -50,10 +49,9 @@ class AccessGroupForm extends React.Component {
           <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
         </div>
         <Form
-          legend={this.props.createForm ? "Create Access Group" : "Manage Access Group"}
+          legend={this.state.createForm ? "Create Access Group" : "Manage Access Group"}
           redirectPath={redirectPath}
           cancelPath={backPath}
-          status={status}
           OnSubmit={this.HandleSubmit}
         >
           <div className="form-content">
@@ -67,15 +65,28 @@ class AccessGroupForm extends React.Component {
       </div>
     );
   }
-}
 
-AccessGroupForm.propTypes = {
-  accessGroup: PropTypes.object,
-  contractAddress: PropTypes.string,
-  createForm: PropTypes.bool.isRequired,
-  methods: PropTypes.shape({
-    Submit: PropTypes.func.isRequired
-  })
-};
+  render() {
+    return (
+      <AsyncComponent
+        Load={
+          async () => {
+            if(!this.state.createForm) {
+              await this.props.groupStore.AccessGroup({
+                contractAddress: this.props.groupStore.contractAddress
+              });
+
+              this.setState({
+                name: this.props.groupStore.accessGroup.name,
+                description: this.props.groupStore.accessGroup.description,
+              });
+            }
+          }
+        }
+        render={this.PageContent}
+      />
+    );
+  }
+}
 
 export default AccessGroupForm;

@@ -1,8 +1,11 @@
 import React from "react";
-import PropTypes from "prop-types";
 import Path from "path";
 import {Action, Form} from "elv-components-js";
+import {inject, observer} from "mobx-react";
+import {AsyncComponent} from "elv-components-js";
 
+@inject("groupStore")
+@observer
 class AccessGroupMemberForm extends React.Component {
   constructor(props) {
     super(props);
@@ -12,6 +15,7 @@ class AccessGroupMemberForm extends React.Component {
       manager: false
     };
 
+    this.PageContent = this.PageContent.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
   }
@@ -23,29 +27,29 @@ class AccessGroupMemberForm extends React.Component {
   }
 
   async HandleSubmit() {
-    await this.props.methods.Submit({
-      contractAddress: this.props.contractAddress,
+    await this.props.groupStore.AddAccessGroupMember({
+      contractAddress: this.props.groupStore.contractAddress,
       memberAddress: this.state.memberAddress,
       manager: this.state.manager
     });
   }
 
-  render() {
-    let status = {...this.props.methodStatus.Submit};
-
+  PageContent() {
     const backPath = Path.dirname(this.props.match.url);
 
     return (
       <div>
         <div className="actions-container manage-actions">
-          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">
+            Back
+          </Action>
         </div>
         <Form
-          legend={`Add member to '${this.props.accessGroup.name}'`}
+          legend={`Add member to '${this.props.groupStore.accessGroup.name}'`}
           redirectPath={backPath}
           cancelPath={backPath}
-          status={status}
           OnSubmit={this.HandleSubmit}
+          className="small-form"
         >
           <div className="form-content">
             <label htmlFor="memberAddress">Address</label>
@@ -58,14 +62,19 @@ class AccessGroupMemberForm extends React.Component {
       </div>
     );
   }
-}
 
-AccessGroupMemberForm.propTypes = {
-  accessGroup: PropTypes.object,
-  contractAddress: PropTypes.string,
-  methods: PropTypes.shape({
-    Submit: PropTypes.func.isRequired
-  })
-};
+  render() {
+    return (
+      <AsyncComponent
+        Load={
+          async () => {
+            await this.props.groupStore.AccessGroup({contractAddress: this.props.groupStore.contractAddress});
+          }
+        }
+        render={this.PageContent}
+      />
+    );
+  }
+}
 
 export default AccessGroupMemberForm;

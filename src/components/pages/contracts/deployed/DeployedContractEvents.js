@@ -1,29 +1,38 @@
 import React from "react";
 import Path from "path";
-import PropTypes from "prop-types";
 import {PageHeader} from "../../../components/Page";
 import Events from "../../../components/Events";
-import {Action} from "elv-components-js";
+import {Action, AsyncComponent} from "elv-components-js";
+import {inject, observer} from "mobx-react";
 
+@inject("contractStore")
+@inject("eventsStore")
+@observer
 class DeployedContractEvents extends React.Component {
-  render() {
+  constructor(props) {
+    super(props);
+
+    this.PageContent = this.PageContent.bind(this);
+  }
+
+  PageContent() {
     return (
       <div className="page-container contracts-page-container">
         <div className="actions-container">
-          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">
+            Back
+          </Action>
         </div>
-        <PageHeader header={this.props.contract.name} subHeader={this.props.contract.description} />
+        <PageHeader
+          header={this.state.contract.name}
+          subHeader={this.state.contract.description}
+        />
         <div className="page-content">
           <div className="label-box">
             <div className="contract-events">
               <Events
-                events={this.props.deployedContract.events || []}
-                GetBlockNumber={this.props.GetBlockNumber}
-                RequestMethod={this.props.methods.GetContractEvents}
-                ClearMethod={this.props.ClearContractEvents}
-                loading={this.props.methodStatus.GetContractEvents.loading}
-                contractAddress={this.props.contract.address}
-                abi={this.props.contract.abi}
+                contractAddress={this.state.contract.contractAddress}
+                abi={this.state.contract.abi}
               />
             </div>
           </div>
@@ -31,16 +40,21 @@ class DeployedContractEvents extends React.Component {
       </div>
     );
   }
-}
 
-DeployedContractEvents.propTypes = {
-  contract: PropTypes.object.isRequired,
-  deployedContract: PropTypes.object.isRequired,
-  GetBlockNumber: PropTypes.func.isRequired,
-  ClearContractEvents: PropTypes.func.isRequired,
-  methods: PropTypes.shape({
-    GetContractEvents: PropTypes.func.isRequired
-  })
-};
+  render() {
+    return (
+      <AsyncComponent
+        Load={
+          async () => {
+            this.setState({
+              contract: await this.props.contractStore.DeployedContractInfo()
+            });
+          }
+        }
+        render={this.PageContent}
+      />
+    );
+  }
+}
 
 export default DeployedContractEvents;

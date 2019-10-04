@@ -1,5 +1,4 @@
 import React from "react";
-import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import UrlJoin from "url-join";
 import Path from "path";
@@ -7,16 +6,21 @@ import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
 import Redirect from "react-router/es/Redirect";
 import {PageHeader} from "../../components/Page";
-import {Action, Confirm, IconButton, LoadingElement, Tabs} from "elv-components-js";
+import {Action, Confirm, IconButton, Tabs} from "elv-components-js";
 import Listing from "../../components/Listing";
 import RemoveIcon from "../../../static/icons/close.svg";
+import {inject, observer} from "mobx-react";
+import AsyncComponent from "elv-components-js/src/components/AsyncComponent";
 
+@inject("groupStore")
+@observer
 class AccessGroup extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       visibleElements: {},
-      view: "members"
+      view: "members",
+      version: 0
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -29,7 +33,13 @@ class AccessGroup extends React.Component {
   async DeleteAccessGroup() {
     await Confirm({
       message: "Are you sure you want to delete this access group?",
-      onConfirm: async () => await this.props.methods.RemoveAccessGroup({address: this.props.contractAddress})
+      onConfirm: async () => {
+        await this.props.groupStore.RemoveAccessGroup({
+          address: this.props.groupStore.contractAddress
+        });
+
+        this.setState({redirect: true});
+      }
     });
   }
 
@@ -38,8 +48,8 @@ class AccessGroup extends React.Component {
 
     await Confirm({
       message: `Are you sure you want to remove this ${manager ? "manager" : "member"} from the group?`,
-      onConfirm: async () => await this.props.methods.RemoveAccessGroupMember({
-        contractAddress: this.props.contractAddress,
+      onConfirm: async () => await this.props.groupStore.RemoveAccessGroupMember({
+        contractAddress: this.props.groupStore.contractAddress,
         memberAddress,
         manager
       })
@@ -53,19 +63,27 @@ class AccessGroup extends React.Component {
   async LeaveAccessGroup() {
     await Confirm({
       message: "Are you sure you want to leave this group?",
-      onConfirm: async () => await this.props.methods.LeaveAccessGroup({
-        contractAddress: this.props.contractAddress
-      })
+      onConfirm: async () => {
+        await this.props.groupStore.LeaveAccessGroup({
+          contractAddress: this.props.groupStore.contractAddress
+        });
+
+        this.setState({redirect: true});
+      }
     });
   }
 
   AccessGroupMembers() {
-    if(!this.props.accessGroupMembers) { return []; }
+    const members = this.state.view === "managers" ?
+      this.props.groupStore.accessGroup.managers :
+      this.props.groupStore.accessGroup.members;
 
-    const members = Object.values(this.props.accessGroupMembers).map(member => {
+    if(!members) { return []; }
+
+    const memberInfo = Object.values(members).map(member => {
       const canRemove = (
-        this.props.accessGroup.isManager ||
-        this.props.accessGroup.isOwner
+        this.props.groupStore.accessGroup.isManager ||
+        this.props.groupStore.accessGroup.isOwner
       );
 
       return {
@@ -89,10 +107,14 @@ class AccessGroup extends React.Component {
       };
     });
 
-    return members.sort((a, b) => a.sortKey > b.sortKey ? 1 : -1);
+    return memberInfo.sort((a, b) => a.sortKey > b.sortKey ? 1 : -1);
   }
 
   AccessGroupMembersListing() {
+    const count = this.state.view === "managers" ?
+      this.props.groupStore.accessGroup.managersCount :
+      this.props.groupStore.accessGroup.membersCount;
+
     return (
       <Listing
         ref={ref => {
@@ -104,14 +126,15 @@ class AccessGroup extends React.Component {
         className="compact"
         pageId="AccessGroupMembers"
         paginate={true}
-        count={this.props.accessGroupMembersCount}
-        loadingStatus={this.props.methodStatus.ListAccessGroupMembers}
-        LoadContent={({params}) => {
-          this.props.methods.ListAccessGroupMembers({
-            contractAddress: this.props.contractAddress,
+        count={count}
+        LoadContent={async ({params}) => {
+          await this.props.groupStore.ListAccessGroupMembers({
+            contractAddress: this.props.groupStore.contractAddress,
             showManagers: this.state.view === "managers",
             params
           });
+
+          this.setState({version: this.state.version + 1});
         }}
         RenderContent={this.AccessGroupMembers}
         noIcon={true}
@@ -123,32 +146,29 @@ class AccessGroup extends React.Component {
     return (
       <div className="actions-container">
         <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary" >Back</Action>
-        <Action type="link" to={UrlJoin(this.props.match.url, "edit")} hidden={!this.props.accessGroup.isOwner}>Manage</Action>
-        <Action type="link" to={UrlJoin(this.props.match.url, "add-member")} hidden={!this.props.accessGroup.isManager}>Add Member</Action>
-        <Action className="danger" onClick={this.LeaveAccessGroup} hidden={this.props.accessGroup.isOwner}>Leave Group</Action>
-        <Action className="danger" onClick={this.DeleteAccessGroup} hidden={true}>Delete</Action>
+        <Action type="link" to={UrlJoin(this.props.match.url, "edit")} hidden={!this.props.groupStore.accessGroup.isOwner}>Manage</Action>
+        <Action type="link" to={UrlJoin(this.props.match.url, "add-member")} hidden={!this.props.groupStore.accessGroup.isManager}>Add Member</Action>
+        <Action className="danger" onClick={this.LeaveAccessGroup} hidden={this.props.groupStore.accessGroup.isOwner}>Leave Group</Action>
+        <Action className="danger" onClick={this.DeleteAccessGroup} hidden={true || !this.props.groupStore.accessGroup.isOwner}>Delete</Action>
       </div>
     );
   }
 
   PageContent() {
-    if(
-      this.props.methodStatus.RemoveAccessGroup.completed ||
-      this.props.methodStatus.LeaveAccessGroup.completed
-    ) {
+    if(this.state.redirect) {
       return <Redirect push to={Path.dirname(this.props.match.url)}/>;
     }
 
-    const ownerText = this.props.accessGroup.ownerName ?
-      <span>{this.props.accessGroup.ownerName}<span className="help-text">({this.props.accessGroup.owner})</span></span> :
-      this.props.accessGroup.owner;
+    const ownerText = this.props.groupStore.accessGroup.ownerName ?
+      <span>{this.props.groupStore.accessGroup.ownerName}<span className="help-text">({this.props.groupStore.accessGroup.owner})</span></span> :
+      this.props.groupStore.accessGroup.owner;
 
-    const description = <ClippedText className="object-description" text={this.props.accessGroup.description} />;
+    const description = <ClippedText className="object-description" text={this.props.groupStore.accessGroup.description} />;
 
     return (
       <div className="page-container access-group-page-container">
         { this.Actions() }
-        <PageHeader header={this.props.accessGroup.name} />
+        <PageHeader header={this.props.groupStore.accessGroup.name} />
         <div className="page-content">
           <div className="label-box">
             <LabelledField label="Description">
@@ -161,7 +181,7 @@ class AccessGroup extends React.Component {
 
             <LabelledField label="Contract Address">
               <Link className="inline-link" to={UrlJoin(this.props.match.url, "contract")}>
-                { this.props.accessGroup.address }
+                { this.props.groupStore.accessGroup.address }
               </Link>
             </LabelledField>
           </div>
@@ -181,22 +201,16 @@ class AccessGroup extends React.Component {
 
   render() {
     return (
-      <LoadingElement
-        fullPage={true}
-        loading={this.props.methodStatus.RemoveAccessGroup.loading}
+      <AsyncComponent
+        Load={
+          async () => this.props.groupStore.AccessGroup({
+            contractAddress: this.props.groupStore.contractAddress
+          })
+        }
         render={this.PageContent}
       />
     );
   }
 }
-
-AccessGroup.propTypes = {
-  accessGroup: PropTypes.object.isRequired,
-  contractAddress: PropTypes.string.isRequired,
-  membersCount: PropTypes.number,
-  methods: PropTypes.shape({
-    RemoveAccessGroup: PropTypes.func.isRequired
-  })
-};
 
 export default AccessGroup;

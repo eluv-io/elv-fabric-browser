@@ -1,23 +1,23 @@
 import React from "react";
-import PropTypes from "prop-types";
 import UrlJoin from "url-join";
 import Path from "path";
-import {Action, BrowseWidget, Form, JsonInput, LoadingElement} from "elv-components-js";
+import {Action, AsyncComponent, BrowseWidget, Form, JsonInput} from "elv-components-js";
+import {inject, observer} from "mobx-react";
 
+@inject("libraryStore")
+@observer
 class ContentLibraryForm extends React.Component {
   constructor(props) {
     super(props);
 
-    const library = props.library || {};
-
     this.state = {
-      name: library.name || "",
-      description: library.description || "",
-      publicMetadata: JSON.stringify(library.publicMeta, null, 2) || "",
-      privateMetadata: JSON.stringify(library.privateMeta, null, 2) || "",
-      kmsId: library.kmsId || "",
-      isContentSpaceLibrary: library.isContentSpaceLibrary || false,
-      imageSelection: ""
+      createForm: !props.libraryStore.libraryId,
+      name: "",
+      description: "",
+      publicMetadata: "{}",
+      privateMetadata: "{}",
+      kmsId: "",
+      imageSelection: "",
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -41,8 +41,12 @@ class ContentLibraryForm extends React.Component {
   }
 
   async HandleSubmit() {
-    const libraryId = await this.props.methods.Submit({
-      libraryId: this.props.libraryId,
+    const Method = this.state.createForm ?
+      this.props.libraryStore.CreateContentLibrary :
+      this.props.libraryStore.UpdateContentLibrary;
+
+    const libraryId = await Method({
+      libraryId: this.props.libraryStore.libraryId,
       name: this.state.name,
       description: this.state.description,
       publicMetadata: this.state.publicMetadata,
@@ -51,7 +55,9 @@ class ContentLibraryForm extends React.Component {
       kmsId: this.state.kmsId
     });
 
-    this.setState({libraryId});
+    this.setState({
+      libraryId,
+    });
   }
 
   Image() {
@@ -73,12 +79,10 @@ class ContentLibraryForm extends React.Component {
   }
 
   PageContent() {
-    const legend = this.props.createForm ? "Create content library" : "Manage content library";
-    const status = {...this.props.methodStatus.Submit};
-    status.completed = status.completed && !!(this.state.libraryId);
+    const legend = this.state.createForm ? "Create content library" : "Manage content library";
 
     const backPath = Path.dirname(this.props.match.url);
-    const redirectPath = this.props.createForm ? UrlJoin(backPath, this.state.libraryId || "") : backPath;
+    const redirectPath = this.state.createForm ? UrlJoin(backPath, this.state.libraryId || "") : backPath;
 
     return (
       <div>
@@ -89,7 +93,6 @@ class ContentLibraryForm extends React.Component {
           legend={legend}
           redirectPath={redirectPath}
           cancelPath={Path.dirname(this.props.match.url)}
-          status={status}
           OnSubmit={this.HandleSubmit}
         >
           <div className="form-content">
@@ -116,9 +119,9 @@ class ContentLibraryForm extends React.Component {
 
             <label htmlFor="kmsId">
               KMS ID
-              <span className="help-text" hidden={!this.props.createForm}>(optional)</span>
+              <span className="help-text" hidden={!this.state.createForm}>(optional)</span>
             </label>
-            <input name="kmsId" value={this.state.kmsId} required={false} onChange={this.HandleInputChange} disabled={!this.props.createForm}/>
+            <input name="kmsId" value={this.state.kmsId} required={false} onChange={this.HandleInputChange} disabled={!this.state.createForm}/>
           </div>
         </Form>
       </div>
@@ -126,17 +129,29 @@ class ContentLibraryForm extends React.Component {
   }
 
   render() {
-    return <LoadingElement fullPage={true} loading={this.props.loading} render={this.PageContent} />;
+    return (
+      <AsyncComponent
+        Load={
+          async () => {
+            if(!this.state.createForm) {
+              await this.props.libraryStore.ContentLibrary({
+                libraryId: this.props.libraryStore.libraryId
+              });
+
+              this.setState({
+                name: this.props.libraryStore.library.name || "",
+                description: this.props.libraryStore.library.description || "",
+                publicMetadata: JSON.stringify(this.props.libraryStore.library.publicMeta, null, 2) || "",
+                privateMetadata: JSON.stringify(this.props.libraryStore.library.privateMeta, null, 2) || "",
+                kmsId: this.props.libraryStore.library.kmsId || "",
+              });
+            }
+          }
+        }
+        render={this.PageContent}
+      />
+    );
   }
 }
-
-ContentLibraryForm.propTypes = {
-  libraryId: PropTypes.string,
-  library: PropTypes.object,
-  createForm: PropTypes.bool.isRequired,
-  methods: PropTypes.shape({
-    Submit: PropTypes.func.isRequired
-  })
-};
 
 export default ContentLibraryForm;

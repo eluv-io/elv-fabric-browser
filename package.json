@@ -37,6 +37,8 @@
     "connected-react-router": "^6.3.1",
     "elv-client-js": "git+https://github.com/eluv-io/elv-client-js.git#develop",
     "elv-components-js": "git+https://github.com/eluv-io/elv-components-js.git#develop",
+    "mobx": "^5.13.1",
+    "mobx-react": "^6.1.3",
     "node-fetch": "^2.3.0",
     "path": "^0.12.7",
     "pretty-bytes": "^5.1.0",
@@ -55,6 +57,7 @@
   "devDependencies": {
     "@babel/core": "^7.3.4",
     "@babel/plugin-proposal-class-properties": "^7.5.5",
+    "@babel/plugin-proposal-decorators": "^7.6.0",
     "@babel/plugin-proposal-object-rest-spread": "^7.3.4",
     "@babel/plugin-syntax-dynamic-import": "^7.2.0",
     "@babel/plugin-syntax-jsx": "^7.2.0",
@@ -64,6 +67,7 @@
     "@babel/plugin-transform-runtime": "^7.3.4",
     "@babel/preset-env": "^7.3.4",
     "@babel/preset-react": "^7.0.0",
+    "@babel/runtime": "^7.6.2",
     "autoprefixer": "^9.4.9",
     "babel-cli": "^6.26.0",
     "babel-core": "^7.0.0-bridge.0",
@@ -72,6 +76,7 @@
     "babel-loader": "^8.0.5",
     "babel-plugin-react-css-modules": "^5.2.1",
     "babel-plugin-syntax-async-functions": "^6.13.0",
+    "babel-preset-mobx": "^2.0.0",
     "copy-webpack-plugin": "^4.6.0",
     "css-loader": "^1.0.1",
     "dashjs": "^2.9.3",
@@ -102,22 +107,6 @@
     "webpack-bundle-analyzer": "^3.3.2",
     "webpack-cli": "^3.2.3",
     "webpack-dev-server": "^3.2.1"
-  },
-  "babel": {
-    "comments": true,
-    "presets": [
-      "@babel/preset-env",
-      "@babel/preset-react"
-    ],
-    "plugins": [
-      "syntax-async-functions",
-      "@babel/plugin-syntax-dynamic-import",
-      "@babel/plugin-syntax-jsx",
-      "@babel/plugin-syntax-object-rest-spread",
-      "@babel/plugin-proposal-object-rest-spread",
-      "@babel/plugin-transform-react-jsx",
-      "@babel/plugin-transform-regenerator"
-    ]
   },
   "jest": {
     "setupTestFrameworkScriptFile": "<rootDir>/test/setup/setupEnzyme.js",

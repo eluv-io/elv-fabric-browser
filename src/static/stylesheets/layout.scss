@@ -3,12 +3,20 @@ body,
 .app,
 .app-container,
 .view-container,
-.main-content-container {
+.main-content-container,
+.async-component-loading,
+.async-component-error {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
   height: 100%;
   max-width: 100%;
+}
+
+.async-component-loading,
+.async-component-error {
+  align-items: center;
+  justify-content: center;
 }
 
 .app {

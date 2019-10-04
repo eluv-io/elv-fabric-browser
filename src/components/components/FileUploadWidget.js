@@ -8,14 +8,47 @@ class FileUploadWidget extends React.Component {
 
     this.state = {
       files: "",
-      directories: false
+      directories: false,
+      status: {
+        loading: false,
+        completed: false,
+        error: false,
+        errorMessage: ""
+      }
     };
 
     this.HandleSubmit = this.HandleSubmit.bind(this);
   }
 
   async HandleSubmit() {
-    await this.props.Upload(this.props.path, this.state.files, this.state.directories);
+    this.setState({
+      status: {
+        loading: true,
+        completed: false,
+        error: false,
+        errorMessage: ""
+      }
+    });
+
+    try {
+      await this.props.Upload(this.props.path, this.state.files, this.state.directories);
+
+      this.setState({
+        status: {
+          loading: false,
+          completed: true
+        }
+      });
+    } catch(error) {
+      this.setState({
+        status: {
+          loading: false,
+          completed: false,
+          error: true,
+          errorMessage: error.message
+        }
+      });
+    }
   }
 
   render() {
@@ -24,7 +57,7 @@ class FileUploadWidget extends React.Component {
         <div className="modal-error">{this.state.error}</div>
         <Form
           legend={this.props.legend}
-          status={this.props.uploadStatus}
+          status={this.state.status}
           OnSubmit={this.HandleSubmit}
           OnCancel={this.props.OnCancel}
           OnError={(error) => this.setState({error})}
