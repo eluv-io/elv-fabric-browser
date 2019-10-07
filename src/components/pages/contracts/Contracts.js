@@ -13,7 +13,7 @@ class Contracts extends React.Component {
 
     this.state = {
       view: this.props.match.url.endsWith("/saved") ? "saved" : "deployed",
-      version: 0
+      listingVersion: 0
     };
 
     this.Contracts = this.Contracts.bind(this);
@@ -57,7 +57,7 @@ class Contracts extends React.Component {
           LoadContent={
             async ({params}) => {
               await this.props.contractStore.ListContracts({params});
-              this.setState({version: this.state.version + 1});
+              this.setState({listingVersion: this.state.listingVersion + 1});
             }
           }
           RenderContent={() => this.Contracts(this.props.contractStore.contracts)}
@@ -74,7 +74,7 @@ class Contracts extends React.Component {
           LoadContent={
             async ({params}) => {
               await this.props.contractStore.ListDeployedContracts({params});
-              this.setState({version: this.state.version + 1});
+              this.setState({listingVersion: this.state.listingVersion + 1});
             }
           }
           RenderContent={() => this.Contracts(this.props.contractStore.deployedContracts)}

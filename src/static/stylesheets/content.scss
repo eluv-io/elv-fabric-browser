@@ -18,17 +18,13 @@
   }
 }
 
-.object-media {
-  position: absolute;
-  right: $elv-spacing-s;
-}
-
 .object-info {
   max-width: 100%;
 }
 
 .object-image {
-  float: right;
+  position: absolute;
+  right: $elv-spacing-s;
 
   img {
     max-height: 20vw;

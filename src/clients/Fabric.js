@@ -1138,7 +1138,10 @@ const Fabric = {
     if(params.filter) {
       filteredContracts = filteredContracts.filter(contract => {
         try {
-          return contract.name.toLowerCase().includes(params.filter.toLowerCase());
+          return (
+            contract.name.toLowerCase().includes(params.filter.toLowerCase()) ||
+            contract.description.toLowerCase().includes(params.filter.toLowerCase())
+          );
         } catch(e) {
           return false;
         }
@@ -1169,20 +1172,20 @@ const Fabric = {
     return {contracts, count};
   },
 
-  Contracts: async () => {
+  Contracts: async ({params}) => {
     const contracts = (await client.userProfileClient.UserMetadata({
       metadataSubtree: "contracts"
     })) || {};
 
-    return {contracts, count: Object.keys(contracts).length};
+    return Fabric.FilterContracts({contracts, params});
   },
 
-  DeployedContracts: async () => {
+  DeployedContracts: async ({params}) => {
     const contracts = (await client.userProfileClient.UserMetadata({
       metadataSubtree: "deployedContracts"
     })) || {};
 
-    return {contracts, count: Object.keys(contracts).length};
+    return Fabric.FilterContracts({contracts, params});
   },
 
   AddContract: async ({name, description, abi, bytecode}) => {

@@ -6,11 +6,12 @@ import ContentIcon from "../../../static/icons/content.svg";
 import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
 import {PageHeader} from "../../components/Page";
-import {Action, AsyncComponent, Tabs} from "elv-components-js";
+import {Action, AsyncComponent, IconButton, Tabs} from "elv-components-js";
 
 import {AccessChargeDisplay} from "../../../utils/Helpers";
 import Listing from "../../components/Listing";
 import {inject, observer} from "mobx-react";
+import RefreshIcon from "../../../static/icons/refresh.svg";
 
 @inject("libraryStore")
 @observer
@@ -22,7 +23,8 @@ class ContentLibrary extends React.Component {
       visibleItems: {},
       view: "content",
       groupsView: "accessor",
-      version: 0
+      version: 0,
+      pageVersion: 0
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -154,7 +156,7 @@ class ContentLibrary extends React.Component {
               params
             });
 
-            this.setState({version: this.state.version + 1});
+            this.setState({listingVersion: this.state.listingVersion + 1});
           }}
           RenderContent={this.AccessGroups}
         />
@@ -205,7 +207,7 @@ class ContentLibrary extends React.Component {
             params
           });
 
-          this.setState({version: this.state.version + 1});
+          this.setState({listingVersion: this.state.listingVersion + 1});
         }}
         RenderContent={this.ContentObjects}
       />
@@ -299,6 +301,13 @@ class ContentLibrary extends React.Component {
         <Action type="link" to={UrlJoin(this.props.match.url, "types")} hidden={!this.props.libraryStore.library.isOwner}>Types</Action>
         <Action type="link" to={UrlJoin(this.props.match.url, "groups")} hidden={!this.props.libraryStore.library.isOwner}>Groups</Action>
         { contributeButton }
+
+        <IconButton
+          className="refresh-button"
+          icon={RefreshIcon}
+          label="Refresh"
+          onClick={() => this.setState({pageVersion: this.state.pageVersion + 1})}
+        />
       </div>
     );
   }
@@ -344,6 +353,7 @@ class ContentLibrary extends React.Component {
   render() {
     return (
       <AsyncComponent
+        key={`library-page-${this.state.pageVersion}`}
         Load={
           async () => await this.props.libraryStore.ContentLibrary({
             libraryId: this.props.libraryStore.libraryId

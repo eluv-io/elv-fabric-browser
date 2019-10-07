@@ -11,9 +11,10 @@ import {DownloadFromUrl} from "../../../utils/Files";
 import FileBrowser from "../../components/FileBrowser";
 import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
-import {Action, AsyncComponent, Confirm, Tabs, TraversableJson} from "elv-components-js";
+import {Action, AsyncComponent, Confirm, IconButton, Tabs, TraversableJson} from "elv-components-js";
 import {AccessChargeDisplay} from "../../../utils/Helpers";
 import {inject, observer} from "mobx-react";
+import RefreshIcon from "../../../static/icons/refresh.svg";
 
 const ToggleSection = ({label, children, className=""}) => {
   const [show, setShow] = useState(false);
@@ -69,7 +70,7 @@ class ContentObject extends React.Component {
       appRef: React.createRef(),
       view: "info",
       partDownloadProgress: {},
-      version: 0
+      pageVersion: 0
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -84,7 +85,7 @@ class ContentObject extends React.Component {
           objectId: this.props.objectStore.objectId
         });
 
-        this.setState({version: this.state.version + 1});
+        this.setState({pageVersion: this.state.pageVersion + 1});
       }
     });
   }
@@ -117,7 +118,7 @@ class ContentObject extends React.Component {
             versionHash
           });
 
-          this.setState({version: this.state.version + 1});
+          this.setState({pageVersion: this.state.pageVersion + 1});
         }
       });
     };
@@ -166,28 +167,14 @@ class ContentObject extends React.Component {
     return PrettyBytes(version.parts.reduce((a, part) => a + part.size, 0));
   }
 
-  ObjectMedia() {
-    let image;
-    let video;
+  Image() {
+    if(!this.props.objectStore.object.imageUrl) { return null; }
 
-    if(this.props.objectStore.object.imageUrl) {
-      image = (
-        <div className="object-image">
-          <img src={this.props.objectStore.object.imageUrl} />
-        </div>
-      );
-    }
-
-    if(!image && !video) {
-      return null;
-    } else {
-      return (
-        <div className="object-media">
-          {video}
-          {image}
-        </div>
-      );
-    }
+    return (
+      <div className="object-image">
+        <img src={this.props.objectStore.object.imageUrl} />
+      </div>
+    );
   }
 
   ObjectParts(version) {
@@ -297,7 +284,7 @@ class ContentObject extends React.Component {
         <h3>Files</h3>
         <FileBrowser
           files={this.props.objectStore.object.meta.files || {}}
-          Reload={() => this.setState({version: this.state.version + 1})}
+          Reload={() => this.setState({pageVersion: this.state.pageVersion + 1})}
           uploadStatus={this.props.objectStore.UploadFiles}
           Upload={uploadMethod}
           Download={downloadMethod}
@@ -562,16 +549,13 @@ class ContentObject extends React.Component {
         <Action type="link" to={UrlJoin(this.props.match.url, "upload")}>Upload Parts</Action>
         { manageAppsLink }
         { deleteObjectButton }
-      </div>
-    );
-  }
 
-  DisplayVideo() {
-    return (
-      <div className="video-player">
-        <video poster={this.props.objectStore.object.imageUrl} controls={true}>
-          <source src={this.props.objectStore.object.videoUrl} />
-        </video>
+        <IconButton
+          className="refresh-button"
+          icon={RefreshIcon}
+          label="Refresh"
+          onClick={() => this.setState({pageVersion: this.state.pageVersion + 1})}
+        />
       </div>
     );
   }
@@ -595,7 +579,7 @@ class ContentObject extends React.Component {
         className="display-frame"
         appUrl={this.state.displayAppUrl}
         queryParams={queryParams}
-        onComplete={() => this.setState({version: this.state.version + 1})}
+        onComplete={() => this.setState({pageVersion: this.state.pageVersion + 1})}
         onCancel={() => this.setState({deleted: true})}
         fixedDimensions
       />
@@ -608,10 +592,7 @@ class ContentObject extends React.Component {
       ["Files", "files"]
     ];
 
-    if(
-      !this.props.objectStore.object.isContentType &&
-      (this.state.displayAppUrl || this.props.objectStore.object.videoUrl)
-    ) {
+    if(!this.props.objectStore.object.isContentType && this.state.displayAppUrl) {
       tabOptions.unshift(["Display", "display"]);
     }
 
@@ -640,15 +621,11 @@ class ContentObject extends React.Component {
 
     let pageContent;
     if(this.state.view === "display") {
-      if(this.state.displayAppUrl) {
-        pageContent = this.AppFrame();
-      } else {
-        pageContent = this.DisplayVideo();
-      }
+      pageContent = this.AppFrame();
     } else if(this.state.view === "info") {
       pageContent = (
         <React.Fragment>
-          { this.ObjectMedia() }
+          { this.Image() }
           { this.ObjectInfo() }
         </React.Fragment>
       );
@@ -671,7 +648,7 @@ class ContentObject extends React.Component {
   render() {
     return (
       <AsyncComponent
-        key={`object-page-${this.state.version}`}
+        key={`object-page-${this.state.pageVersion}`}
         Load={
           async () => {
             await Promise.all(

@@ -29,6 +29,19 @@
   .-elv-button {
     margin-right: $elv-spacing-xs;
   }
+
+  .refresh-button {
+    position: absolute;
+    right: 0;
+
+    svg {
+      stroke: $elv-color-mediumgray;
+
+      &:hover {
+        stroke: $elv-color-darkgray;
+      }
+    }
+  }
 }
 
 .help-text {

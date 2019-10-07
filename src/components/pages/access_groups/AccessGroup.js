@@ -20,7 +20,7 @@ class AccessGroup extends React.Component {
     this.state = {
       visibleElements: {},
       view: "members",
-      version: 0
+      listingVersion: 0
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -134,7 +134,7 @@ class AccessGroup extends React.Component {
             params
           });
 
-          this.setState({version: this.state.version + 1});
+          this.setState({listingVersion: this.state.listingVersion + 1});
         }}
         RenderContent={this.AccessGroupMembers}
         noIcon={true}

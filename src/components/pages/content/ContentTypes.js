@@ -12,7 +12,7 @@ class ContentTypes extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      version: 0
+      listingVersion: 0
     };
 
     this.ContentTypes = this.ContentTypes.bind(this);
@@ -52,7 +52,7 @@ class ContentTypes extends React.Component {
             LoadContent={
               async ({params}) => {
                 await this.props.typeStore.ListContentTypes({params});
-                this.setState({version: this.state.version + 1});
+                this.setState({listingVersion: this.state.listingVersion + 1});
               }
             }
             RenderContent={this.ContentTypes}

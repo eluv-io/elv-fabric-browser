@@ -16,7 +16,7 @@ class ContentApps extends React.Component {
     this.state = {
       role: "",
       showUpload: false,
-      version: 0
+      pageVersion: 0
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -52,7 +52,7 @@ class ContentApps extends React.Component {
           OnCancel={closeModal}
           OnComplete={() => {
             closeModal();
-            this.setState({version: this.state.version + 1});
+            this.setState({pageVersion: this.state.pageVersion + 1});
           }}
         />
       </Modal>
@@ -60,7 +60,7 @@ class ContentApps extends React.Component {
   }
 
   AppRoles() {
-    return ["display", "manage", "review"];
+    return ["display", "manage"];
   }
 
   async DeleteApp(role) {
@@ -73,7 +73,7 @@ class ContentApps extends React.Component {
           role
         });
 
-        this.setState({version: this.state.version + 1});
+        this.setState({pageVersion: this.state.pageVersion + 1});
       }
     });
   }
@@ -156,7 +156,7 @@ class ContentApps extends React.Component {
   render() {
     return (
       <AsyncComponent
-        key={`page-version-${this.state.version}`}
+        key={`apps-page-${this.state.pageVersion}`}
         Load={
           async () => {
             await this.props.libraryStore.ContentLibrary({

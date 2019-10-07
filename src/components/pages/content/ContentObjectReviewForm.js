@@ -112,7 +112,6 @@ class ContentObjectReviewForm extends React.Component {
   render() {
     return (
       <AsyncComponent
-        key={`object-page-${this.state.version}`}
         Load={
           async () => {
             await this.props.objectStore.ContentObject({

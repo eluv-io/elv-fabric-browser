@@ -12,7 +12,7 @@ class AccessGroups extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      version: 0
+      listingVersion: 0
     };
 
     this.AccessGroups = this.AccessGroups.bind(this);
@@ -43,7 +43,7 @@ class AccessGroups extends React.Component {
         LoadContent={
           async ({params}) => {
             await this.props.groupStore.ListAccessGroups({params});
-            this.setState({version: this.state.version + 1});
+            this.setState({listingVersion: this.state.listingVersion + 1});
           }
         }
         RenderContent={this.AccessGroups}
