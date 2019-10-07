@@ -5,6 +5,9 @@ import UrlJoin from "url-join";
 import {ParseInputJson} from "elv-components-js";
 import {ToList} from "../utils/TypeSchema";
 import Path from "path";
+import "elv-components-js/src/utils/LimitedForEach";
+
+const concurrentUploads = 3;
 
 class ObjectStore {
   @observable objects = {};
@@ -172,24 +175,27 @@ class ObjectStore {
     let parts = {};
     const contentDraft = yield Fabric.EditContentObject({libraryId, objectId});
 
-    yield Promise.all(Array.from(files).map(async file => {
-      let partCallback;
-      if(callback) {
-        partCallback = ({uploaded, total}) => callback({uploaded, total, filename: file.name});
-      }
+    yield Array.from(files).limitedForEach(
+      concurrentUploads,
+      async file => {
+        let partCallback;
+        if(callback) {
+          partCallback = ({uploaded, total}) => callback({uploaded, total, filename: file.name});
+        }
 
-      parts[file.name] = (
-        await Fabric.UploadPart({
-          libraryId,
-          objectId,
-          writeToken: contentDraft.write_token,
-          file,
-          encrypt,
-          chunkSize: 10000000,
-          callback: partCallback
-        })
-      ).part.hash;
-    }));
+        parts[file.name] = (
+          await Fabric.UploadPart({
+            libraryId,
+            objectId,
+            writeToken: contentDraft.write_token,
+            file,
+            encrypt,
+            chunkSize: 10000000,
+            callback: partCallback
+          })
+        ).part.hash;
+      }
+    );
 
     yield Fabric.MergeMetadata({
       libraryId,

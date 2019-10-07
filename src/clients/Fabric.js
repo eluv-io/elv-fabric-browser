@@ -33,6 +33,7 @@ const Fabric = {
   utils: client.utils,
   isFrameClient,
   cachedImages: {},
+  concurrencyLimit: 5,
 
   async Initialize() {
     if(!isFrameClient) {
@@ -158,8 +159,9 @@ const Fabric = {
 
   ListContentLibraries: async ({params}) => {
     const libraryIds = await client.ContentLibraries();
-    let filteredLibraries = await Promise.all(
-      libraryIds.map(async libraryId => {
+    let filteredLibraries = await libraryIds.limitedForEach(
+      Fabric.concurrencyLimit,
+      async libraryId => {
         try {
           const libraryObjectId = libraryId.replace("ilib", "iq__");
           // Call library content object to ensure library exists
@@ -179,7 +181,7 @@ const Fabric = {
             meta: {}
           };
         }
-      })
+      }
     );
 
     filteredLibraries = filteredLibraries.filter(library => library !== undefined);
@@ -220,8 +222,10 @@ const Fabric = {
     const perPage = params.perPage || 10;
     filteredLibraries = filteredLibraries.slice(page * perPage, (page+1) * perPage);
     let libraries = {};
-    await Promise.all(
-      filteredLibraries.map(async ({libraryId, meta}) => {
+
+    await filteredLibraries.limitedForEach(
+      Fabric.concurrencyLimit,
+      async ({libraryId, meta}) => {
         try {
           const libraryObjectId = libraryId.replace("ilib", "iq__");
           /* Image */
@@ -244,7 +248,7 @@ const Fabric = {
           console.error(error);
           /* eslint-enable no-console */
         }
-      })
+      }
     );
 
     return {
@@ -324,10 +328,11 @@ const Fabric = {
     if(libraryId === Fabric.contentSpaceLibraryId) { return {}; }
 
     let types = await client.LibraryContentTypes({libraryId});
-    await Promise.all(
-      Object.values(types).map(async type => {
+    await Object.values(types).limitedForEach(
+      Fabric.concurrencyLimit,
+      async type => {
         types[type.id].appUrls = await Fabric.AppUrls({object: type});
-      })
+      }
     );
 
     return types;
@@ -1061,13 +1066,14 @@ const Fabric = {
     });
 
     // Retrieve names for all addresses
-    await Promise.all(
-      accounts.map(async address => {
+    await accounts.limitedForEach(
+      Fabric.concurrencyLimit,
+      async address => {
         accountNames[address] = await client.userProfileClient.PublicUserMetadata({
           address: address,
           metadataSubtree: "name"
         });
-      })
+      }
     );
 
     // Inject fromName into all events
@@ -1240,8 +1246,9 @@ const Fabric = {
 
       numGroups = parseInt(numGroups._hex, 16);
 
-      accessGroupAddresses = await Promise.all(
-        [...Array(numGroups)].map(async (_, i) => {
+      accessGroupAddresses = await [...Array(numGroups)].limitedForEach(
+        Fabric.concurrencyLimit,
+        async (_, i) => {
           try {
             return Fabric.utils.FormatAddress(
               await client.CallContractMethod({
@@ -1255,15 +1262,16 @@ const Fabric = {
             // eslint-disable-next-line no-console
             console.error(error);
           }
-        })
+        }
       );
     } else {
       // Get all access groups
       accessGroupAddresses = await client.Collection({collectionType: "accessGroups"});
     }
 
-    let filteredAccessGroups = await Promise.all(
-      accessGroupAddresses.map(async contractAddress => await Fabric.GetAccessGroup({contractAddress}))
+    let filteredAccessGroups = await accessGroupAddresses.limitedForEach(
+      Fabric.concurrencyLimit,
+      async contractAddress => await Fabric.GetAccessGroup({contractAddress})
     );
 
     // Filter
@@ -1358,15 +1366,16 @@ const Fabric = {
       await client.AccessGroupManagers({contractAddress}) :
       await client.AccessGroupMembers({contractAddress});
 
-    let members = await Promise.all(
-      memberAddresses.map(async address => {
+    let members = await memberAddresses.limitedForEach(
+      Fabric.concurrencyLimit,
+      async address => {
         const name = await client.userProfileClient.PublicUserMetadata({address, metadataSubtree: "name"});
 
         return {
           name: name || address,
           address
         };
-      })
+      }
     );
 
     const currentAccountAddress = await Fabric.CurrentAccountAddress();

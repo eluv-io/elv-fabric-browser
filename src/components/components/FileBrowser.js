@@ -179,7 +179,6 @@ class FileBrowser extends React.Component {
 
 FileBrowser.propTypes = {
   files: PropTypes.object.isRequired,
-  uploadStatus: PropTypes.object.isRequired,
   Upload: PropTypes.func.isRequired,
   Download: PropTypes.func.isRequired,
   FileUrl: PropTypes.func.isRequired,
