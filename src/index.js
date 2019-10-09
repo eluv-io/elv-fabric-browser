@@ -5,6 +5,8 @@ import { render } from "react-dom";
 import HashRouter from "react-router-dom/es/HashRouter";
 
 import "./utils/StringExtensions";
+import "elv-components-js/src/utils/LimitedMap";
+
 import ScrollToTop from "./router/ScrollToTop";
 import NavigationBar from "./components/NavigationBar";
 import Notifications from "./components/Notifications";

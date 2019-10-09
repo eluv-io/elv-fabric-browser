@@ -262,12 +262,13 @@ class ContentObject extends React.Component {
       });
     };
 
-    const uploadMethod = async (path, fileList) => {
+    const uploadMethod = async ({path, fileList, callback}) => {
       await this.props.objectStore.UploadFiles({
         libraryId: this.props.objectStore.libraryId,
         objectId: this.props.objectStore.objectId,
         path,
-        fileList
+        fileList,
+        callback
       });
     };
 

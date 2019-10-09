@@ -5,7 +5,6 @@ import UrlJoin from "url-join";
 import {ParseInputJson} from "elv-components-js";
 import {ToList} from "../utils/TypeSchema";
 import Path from "path";
-import "elv-components-js/src/utils/LimitedForEach";
 
 const concurrentUploads = 3;
 
@@ -175,7 +174,7 @@ class ObjectStore {
     let parts = {};
     const contentDraft = yield Fabric.EditContentObject({libraryId, objectId});
 
-    yield Array.from(files).limitedForEach(
+    yield Array.from(files).limitedMap(
       concurrentUploads,
       async file => {
         let partCallback;
@@ -239,14 +238,14 @@ class ObjectStore {
     return window.URL.createObjectURL(new Blob(chunks));
   }
 
-  async UploadFiles({libraryId, objectId, path, fileList}) {
+  async UploadFiles({libraryId, objectId, path, fileList, callback}) {
     await Fabric.EditAndFinalizeContentObject({
       libraryId,
       objectId,
       todo: async (writeToken) => {
         const fileInfo = await FileInfo(path, fileList);
 
-        await Fabric.UploadFiles({libraryId, objectId, writeToken, fileInfo});
+        await Fabric.UploadFiles({libraryId, objectId, writeToken, fileInfo, callback});
       }
     });
 
@@ -267,7 +266,7 @@ class ObjectStore {
   }
 
   @action.bound
-  AddApp = flow(function * ({libraryId, objectId, role, isDirectory, fileList}) {
+  AddApp = flow(function * ({libraryId, objectId, role, isDirectory, fileList, callback}) {
     const app = `${role}App`;
     const fileInfo = yield FileInfo(app, fileList, false, isDirectory);
 
@@ -283,7 +282,8 @@ class ObjectStore {
           libraryId,
           objectId,
           writeToken,
-          fileInfo
+          fileInfo,
+          callback
         });
 
         await Fabric.ReplaceMetadata({

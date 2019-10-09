@@ -159,7 +159,7 @@ const Fabric = {
 
   ListContentLibraries: async ({params}) => {
     const libraryIds = await client.ContentLibraries();
-    let filteredLibraries = await libraryIds.limitedForEach(
+    let filteredLibraries = await libraryIds.limitedMap(
       Fabric.concurrencyLimit,
       async libraryId => {
         try {
@@ -223,7 +223,7 @@ const Fabric = {
     filteredLibraries = filteredLibraries.slice(page * perPage, (page+1) * perPage);
     let libraries = {};
 
-    await filteredLibraries.limitedForEach(
+    await filteredLibraries.limitedMap(
       Fabric.concurrencyLimit,
       async ({libraryId, meta}) => {
         try {
@@ -328,7 +328,7 @@ const Fabric = {
     if(libraryId === Fabric.contentSpaceLibraryId) { return {}; }
 
     let types = await client.LibraryContentTypes({libraryId});
-    await Object.values(types).limitedForEach(
+    await Object.values(types).limitedMap(
       Fabric.concurrencyLimit,
       async type => {
         types[type.id].appUrls = await Fabric.AppUrls({object: type});
@@ -921,8 +921,8 @@ const Fabric = {
 
   /* Files */
 
-  UploadFiles: async ({libraryId, objectId, writeToken, fileInfo}) => {
-    return await client.UploadFiles({libraryId, objectId, writeToken, fileInfo});
+  UploadFiles: async ({libraryId, objectId, writeToken, fileInfo, callback}) => {
+    return await client.UploadFiles({libraryId, objectId, writeToken, fileInfo, callback});
   },
 
   DeleteFiles: async ({libraryId, objectId, writeToken, filePaths}) => {
@@ -1066,7 +1066,7 @@ const Fabric = {
     });
 
     // Retrieve names for all addresses
-    await accounts.limitedForEach(
+    await accounts.limitedMap(
       Fabric.concurrencyLimit,
       async address => {
         accountNames[address] = await client.userProfileClient.PublicUserMetadata({
@@ -1246,7 +1246,7 @@ const Fabric = {
 
       numGroups = parseInt(numGroups._hex, 16);
 
-      accessGroupAddresses = await [...Array(numGroups)].limitedForEach(
+      accessGroupAddresses = await [...Array(numGroups)].limitedMap(
         Fabric.concurrencyLimit,
         async (_, i) => {
           try {
@@ -1269,7 +1269,7 @@ const Fabric = {
       accessGroupAddresses = await client.Collection({collectionType: "accessGroups"});
     }
 
-    let filteredAccessGroups = await accessGroupAddresses.limitedForEach(
+    let filteredAccessGroups = await accessGroupAddresses.limitedMap(
       Fabric.concurrencyLimit,
       async contractAddress => await Fabric.GetAccessGroup({contractAddress})
     );
@@ -1366,7 +1366,7 @@ const Fabric = {
       await client.AccessGroupManagers({contractAddress}) :
       await client.AccessGroupMembers({contractAddress});
 
-    let members = await memberAddresses.limitedForEach(
+    let members = await memberAddresses.limitedMap(
       Fabric.concurrencyLimit,
       async address => {
         const name = await client.userProfileClient.PublicUserMetadata({address, metadataSubtree: "name"});

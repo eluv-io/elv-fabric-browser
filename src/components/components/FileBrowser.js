@@ -116,10 +116,9 @@ class FileBrowser extends React.Component {
 
     const closeModal = () => this.setState({showUpload: false});
 
-    // TODO: Change modal to standalone
     return (
       <Modal
-        closable={true}
+        closable={false}
         OnClickOutside={closeModal}
       >
         <FileUploadWidget

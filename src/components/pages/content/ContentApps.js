@@ -24,13 +24,14 @@ class ContentApps extends React.Component {
     this.HandleSubmit = this.HandleSubmit.bind(this);
   }
 
-  async HandleSubmit(path, fileList, isDirectory) {
+  async HandleSubmit({fileList, isDirectory, callback}) {
     await this.props.objectStore.AddApp({
       libraryId: this.props.objectStore.libraryId,
       objectId: this.props.objectStore.objectId,
       role: this.state.role,
       isDirectory,
-      fileList
+      fileList,
+      callback
     });
   }
 

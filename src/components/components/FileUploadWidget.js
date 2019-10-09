@@ -9,58 +9,39 @@ class FileUploadWidget extends React.Component {
     this.state = {
       files: "",
       directories: false,
-      status: {
-        loading: false,
-        completed: false,
-        error: false,
-        errorMessage: ""
-      }
+      progress: {}
     };
 
     this.HandleSubmit = this.HandleSubmit.bind(this);
   }
 
   async HandleSubmit() {
-    this.setState({
-      status: {
-        loading: true,
-        completed: false,
-        error: false,
-        errorMessage: ""
-      }
+    const callback = progress => {
+      let percentage = {};
+      Object.keys(progress).map(path => {
+        const filename = path.split("/").slice(-1)[0];
+        const {uploaded, total} = progress[path];
+        percentage[filename] = total > 0 ? `${(uploaded * 100 / total).toFixed(1)}%` : "100.0%";
+      });
+
+      this.setState({progress: percentage});
+    };
+
+    await this.props.Upload({
+      path: this.props.path,
+      fileList: this.state.files,
+      isDirectory: this.state.directories,
+      callback
     });
-
-    try {
-      await this.props.Upload(this.props.path, this.state.files, this.state.directories);
-
-      this.setState({
-        status: {
-          loading: false,
-          completed: true
-        }
-      });
-    } catch(error) {
-      this.setState({
-        status: {
-          loading: false,
-          completed: false,
-          error: true,
-          errorMessage: error.message
-        }
-      });
-    }
   }
 
   render() {
     return (
       <div className="upload-widget">
-        <div className="modal-error">{this.state.error}</div>
         <Form
           legend={this.props.legend}
-          status={this.state.status}
           OnSubmit={this.HandleSubmit}
           OnCancel={this.props.OnCancel}
-          OnError={(error) => this.setState({error})}
           OnComplete={this.props.OnComplete}
         >
           <div className="form-content">
@@ -79,7 +60,7 @@ class FileUploadWidget extends React.Component {
               onChange={(event) => this.setState({files: event.target.files})}
               directories={this.state.directories}
               multiple={true}
-              progress={this.props.progress}
+              progress={this.state.progress}
             />
           </div>
         </Form>
@@ -92,7 +73,6 @@ FileUploadWidget.propTypes = {
   legend: PropTypes.string.isRequired,
   path: PropTypes.string,
   progress: PropTypes.object,
-  uploadStatus: PropTypes.object,
   Upload: PropTypes.func.isRequired,
   OnComplete: PropTypes.func.isRequired,
   OnCancel: PropTypes.func
