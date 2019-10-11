@@ -21,7 +21,7 @@ export const FileInfo = async (path, fileList, noData=false, trimDirectory) => {
 
   return await Promise.all(
     Array.from(fileList).map(async file => {
-      const data = noData ? undefined : file;
+      const data = noData ? undefined : await new Response(file).blob();
       let filePath = file.overrideName || file.webkitRelativePath || file.name;
       if(trimDirectory) {
         filePath = filePath.split("/")[1];

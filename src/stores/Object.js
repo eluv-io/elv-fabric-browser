@@ -207,7 +207,8 @@ class ObjectStore {
     yield Fabric.FinalizeContentObject({
       libraryId,
       objectId,
-      writeToken: contentDraft.write_token
+      writeToken: contentDraft.write_token,
+      awaitCommitConfirmation: false
     });
 
     const partsText = files.length > 1 ? "parts" : "part";
@@ -242,6 +243,7 @@ class ObjectStore {
     await Fabric.EditAndFinalizeContentObject({
       libraryId,
       objectId,
+      awaitCommitConfirmation: false,
       todo: async (writeToken) => {
         const fileInfo = await FileInfo(path, fileList);
 

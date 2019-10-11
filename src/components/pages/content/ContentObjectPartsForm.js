@@ -2,6 +2,7 @@ import React from "react";
 import Path from "path";
 import {Action, AsyncComponent, BrowseWidget, Form} from "elv-components-js";
 import {inject, observer} from "mobx-react";
+import {Percentage} from "../../../utils/Helpers";
 
 @inject("objectStore")
 @observer
@@ -27,7 +28,7 @@ class ContentObjectPartsForm extends React.Component {
 
   async HandleSubmit() {
     const callback = ({uploaded, total, filename}) => {
-      const progress = `${(uploaded * 100 / total).toFixed(1)}%`;
+      const progress = Percentage(uploaded, total);
 
       this.setState({
         progress: {

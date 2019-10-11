@@ -18,6 +18,7 @@ import Fabric from "../../../clients/Fabric";
 import AppFrame from "../../components/AppFrame";
 import Redirect from "react-router/es/Redirect";
 import {inject, observer} from "mobx-react";
+import {Percentage} from "../../../utils/Helpers";
 
 const defaultSchema = [
   {
@@ -185,7 +186,7 @@ class ContentObjectForm extends React.Component {
   }
 
   UploadStatusCallback({key, uploaded, total, filename}) {
-    const progress = `${(uploaded * 100 / total).toFixed(1)}%`;
+    const progress = Percentage(uploaded, total);
 
     this.setState({
       uploadStatus: {

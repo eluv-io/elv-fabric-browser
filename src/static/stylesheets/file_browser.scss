@@ -3,7 +3,6 @@
 }
 
 .file-browser {
-  border: 1px solid $elv-color-lightgray;
   font-weight: 300;
   margin: $elv-spacing-s 0;
   max-height: 50vh;
@@ -25,6 +24,7 @@
   }
 
   table {
+    border: 1px solid $elv-color-lightgray;
     border-collapse: collapse;
     table-layout: fixed;
     width: 100%;
@@ -86,11 +86,9 @@
       }
 
       &.actions-cell {
+        display: flex;
+        justify-content: center;
         text-align: center;
-
-        button {
-          margin-right: $elv-spacing-xs;
-        }
       }
 
       .item-path {

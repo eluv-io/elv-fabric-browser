@@ -12,7 +12,7 @@ import FileBrowser from "../../components/FileBrowser";
 import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
 import {Action, AsyncComponent, Confirm, IconButton, Tabs, TraversableJson} from "elv-components-js";
-import {AccessChargeDisplay} from "../../../utils/Helpers";
+import {AccessChargeDisplay, Percentage} from "../../../utils/Helpers";
 import {inject, observer} from "mobx-react";
 import RefreshIcon from "../../../static/icons/refresh.svg";
 
@@ -57,6 +57,41 @@ const JSONField = ({json}) => {
       { content }
     </React.Fragment>
   );
+};
+
+const DownloadPart = ({libraryId, objectId, versionHash, partHash, partName, DownloadMethod}) => {
+  const [progress, setProgress] = useState(undefined);
+
+  const downloadButton = (
+    <Action
+      className="action-compact secondary"
+      onClick={async () => {
+        setProgress("0.0%");
+
+        const downloadUrl = await DownloadMethod({
+          libraryId,
+          objectId,
+          versionHash,
+          partHash,
+          callback: async ({bytesFinished, bytesTotal}) => {
+            setProgress({bytesFinished, bytesTotal});
+          }
+        });
+
+        await DownloadFromUrl(downloadUrl, partName || partHash);
+      }}
+    >
+      Download
+    </Action>
+  );
+
+  const downloadProgress = progress === undefined ? null :
+    <span className="download-progress">
+      <progress value={100 * progress.bytesFinished / progress.bytesTotal} max={100} />
+      { Percentage(progress.bytesFinished, progress.bytesTotal) }
+    </span>;
+
+  return progress ? downloadProgress : downloadButton;
 };
 
 @inject("libraryStore")
@@ -187,43 +222,14 @@ class ContentObject extends React.Component {
     });
 
     const parts = (version.parts.map((part, partNumber) => {
-      const downloadButton = (
-        <Action
-          className="action-compact secondary"
-          onClick={async () => {
-            const downloadUrl = await this.props.objectStore.DownloadPart({
-              libraryId: this.props.objectStore.libraryId,
-              objectId: this.props.objectStore.objectId,
-              versionHash: version.hash,
-              partHash: part.hash,
-              callback: async ({bytesFinished, bytesTotal}) => {
-                this.setState({
-                  partDownloadProgress: {
-                    ...this.state.partDownloadProgress,
-                    [version.hash]: {
-                      ...this.state.partDownloadProgress[version.hash],
-                      [part.hash]: (bytesFinished * 100) / bytesTotal
-                    }
-                  }
-                });
-              }
-            });
-
-            await DownloadFromUrl(downloadUrl, names[part.hash] || part.hash);
-          }}
-        >
-          Download
-        </Action>
-      );
-
-      const progress = this.state.partDownloadProgress[version.hash] &&
-        this.state.partDownloadProgress[version.hash][part.hash];
-      const downloadProgress = progress !== undefined ?
-        <span className="download-progress">
-          <progress value={progress} max={100} />
-          {`${progress.toFixed(1)}%`}
-        </span> :
-        undefined;
+      const download = <DownloadPart
+        libraryId={this.props.objectStore.libraryId}
+        objectId={this.props.objectStore.objectId}
+        versionHash={version.hash}
+        partHash={part.hash}
+        partName={names[part.hash]}
+        DownloadMethod={this.props.objectStore.DownloadPart}
+      />;
 
       const name = names[part.hash] ? <LabelledField label="Name" value={names[part.hash]}/> : null;
 
@@ -239,7 +245,7 @@ class ContentObject extends React.Component {
           </LabelledField>
 
           <LabelledField label="Download">
-            { downloadProgress || downloadButton }
+            { download }
           </LabelledField>
         </div>
       );
@@ -285,6 +291,7 @@ class ContentObject extends React.Component {
         <h3>Files</h3>
         <FileBrowser
           files={this.props.objectStore.object.meta.files || {}}
+          baseFileUrl={this.props.objectStore.object.baseFileUrl}
           Reload={() => this.setState({pageVersion: this.state.pageVersion + 1})}
           uploadStatus={this.props.objectStore.UploadFiles}
           Upload={uploadMethod}

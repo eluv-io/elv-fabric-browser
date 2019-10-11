@@ -94,7 +94,7 @@ class ContractStore {
     const isAccessGroup = path.startsWith("/access-groups");
     const isCustomContentObjectContract = path.includes("custom-contract");
 
-    const {type, description, abi, contractAddress} = DetermineContractInterface({
+    let {type, description, abi, contractAddress} = DetermineContractInterface({
       libraryId: this.libraryId,
       objectId: this.objectId,
       contractAddressParam: this.contractAddress,
@@ -116,6 +116,12 @@ class ContractStore {
 
       case ContractTypes.object:
       case ContractTypes.customObject:
+        contractAddress = yield Fabric.GetCustomContentContractAddress({
+          libraryId: this.libraryId,
+          objectId: this.objectId
+        });
+
+      // eslint-disable-next-line no-fallthrough
       case ContractTypes.contentType:
         yield this.rootStore.objectStore.ContentObject({
           libraryId: this.libraryId,

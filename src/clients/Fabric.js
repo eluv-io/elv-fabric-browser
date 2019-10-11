@@ -530,12 +530,19 @@ const Fabric = {
       videoUrl = await Fabric.FabricUrl({libraryId, objectId, partHash: metadata["video"]});
     }
 
+    const baseFileUrl = await Fabric.FileUrl({
+      libraryId,
+      objectId,
+      filePath: "/"
+    });
+
     return {
       ...object,
       ...appUrls,
       meta: metadata,
       name: metadata.name || object.id,
       description: metadata["eluv.description"] || metadata.description,
+      baseFileUrl,
       typeInfo,
       imageUrl,
       videoUrl,
@@ -704,7 +711,8 @@ const Fabric = {
   FinalizeContentObject: async ({
     libraryId,
     objectId,
-    writeToken
+    writeToken,
+    awaitCommitConfirmation=true
   }) => {
     delete Fabric.cachedImages[objectId];
 
@@ -712,19 +720,25 @@ const Fabric = {
       libraryId,
       objectId,
       writeToken,
-      awaitCommitConfirmation: true
+      awaitCommitConfirmation
     });
   },
 
   EditAndFinalizeContentObject: async({
     libraryId,
     objectId,
-    todo
+    todo,
+    awaitCommitConfirmation=true
   }) => {
     const editResponse = await Fabric.EditContentObject({libraryId, objectId});
     await todo(editResponse.write_token);
 
-    await Fabric.FinalizeContentObject({libraryId, objectId, writeToken: editResponse.write_token});
+    await Fabric.FinalizeContentObject({
+      libraryId,
+      objectId,
+      writeToken: editResponse.write_token,
+      awaitCommitConfirmation
+    });
   },
 
   /* Content Types */

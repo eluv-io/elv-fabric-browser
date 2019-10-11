@@ -33,6 +33,10 @@ export const EqualAddress = (address1, address2) => {
   return FormatAddress(address1) === FormatAddress(address2);
 };
 
+export const Percentage = (done, total) => {
+  return total > 0 ? `${(done * 100 / total).toFixed(1)}%` : "100.0%";
+};
+
 export const AccessChargeDisplay = (accessCharge) => {
   if(accessCharge === 0 || accessCharge === "0") {
     return "Free";

@@ -2,9 +2,10 @@ import React from "react";
 import PropTypes from "prop-types";
 import PrettyBytes from "pretty-bytes";
 import UrlJoin from "url-join";
+import URI from "urijs";
 import Path from "path";
 import {SafeTraverse} from "../../utils/Helpers";
-import {Action, AsyncCopy, Modal, IconButton, ImageIcon} from "elv-components-js";
+import {Action, Modal, IconButton, ImageIcon, Copy} from "elv-components-js";
 import FileUploadWidget from "./FileUploadWidget";
 
 import DirectoryIcon from "../../static/icons/directory.svg";
@@ -36,8 +37,17 @@ class FileBrowser extends React.Component {
     });
   }
 
+  FileUrl(path, filename) {
+    const uri = URI(this.props.baseFileUrl);
+
+    uri.path(UrlJoin(uri.path(), path, filename).replace("//", "/"));
+
+    return uri.toString();
+  }
+
   File(name, info) {
     const size = PrettyBytes(info.size || 0);
+    const fileUrl = this.FileUrl(this.state.path, name);
     return (
       <tr key={`entry-${this.state.path}-${name}`}>
         <td className="item-icon">
@@ -46,19 +56,20 @@ class FileBrowser extends React.Component {
         <td title={name}>{ name }</td>
         <td title={size} className="info-cell">{ size }</td>
         <td className="actions-cell">
-          <IconButton
-            icon={DownloadIcon}
-            label={"Download " + name}
-            onClick={() => this.props.Download(UrlJoin(this.state.path, name))}
-            className="download-button"
-          />
-          <AsyncCopy Load={async () => await this.props.FileUrl(UrlJoin(this.state.path, name))}>
+          <a href={fileUrl} target="_blank">
+            <ImageIcon
+              icon={DownloadIcon}
+              label={"Download " + name}
+              className="download-button"
+            />
+          </a>
+          <Copy copy={fileUrl}>
             <IconButton
               icon={LinkIcon}
               label={"Copy direct link to " + name}
               className="copy-button"
             />
-          </AsyncCopy>
+          </Copy>
         </td>
       </tr>
     );
@@ -178,6 +189,7 @@ class FileBrowser extends React.Component {
 
 FileBrowser.propTypes = {
   files: PropTypes.object.isRequired,
+  baseFileUrl: PropTypes.string.isRequired,
   Upload: PropTypes.func.isRequired,
   Download: PropTypes.func.isRequired,
   FileUrl: PropTypes.func.isRequired,

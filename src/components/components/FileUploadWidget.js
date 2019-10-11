@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import {BrowseWidget, Form, RadioSelect} from "elv-components-js";
+import {Percentage} from "../../utils/Helpers";
 
 class FileUploadWidget extends React.Component {
   constructor(props) {
@@ -21,7 +22,7 @@ class FileUploadWidget extends React.Component {
       Object.keys(progress).map(path => {
         const filename = path.split("/").slice(-1)[0];
         const {uploaded, total} = progress[path];
-        percentage[filename] = total > 0 ? `${(uploaded * 100 / total).toFixed(1)}%` : "100.0%";
+        percentage[filename] = Percentage(uploaded, total);
       });
 
       this.setState({progress: percentage});
