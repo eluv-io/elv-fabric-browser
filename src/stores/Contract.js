@@ -3,6 +3,7 @@ import {action, computed, flow, observable, toJS} from "mobx";
 import {ContractTypes, DetermineContractInterface} from "../utils/Contracts";
 import {ParseInputJson} from "elv-components-js";
 import {FormatAddress} from "../utils/Helpers";
+import UrlJoin from "url-join";
 
 // eslint-disable-next-line no-unused-vars
 import BrowserSolc from "browser-solc";
@@ -102,8 +103,6 @@ class ContractStore {
       isCustomContentObjectContract,
     });
 
-    const balance = yield this.GetContractBalance({contractAddress});
-
     let name;
     switch(type) {
       case ContractTypes.library:
@@ -114,14 +113,20 @@ class ContractStore {
 
         break;
 
-      case ContractTypes.object:
       case ContractTypes.customObject:
         contractAddress = yield Fabric.GetCustomContentContractAddress({
           libraryId: this.libraryId,
           objectId: this.objectId
         });
 
+        abi = yield Fabric.GetContentObjectMetadata({
+          libraryId: this.libraryId,
+          objectId: this.objectId,
+          metadataSubtree: UrlJoin("custom_contract", "abi")
+        });
+
       // eslint-disable-next-line no-fallthrough
+      case ContractTypes.object:
       case ContractTypes.contentType:
         yield this.rootStore.objectStore.ContentObject({
           libraryId: this.libraryId,
@@ -147,6 +152,8 @@ class ContractStore {
         name = this.contract.name;
         break;
     }
+
+    const balance = yield this.GetContractBalance({contractAddress});
 
     return {
       type,

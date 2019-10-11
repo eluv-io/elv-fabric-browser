@@ -25,7 +25,7 @@ class EventsStore {
     const newBlocks = yield Fabric.ContractEvents({contractAddress, abi, fromBlock, toBlock});
 
     this.contractEvents[contractAddress] =
-      this.SortBlocks((this.events[contractAddress] || []).concat(newBlocks));
+      this.SortBlocks((this.contractEvents[contractAddress] || []).concat(newBlocks));
   });
 
   @action.bound
