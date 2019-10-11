@@ -240,6 +240,13 @@ class LibraryStore {
     this.libraries[libraryId].objectsCount = count;
     this.libraries[libraryId].listingCacheId = cacheId;
   });
+
+  @action.bound
+  ClearLibraryCache({libraryId}) {
+    if(!this.libraries[libraryId]) { return; }
+
+    this.libraries[libraryId].listingCacheId = undefined;
+  }
 }
 
 

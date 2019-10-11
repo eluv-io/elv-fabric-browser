@@ -102,9 +102,10 @@ class ObjectStore {
       redirect: true
     });
 
-    return createResponse.id;
+    // Clear library listing cache
+    this.rootStore.libraryStore.ClearLibraryCache({libraryId});
 
-    //dispatch(ClearLibraryListingCacheId({libraryId}));
+    return createResponse.id;
   });
 
   @action.bound
@@ -140,21 +141,23 @@ class ObjectStore {
       redirect: true
     });
 
-    return objectId;
+    // Clear library listing cache
+    this.rootStore.libraryStore.ClearLibraryCache({libraryId});
 
-    //dispatch(ClearLibraryListingCacheId({libraryId}));
+    return objectId;
   });
 
   @action.bound
   DeleteContentObject = flow(function * ({libraryId, objectId}) {
     yield Fabric.DeleteContentObject({libraryId, objectId});
 
-    //dispatch(ClearLibraryListingCacheId({libraryId}));
-
     this.rootStore.notificationStore.SetNotificationMessage({
       message: "Successfully deleted content object",
       redirect: true
     });
+
+    // Clear library listing cache
+    this.rootStore.libraryStore.ClearLibraryCache({libraryId});
   });
 
   @action.bound
@@ -167,6 +170,9 @@ class ObjectStore {
       message: "Successfully deleted content version",
       redirect: true
     });
+
+    // Clear library listing cache
+    this.rootStore.libraryStore.ClearLibraryCache({libraryId});
   });
 
   @action.bound

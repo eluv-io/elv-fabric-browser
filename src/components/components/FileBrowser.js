@@ -116,7 +116,7 @@ class FileBrowser extends React.Component {
             return 1;
           }
         } else {
-          return item1.name.toLowerCase() > item2.name.toLowerCase();
+          return item1.name.toLowerCase() < item2.name.toLowerCase() ? -1 : 1;
         }
       }).map(item => item.info.type === "directory" ? this.Directory(item): this.File(item.name, item.info))
     );
