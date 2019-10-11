@@ -56,6 +56,7 @@ const Fabric = {
 
     this.contentSpaceId = await client.ContentSpaceId();
     this.contentSpaceLibraryId = this.contentSpaceId.replace("ispc", "ilib");
+    this.contentSpaceObjectId = this.contentSpaceId.replace("ispc", "iq__");
   },
 
   async ResetRegion() {
@@ -831,7 +832,24 @@ const Fabric = {
 
   // Get all content types for usage in forms, etc.
   ContentTypes: async () => {
-    return await client.ContentTypes();
+    let contentTypes = await client.ContentTypes();
+
+    const spaceTypes = await client.ContentObjectMetadata({
+      libraryId: Fabric.contentSpaceLibraryId,
+      objectId: Fabric.contentSpaceObjectId,
+      metadataSubtree: "contentTypes"
+    });
+
+    await Object.values(spaceTypes).limitedMap(
+      5,
+      async typeId => {
+        if(contentTypes[typeId]) { return; }
+
+        contentTypes[typeId] = await client.ContentType({typeId});
+      }
+    );
+
+    return contentTypes;
   },
 
   GetContentType: async ({versionHash}) => {
