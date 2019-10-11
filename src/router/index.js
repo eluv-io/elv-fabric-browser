@@ -4,6 +4,8 @@ import Fabric from "../clients/Fabric";
 import {inject, observer} from "mobx-react";
 import {reaction} from "mobx";
 
+import {ErrorHandler} from "elv-components-js";
+
 import ContentLibrariesPage from "../components/pages/content/ContentLibraries";
 import ContentLibraryPage from "../components/pages/content/ContentLibrary";
 import ContentLibraryFormPage from "../components/pages/content/ContentLibraryForm";
@@ -47,8 +49,7 @@ class WatchedRouteClass extends React.Component {
     super(props);
 
     this.state = {
-      routeSet: false,
-      errorCaught: false
+      routeSet: false
     };
   }
 
@@ -66,8 +67,7 @@ class WatchedRouteClass extends React.Component {
           );
 
           this.setState({
-            routeSet: true,
-            errorCaught: false
+            routeSet: true
           });
         }
       )
@@ -82,19 +82,8 @@ class WatchedRouteClass extends React.Component {
     }
   }
 
-  componentDidCatch(error) {
-    this.props.notificationStore.SetErrorMessage({
-      message: typeof error === "string" ? error : error.message
-    });
-
-    this.setState({
-      errorCaught: true
-    });
-  }
-
   render() {
-    // TODO: Add reload button
-    if(!this.state.routeSet || this.state.errorCaught) {
+    if(!this.state.routeSet) {
       return null;
     }
 
@@ -108,7 +97,7 @@ class WatchedRouteClass extends React.Component {
   }
 }
 
-const WatchedRoute = withRouter(WatchedRouteClass);
+const WatchedRoute = withRouter(ErrorHandler(WatchedRouteClass));
 
 class Router extends React.Component {
   constructor(props) {
