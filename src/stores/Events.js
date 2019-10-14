@@ -1,9 +1,11 @@
 import Fabric from "../clients/Fabric";
-import {action, flow, observable} from "mobx";
+import {action, flow, observable, runInAction} from "mobx";
+import {FormatAddress} from "../utils/Helpers";
 
 class EventsStore {
   @observable events = [];
   @observable contractEvents = {};
+  @observable contractNames = {};
 
   constructor(rootStore) {
     this.rootStore = rootStore;
@@ -17,6 +19,20 @@ class EventsStore {
   }
 
   @action.bound
+  async ContractNames(contractAddresses) {
+    await contractAddresses.limitedMap(
+      5,
+      async contractAddress => {
+        if(!this.contractNames[contractAddress]) {
+          const contractName = await Fabric.ContractName(contractAddress);
+
+          runInAction(() => this.contractNames[contractAddress] = contractName);
+        }
+      }
+    );
+  }
+
+  @action.bound
   ContractEvents = flow(function * ({contractAddress, abi, fromBlock=0, toBlock, clear=false}) {
     if(clear) {
       this.ClearContractEvents({contractAddress});
@@ -26,6 +42,8 @@ class EventsStore {
 
     this.contractEvents[contractAddress] =
       this.SortBlocks((this.contractEvents[contractAddress] || []).concat(newBlocks));
+
+    yield this.ContractNames([contractAddress]);
   });
 
   @action.bound
@@ -40,6 +58,10 @@ class EventsStore {
     }
 
     this.events = yield Fabric.GetBlockchainEvents({toBlock, fromBlock, count});
+
+    yield this.ContractNames(
+      this.events.map(events => FormatAddress(events[0].address))
+    );
   });
 
   @action.bound

@@ -3,7 +3,10 @@ import PropTypes from "prop-types";
 import {FormatAddress, ParseBytes32} from "../../utils/Helpers";
 import Fabric from "../../clients/Fabric";
 import {Balance} from "elv-components-js";
+import {inject, observer} from "mobx-react";
 
+@inject("eventsStore")
+@observer
 class EventLogs extends React.PureComponent {
   Key(log) {
     return `log-${log.transactionHash}-${log.logIndex}`;
@@ -46,16 +49,25 @@ class EventLogs extends React.PureComponent {
     );
   }
 
-  Id(eventName, address) {
+  Id(contractName, address) {
     let id;
-    if(eventName.startsWith("BaseContentSpace")) {
-      id = Fabric.utils.AddressToSpaceId(address);
-    } else if(eventName.startsWith("BaseLibrary")) {
-      id = Fabric.utils.AddressToLibraryId(address);
-    } else if(eventName.startsWith("BaseContent")) {
-      id = Fabric.utils.AddressToObjectId(address);
-    } else {
-      return;
+    switch(contractName) {
+      case "BaseContentSpace":
+        id = Fabric.utils.AddressToSpaceId(address);
+        break;
+
+      case "BaseLibrary":
+        id = Fabric.utils.AddressToLibraryId(address);
+        break;
+
+      case "BaseContent":
+      case "BsAccessWallet":
+      case "BsAccessCtrlGrp":
+        id = Fabric.utils.AddressToObjectId(address);
+        break;
+
+      default:
+        return;
     }
 
     return (
@@ -101,7 +113,9 @@ class EventLogs extends React.PureComponent {
   }
 
   ParsedLog(log) {
-    const eventName = log.contract ? `${log.contract} :: ${log.name}` : log.name;
+    const contractName = this.props.eventsStore.contractNames[FormatAddress(log.address)];
+    const eventName = contractName && contractName !== "Unknown" ?
+      `${contractName} ｜ ${log.name}` : log.name;
 
     return (
       <div className="log" key={this.Key(log)}>
@@ -114,7 +128,7 @@ class EventLogs extends React.PureComponent {
             <label>Transaction Hash</label>
             <div className="value">{log.transactionHash}</div>
           </div>
-          { this.Id(eventName, log.address) }
+          { this.Id(contractName, log.address) }
           <div className="labelled-field">
             <label>Contract Address</label>
             <div className="value">{FormatAddress(log.address)}</div>

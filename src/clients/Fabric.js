@@ -1125,6 +1125,10 @@ const Fabric = {
     );
   },
 
+  ContractName: async (contractAddress) => {
+    return await client.ContractName({contractAddress});
+  },
+
   ContractEvent: async ({abi, transactionHash}) => {
     return await client.ContractEvent({abi, transactionHash});
   },
