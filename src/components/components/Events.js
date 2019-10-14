@@ -90,7 +90,9 @@ class Events extends React.Component {
       watcher: setTimeout(async () => {
         this.setState({
           scrollToBottom: false
-        }, async () => await this.Request({fromBlock: this.state.toBlock, updateFrom: false, cancelWatch: false}));
+        }, async () => await this.Request({
+          fromBlock: this.state.fromBlock
+        }));
 
         this.Watch();
       }, 3000)
@@ -257,7 +259,7 @@ class Events extends React.Component {
       this.props.eventsStore.events;
 
     return (
-      <div className="events">
+      <div className="events page-content">
         { this.FilterControls()}
 
         <EventLogs events={events} filter={this.state.filter} scrollToBottom={this.state.scrollToBottom}/>

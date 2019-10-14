@@ -52,12 +52,31 @@ class EventsStore {
   }
 
   @action.bound
-  Events = flow(function * ({toBlock, fromBlock, count, clear=false}) {
-    if(clear) {
-      this.ClearEvents();
+  Events = flow(function * ({toBlock, fromBlock, count}) {
+    let newBlocks = [];
+    if(this.events.length > 0) {
+      // Avoid reloading already retrieved blocks
+      const currentBlocks = this.events.map(block => block[0].blockNumber);
+      const minBlock = Math.min(...currentBlocks);
+      const maxBlock = Math.max(...currentBlocks);
+
+      if(toBlock < minBlock || fromBlock > maxBlock) {
+        newBlocks = yield Fabric.GetBlockchainEvents({toBlock, fromBlock, count});
+      } else {
+        if(maxBlock < toBlock) {
+          newBlocks = yield Fabric.GetBlockchainEvents({toBlock, fromBlock: maxBlock + 1, count});
+        }
+
+        if(minBlock - 1 > fromBlock) {
+          newBlocks = newBlocks.concat(yield Fabric.GetBlockchainEvents({toBlock: minBlock, fromBlock, count}));
+        }
+      }
+    } else {
+      newBlocks = yield Fabric.GetBlockchainEvents({toBlock, fromBlock, count});
     }
 
-    this.events = yield Fabric.GetBlockchainEvents({toBlock, fromBlock, count});
+    this.events = this.SortBlocks(newBlocks.concat(this.events))
+      .filter(block => block[0].blockNumber <= toBlock && block[0].blockNumber >= fromBlock);
 
     yield this.ContractNames(
       this.events.map(events => FormatAddress(events[0].address))
