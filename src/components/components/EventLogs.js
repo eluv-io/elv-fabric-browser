@@ -36,6 +36,8 @@ class EventLogs extends React.PureComponent {
         } else if(value.length === 66) {
           // bytes32
           return [key, ParseBytes32(value), value];
+        } else if(value.toString().startsWith("0x") && value.length === 42) {
+          return [key, FormatAddress(value)];
         } else {
           return [key, value.toString()];
         }
@@ -66,24 +68,27 @@ class EventLogs extends React.PureComponent {
     );
   }
 
-  Id(address) {
-    const contractName = this.props.eventsStore.contractNames[FormatAddress(address)];
+  Id(log) {
+    let contractName = this.props.eventsStore.contractNames[FormatAddress(log.address)];
+    if(!contractName || contractName === "Unknown") {
+      contractName = log.contract;
+    }
 
     let id;
     switch(contractName) {
       case "BaseContentSpace":
-        id = Fabric.utils.AddressToSpaceId(address);
+        id = Fabric.utils.AddressToSpaceId(log.address);
         break;
 
       case "BaseLibrary":
-        id = Fabric.utils.AddressToLibraryId(address);
+        id = Fabric.utils.AddressToLibraryId(log.address);
         break;
 
       case "BaseContent":
       case "BaseContentType":
       case "BsAccessWallet":
       case "BsAccessCtrlGrp":
-        id = Fabric.utils.AddressToObjectId(address);
+        id = Fabric.utils.AddressToObjectId(log.address);
         break;
 
       default:
@@ -118,8 +123,8 @@ class EventLogs extends React.PureComponent {
   }
 
   To(log) {
-    if(!log.to) {
-      return FormatAddress(log.contractAddress);
+    if(log.address) {
+      return FormatAddress(log.address);
     }
 
     return log.toName ?
@@ -129,14 +134,19 @@ class EventLogs extends React.PureComponent {
 
   ParsedLog(log) {
     let contractName = this.props.eventsStore.contractNames[FormatAddress(log.address)];
-    if(!contractName) {
+    if(!contractName || contractName === "Unknown") {
       contractName = log.contract;
     }
 
-    const eventName = contractName && contractName !== "Unknown" ?
-      `${contractName} ｜ ${log.name}` : log.name;
+    let eventName;
 
-    const id = this.Id(log.address);
+    if(contractName && contractName !== "Unknown") {
+      eventName = log.name ?  `${contractName} ｜ ${log.name}` : contractName;
+    } else {
+      eventName = log.name;
+    }
+
+    const id = this.Id(log);
     let idDetails;
     if(id) {
       idDetails = (
@@ -201,10 +211,23 @@ class EventLogs extends React.PureComponent {
       const blockNumber = event && event[0] ? event[0].blockNumber : "unknown";
 
       const logs = event.map(log => {
-        const contractName = this.props.eventsStore.contractNames[FormatAddress(log.address)];
-        const id = this.Id(log.address);
+        let contractName = this.props.eventsStore.contractNames[FormatAddress(log.address)];
+        if(!contractName || contractName === "Unknown") {
+          contractName = log.contract;
+        }
+
+        let eventName;
+
+        if(contractName && contractName !== "Unknown") {
+          eventName = log.name ?  `${contractName} ｜ ${log.name}` : contractName;
+        } else {
+          eventName = log.name;
+        }
+
+        const id = this.Id(log);
         const inputs = this.Inputs(log);
-        const value = log.value ? `Value: ${Fabric.utils.WeiToEther(parseInt(log.value._hex, 16))}` : "";
+        const value = Fabric.utils.WeiToEther(parseInt(log.value._hex, 16));
+        const valueInfo = value && value > 0 ? `Value: ${value}` : "";
 
         let inputFields;
         if(inputs.length > 0) {
@@ -213,13 +236,20 @@ class EventLogs extends React.PureComponent {
           inputFields = inputFields.join("\n\t\t");
         }
 
+        let to;
+        if(log.address) {
+          to = `Contract Address: ${FormatAddress(log.address)}`;
+        } else {
+          to = log.toName ? `${log.toName} (${FormatAddress(log.to)}` : FormatAddress(log.to);
+        }
+
         return [
-          contractName && contractName !== "Unknown" ? `${contractName} | ${log.name}` : log.name || "",
+          eventName,
           `Transaction Hash: ${log.hash}`,
-          (id ? `ID: ${this.Id(log.address)}`: ""),
-          (!log.to && log.contractAddress ? `Contract Address: ${FormatAddress(log.address)}` : `To: ${FormatAddress(log.to)}`),
-          value,
+          (id ? `ID: ${this.Id(log)}`: ""),
+          to,
           `From: ${log.fromName ? `${log.fromName} (${FormatAddress(log.from)})` : FormatAddress(log.from)}`,
+          valueInfo,
           inputFields
         ]
           .filter(l => l)
