@@ -1,8 +1,9 @@
 import React from "react";
 import UrlJoin from "url-join";
 import Path from "path";
-import {Action, AsyncComponent, Form} from "elv-components-js";
+import {Action, Form} from "elv-components-js";
 import {inject, observer} from "mobx-react";
+import AsyncComponent from "../../components/AsyncComponent";
 
 @inject("groupStore")
 @observer

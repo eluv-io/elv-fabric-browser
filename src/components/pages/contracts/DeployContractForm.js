@@ -2,7 +2,8 @@ import React from "react";
 import UrlJoin from "url-join";
 import Path from "path";
 import Fabric from "../../../clients/Fabric";
-import {Action, AsyncComponent, Form, JsonInput, RadioSelect} from "elv-components-js";
+import {Action, Form, JsonInput, RadioSelect} from "elv-components-js";
+import AsyncComponent from "../../components/AsyncComponent";
 import {inject, observer} from "mobx-react";
 
 @inject("contractStore")

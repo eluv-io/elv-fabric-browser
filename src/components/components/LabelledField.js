@@ -1,7 +1,18 @@
 import React from "react";
 import {Copyable} from "./Copyable";
+import {EditableField} from "elv-components-js";
 
-export const LabelledField = ({label, value, children, copyValue, alignTop=false, wideLabel=false, hidden=false}) => {
+export const LabelledField = ({
+  label,
+  value,
+  children,
+  copyValue,
+  editable=false,
+  onChange,
+  alignTop=false,
+  wideLabel=false,
+  hidden=false
+}) => {
   if(typeof label === "string" && label.length > 0) {
     label = label + ":";
   }
@@ -11,6 +22,8 @@ export const LabelledField = ({label, value, children, copyValue, alignTop=false
   let content = <div aria-label={label} title={value}>{ children || value }</div>;
   if(copyValue) {
     content = <Copyable copy={copyValue}>{ content }</Copyable>;
+  } else if(editable) {
+    content = <EditableField value={ children || value } onChange={onChange} />;
   }
 
   return (

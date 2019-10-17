@@ -28,6 +28,19 @@
 
   .-elv-button {
     margin-right: $elv-spacing-xs;
+
+    &.important {
+      background-color: $elv-color-mediumgreen;
+      border: 1px solid $elv-color-mediumgreen;
+
+      &:not(:active) {
+        &:hover {
+          background-color: $elv-color-white;
+          border: 1px solid $elv-color-mediumgreen;
+          color: $elv-color-mediumgreen;
+        }
+      }
+    }
   }
 
   .refresh-button {

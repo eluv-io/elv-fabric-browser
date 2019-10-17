@@ -1,6 +1,7 @@
 import React from "react";
 import Path from "path";
-import {Action, AsyncComponent, Form} from "elv-components-js";
+import {Action, Form} from "elv-components-js";
+import AsyncComponent from "../../../components/AsyncComponent";
 import {PageHeader} from "../../../components/Page";
 import {inject, observer} from "mobx-react";
 

@@ -34,7 +34,7 @@ class ContentTypes extends React.Component {
       };
     });
 
-    return types.sort((a, b) => a.sortKey > b.sortKey ? 1 : -1);
+    return types.sort((a, b) => a.sortKey.toLowerCase() > b.sortKey.toLowerCase() ? 1 : -1);
   }
 
   render() {

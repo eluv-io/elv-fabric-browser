@@ -1,6 +1,7 @@
 import React from "react";
 import Path from "path";
-import {Action, AsyncComponent, Form, IconButton} from "elv-components-js";
+import {Action, Form, IconButton} from "elv-components-js";
+import AsyncComponent from "../../components/AsyncComponent";
 import DeleteIcon from "../../../static/icons/trash.svg";
 import {inject, observer} from "mobx-react";
 

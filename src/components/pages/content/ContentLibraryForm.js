@@ -1,8 +1,9 @@
 import React from "react";
 import UrlJoin from "url-join";
 import Path from "path";
-import {Action, AsyncComponent, BrowseWidget, Form, JsonInput} from "elv-components-js";
+import {Action, BrowseWidget, Form, JsonInput} from "elv-components-js";
 import {inject, observer} from "mobx-react";
+import AsyncComponent from "../../components/AsyncComponent";
 
 @inject("libraryStore")
 @observer

@@ -1,6 +1,7 @@
 import React from "react";
 import Redirect from "react-router/es/Redirect";
-import {Action, AsyncComponent, Form} from "elv-components-js";
+import {Action, Form} from "elv-components-js";
+import AsyncComponent from "../../components/AsyncComponent";
 import Path from "path";
 import UrlJoin from "url-join";
 import {inject, observer} from "mobx-react";

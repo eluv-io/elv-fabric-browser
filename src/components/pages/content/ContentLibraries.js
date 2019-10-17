@@ -32,7 +32,7 @@ class ContentLibraries extends React.Component {
       };
     });
 
-    return libraries.sort((a, b) => a.sortKey > b.sortKey ? 1 : -1);
+    return libraries.sort((a, b) => a.sortKey.toLowerCase() > b.sortKey.toLowerCase() ? 1 : -1);
   }
 
   render() {

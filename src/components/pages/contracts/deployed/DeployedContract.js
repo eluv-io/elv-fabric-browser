@@ -5,7 +5,8 @@ import {LabelledField} from "../../../components/LabelledField";
 import {ContractTypes} from "../../../../utils/Contracts";
 import Redirect from "react-router/es/Redirect";
 import {PageHeader} from "../../../components/Page";
-import {Action, AsyncComponent, Confirm} from "elv-components-js";
+import {Action, Confirm} from "elv-components-js";
+import AsyncComponent from "../../../components/AsyncComponent";
 import {inject, observer} from "mobx-react";
 import DeployedContractMethodForm from "./DeployedContractMethodForm";
 

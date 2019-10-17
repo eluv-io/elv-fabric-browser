@@ -107,7 +107,7 @@ class AccessGroup extends React.Component {
       };
     });
 
-    return memberInfo.sort((a, b) => a.sortKey > b.sortKey ? 1 : -1);
+    return memberInfo.sort((a, b) => a.sortKey.toLowerCase() > b.sortKey.toLowerCase() ? 1 : -1);
   }
 
   AccessGroupMembersListing() {

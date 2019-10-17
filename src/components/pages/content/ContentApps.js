@@ -2,9 +2,10 @@ import React from "react";
 import Path from "path";
 import {PageHeader} from "../../components/Page";
 import {LabelledField} from "../../components/LabelledField";
-import {Action, AsyncComponent, Confirm, Modal} from "elv-components-js";
+import {Action, Confirm, Modal} from "elv-components-js";
 import FileUploadWidget from "../../components/FileUploadWidget";
 import {inject, observer} from "mobx-react";
+import AsyncComponent from "../../components/AsyncComponent";
 
 @inject("libraryStore")
 @inject("objectStore")

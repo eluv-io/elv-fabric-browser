@@ -1,6 +1,7 @@
 import React from "react";
 import Path from "path";
-import {Action, AsyncComponent, Form, RadioSelect} from "elv-components-js";
+import {Action, Form, RadioSelect} from "elv-components-js";
+import AsyncComponent from "../../components/AsyncComponent";
 import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
 import Redirect from "react-router/es/Redirect";

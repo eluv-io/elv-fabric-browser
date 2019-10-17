@@ -6,7 +6,8 @@ import ContentIcon from "../../../static/icons/content.svg";
 import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
 import {PageHeader} from "../../components/Page";
-import {Action, AsyncComponent, IconButton, Tabs} from "elv-components-js";
+import {Action, IconButton, Tabs} from "elv-components-js";
+import AsyncComponent from "../../components/AsyncComponent";
 
 import {AccessChargeDisplay} from "../../../utils/Helpers";
 import Listing from "../../components/Listing";
@@ -124,7 +125,7 @@ class ContentLibrary extends React.Component {
       };
     });
 
-    return groupsInfo.sort((a, b) => a.sortKey > b.sortKey ? 1 : -1);
+    return groupsInfo.sort((a, b) => a.sortKey.toLowerCase() > b.sortKey.toLowerCase() ? 1 : -1);
   }
 
   AccessGroupsListing() {
@@ -186,7 +187,7 @@ class ContentLibrary extends React.Component {
       };
     });
 
-    return objects.sort((a, b) => a.sortKey > b.sortKey ? 1 : -1);
+    return objects.sort((a, b) => a.sortKey.toLowerCase() > b.sortKey.toLowerCase() ? 1 : -1);
   }
 
   ObjectListing() {

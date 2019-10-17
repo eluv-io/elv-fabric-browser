@@ -140,11 +140,11 @@ class DeployedContractMethodForm extends React.Component {
     // Collect and sort methods
     const constantMethods = this.state.contractMethods
       .filter(element => element.constant)
-      .sort((a, b) => a.name < b.name ? -1 : 1);
+      .sort((a, b) => a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1);
 
     const transactions = this.state.contractMethods
       .filter(element => !element.constant)
-      .sort((a, b) => a.name < b.name ? -1 : 1);
+      .sort((a, b) => a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1);
 
 
     // Create lists of options

@@ -232,7 +232,7 @@ class ContentObjectForm extends React.Component {
   TypeField() {
     if(!this.state.createForm) { return; }
 
-    const types = Object.values(this.state.types).sort((a, b) => a.name > b.name ? 1 : -1);
+    const types = Object.values(this.state.types).sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
     let options = types.map(({name, hash}) => {
       return <option key={"type-" + hash} name="type" value={hash}>{ name }</option>;
     });

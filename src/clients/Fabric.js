@@ -463,6 +463,7 @@ const Fabric = {
 
         const accessInfo = await Fabric.GetAccessInfo({objectId: object.id});
         const meta = latestVersion.meta || {};
+        const publicMeta = meta.public || {};
         objects[object.id] = {
           // Pull latest version info up to top level
           ...latestVersion,
@@ -470,7 +471,7 @@ const Fabric = {
           objectId: object.id,
           hash: object.hash,
           type: object.type,
-          name: meta.name,
+          name: publicMeta.name || meta.name,
           description: meta["eluv.description"] || meta.description,
           accessInfo,
           imageUrl,
@@ -511,7 +512,12 @@ const Fabric = {
     });
 
     const object = await client.ContentObject({libraryId, objectId});
-    const metadata = await client.ContentObjectMetadata({libraryId, objectId});
+    const metadata = (await client.ContentObjectMetadata({libraryId, objectId})) || {};
+
+    if(!metadata.public) {
+      metadata.public = {};
+    }
+
     const imageUrl = await Fabric.GetContentObjectImageUrl({libraryId, objectId, versionHash: object.hash, metadata});
 
     let typeInfo;
@@ -537,12 +543,18 @@ const Fabric = {
       filePath: "/"
     });
 
+    let name = metadata.public.name || metadata.name || object.id;
+    if(typeof name !== "string") {
+      name = object.id;
+    }
+
     return {
       ...object,
       ...appUrls,
+      writeToken: "",
       meta: metadata,
-      name: metadata.name || object.id,
-      description: metadata["eluv.description"] || metadata.description,
+      name,
+      description: metadata.public.description || metadata["eluv.description"] || metadata.description,
       baseFileUrl,
       typeInfo,
       imageUrl,
@@ -560,8 +572,8 @@ const Fabric = {
     };
   },
 
-  GetContentObjectMetadata: async ({libraryId, objectId, versionHash, metadataSubtree="/"}) => {
-    return await client.ContentObjectMetadata({libraryId, objectId, versionHash, metadataSubtree});
+  GetContentObjectMetadata: async ({libraryId, objectId, versionHash, writeToken, metadataSubtree="/"}) => {
+    return await client.ContentObjectMetadata({libraryId, objectId, versionHash, writeToken, metadataSubtree});
   },
 
   // Get all versions of the specified content object, along with metadata,

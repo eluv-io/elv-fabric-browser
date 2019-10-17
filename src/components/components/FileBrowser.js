@@ -4,8 +4,7 @@ import PrettyBytes from "pretty-bytes";
 import UrlJoin from "url-join";
 import URI from "urijs";
 import Path from "path";
-import {SafeTraverse} from "../../utils/Helpers";
-import {Action, Modal, IconButton, ImageIcon, Copy} from "elv-components-js";
+import {Action, Modal, IconButton, ImageIcon, Copy, Confirm} from "elv-components-js";
 import FileUploadWidget from "./FileUploadWidget";
 
 import DirectoryIcon from "../../static/icons/directory.svg";
@@ -13,7 +12,11 @@ import FileIcon from "../../static/icons/file.svg";
 import DownloadIcon from "../../static/icons/download.svg";
 import BackIcon from "../../static/icons/directory_back.svg";
 import LinkIcon from "../../static/icons/link.svg";
+import DeleteIcon from "../../static/icons/trash.svg";
+import {inject, observer} from "mobx-react";
 
+@inject("objectStore")
+@observer
 class FileBrowser extends React.Component {
   constructor(props) {
     super(props);
@@ -21,19 +24,61 @@ class FileBrowser extends React.Component {
     this.state = {
       path: ".",
       displayPath: "/",
-      currentDir: this.props.files,
       showUpload: false
     };
+
+    this.UploadFiles = this.UploadFiles.bind(this);
+    this.DeleteItem = this.DeleteItem.bind(this);
+  }
+
+  async UploadFiles({path, fileList, callback}) {
+    await this.props.objectStore.UploadFiles({
+      libraryId: this.props.objectStore.libraryId,
+      objectId: this.props.objectStore.objectId,
+      path,
+      fileList,
+      callback
+    });
+
+    if(this.props.Reload) { this.props.Reload(); }
+  }
+
+  async DeleteItem(item) {
+    await Confirm({
+      message: "Are you sure you want to delete this file?",
+      onConfirm: async () => {
+        this.props.objectStore.DeleteFiles({
+          libraryId: this.props.objectStore.libraryId,
+          objectId: this.props.objectStore.objectId,
+          filePaths: [UrlJoin(this.state.path, item).replace("./", "")]
+        });
+
+        if(this.props.Reload) { this.props.Reload(); }
+      }
+    });
+  }
+
+  CurrentDirectory() {
+    let files = this.props.objectStore.object.meta.files || {};
+
+    if(this.state.path === ".") {
+      return files;
+    }
+
+    this.state.path
+      .replace("./", "")
+      .split("/")
+      .forEach(directory => files = files[directory]);
+
+    return files;
   }
 
   ChangeDirectory(dirname) {
     dirname = Path.normalize(dirname);
-    const currentDir = dirname === "." ? this.props.files : SafeTraverse(this.props.files, dirname.split(Path.sep));
 
     this.setState({
       path: dirname,
       displayPath: dirname === "." ? "/" : "/" + dirname,
-      currentDir
     });
   }
 
@@ -58,6 +103,7 @@ class FileBrowser extends React.Component {
         <td className="actions-cell">
           <a href={fileUrl} target="_blank">
             <ImageIcon
+              title={`Download ${name}`}
               icon={DownloadIcon}
               label={"Download " + name}
               className="download-button"
@@ -65,11 +111,18 @@ class FileBrowser extends React.Component {
           </a>
           <Copy copy={fileUrl}>
             <IconButton
+              title={`Copy link to ${name}`}
               icon={LinkIcon}
               label={"Copy direct link to " + name}
               className="copy-button"
             />
           </Copy>
+          <IconButton
+            title={`Delete ${name}`}
+            icon={DeleteIcon}
+            onClick={() => this.DeleteItem(name)}
+            className="delete-button"
+          />
         </td>
       </tr>
     );
@@ -84,19 +137,28 @@ class FileBrowser extends React.Component {
         </td>
         <td tabIndex="0" title={item.name}>{item.name}</td>
         <td className="info-cell">{(Object.keys(item.item).length - 1) + " Items"}</td>
-        <td />
+        <td className="actions-cell">
+          <IconButton
+            title={`Delete ${item.name}`}
+            icon={DeleteIcon}
+            onClick={() => this.DeleteItem(item.name)}
+            className="delete-button"
+          />
+        </td>
       </tr>
     );
   }
 
   Items() {
-    const items = Object.keys(this.state.currentDir)
+    const currentDirectory = this.CurrentDirectory();
+
+    const items = Object.keys(currentDirectory)
       .filter(name => name !== ".")
       .map(name => {
         return {
           name,
-          item: this.state.currentDir[name],
-          info: this.state.currentDir[name]["."],
+          item: currentDirectory[name],
+          info: currentDirectory[name]["."],
         };
       });
 
@@ -135,12 +197,9 @@ class FileBrowser extends React.Component {
         <FileUploadWidget
           path={this.state.path}
           legend={`Upload files to ${this.state.displayPath}`}
-          files={this.props.files}
-          uploadStatus={this.props.uploadStatus}
-          Upload={this.props.Upload}
+          Upload={this.UploadFiles}
           OnComplete={() => {
             closeModal();
-            this.props.Reload();
           }}
           OnCancel={closeModal}
         />
@@ -188,12 +247,8 @@ class FileBrowser extends React.Component {
 }
 
 FileBrowser.propTypes = {
-  files: PropTypes.object.isRequired,
   baseFileUrl: PropTypes.string.isRequired,
-  Upload: PropTypes.func.isRequired,
-  Download: PropTypes.func.isRequired,
-  FileUrl: PropTypes.func.isRequired,
-  Reload: PropTypes.func.isRequired
+  Reload: PropTypes.func
 };
 
 export default FileBrowser;

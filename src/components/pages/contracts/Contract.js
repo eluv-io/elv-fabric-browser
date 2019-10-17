@@ -5,7 +5,7 @@ import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
 import Redirect from "react-router/es/Redirect";
 import {PageHeader} from "../../components/Page";
-import {Action, AsyncComponent, Confirm} from "elv-components-js";
+import {Action, Confirm} from "elv-components-js";
 import {inject, observer} from "mobx-react";
 
 @inject("contractStore")

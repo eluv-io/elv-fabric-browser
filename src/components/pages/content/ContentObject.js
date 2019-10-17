@@ -11,10 +11,12 @@ import {DownloadFromUrl} from "../../../utils/Files";
 import FileBrowser from "../../components/FileBrowser";
 import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
-import {Action, AsyncComponent, Confirm, IconButton, Tabs, TraversableJson} from "elv-components-js";
+import {Action, Confirm, IconButton, Tabs, TraversableJson} from "elv-components-js";
+import AsyncComponent from "../../components/AsyncComponent";
 import {AccessChargeDisplay, Percentage} from "../../../utils/Helpers";
 import {inject, observer} from "mobx-react";
 import RefreshIcon from "../../../static/icons/refresh.svg";
+import Prompt from "react-router/es/Prompt";
 
 const ToggleSection = ({label, children, className=""}) => {
   const [show, setShow] = useState(false);
@@ -105,11 +107,13 @@ class ContentObject extends React.Component {
       appRef: React.createRef(),
       view: "info",
       partDownloadProgress: {},
-      pageVersion: 0
+      pageVersion: 0,
+      fileVersion: 0
     };
 
     this.PageContent = this.PageContent.bind(this);
     this.SubmitContentObject = this.SubmitContentObject.bind(this);
+    this.UpdateMetadata = this.UpdateMetadata.bind(this);
   }
 
   async SubmitContentObject(confirmationMessage) {
@@ -117,6 +121,20 @@ class ContentObject extends React.Component {
       message: confirmationMessage,
       onConfirm: async () => {
         await this.props.objectStore.PublishContentObject({
+          objectId: this.props.objectStore.objectId
+        });
+
+        this.setState({pageVersion: this.state.pageVersion + 1});
+      }
+    });
+  }
+
+  async SaveContentObjectDraft() {
+    await Confirm({
+      message: "Are you sure you want to save changes to this content object?",
+      onConfirm: async () => {
+        await this.props.objectStore.FinalizeContentObject({
+          libraryId: this.props.objectStore.libraryId,
           objectId: this.props.objectStore.objectId
         });
 
@@ -136,6 +154,15 @@ class ContentObject extends React.Component {
 
         this.setState({deleted: true});
       }
+    });
+  }
+
+  async UpdateMetadata({metadataSubtree="/", metadata}) {
+    await this.props.objectStore.UpdateMetadata({
+      libraryId: this.props.objectStore.libraryId,
+      objectId: this.props.objectStore.objectId,
+      metadataSubtree,
+      metadata
     });
   }
 
@@ -255,49 +282,6 @@ class ContentObject extends React.Component {
       <div>
         <h3>Parts</h3>
         { parts }
-      </div>
-    );
-  }
-
-  ObjectFiles() {
-    const downloadMethod = async (filePath) => {
-      await this.props.objectStore.DownloadFile({
-        libraryId: this.props.objectStore.libraryId,
-        objectId: this.props.objectStore.objectId,
-        filePath
-      });
-    };
-
-    const uploadMethod = async ({path, fileList, callback}) => {
-      await this.props.objectStore.UploadFiles({
-        libraryId: this.props.objectStore.libraryId,
-        objectId: this.props.objectStore.objectId,
-        path,
-        fileList,
-        callback
-      });
-    };
-
-    const urlMethod = async (filePath) => {
-      return await this.props.objectStore.FileUrl({
-        libraryId: this.props.objectStore.libraryId,
-        objectId: this.props.objectStore.objectId,
-        filePath
-      });
-    };
-
-    return (
-      <div className="object-files">
-        <h3>Files</h3>
-        <FileBrowser
-          files={this.props.objectStore.object.meta.files || {}}
-          baseFileUrl={this.props.objectStore.object.baseFileUrl}
-          Reload={() => this.setState({pageVersion: this.state.pageVersion + 1})}
-          uploadStatus={this.props.objectStore.UploadFiles}
-          Upload={uploadMethod}
-          Download={downloadMethod}
-          FileUrl={urlMethod}
-        />
       </div>
     );
   }
@@ -460,8 +444,12 @@ class ContentObject extends React.Component {
 
     return (
       <div className="object-info label-box">
-        <LabelledField label="Name">
-          { object.name }
+        <LabelledField
+          label="Name"
+          editable={true}
+          onChange={newName => this.UpdateMetadata({metadataSubtree: "public/name", metadata: newName})}
+        >
+          { object.meta.public.name || object.id }
         </LabelledField>
 
         <LabelledField label="Description" alignTop={true}>
@@ -549,6 +537,15 @@ class ContentObject extends React.Component {
       );
     }
 
+    let saveDraftButton;
+    if(this.props.objectStore.object.writeToken) {
+      saveDraftButton = (
+        <Action className="important" onClick={() => this.SaveContentObjectDraft()}>
+          Save Draft
+        </Action>
+      );
+    }
+
     return (
       <div className="actions-container">
         <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
@@ -557,6 +554,7 @@ class ContentObject extends React.Component {
         <Action type="link" to={UrlJoin(this.props.match.url, "upload")}>Upload Parts</Action>
         { manageAppsLink }
         { deleteObjectButton }
+        { saveDraftButton }
 
         <IconButton
           className="refresh-button"
@@ -638,14 +636,28 @@ class ContentObject extends React.Component {
         </React.Fragment>
       );
     } else {
-      pageContent = this.ObjectFiles();
+      pageContent = (
+        <div className="object-files">
+          <FileBrowser
+            baseFileUrl={this.props.objectStore.object.baseFileUrl}
+          />
+        </div>
+      );
     }
 
     return (
       <div className="page-container content-page-container">
+        <Prompt
+          message={"Are you sure you want to navigate away from this page? You have unsaved changes that will be lost."}
+          when={!!this.props.objectStore.object.writeToken}
+        />
+
         { this.Actions() }
+
         <PageHeader header={header} subHeader={this.props.objectStore.object.description} />
+
         { this.Tabs() }
+
         <div className="page-content">
           { pageContent }
         </div>

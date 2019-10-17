@@ -176,6 +176,123 @@ class ObjectStore {
   });
 
   @action.bound
+  EditContentObject = flow(function * ({libraryId, objectId}) {
+    const object = this.objects[objectId];
+
+    if(!object) {
+      throw Error("Unknown Object: " + objectId);
+    }
+
+    const writeToken = object.writeToken;
+
+    if(!writeToken) {
+      const {write_token} = yield Fabric.EditContentObject({
+        libraryId,
+        objectId
+      });
+
+      this.objects[objectId].writeToken = write_token;
+    }
+
+    return this.objects[objectId].writeToken;
+  });
+
+  @action.bound
+  FinalizeContentObject = flow(function * ({libraryId, objectId}) {
+    const object = this.objects[objectId];
+
+    if(!object) {
+      throw Error("Unknown Object: " + objectId);
+    }
+
+    const writeToken = object.writeToken;
+
+    if(!writeToken) {
+      throw Error("No write token for " + objectId);
+    }
+
+    const response = yield Fabric.FinalizeContentObject({
+      libraryId,
+      objectId,
+      writeToken
+    });
+
+    this.objects[objectId].writeToken = "";
+
+    return response;
+  });
+
+  @action.bound
+  UpdateMetadata = flow(function * ({libraryId, objectId, metadataSubtree="/", metadata}) {
+    const writeToken = yield this.EditContentObject({libraryId, objectId});
+
+    yield Fabric.ReplaceMetadata({
+      libraryId,
+      objectId,
+      writeToken,
+      metadataSubtree,
+      metadata
+    });
+
+    this.objects[objectId].meta = yield Fabric.GetContentObjectMetadata({
+      libraryId,
+      objectId,
+      writeToken
+    });
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully uploaded metadata"
+    });
+  });
+
+  @action.bound
+  UploadFiles = flow(function * ({libraryId, objectId, path, fileList, callback}) {
+    const writeToken = yield this.EditContentObject({libraryId, objectId});
+
+    const fileInfo = yield FileInfo(path, fileList);
+    yield Fabric.UploadFiles({libraryId, objectId, writeToken, fileInfo, callback});
+
+    this.objects[objectId].meta.files = yield Fabric.GetContentObjectMetadata({
+      libraryId,
+      objectId,
+      writeToken,
+      metadataSubtree: "files"
+    });
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully uploaded files"
+    });
+  });
+
+  async DownloadFile({libraryId, objectId, versionHash, filePath}) {
+    let blob = await Fabric.DownloadFile({libraryId, objectId, versionHash, filePath, format: "blob"});
+    let url = window.URL.createObjectURL(blob);
+
+    await DownloadFromUrl(url, Path.basename(filePath));
+  }
+
+  DeleteFiles = flow(function * ({libraryId, objectId, filePaths}) {
+    const writeToken = yield this.EditContentObject({libraryId, objectId});
+
+    yield Fabric.DeleteFiles({libraryId, objectId, writeToken, filePaths});
+
+    this.objects[objectId].meta.files = yield Fabric.GetContentObjectMetadata({
+      libraryId,
+      objectId,
+      writeToken,
+      metadataSubtree: "files"
+    });
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully deleted file" + filePaths.length > 0 ? "s" : ""
+    });
+  });
+
+  async FileUrl({libraryId, objectId, versionHash, filePath}) {
+    return await Fabric.FileUrl({libraryId, objectId, versionHash, filePath});
+  }
+
+  @action.bound
   UploadParts = flow(function * ({libraryId, objectId, files, encrypt=false, callback}) {
     let parts = {};
     const contentDraft = yield Fabric.EditContentObject({libraryId, objectId});
@@ -243,34 +360,6 @@ class ObjectStore {
     });
 
     return window.URL.createObjectURL(new Blob(chunks));
-  }
-
-  async UploadFiles({libraryId, objectId, path, fileList, callback}) {
-    await Fabric.EditAndFinalizeContentObject({
-      libraryId,
-      objectId,
-      awaitCommitConfirmation: false,
-      todo: async (writeToken) => {
-        const fileInfo = await FileInfo(path, fileList);
-
-        await Fabric.UploadFiles({libraryId, objectId, writeToken, fileInfo, callback});
-      }
-    });
-
-    this.rootStore.notificationStore.SetNotificationMessage({
-      message: "Successfully uploaded files"
-    });
-  }
-
-  async DownloadFile({libraryId, objectId, versionHash, filePath}) {
-    let blob = await Fabric.DownloadFile({libraryId, objectId, versionHash, filePath, format: "blob"});
-    let url = window.URL.createObjectURL(blob);
-
-    await DownloadFromUrl(url, Path.basename(filePath));
-  }
-
-  async FileUrl({libraryId, objectId, versionHash, filePath}) {
-    return await Fabric.FileUrl({libraryId, objectId, versionHash, filePath});
   }
 
   @action.bound

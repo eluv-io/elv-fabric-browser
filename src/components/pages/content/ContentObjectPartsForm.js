@@ -1,6 +1,7 @@
 import React from "react";
 import Path from "path";
-import {Action, AsyncComponent, BrowseWidget, Form} from "elv-components-js";
+import {Action, BrowseWidget, Form} from "elv-components-js";
+import AsyncComponent from "../../components/AsyncComponent";
 import {inject, observer} from "mobx-react";
 import {Percentage} from "../../../utils/Helpers";
 
