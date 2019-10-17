@@ -22,16 +22,21 @@ import {Percentage} from "../../../utils/Helpers";
 
 const defaultSchema = [
   {
-    "key": "name",
-    "label": "Name",
-    "type": "string",
-    "required": true
-  },
-  {
-    "key": "eluv.description",
-    "label": "Description",
-    "type": "text",
-    "required": false
+    "key": "public",
+    "type": "object",
+    "flattenDisplay": true,
+    "fields": [
+      {
+        "key": "name",
+        "label": "Name",
+        "type": "string"
+      },
+      {
+        "key": "description",
+        "label": "Description",
+        "type": "text"
+      },
+    ]
   }
 ];
 

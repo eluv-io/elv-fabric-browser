@@ -478,7 +478,7 @@ class ObjectStore {
           metadata[entry.key] = ToList(fields[entry.key]).filter(item => item);
           break;
         case "object":
-          metadata[entry.key] = await CollectMetadata({
+          metadata[entry.key] = await this.CollectMetadata({
             libraryId,
             objectId,
             writeToken,

@@ -422,7 +422,7 @@ class ContentObject extends React.Component {
     const object = this.props.objectStore.object;
 
     const latestVersion = this.props.objectStore.versions[object.versions[0]];
-    const description = <ClippedText className="object-description" text={object.description} />;
+
     let accessCharge;
     if(object.accessInfo) {
       accessCharge = (
@@ -452,8 +452,15 @@ class ContentObject extends React.Component {
           { object.meta.public.name || object.id }
         </LabelledField>
 
-        <LabelledField label="Description" alignTop={true}>
-          { description }
+        <LabelledField
+          label="Description"
+          type="textarea"
+          editable={true}
+          onChange={newDescription =>
+            this.UpdateMetadata({metadataSubtree: "public/description", metadata: newDescription.trim()})
+          }
+        >
+          { object.meta.public.description || "" }
         </LabelledField>
 
         { accessCharge }

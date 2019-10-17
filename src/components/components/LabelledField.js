@@ -8,6 +8,7 @@ export const LabelledField = ({
   children,
   copyValue,
   editable=false,
+  type="input",
   onChange,
   alignTop=false,
   wideLabel=false,
@@ -17,13 +18,23 @@ export const LabelledField = ({
     label = label + ":";
   }
 
-  const labelClass = (wideLabel ? "wide" : "") + (alignTop ? "align-top" : "");
+  const labelClass = (wideLabel ? "wide" : "") + (alignTop || type === "textarea" ? "align-top" : "");
 
   let content = <div aria-label={label} title={value}>{ children || value }</div>;
   if(copyValue) {
     content = <Copyable copy={copyValue}>{ content }</Copyable>;
   } else if(editable) {
-    content = <EditableField value={ children || value } onChange={onChange} />;
+    content = (
+      <EditableField
+        value={ children || value }
+        type={type}
+        onChange={onChange}
+        truncate={type === "textarea"}
+        lines={3}
+        className="editable-field"
+        editClassName="editing-field"
+      />
+    );
   }
 
   return (
