@@ -20,6 +20,9 @@ class EventsStore {
 
   @action.bound
   async ContractNames(contractAddresses) {
+    // Reduce to unique addresses
+    contractAddresses = [...new Set(contractAddresses)];
+
     await contractAddresses.limitedMap(
       5,
       async contractAddress => {
@@ -52,35 +55,62 @@ class EventsStore {
   }
 
   @action.bound
-  Events = flow(function * ({toBlock, fromBlock, count}) {
-    let newBlocks = [];
-    if(this.events.length > 0) {
-      // Avoid reloading already retrieved blocks
-      const currentBlocks = this.events.map(block => block[0].blockNumber);
-      const minBlock = Math.min(...currentBlocks);
-      const maxBlock = Math.max(...currentBlocks);
-
-      if(toBlock < minBlock || fromBlock > maxBlock) {
-        newBlocks = yield Fabric.GetBlockchainEvents({toBlock, fromBlock, count});
-      } else {
-        if(maxBlock < toBlock) {
-          newBlocks = yield Fabric.GetBlockchainEvents({toBlock, fromBlock: maxBlock + 1, count});
-        }
-
-        if(minBlock - 1 > fromBlock) {
-          newBlocks = newBlocks.concat(yield Fabric.GetBlockchainEvents({toBlock: minBlock, fromBlock, count}));
-        }
-      }
-    } else {
-      newBlocks = yield Fabric.GetBlockchainEvents({toBlock, fromBlock, count});
+  Events = flow(function * ({toBlock, fromBlock}) {
+    if(fromBlock > toBlock) {
+      return;
     }
 
-    this.events = this.SortBlocks(newBlocks.concat(this.events))
-      .filter(block => block[0].blockNumber <= toBlock && block[0].blockNumber >= fromBlock);
+    if(toBlock - fromBlock > 500) {
+      this.rootStore.notificationStore.SetErrorMessage({
+        message: "Maximum range is 500 blocks"
+      });
 
-    yield this.ContractNames(
-      this.events.map(events => FormatAddress(events[0].address))
-    );
+      return;
+    }
+
+    for(let highBlock = toBlock; highBlock > fromBlock; highBlock -= 50) {
+      const lowBlock = Math.max(fromBlock, highBlock - 50);
+
+      let newBlocks = [];
+      if(this.events.length > 0) {
+        // Avoid reloading already retrieved blocks
+        const currentBlocks = this.events.map(block => block[0].blockNumber);
+        const minBlock = Math.min(...currentBlocks);
+        const maxBlock = Math.max(...currentBlocks);
+
+        if(highBlock < minBlock || lowBlock > maxBlock) {
+          newBlocks = yield Fabric.GetBlockchainEvents({
+            toBlock: highBlock,
+            fromBlock: lowBlock,
+          });
+        } else {
+          if(maxBlock < toBlock) {
+            newBlocks = yield Fabric.GetBlockchainEvents({
+              toBlock: highBlock,
+              fromBlock: maxBlock + 1,
+            });
+          }
+
+          if(minBlock - 1 > fromBlock) {
+            newBlocks = newBlocks.concat(
+              yield Fabric.GetBlockchainEvents({
+                toBlock: minBlock,
+                fromBlock: lowBlock,
+              })
+            );
+          }
+        }
+      } else {
+        newBlocks = yield Fabric.GetBlockchainEvents({toBlock: highBlock, fromBlock: lowBlock});
+      }
+
+      this.events = this.SortBlocks(newBlocks.concat(this.events))
+        .filter(block => block[0].blockNumber <= toBlock && block[0].blockNumber >= fromBlock);
+
+      yield this.ContractNames(
+        this.events.map(events => FormatAddress(events[0].address))
+      );
+    }
   });
 
   @action.bound
