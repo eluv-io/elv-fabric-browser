@@ -576,13 +576,11 @@ class ContentObject extends React.Component {
   AppFrame() {
     if(!this.state.displayAppUrl) { return null; }
 
-    const latestVersion = this.props.objectStore.object.versions[0];
-
     const queryParams = {
       contentSpaceId: Fabric.contentSpaceId,
       libraryId: this.props.objectStore.libraryId,
       objectId: this.props.objectStore.objectId,
-      versionHash: latestVersion.hash,
+      versionHash: this.props.objectStore.object.hash,
       type: this.props.objectStore.type ? this.props.objectStore.type.hash : "",
       action: "display"
     };

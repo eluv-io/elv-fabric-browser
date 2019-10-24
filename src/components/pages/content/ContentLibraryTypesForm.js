@@ -62,7 +62,8 @@ class ContentLibraryTypesForm extends React.Component {
 
   AvailableTypes() {
     return Object.values(this.props.typeStore.allTypes)
-      .filter(type => !this.state.selectedTypeIds.includes(type.id));
+      .filter(type => !this.state.selectedTypeIds.includes(type.id))
+      .sort((a, b) => a.meta.name < b.meta.name ? -1 : 1);
   }
 
   TypeSelector() {

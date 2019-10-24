@@ -812,56 +812,38 @@ const Fabric = {
     });
 
     // Paginate
-    const page = params.page - 1;
+    const page = params.page - 1 || 0;
     const perPage = params.perPage || 10;
     contentTypes = contentTypes.slice(page * perPage, (page+1) * perPage);
 
     let types = {};
-    for(const type of contentTypes) {
-      try {
-        const owner = await Fabric.GetContentObjectOwner({objectId: type.id});
 
-        types[type.id] = {
-          ...type,
-          name: type.meta.name || "",
-          description: type.meta["eluv.description"] || type.meta.description,
-          owner,
-          isOwner: EqualAddress(owner, await Fabric.CurrentAccountAddress())
-        };
-      } catch(error) {
-        /* eslint-disable no-console */
-        console.error("Failed to list content type " + type.id);
-        console.error(error);
-        /* eslint-enable no-console */
+    await contentTypes.limitedMap(
+      5,
+      async type => {
+        try {
+          const owner = await Fabric.GetContentObjectOwner({objectId: type.id});
+
+          types[type.id] = {
+            ...type,
+            name: type.meta.name || "",
+            description: type.meta["eluv.description"] || type.meta.description,
+            owner,
+            isOwner: EqualAddress(owner, await Fabric.CurrentAccountAddress())
+          };
+        } catch(error) {
+          /* eslint-disable no-console */
+          console.error("Failed to list content type " + type.id);
+          console.error(error);
+          /* eslint-enable no-console */
+        }
       }
-    }
+    );
 
     return {
       types,
       count
     };
-  },
-
-  // Get all content types for usage in forms, etc.
-  ContentTypes: async () => {
-    let contentTypes = await client.ContentTypes();
-
-    const spaceTypes = await client.ContentObjectMetadata({
-      libraryId: Fabric.contentSpaceLibraryId,
-      objectId: Fabric.contentSpaceObjectId,
-      metadataSubtree: "contentTypes"
-    });
-
-    await Object.values(spaceTypes).limitedMap(
-      5,
-      async typeId => {
-        if(contentTypes[typeId]) { return; }
-
-        contentTypes[typeId] = await client.ContentType({typeId});
-      }
-    );
-
-    return contentTypes;
   },
 
   GetContentType: async ({versionHash}) => {
