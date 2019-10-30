@@ -152,7 +152,7 @@ class LibraryStore {
     const idsToAdd = typeIds.filter(id => !currentTypeIds.includes(id));
 
     if(idsToAdd.length > 0) {
-      const contentTypes = Object.values(yield Fabric.ContentTypes());
+      const contentTypes = Object.values((yield Fabric.ListContentTypes({params: {perPage: 1000}})).types);
       for(const typeId of idsToAdd) {
         // When adding a content type, check for custom contract
         const type = contentTypes.find(type => type.id === typeId);

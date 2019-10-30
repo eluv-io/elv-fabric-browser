@@ -10,20 +10,18 @@ import BrowserSolc from "browser-solc";
 import {Cancelable} from "../utils/Cancelable";
 
 class ContractStore {
-  @observable contracts;
+  @observable contractAddress;
+
+  @observable contracts = {};
   @observable contractsCount;
 
-  @observable deployedContracts;
+  @observable deployedContracts = {};
   @observable deployedContractsCount;
 
   @observable compiledContracts;
 
   @computed get contractName() {
     return this.rootStore.routerStore.contractName;
-  }
-
-  @computed get contractAddress() {
-    return this.rootStore.routerStore.contractAddress;
   }
 
   @computed get libraryId() {
@@ -35,11 +33,11 @@ class ContractStore {
   }
 
   @computed get contract() {
-    if(this.contractAddress) {
-      return this.deployedContracts[this.contractAddress];
-    } else {
+    if(this.contractName) {
       return this.contracts[this.contractName];
     }
+
+    return this.contracts[this.contractAddress] || this.deployedContracts[this.contractAddress];
   }
 
   constructor(rootStore) {
@@ -90,6 +88,8 @@ class ContractStore {
 
   @action.bound
   DeployedContractInfo = flow(function * () {
+    const contractAddressParam = this.rootStore.routerStore.contractAddress;
+
     const path = this.rootStore.routerStore.path;
 
     const isAccessGroup = path.startsWith("/access-groups");
@@ -98,7 +98,7 @@ class ContractStore {
     let {type, description, abi, contractAddress} = DetermineContractInterface({
       libraryId: this.libraryId,
       objectId: this.objectId,
-      contractAddressParam: this.contractAddress,
+      contractAddressParam,
       isAccessGroup,
       isCustomContentObjectContract,
     });
@@ -149,13 +149,14 @@ class ContractStore {
       case ContractTypes.unknown:
         yield this.ListDeployedContracts({params: {paginate: false}});
 
+        this.contractAddress = contractAddress;
         name = this.contract.name;
         break;
     }
 
     const balance = yield this.GetContractBalance({contractAddress});
 
-    return {
+    const contract = {
       type,
       name,
       balance,
@@ -163,6 +164,11 @@ class ContractStore {
       abi,
       contractAddress
     };
+
+    this.contractAddress = contractAddress;
+    this.contracts[contractAddress] = contract;
+
+    return contract;
   });
 
   @action.bound
@@ -426,6 +432,8 @@ class ContractStore {
 
   @action.bound
   CallContractMethod = flow(function * ({contractAddress, abi, methodName, methodArgs, value=0}) {
+    abi = toJS(abi);
+
     const method = Object.values(abi).find(entry => entry.type === "function" && entry.name === methodName);
 
     if(methodArgs.length > 0) {

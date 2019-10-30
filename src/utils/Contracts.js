@@ -90,6 +90,6 @@ export const DetermineContractInterface = ({
     type: ContractTypes.unknown,
     description: undefined,
     abi: undefined,
-    contractAddress: contractAddressParam
+    contractAddress: Fabric.utils.FormatAddress(contractAddressParam)
   };
 };

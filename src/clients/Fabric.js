@@ -471,7 +471,7 @@ const Fabric = {
           objectId: object.id,
           hash: object.hash,
           type: object.type,
-          name: publicMeta.name || meta.name,
+          name: (publicMeta.name || meta.name || "").toString(),
           description: meta["eluv.description"] || meta.description,
           accessInfo,
           imageUrl,
@@ -532,11 +532,6 @@ const Fabric = {
       meta: metadata
     }});
 
-    let videoUrl;
-    if(metadata["video"]) {
-      videoUrl = await Fabric.FabricUrl({libraryId, objectId, partHash: metadata["video"]});
-    }
-
     const baseFileUrl = await Fabric.FileUrl({
       libraryId,
       objectId,
@@ -558,7 +553,6 @@ const Fabric = {
       baseFileUrl,
       typeInfo,
       imageUrl,
-      videoUrl,
       contractAddress: FormatAddress(client.utils.HashToAddress(objectId)),
       customContractAddress,
       owner,

@@ -1,5 +1,5 @@
 import Fabric from "../clients/Fabric";
-import {action, flow, observable, runInAction} from "mobx";
+import {action, flow, observable, runInAction, toJS} from "mobx";
 import {FormatAddress} from "../utils/Helpers";
 
 class EventsStore {
@@ -37,6 +37,8 @@ class EventsStore {
 
   @action.bound
   ContractEvents = flow(function * ({contractAddress, abi, fromBlock=0, toBlock, clear=false}) {
+    abi = toJS(abi);
+
     if(clear) {
       this.ClearContractEvents({contractAddress});
     }

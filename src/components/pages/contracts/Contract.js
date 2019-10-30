@@ -7,6 +7,7 @@ import Redirect from "react-router/es/Redirect";
 import {PageHeader} from "../../components/Page";
 import {Action, Confirm} from "elv-components-js";
 import {inject, observer} from "mobx-react";
+import AsyncComponent from "../../components/AsyncComponent";
 
 @inject("contractStore")
 @observer

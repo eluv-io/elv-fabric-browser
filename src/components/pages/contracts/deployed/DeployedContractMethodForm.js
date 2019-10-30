@@ -5,6 +5,7 @@ import {Bytes32ToUtf8} from "../../../../utils/Helpers";
 import EventLogs from "../../../components/EventLogs";
 import {Form} from "elv-components-js";
 import {inject, observer} from "mobx-react";
+import {toJS} from "mobx";
 
 @inject("contractStore")
 @observer
@@ -12,10 +13,11 @@ class DeployedContractMethodForm extends React.Component {
   constructor(props) {
     super(props);
 
-    const contractMethods = Array.isArray(props.contract.abi) ? props.contract.abi.filter(element => element.type === "function") : [];
+    const contractMethods = Array.isArray(props.contract.abi) ?
+      props.contract.abi.filter(element => element.type === "function").map(element => toJS(element)) : [];
 
     this.state = {
-      contractMethods
+      contractMethods: contractMethods
     };
 
     this.SetMethodInterface = this.SetMethodInterface.bind(this);
@@ -79,21 +81,15 @@ class DeployedContractMethodForm extends React.Component {
     const methodArgs = Object.values(inputs);
 
     const methodResults = await this.props.contractStore.CallContractMethod({
-      contractAddress: this.props.contract.contractAddress,
-      abi: this.props.contract.abi,
+      contractAddress: this.props.contractStore.contractAddress,
+      abi: this.props.contractStore.contract.abi,
       methodName: this.state.method,
       methodArgs,
       value: funds
     });
 
     this.setState({
-      methodResults,
-      contract: {
-        ...this.props.contract,
-        balance: await this.props.contractStore.GetContractBalance({
-          contractAddress: this.props.contract.contractAddress
-        })
-      }
+      methodResults
     });
   }
 
@@ -145,7 +141,6 @@ class DeployedContractMethodForm extends React.Component {
     const transactions = this.state.contractMethods
       .filter(element => !element.constant)
       .sort((a, b) => a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1);
-
 
     // Create lists of options
     let constantOptions = constantMethods.map(method => {

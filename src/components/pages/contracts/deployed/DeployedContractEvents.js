@@ -24,15 +24,15 @@ class DeployedContractEvents extends React.Component {
           </Action>
         </div>
         <PageHeader
-          header={this.state.contract.name}
-          subHeader={this.state.contract.description}
+          header={this.props.contractStore.contract.name}
+          subHeader={this.props.contractStore.contract.description}
         />
         <div className="page-content">
           <div className="label-box">
             <div className="contract-events">
               <Events
-                contractAddress={this.state.contract.contractAddress}
-                abi={this.state.contract.abi}
+                contractAddress={this.props.contractStore.contractAddress}
+                abi={this.props.contractStore.contract.abi}
               />
             </div>
           </div>
@@ -46,9 +46,7 @@ class DeployedContractEvents extends React.Component {
       <AsyncComponent
         Load={
           async () => {
-            this.setState({
-              contract: await this.props.contractStore.DeployedContractInfo()
-            });
+            await this.props.contractStore.DeployedContractInfo();
           }
         }
         render={this.PageContent}

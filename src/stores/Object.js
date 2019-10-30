@@ -241,7 +241,29 @@ class ObjectStore {
     });
 
     this.rootStore.notificationStore.SetNotificationMessage({
-      message: "Successfully uploaded metadata"
+      message: "Successfully updated metadata"
+    });
+  });
+
+  @action.bound
+  DeleteMetadata = flow(function * ({libraryId, objectId, metadataSubtree="/"}) {
+    const writeToken = yield this.EditContentObject({libraryId, objectId});
+
+    yield Fabric.DeleteMetadata({
+      libraryId,
+      objectId,
+      writeToken,
+      metadataSubtree
+    });
+
+    this.objects[objectId].meta = yield Fabric.GetContentObjectMetadata({
+      libraryId,
+      objectId,
+      writeToken
+    });
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully deleted metadata"
     });
   });
 
@@ -250,6 +272,7 @@ class ObjectStore {
     const writeToken = yield this.EditContentObject({libraryId, objectId});
 
     const fileInfo = yield FileInfo(path, fileList);
+
     yield Fabric.UploadFiles({libraryId, objectId, writeToken, fileInfo, callback});
 
     this.objects[objectId].meta.files = yield Fabric.GetContentObjectMetadata({

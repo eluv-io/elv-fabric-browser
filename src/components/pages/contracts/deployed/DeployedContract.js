@@ -34,7 +34,7 @@ class DeployedContract extends React.Component {
 
   // Allow removal (aka stop watching) deployed custom contract
   DeleteButton() {
-    if(this.state.contract.type !== ContractTypes.unknown) { return null; }
+    if(this.props.contractStore.contract.type !== ContractTypes.unknown) { return null; }
 
     return (
       <Action
@@ -44,7 +44,7 @@ class DeployedContract extends React.Component {
             message: "Are you sure you want to stop watching this contract?",
             onConfirm: async () => {
               await this.props.contractStore.RemoveDeployedContract({
-                address: this.state.contract.contractAddress
+                address: this.props.contractStore.contractAddress
               });
 
               this.setState({removed: true});
@@ -82,10 +82,10 @@ class DeployedContract extends React.Component {
   }
 
   AbiInfo() {
-    if(!this.state.contract.abi) { return null; }
+    if(!this.props.contractStore.contract.abi) { return null; }
 
     const abiDisplayInfo = this.state.visibleMethods["__abi"] ?
-      <pre key="abi-content">{JSON.stringify(this.state.contract.abi, null, 2)}</pre> : null;
+      <pre key="abi-content">{JSON.stringify(this.props.contractStore.contract.abi, null, 2)}</pre> : null;
 
     return [
       <LabelledField key="abi-label" label="ABI">
@@ -98,9 +98,9 @@ class DeployedContract extends React.Component {
   PageContent() {
     let backPath = Path.dirname(this.props.match.url);
     // Some routes require going back one path, others two
-    if([ContractTypes.contentSpace, ContractTypes.library, ContractTypes.unknown].includes(this.state.contract.type)) {
+    if([ContractTypes.contentSpace, ContractTypes.library, ContractTypes.unknown].includes(this.props.contractStore.contract.type)) {
       backPath = Path.dirname(backPath);
-    } else if(this.state.contract.type === ContractTypes.accessGroup && !this.props.accessGroup) {
+    } else if(this.props.contractStore.contract.type === ContractTypes.accessGroup && !this.props.accessGroup) {
       // TODO: this
       // Access group contract, but access group is unknown. Skip access group details page
       backPath = Path.dirname(backPath);
@@ -110,10 +110,8 @@ class DeployedContract extends React.Component {
       return <Redirect push to={backPath} />;
     }
 
-    const balance =`φ${Math.round((this.state.contract.balance || 0) * 1000) / 1000}`;
+    const balance =`φ${Math.round((this.props.contractStore.contract.balance || 0) * 1000) / 1000}`;
 
-    // TODO: ADD THIS BACK
-    //
     return (
       <div className="page-container contracts-page-container">
         <div className="actions-container">
@@ -122,20 +120,20 @@ class DeployedContract extends React.Component {
           <Action type="link" to={UrlJoin(this.props.match.url, "events")}>Contract Events</Action>
           { this.DeleteButton() }
         </div>
-        <PageHeader header={this.state.contract.name} subHeader={this.state.contract.description} />
+        <PageHeader header={this.props.contractStore.contract.name} subHeader={this.props.contractStore.contract.description} />
         <div className="page-content">
           <div className="label-box">
             <h3>Contract Info</h3>
             <LabelledField label="Name">
-              { this.state.contract.name }
+              { this.props.contractStore.contract.name }
             </LabelledField>
 
             <LabelledField label="Description">
-              { this.state.contract.description }
+              { this.props.contractStore.contract.description }
             </LabelledField>
 
             <LabelledField label="Contract Address">
-              { this.state.contract.contractAddress }
+              { this.props.contractStore.contract.contractAddress }
             </LabelledField>
 
             <LabelledField label="Balance">
@@ -144,7 +142,7 @@ class DeployedContract extends React.Component {
 
             { this.AbiInfo() }
             <h3>Contract Methods</h3>
-            <DeployedContractMethodForm contract={this.state.contract} />
+            <DeployedContractMethodForm contract={this.props.contractStore.contract} />
           </div>
         </div>
       </div>
