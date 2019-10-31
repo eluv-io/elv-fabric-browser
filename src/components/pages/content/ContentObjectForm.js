@@ -19,6 +19,7 @@ import AppFrame from "../../components/AppFrame";
 import Redirect from "react-router/es/Redirect";
 import {inject, observer} from "mobx-react";
 import {Percentage} from "../../../utils/Helpers";
+import {toJS} from "mobx";
 
 const defaultSchema = [
   {
@@ -52,6 +53,7 @@ class ContentObjectForm extends React.Component {
     this.state = {
       completed: false,
       metadata: "",
+      publicMetadata: "",
       uploadStatus: {}
     };
 
@@ -84,6 +86,7 @@ class ContentObjectForm extends React.Component {
     let types = {};
 
     let metadata = "";
+    let publicMetadata = "";
     let accessCharge = 0;
     if(this.state.createForm) {
       let allowedTypes = {};
@@ -101,7 +104,12 @@ class ContentObjectForm extends React.Component {
       Object.values(types).forEach(type => types[type.hash] = this.FormatType(type));
     } else {
       const object = this.props.objectStore.object;
-      metadata = JSON.stringify(object.meta, null, 2);
+
+      const meta = {...toJS(object.meta)};
+      publicMetadata = JSON.stringify(meta.public || {}, null, 2);
+      delete meta.public;
+      metadata = JSON.stringify(meta, null, 2);
+
       accessCharge = object.accessInfo && object.accessInfo.accessCharge;
       type = object.type;
 
@@ -116,6 +124,7 @@ class ContentObjectForm extends React.Component {
       types,
       type,
       metadata,
+      publicMetadata,
       accessCharge
     });
 
@@ -207,29 +216,17 @@ class ContentObjectForm extends React.Component {
   async HandleSubmit() {
     const type = this.state.type === "[none]" ? "" : this.state.type;
 
-    let objectId;
-    if(this.state.createForm) {
-      objectId = await this.props.objectStore.CreateFromContentTypeSchema({
-        type,
-        libraryId: this.props.objectStore.libraryId,
-        schema: this.state.schema,
-        fields: this.state.fields,
-        metadata: this.state.metadata,
-        accessCharge: this.state.accessCharge,
-        callback: this.UploadStatusCallback
-      });
-    } else {
-      objectId = await this.props.objectStore.UpdateFromContentTypeSchema({
-        type,
-        libraryId: this.props.objectStore.libraryId,
-        objectId: this.props.objectStore.objectId,
-        schema: this.state.schema,
-        fields: this.state.fields,
-        metadata: this.state.metadata,
-        accessCharge: this.state.accessCharge,
-        callback: this.UploadStatusCallback
-      });
-    }
+    const objectId = await this.props.objectStore.UpdateFromContentTypeSchema({
+      type,
+      libraryId: this.props.objectStore.libraryId,
+      objectId: this.props.objectStore.objectId,
+      schema: this.state.schema,
+      fields: this.state.fields,
+      metadata: this.state.metadata,
+      publicMetadata: this.state.publicMetadata,
+      accessCharge: this.state.accessCharge,
+      callback: this.UploadStatusCallback
+    });
 
     this.setState({objectId});
   }
@@ -405,7 +402,6 @@ class ContentObjectForm extends React.Component {
   }
 
   MetadataField() {
-    //if(!this.state.allowCustomMetadata) { return null; }
     return (
       <React.Fragment>
         <label className="align-top">Metadata</label>
@@ -413,6 +409,19 @@ class ContentObjectForm extends React.Component {
           onChange={this.HandleInputChange}
           name="metadata"
           value={this.state.metadata}
+        />
+      </React.Fragment>
+    );
+  }
+
+  PublicMetadataField() {
+    return (
+      <React.Fragment>
+        <label className="align-top">Public Metadata</label>
+        <JsonInput
+          onChange={this.HandleInputChange}
+          name="publicMetadata"
+          value={this.state.publicMetadata}
         />
       </React.Fragment>
     );
@@ -491,6 +500,7 @@ class ContentObjectForm extends React.Component {
               {this.TypeField()}
               {this.BuildType(this.state.schema)}
               {this.MetadataField()}
+              {this.PublicMetadataField()}
               {this.AccessChargeField()}
             </div>
           </div>

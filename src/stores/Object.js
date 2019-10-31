@@ -57,84 +57,50 @@ class ObjectStore {
   });
 
   @action.bound
-  CreateFromContentTypeSchema = flow(function * ({libraryId, type, metadata, accessCharge, schema, fields, callback}) {
+  UpdateFromContentTypeSchema = flow(function * ({libraryId, objectId, metadata, publicMetadata, accessCharge, schema, fields, callback}) {
     try {
       metadata = ParseInputJson(metadata);
+      publicMetadata = ParseInputJson(publicMetadata);
     } catch(error) {
       throw `Invalid Metadata: ${error.message}`;
     }
 
-    let createResponse = yield Fabric.CreateContentObject({
-      libraryId,
-      type,
-      metadata
-    });
+    let editResponse;
+    if(objectId) {
+      // Edit
+      editResponse = yield Fabric.EditContentObject({libraryId, objectId});
+    } else {
+      // Create
+      editResponse = yield Fabric.CreateContentObject({libraryId, type});
+    }
 
-    yield Fabric.MergeMetadata({
-      libraryId,
-      objectId: createResponse.id,
-      writeToken: createResponse.write_token,
-      metadata: {
-        ...metadata,
-        ...(yield this.CollectMetadata({
-          libraryId,
-          objectId: createResponse.id,
-          writeToken: createResponse.write_token,
-          schema,
-          fields,
-          callback
-        })),
+    const writeToken = editResponse.write_token;
+    objectId = editResponse.id;
+
+    const collectedMetadata = yield this.CollectMetadata({libraryId, writeToken, schema, fields, callback});
+
+    metadata = {
+      ...metadata,
+      ...collectedMetadata,
+      public: {
+        ...(metadata.public || {}),
+        ...publicMetadata,
+        ...(collectedMetadata.public || {})
       }
-    });
+    };
 
-    yield Fabric.FinalizeContentObject({
-      libraryId,
-      objectId: createResponse.id,
-      writeToken: createResponse.write_token
-    });
-
-    if(accessCharge > 0) {
-      yield Fabric.SetAccessCharge({objectId: createResponse.id, accessCharge});
-    }
-
-    this.rootStore.notificationStore.SetNotificationMessage({
-      message: "Successfully created content",
-      redirect: true
-    });
-
-    // Clear library listing cache
-    this.rootStore.libraryStore.ClearLibraryCache({libraryId});
-
-    return createResponse.id;
-  });
-
-  @action.bound
-  UpdateFromContentTypeSchema = flow(function * ({libraryId, objectId, metadata, accessCharge, schema, fields, callback}) {
-    try {
-      metadata = ParseInputJson(metadata);
-    } catch(error) {
-      throw `Invalid Metadata: ${error.message}`;
-    }
-
-    yield Fabric.EditAndFinalizeContentObject({
+    yield Fabric.ReplaceMetadata({
       libraryId,
       objectId,
-      todo: async (writeToken) => {
-        await Fabric.ReplaceMetadata({
-          libraryId,
-          objectId,
-          writeToken,
-          metadata: {
-            ...metadata,
-            ...(await this.CollectMetadata({libraryId, writeToken, schema, fields, callback}))
-          }
-        });
-      }
+      writeToken,
+      metadata
     });
 
     if(yield Fabric.IsNormalObject({objectId})) {
       yield Fabric.SetAccessCharge({objectId: objectId, accessCharge});
     }
+
+    yield Fabric.FinalizeContentObject({libraryId, objectId, writeToken});
 
     this.rootStore.notificationStore.SetNotificationMessage({
       message: "Successfully updated content",

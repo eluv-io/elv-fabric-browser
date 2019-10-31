@@ -135,7 +135,7 @@ class Events extends React.Component {
 
     if(fromBlock === undefined || fromBlock < 0) {
       if(this.props.contractAddress) {
-        fromBlock = 0;
+        fromBlock = Math.max(1, toBlock - 500);
       } else {
         fromBlock = Math.max(1, toBlock - 10);
       }
@@ -175,8 +175,9 @@ class Events extends React.Component {
   }
 
   async LoadMoreEvents() {
+    const range = this.props.contractAddress ? 500 : 10;
     this.Request({
-      fromBlock: this.state.fromBlock - 10,
+      fromBlock: Math.max(1, this.state.fromBlock - range),
       toBlock: this.state.toBlock
     });
 

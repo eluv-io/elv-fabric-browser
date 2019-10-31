@@ -154,9 +154,7 @@ class DeployedContract extends React.Component {
       <AsyncComponent
         Load={
           async () => {
-            this.setState({
-              contract: await this.props.contractStore.DeployedContractInfo()
-            });
+            await this.props.contractStore.DeployedContractInfo();
           }
         }
         render={this.PageContent}

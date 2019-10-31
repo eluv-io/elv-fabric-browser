@@ -149,6 +149,7 @@ class ContractStore {
       case ContractTypes.unknown:
         yield this.ListDeployedContracts({params: {paginate: false}});
 
+        abi = this.deployedContracts[contractAddress].abi;
         this.contractAddress = contractAddress;
         name = this.contract.name;
         break;
