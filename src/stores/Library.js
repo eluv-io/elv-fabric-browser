@@ -34,10 +34,18 @@ class LibraryStore {
   @action.bound
   ContentLibrary = flow(function * ({libraryId}) {
     this.libraries[libraryId] = {
-      ...(yield Fabric.GetContentLibrary({libraryId})),
-      groups: {},
-      groupsCount: {}
+      ...(yield Fabric.GetContentLibrary({libraryId}))
     };
+
+    if(!this.libraries[libraryId].isContentSpaceLibrary) {
+      // Determine if current user can contribute to the library
+      const contributorGroups = yield Fabric.LibraryGroupAddresses({libraryId, type: "contributor"});
+      const userGroups = yield Fabric.AccessGroupAddresses();
+
+      this.libraries[libraryId].canContribute =
+        this.libraries[libraryId].isOwner ||
+        (contributorGroups.filter(address => userGroups.includes(address))).length > 0;
+    }
   });
 
   @action.bound

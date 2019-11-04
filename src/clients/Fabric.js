@@ -373,7 +373,7 @@ const Fabric = {
 
   /* Library Groups */
 
-  ListContentLibraryGroups: async ({libraryId, type, params}) => {
+  ListContentLibraryGroups: async ({libraryId, type, params={}}) => {
     return await Fabric.ListAccessGroups({params: {libraryId, type, ...params}});
   },
 
@@ -1258,39 +1258,48 @@ const Fabric = {
     });
   },
 
+  async LibraryGroupAddresses({libraryId, type}) {
+    // Get library access groups of the specified type
+    let numGroups = await client.CallContractMethod({
+      contractAddress: client.utils.HashToAddress(libraryId),
+      abi: BaseLibraryContract.abi,
+      methodName: type + "GroupsLength"
+    });
+
+    numGroups = parseInt(numGroups._hex, 16);
+
+    return await [...Array(numGroups).keys()].limitedMap(
+      Fabric.concurrencyLimit,
+      async i => {
+        try {
+          return Fabric.utils.FormatAddress(
+            await client.CallContractMethod({
+              contractAddress: client.utils.HashToAddress(libraryId),
+              abi: BaseLibraryContract.abi,
+              methodName: type + "Groups",
+              methodArgs: [i]
+            })
+          );
+        } catch(error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
+      }
+    );
+  },
+
+  async AccessGroupAddresses() {
+    return (await client.Collection({collectionType: "accessGroups"}))
+      .map(address => Fabric.utils.FormatAddress(address));
+  },
+
   async ListAccessGroups({params}) {
     let accessGroupAddresses;
     if(params.libraryId) {
-      // Get library access groups of the specified type
-      let numGroups = await client.CallContractMethod({
-        contractAddress: client.utils.HashToAddress(params.libraryId),
-        abi: BaseLibraryContract.abi,
-        methodName: params.type + "GroupsLength"
-      });
-
-      numGroups = parseInt(numGroups._hex, 16);
-
-      accessGroupAddresses = await [...Array(numGroups)].limitedMap(
-        Fabric.concurrencyLimit,
-        async (_, i) => {
-          try {
-            return Fabric.utils.FormatAddress(
-              await client.CallContractMethod({
-                contractAddress: client.utils.HashToAddress(params.libraryId),
-                abi: BaseLibraryContract.abi,
-                methodName: params.type + "Groups",
-                methodArgs: [i]
-              })
-            );
-          } catch(error) {
-            // eslint-disable-next-line no-console
-            console.error(error);
-          }
-        }
-      );
+      accessGroupAddresses = await Fabric.LibraryGroupAddresses({libraryId: params.libraryId, type: params.type});
     } else {
       // Get all access groups
-      accessGroupAddresses = await client.Collection({collectionType: "accessGroups"});
+      accessGroupAddresses = await Fabric.AccessGroupAddresses();
     }
 
     let filteredAccessGroups = await accessGroupAddresses.limitedMap(
@@ -1340,7 +1349,7 @@ const Fabric = {
     contractAddress = Fabric.utils.FormatAddress(contractAddress);
     const currentAccountAddress = await Fabric.CurrentAccountAddress();
 
-    let owner, ownerName, metadata;
+    let owner, ownerName, metadata = {};
     let isManager = false;
 
     try {
@@ -1375,7 +1384,7 @@ const Fabric = {
 
     return {
       address: contractAddress,
-      name: metadata.name || contractAddress,
+      name: (metadata.public && metadata.public.name) || metadata.name || contractAddress,
       description: metadata.description,
       metadata,
       owner,

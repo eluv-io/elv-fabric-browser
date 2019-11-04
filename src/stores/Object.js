@@ -57,7 +57,7 @@ class ObjectStore {
   });
 
   @action.bound
-  UpdateFromContentTypeSchema = flow(function * ({libraryId, objectId, metadata, publicMetadata, accessCharge, schema, fields, callback}) {
+  UpdateFromContentTypeSchema = flow(function * ({libraryId, objectId, type, metadata, publicMetadata, accessCharge, schema, fields, callback}) {
     try {
       metadata = ParseInputJson(metadata);
       publicMetadata = ParseInputJson(publicMetadata);

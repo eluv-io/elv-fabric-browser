@@ -513,20 +513,34 @@ class ContentObject extends React.Component {
   }
 
   Actions() {
-    let manageAppsLink;
-    if(this.props.objectStore.object.isOwner) {
-      manageAppsLink = (
-        <Action type="link" to={UrlJoin(this.props.match.url, "apps")}>
-          Apps
-        </Action>
+    const refreshButton = (
+      <IconButton
+        className="refresh-button"
+        icon={RefreshIcon}
+        label="Refresh"
+        onClick={() => this.setState({pageVersion: this.state.pageVersion + 1})}
+      />
+    );
+
+    const backButton = (
+      <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">
+        Back
+      </Action>
+    );
+
+    if(!this.props.objectStore.object.isOwner) {
+      return (
+        <div className="actions-container">
+          { backButton }
+          { refreshButton }
+        </div>
       );
     }
 
     let setContractButton;
     if(
       !this.props.objectStore.object.customContractAddress &&
-      (this.props.objectStore.object.isNormalObject || this.props.objectStore.object.isContentType) &&
-      this.props.objectStore.object.isOwner
+      (this.props.objectStore.object.isNormalObject || this.props.objectStore.object.isContentType)
     ) {
       setContractButton = (
         <Action type="link" to={UrlJoin(this.props.match.url, "deploy")}>
@@ -555,20 +569,18 @@ class ContentObject extends React.Component {
 
     return (
       <div className="actions-container">
-        <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+        { backButton }
         <Action type="link" to={UrlJoin(this.props.match.url, "edit")}>Manage</Action>
         { setContractButton }
-        <Action type="link" to={UrlJoin(this.props.match.url, "upload")}>Upload Parts</Action>
-        { manageAppsLink }
+        <Action type="link" to={UrlJoin(this.props.match.url, "upload")}>
+          Upload Parts
+        </Action>
+        <Action type="link" to={UrlJoin(this.props.match.url, "apps")}>
+          Apps
+        </Action>
         { deleteObjectButton }
         { saveDraftButton }
-
-        <IconButton
-          className="refresh-button"
-          icon={RefreshIcon}
-          label="Refresh"
-          onClick={() => this.setState({pageVersion: this.state.pageVersion + 1})}
-        />
+        { refreshButton }
       </div>
     );
   }

@@ -289,26 +289,55 @@ class ContentLibrary extends React.Component {
   }
 
   Actions() {
-    const contributeButton = (
-      <Action type="link" to={UrlJoin(this.props.match.url, "create")}>
-        { this.props.libraryStore.library.isContentSpaceLibrary ? "New Content Type" : "Contribute" }
+    const refreshButton = (
+      <IconButton
+        className="refresh-button"
+        icon={RefreshIcon}
+        label="Refresh"
+        onClick={() => this.setState({pageVersion: this.state.pageVersion + 1})}
+      />
+    );
+
+    const backButton = (
+      <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">
+        Back
       </Action>
     );
 
+
+    let contributeButton;
+    if(this.props.libraryStore.library.canContribute) {
+      contributeButton = (
+        <Action type="link" to={UrlJoin(this.props.match.url, "create")}>
+          {this.props.libraryStore.library.isContentSpaceLibrary ? "New Content Type" : "Contribute"}
+        </Action>
+      );
+    }
+
+    if(!this.props.libraryStore.library.isOwner) {
+      return (
+        <div className="actions-container">
+          { backButton }
+          { contributeButton }
+          { refreshButton }
+        </div>
+      );
+    }
+
     return (
       <div className="actions-container">
-        <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
-        <Action type="link" to={UrlJoin(this.props.match.url, "edit")}>Manage</Action>
-        <Action type="link" to={UrlJoin(this.props.match.url, "types")} hidden={!this.props.libraryStore.library.isOwner}>Types</Action>
-        <Action type="link" to={UrlJoin(this.props.match.url, "groups")} hidden={!this.props.libraryStore.library.isOwner}>Groups</Action>
+        { backButton }
+        <Action type="link" to={UrlJoin(this.props.match.url, "edit")}>
+          Manage
+        </Action>
+        <Action type="link" to={UrlJoin(this.props.match.url, "types")}>
+          Types
+        </Action>
+        <Action type="link" to={UrlJoin(this.props.match.url, "groups")}>
+          Groups
+        </Action>
         { contributeButton }
-
-        <IconButton
-          className="refresh-button"
-          icon={RefreshIcon}
-          label="Refresh"
-          onClick={() => this.setState({pageVersion: this.state.pageVersion + 1})}
-        />
+        { refreshButton }
       </div>
     );
   }
