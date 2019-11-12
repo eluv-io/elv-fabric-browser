@@ -113,6 +113,7 @@ class ContentObject extends React.Component {
 
     this.PageContent = this.PageContent.bind(this);
     this.SubmitContentObject = this.SubmitContentObject.bind(this);
+    this.FinalizeABRMezzanine = this.FinalizeABRMezzanine.bind(this);
     this.UpdateMetadata = this.UpdateMetadata.bind(this);
   }
 
@@ -137,6 +138,24 @@ class ContentObject extends React.Component {
           libraryId: this.props.objectStore.libraryId,
           objectId: this.props.objectStore.objectId
         });
+
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        this.setState({pageVersion: this.state.pageVersion + 1});
+      }
+    });
+  }
+
+  async FinalizeABRMezzanine() {
+    await Confirm({
+      message: "Are you sure you want to finalize this content object?",
+      onConfirm: async () => {
+        await this.props.objectStore.FinalizeABRMezzanine({
+          libraryId: this.props.objectStore.libraryId,
+          objectId: this.props.objectStore.objectId
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
         this.setState({pageVersion: this.state.pageVersion + 1});
       }
@@ -221,6 +240,48 @@ class ContentObject extends React.Component {
         </Action>
       );
     }
+  }
+
+  LROStatus() {
+    const status = this.props.objectStore.object.lroStatus;
+
+    if(!status) { return; }
+
+    const states = Object.values(status).map(info => info.run_state);
+
+    if(states.includes("failed")) {
+      // LRO Failed
+      return (
+        <LabelledField label="LRO Progress">
+          Failed
+        </LabelledField>
+      );
+    }
+
+    if(states.every(state => state === "finished")) {
+      // LRO Finished
+      return (
+        <React.Fragment>
+          <LabelledField label="LRO Progress">
+            Finished
+          </LabelledField>
+          <LabelledField hidden={!this.props.objectStore.object.isOwner}>
+            <Action onClick={this.FinalizeABRMezzanine}>
+              Finalize
+            </Action>
+          </LabelledField>
+        </React.Fragment>
+      );
+    }
+
+    const progress = Object.values(status).map(info => info.progress.percentage);
+    const percentage = progress.reduce((total, percent) => total + percent, 0) / progress.length;
+
+    return (
+      <LabelledField label="LRO Progress">
+        { `${percentage.toFixed(1)}%` }
+      </LabelledField>
+    );
   }
 
   VersionSize(version) {
@@ -464,6 +525,8 @@ class ContentObject extends React.Component {
         </LabelledField>
 
         { accessCharge }
+
+        { this.LROStatus() }
 
         <br />
 

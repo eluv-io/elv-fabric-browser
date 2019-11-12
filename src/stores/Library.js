@@ -232,7 +232,7 @@ class LibraryStore {
     );
 
     this.rootStore.notificationStore.SetNotificationMessage({
-      message: "Successfully added library group",
+      message: "Successfully modified library group permissions",
       redirect: true
     });
   });

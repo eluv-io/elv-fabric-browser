@@ -352,6 +352,15 @@ class ObjectStore {
   }
 
   @action.bound
+  FinalizeABRMezzanine = flow(function * ({libraryId, objectId}) {
+    yield Fabric.FinalizeABRMezzanine({libraryId, objectId});
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully finalized ABR Mezzanine"
+    });
+  });
+
+  @action.bound
   AddApp = flow(function * ({libraryId, objectId, role, isDirectory, fileList, callback}) {
     const app = `${role}App`;
     const fileInfo = yield FileInfo(app, fileList, false, isDirectory);

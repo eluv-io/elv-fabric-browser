@@ -156,6 +156,10 @@ $table-listing-width: 125px;
     margin: $elv-spacing-xs 0 $elv-spacing-s;
   }
 
+  .listing-empty {
+    margin-top: $elv-spacing-xl;
+  }
+
   // Grid view
 
   .grid-listing {

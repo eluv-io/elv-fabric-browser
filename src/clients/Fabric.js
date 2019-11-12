@@ -518,6 +518,11 @@ const Fabric = {
       metadata.public = {};
     }
 
+    let lroStatus;
+    if(metadata.lro_draft && metadata.lro_draft.write_token) {
+      lroStatus = await client.LROStatus({libraryId, objectId});
+    }
+
     const imageUrl = await Fabric.GetContentObjectImageUrl({libraryId, objectId, versionHash: object.hash, metadata});
 
     let typeInfo;
@@ -553,6 +558,7 @@ const Fabric = {
       baseFileUrl,
       typeInfo,
       imageUrl,
+      lroStatus,
       contractAddress: FormatAddress(client.utils.HashToAddress(objectId)),
       customContractAddress,
       owner,
@@ -746,6 +752,10 @@ const Fabric = {
       writeToken: editResponse.write_token,
       awaitCommitConfirmation
     });
+  },
+
+  FinalizeABRMezzanine: async ({libraryId, objectId}) => {
+    await client.FinalizeABRMezzanine({libraryId, objectId});
   },
 
   /* Content Types */

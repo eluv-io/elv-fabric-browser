@@ -301,7 +301,7 @@ class Listing extends React.Component {
   Count() {
     if(this.props.count === 0) {
       return (
-        <div className="listing-count">
+        <div className="listing-count listing-empty">
           No results to display
         </div>
       );
