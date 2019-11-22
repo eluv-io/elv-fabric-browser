@@ -11,55 +11,14 @@ import {DownloadFromUrl} from "../../../utils/Files";
 import FileBrowser from "../../components/FileBrowser";
 import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
-import {Action, Confirm, IconButton, Tabs, TraversableJson} from "elv-components-js";
+import {Action, Confirm, IconButton, Tabs} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
 import {AccessChargeDisplay, Percentage} from "../../../utils/Helpers";
 import {inject, observer} from "mobx-react";
 import RefreshIcon from "../../../static/icons/refresh.svg";
 import Prompt from "react-router/es/Prompt";
-
-const ToggleSection = ({label, children, className=""}) => {
-  const [show, setShow] = useState(false);
-
-  return (
-    <div className={`formatted-data ${className || ""}`}>
-      <LabelledField label={label}>
-        <Action className={"action-compact action-wide " + (show ? "" : "secondary")} onClick={() => setShow(!show)}>
-          { `${show ? "Hide" : "Show"} ${label}` }
-        </Action>
-      </LabelledField>
-      { show ? children : null }
-    </div>
-  );
-};
-
-const JSONField = ({json}) => {
-  if(!json || Object.keys(json).length === 0) {
-    return <pre className="content-object-data">{JSON.stringify(json, null, 2)}</pre>;
-  }
-
-  const [showRaw, setShowRaw] = useState(false);
-
-  const tabs = (
-    <Tabs
-      selected={showRaw}
-      onChange={value => setShowRaw(value)}
-      options={[["Formatted", false], ["Raw", true]]}
-      className="secondary"
-    />
-  );
-
-  const content = showRaw ?
-    <pre className="content-object-data">{JSON.stringify(json, null, 2)}</pre> :
-    <TraversableJson json={json} />;
-
-  return (
-    <React.Fragment>
-      { tabs }
-      { content }
-    </React.Fragment>
-  );
-};
+import ToggleSection from "../../components/ToggleSection";
+import JSONField from "../../components/JSONField";
 
 const DownloadPart = ({libraryId, objectId, versionHash, partHash, partName, DownloadMethod}) => {
   const [progress, setProgress] = useState(undefined);
@@ -265,7 +224,7 @@ class ContentObject extends React.Component {
           <LabelledField label="LRO Progress">
             Finished
           </LabelledField>
-          <LabelledField hidden={!this.props.objectStore.object.isOwner}>
+          <LabelledField hidden={!this.props.objectStore.object.canEdit}>
             <Action onClick={this.FinalizeABRMezzanine}>
               Finalize
             </Action>
@@ -508,7 +467,10 @@ class ContentObject extends React.Component {
         <LabelledField
           label="Name"
           editable={true}
-          onChange={newName => this.UpdateMetadata({metadataSubtree: "public/name", metadata: newName})}
+          onChange={async newName => {
+            await this.UpdateMetadata({metadataSubtree: "public/name", metadata: newName});
+            await this.UpdateMetadata({metadataSubtree: "name", metadata: newName});
+          }}
         >
           { object.meta.public.name || object.id }
         </LabelledField>
@@ -517,9 +479,10 @@ class ContentObject extends React.Component {
           label="Description"
           type="textarea"
           editable={true}
-          onChange={newDescription =>
-            this.UpdateMetadata({metadataSubtree: "public/description", metadata: newDescription.trim()})
-          }
+          onChange={async newDescription => {
+            await this.UpdateMetadata({metadataSubtree: "public/description", metadata: newDescription.trim()});
+            await this.UpdateMetadata({metadataSubtree: "description", metadata: newDescription.trim()});
+          }}
         >
           { object.meta.public.description || "" }
         </LabelledField>
@@ -591,7 +554,7 @@ class ContentObject extends React.Component {
       </Action>
     );
 
-    if(!this.props.objectStore.object.isOwner) {
+    if(!this.props.objectStore.object.canEdit) {
       return (
         <div className="actions-container">
           { backButton }
@@ -613,7 +576,7 @@ class ContentObject extends React.Component {
     }
 
     let deleteObjectButton;
-    if(!this.props.objectStore.object.isContentLibraryObject) {
+    if(this.props.objectStore.object.isOwner && !this.props.objectStore.object.isContentLibraryObject) {
       deleteObjectButton = (
         <Action className="danger" onClick={() => this.DeleteContentObject()}>
           Delete

@@ -1,6 +1,6 @@
 $aspect-ratio: 0.75; // 4/3
-$grid-listing-width: 215px;
-$table-listing-width: 125px;
+$grid-listing-width: 150px;
+$table-listing-width: 110px;
 
 .listing {
   $table-listing-height: calc(#{$table-listing-width} * #{$aspect-ratio});
@@ -171,9 +171,7 @@ $table-listing-width: 125px;
   .grid-listing-element {
     &:hover,
     &:focus {
-      .listing-info {
-        background-color: $elv-color-lightgray;
-      }
+      background-color: $elv-color-lightergray;
     }
 
     .icon-container {

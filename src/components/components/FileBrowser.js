@@ -120,7 +120,10 @@ class FileBrowser extends React.Component {
           <IconButton
             title={`Delete ${name}`}
             icon={DeleteIcon}
-            onClick={() => this.DeleteItem(name)}
+            onClick={event => {
+              event.stopPropagation();
+              this.DeleteItem(name);
+            }}
             className="delete-button"
           />
         </td>
@@ -141,7 +144,10 @@ class FileBrowser extends React.Component {
           <IconButton
             title={`Delete ${item.name}`}
             icon={DeleteIcon}
-            onClick={() => this.DeleteItem(item.name)}
+            onClick={event => {
+              event.stopPropagation();
+              this.DeleteItem(item.name);
+            }}
             className="delete-button"
           />
         </td>

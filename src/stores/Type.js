@@ -79,8 +79,16 @@ class TypeStore {
       libraryId,
       objectId: typeId,
       todo: async (writeToken) => {
-        metadata.name = name;
-        metadata["eluv.description"] = description;
+        metadata = {
+          ...metadata,
+          name,
+          description,
+          public: {
+            ...(metadata.public || {}),
+            name,
+            description
+          }
+        };
 
         await Fabric.ReplaceMetadata({
           libraryId,

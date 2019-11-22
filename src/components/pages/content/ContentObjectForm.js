@@ -499,8 +499,8 @@ class ContentObjectForm extends React.Component {
             <div className="form-content">
               {this.TypeField()}
               {this.BuildType(this.state.schema)}
-              {this.MetadataField()}
               {this.PublicMetadataField()}
+              {this.MetadataField()}
               {this.AccessChargeField()}
             </div>
           </div>

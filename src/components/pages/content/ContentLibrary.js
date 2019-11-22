@@ -13,6 +13,8 @@ import {AccessChargeDisplay} from "../../../utils/Helpers";
 import Listing from "../../components/Listing";
 import {inject, observer} from "mobx-react";
 import RefreshIcon from "../../../static/icons/refresh.svg";
+import ToggleSection from "../../components/ToggleSection";
+import JSONField from "../../components/JSONField";
 
 @inject("libraryStore")
 @observer
@@ -21,7 +23,6 @@ class ContentLibrary extends React.Component {
     super(props);
 
     this.state = {
-      visibleItems: {},
       view: "content",
       groupsView: "accessor",
       version: 0,
@@ -31,50 +32,6 @@ class ContentLibrary extends React.Component {
     this.PageContent = this.PageContent.bind(this);
     this.ContentObjects = this.ContentObjects.bind(this);
     this.AccessGroups = this.AccessGroups.bind(this);
-  }
-
-  ToggleVisible(id) {
-    this.setState({
-      visibleItems: {
-        ...this.state.visibleItems,
-        [id]: !this.state.visibleItems[id]
-      }
-    });
-  }
-
-  ToggleButton(label, id) {
-    const toggleVisible = () => this.ToggleVisible(id);
-    const visible = this.state.visibleItems[id];
-    const toggleButtonText = (visible ? "Hide " : "Show ") + label;
-
-    return (
-      <Action
-        className={visible ? "" : "secondary"}
-        onClick={toggleVisible}
-      >
-        { toggleButtonText }
-      </Action>
-    );
-  }
-
-  ToggleSection(label, id, value, format=true) {
-    const visible = this.state.visibleItems[id];
-
-    let content;
-    if(visible) {
-      if(format) {
-        content = <pre className="content-object-data">{JSON.stringify(value, null, 2)}</pre>;
-      } else { content = value; }
-    }
-
-    return (
-      <div className="formatted-data">
-        <LabelledField label={label}>
-          { this.ToggleButton(label, id) }
-        </LabelledField>
-        { content }
-      </div>
-    );
   }
 
   LibraryContentTypes() {
@@ -282,8 +239,18 @@ class ContentLibrary extends React.Component {
         <br />
 
         { this.LibraryContentTypes() }
-        { this.ToggleSection("Public Metadata", "public-metadata", library.publicMeta || {}, true) }
-        { this.ToggleSection("Private Metadata", "private-metadata", library.privateMeta, true) }
+
+        <ToggleSection label="Public Metadata">
+          <div className="indented">
+            <JSONField json={library.publicMeta} />
+          </div>
+        </ToggleSection>
+
+        <ToggleSection label="Private Metadata">
+          <div className="indented">
+            <JSONField json={library.privateMeta} />
+          </div>
+        </ToggleSection>
       </div>
     );
   }

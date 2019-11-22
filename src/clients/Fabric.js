@@ -548,6 +548,9 @@ const Fabric = {
       name = object.id;
     }
 
+    const isOwner = EqualAddress(owner, await Fabric.CurrentAccountAddress());
+    const canEdit = isOwner;
+
     return {
       ...object,
       ...appUrls,
@@ -563,7 +566,8 @@ const Fabric = {
       customContractAddress,
       owner,
       ownerName,
-      isOwner: EqualAddress(owner, await Fabric.CurrentAccountAddress()),
+      isOwner,
+      canEdit,
       accessInfo,
       status,
       isContentLibraryObject,
@@ -765,7 +769,12 @@ const Fabric = {
       name,
       metadata: {
         ...metadata,
-        "eluv.description": description
+        description,
+        public: {
+          ...(metadata.public || {}),
+          name,
+          description
+        },
       },
       bitcode
     });
@@ -795,11 +804,13 @@ const Fabric = {
   ListContentTypes: async ({params}) => {
     let contentTypes = Object.values(await client.ContentTypes());
 
+    const GetName = contentType => (contentType.meta.public ? contentType.meta.public.name : contentType.meta.name) || "";
+
     // Filter
     if(params.filter) {
       contentTypes = contentTypes.filter(contentType => {
         try {
-          return (contentType.meta.name || "").toLowerCase().includes(params.filter.toLowerCase());
+          return GetName(contentType).toLowerCase().includes(params.filter.toLowerCase());
         } catch(e) {
           return false;
         }
@@ -810,8 +821,8 @@ const Fabric = {
 
     // Sort
     contentTypes = contentTypes.sort((a, b) => {
-      const name1 = a.meta.name|| "zz";
-      const name2 = b.meta.name || "zz";
+      const name1 = GetName(a) || "zz";
+      const name2 = GetName(b) || "zz";
       return name1.toLowerCase() > name2.toLowerCase() ? 1 : -1;
     });
 
@@ -830,8 +841,8 @@ const Fabric = {
 
           types[type.id] = {
             ...type,
-            name: type.meta.name || "",
-            description: type.meta["eluv.description"] || type.meta.description,
+            name: GetName(type),
+            description: type.meta.public ? type.meta.public.description || type.meta.description : type.meta.description,
             owner,
             isOwner: EqualAddress(owner, await Fabric.CurrentAccountAddress())
           };
