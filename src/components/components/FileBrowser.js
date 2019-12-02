@@ -4,12 +4,13 @@ import PrettyBytes from "pretty-bytes";
 import UrlJoin from "url-join";
 import URI from "urijs";
 import Path from "path";
-import {Action, Modal, IconButton, ImageIcon, Copy, Confirm} from "elv-components-js";
+import {Action, Modal, IconButton, ImageIcon, Copy, Confirm, ToolTip} from "elv-components-js";
 import FileUploadWidget from "./FileUploadWidget";
 
 import DirectoryIcon from "../../static/icons/directory.svg";
 import FileIcon from "../../static/icons/file.svg";
 import DownloadIcon from "../../static/icons/download.svg";
+import PreviewIcon from "../../static/icons/image.svg";
 import BackIcon from "../../static/icons/directory_back.svg";
 import LinkIcon from "../../static/icons/link.svg";
 import DeleteIcon from "../../static/icons/trash.svg";
@@ -90,13 +91,40 @@ class FileBrowser extends React.Component {
     return uri.toString();
   }
 
+  FileIcon(name, fileUrl) {
+    const mimeTypes = this.props.objectStore.object.meta["mime-types"] || {};
+    const extension = name.split(".").pop();
+    const mimeType = mimeTypes[extension] || "";
+    const isImage =
+      mimeType.startsWith("image") ||
+      ["jpg", "jpeg", "png", "gif", "webp"].includes(extension);
+
+    if(!isImage) {
+      return <ImageIcon icon={FileIcon} label="File"/>;
+    }
+
+    return (
+      <ToolTip
+        key={`preview-${name}`}
+        className={"file-image-preview-tooltip"}
+        content={<img src={fileUrl} alt={name} className="file-image-preview"/>}
+      >
+        <ImageIcon
+          icon={PreviewIcon}
+          label={"Preview " + name}
+          className="preview-icon"
+        />
+      </ToolTip>
+    );
+  }
+
   File(name, info) {
     const size = PrettyBytes(info.size || 0);
     const fileUrl = this.FileUrl(this.state.path, name);
     return (
       <tr key={`entry-${this.state.path}-${name}`}>
         <td className="item-icon">
-          <ImageIcon icon={FileIcon} label="File"/>
+          { this.FileIcon(name, fileUrl) }
         </td>
         <td title={name}>{ name }</td>
         <td title={size} className="info-cell">{ size }</td>

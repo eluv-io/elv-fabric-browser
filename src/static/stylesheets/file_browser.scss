@@ -2,12 +2,33 @@
   padding: $elv-spacing-s;
 }
 
+.file-image-preview-tooltip {
+  &.file-image-preview-tooltip {
+    max-width: 25rem;
+    opacity: 1;
+  }
+
+  .file-image-preview {
+    opacity: 1;
+    padding: $elv-spacing-xs;
+    width: 100%;
+  }
+}
+
 .file-browser {
   font-weight: 300;
   margin: $elv-spacing-s 0;
   max-height: 50vh;
   overflow-y: auto;
   width: 100%;
+
+  .preview-icon {
+    cursor: pointer;
+
+    &:hover {
+      stroke: $elv-color-black;
+    }
+  }
 
   svg {
     &.-elv-icon {

@@ -520,7 +520,14 @@ const Fabric = {
 
     let lroStatus;
     if(metadata.lro_draft && metadata.lro_draft.write_token) {
-      lroStatus = await client.LROStatus({libraryId, objectId});
+      try {
+        lroStatus = await client.LROStatus({libraryId, objectId});
+      } catch(error) {
+        // eslint-disable-next-line no-console
+        console.error("Unable to retrieve LRO status: ");
+        // eslint-disable-next-line no-console
+        console.error(error);
+      }
     }
 
     const imageUrl = await Fabric.GetContentObjectImageUrl({libraryId, objectId, versionHash: object.hash, metadata});
