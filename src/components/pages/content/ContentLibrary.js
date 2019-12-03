@@ -153,11 +153,13 @@ class ContentLibrary extends React.Component {
         key="library-objects-view"
         pageId="ContentObjects"
         paginate={true}
+        page={this.props.libraryStore.library.listingParams.page}
+        filter={this.props.libraryStore.library.listingParams.filter}
         count={this.props.libraryStore.library.objectsCount}
         LoadContent={async ({action, params}) => {
           // When reloading or filtering, clear listing cache
           if(action !== Listing.ACTIONS.reload && action !== Listing.ACTIONS.filter) {
-            params.cacheId = this.props.libraryStore.library.listingCacheId;
+            params.cacheId = this.props.libraryStore.library.listingParams.cacheId;
           }
 
           await this.props.libraryStore.ListContentObjects({
@@ -261,7 +263,10 @@ class ContentLibrary extends React.Component {
         className="refresh-button"
         icon={RefreshIcon}
         label="Refresh"
-        onClick={() => this.setState({pageVersion: this.state.pageVersion + 1})}
+        onClick={() => {
+          this.props.libraryStore.ClearLibraryCache({libraryId: this.props.libraryStore.libraryId});
+          this.setState({pageVersion: this.state.pageVersion + 1});
+        }}
       />
     );
 

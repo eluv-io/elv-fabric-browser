@@ -32,9 +32,9 @@ class Listing extends React.Component {
     this.state = {
       display: savedOptions.display,
       perPage: savedOptions.perPage,
-      page: 1,
+      page: props.page || 1,
       selectFilter: this.props.selectFilterOptions ? savedOptions.filter || this.props.selectFilterOptions[0][1] : "",
-      filter: "",
+      filter: props.filter || "",
       filterTimeout: undefined,
       status: {
         loading: true,
@@ -355,6 +355,8 @@ Listing.propTypes = {
   noIcon: PropTypes.bool,
   noStatus: PropTypes.bool,
   paginate: PropTypes.bool,
+  page: PropTypes.number,
+  filter: PropTypes.string,
   count: PropTypes.number,
   selectFilterLabel: PropTypes.string,
   selectFilterOptions: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)),

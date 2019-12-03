@@ -33,8 +33,12 @@ class LibraryStore {
 
   @action.bound
   ContentLibrary = flow(function * ({libraryId}) {
+    // Preserve listing params
+    const {listingParams} = this.libraries[libraryId] || {};
+
     this.libraries[libraryId] = {
-      ...(yield Fabric.GetContentLibrary({libraryId}))
+      ...(yield Fabric.GetContentLibrary({libraryId})),
+      listingParams: listingParams || {}
     };
 
     if(!this.libraries[libraryId].isContentSpaceLibrary) {
@@ -246,14 +250,17 @@ class LibraryStore {
 
     this.libraries[libraryId].objects = objects;
     this.libraries[libraryId].objectsCount = count;
-    this.libraries[libraryId].listingCacheId = cacheId;
+    this.libraries[libraryId].listingParams = {
+      ...params,
+      cacheId
+    };
   });
 
   @action.bound
   ClearLibraryCache({libraryId}) {
     if(!this.libraries[libraryId]) { return; }
 
-    this.libraries[libraryId].listingCacheId = undefined;
+    this.libraries[libraryId].listingParams = {};
   }
 }
 
