@@ -3,6 +3,12 @@
 form {
   @include elv-form;
 
+  &.app-form {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
   &.small-form {
     width: 40rem;
   }
@@ -67,5 +73,13 @@ form {
         }
       }
     }
+  }
+}
+
+fieldset {
+  &.app-form {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
   }
 }

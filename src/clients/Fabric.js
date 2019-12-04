@@ -556,7 +556,14 @@ const Fabric = {
     }
 
     const isOwner = EqualAddress(owner, await Fabric.CurrentAccountAddress());
-    const canEdit = isOwner;
+    let canEdit = isOwner;
+    if(!canEdit && isNormalObject) {
+      canEdit = await client.CallContractMethod({
+        contractAddress: client.utils.HashToAddress(objectId),
+        abi: BaseContentContract.abi,
+        methodName: "canEdit"
+      });
+    }
 
     return {
       ...object,

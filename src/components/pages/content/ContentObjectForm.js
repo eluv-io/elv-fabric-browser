@@ -456,13 +456,14 @@ class ContentObjectForm extends React.Component {
       contentSpaceId: Fabric.contentSpaceId,
       libraryId: this.props.objectStore.libraryId,
       objectId: this.props.objectStore.objectId,
+      versionHash: this.props.objectStore.object.hash,
       type: this.state.type,
       action: "manage"
     };
 
     return (
-      <form>
-        <fieldset>
+      <form className="app-form">
+        <fieldset className="app-form">
           <legend>{legend}</legend>
           { this.AppFormSelection() }
           { this.TypeField() }
