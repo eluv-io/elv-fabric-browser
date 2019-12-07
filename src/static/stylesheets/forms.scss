@@ -7,6 +7,15 @@ form {
     display: flex;
     flex-direction: column;
     height: 100%;
+    width: 80rem;
+  }
+
+  .app-form-fieldset {
+    border: 1px solid $elv-color-gray;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    padding: 0 $elv-spacing-l $elv-spacing-l;
   }
 
   &.small-form {
@@ -77,9 +86,13 @@ form {
 }
 
 fieldset {
+  display: flex;
+  flex-direction: column;
+
   &.app-form {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    flex-grow: 1;
+    width: 100%;
   }
 }

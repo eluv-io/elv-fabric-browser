@@ -9,6 +9,7 @@ import React from "react";
 import Fabric from "../../clients/Fabric";
 import PropTypes from "prop-types";
 import URI from "urijs";
+import {inject, observer} from "mobx-react";
 
 // Ensure error objects can be properly serialized in messages
 if(!("toJSON" in Error.prototype)) {
@@ -118,6 +119,8 @@ const IFrame = React.forwardRef(
   (props, appRef) => <IFrameBase appRef={appRef} {...props} />
 );
 
+@inject("notificationStore")
+@observer
 class AppFrame extends React.Component {
   constructor(props) {
     super(props);
@@ -190,6 +193,13 @@ class AppFrame extends React.Component {
       switch(event.data.operation) {
         case "Complete":
           if(this.props.onComplete) { await this.props.onComplete(); }
+
+          if(event.data.message) {
+            this.props.notificationStore.SetNotificationMessage({
+              message: event.data.message
+            });
+          }
+
           break;
 
         case "Cancel":

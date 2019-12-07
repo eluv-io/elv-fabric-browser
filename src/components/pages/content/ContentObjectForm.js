@@ -451,7 +451,7 @@ class ContentObjectForm extends React.Component {
     );
   }
 
-  AppFrame(legend) {
+  AppFrame() {
     const queryParams = {
       contentSpaceId: Fabric.contentSpaceId,
       libraryId: this.props.objectStore.libraryId,
@@ -462,24 +462,25 @@ class ContentObjectForm extends React.Component {
     };
 
     return (
-      <form className="app-form">
-        <fieldset className="app-form">
-          <legend>{legend}</legend>
-          { this.AppFormSelection() }
-          { this.TypeField() }
-          <br />
-          <AppFrame
-            appUrl={this.state.manageAppUrl}
-            queryParams={queryParams}
-            onComplete={this.FrameCompleted}
-            onCancel={this.FrameCompleted}
-            className="form-frame"
-          />
-          <div className="form-actions">
-            <Action className="secondary" onClick={this.FrameCompleted}>Cancel</Action>
+      <React.Fragment>
+        <div className="actions-container manage-actions">
+          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+        </div>
+        <form className="app-form">
+          <div role="group" className="app-form-fieldset">
+            { this.AppFormSelection() }
+            { this.TypeField() }
+            <br />
+            <AppFrame
+              appUrl={this.state.manageAppUrl}
+              queryParams={queryParams}
+              onComplete={this.FrameCompleted}
+              onCancel={this.FrameCompleted}
+              className="form-frame"
+            />
           </div>
-        </fieldset>
-      </form>
+        </form>
+      </React.Fragment>
     );
   }
 

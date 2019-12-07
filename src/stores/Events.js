@@ -21,7 +21,7 @@ class EventsStore {
   @action.bound
   async ContractNames(contractAddresses) {
     // Reduce to unique addresses
-    contractAddresses = [...new Set(contractAddresses)];
+    contractAddresses = [...new Set(contractAddresses)].filter(address => address);
 
     await contractAddresses.limitedMap(
       5,
