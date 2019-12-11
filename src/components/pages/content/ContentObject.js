@@ -202,44 +202,53 @@ class ContentObject extends React.Component {
   }
 
   LROStatus() {
-    const status = this.props.objectStore.object.lroStatus;
+    const statuses = this.props.objectStore.object.lroStatus;
 
-    if(!status) { return; }
+    if(!statuses || statuses.length === 0) { return; }
 
-    const states = Object.values(status).map(info => info.run_state);
+    const statusLabels = statuses.map(({offeringKey, status}) => {
+      const states = Object.values(status).map(info => info.run_state);
 
-    if(states.includes("failed")) {
-      // LRO Failed
+      if(states.includes("failed")) {
+        // LRO Failed
+        return (
+          <LabelledField label={offeringKey}>
+            Failed
+          </LabelledField>
+        );
+      }
+
+      if(states.every(state => state === "finished")) {
+        // LRO Finished
+        return (
+          <React.Fragment>
+            <LabelledField label={offeringKey}>
+              Finished
+            </LabelledField>
+            <LabelledField hidden={!this.props.objectStore.object.canEdit}>
+              <Action onClick={this.FinalizeABRMezzanine}>
+                Finalize
+              </Action>
+            </LabelledField>
+          </React.Fragment>
+        );
+      }
+
+      const progress = Object.values(status).map(info => info.progress.percentage);
+      const percentage = progress.reduce((total, percent) => total + percent, 0) / progress.length;
+
       return (
-        <LabelledField label="LRO Progress">
-          Failed
+        <LabelledField label={offeringKey}>
+          { `${percentage.toFixed(1)}%` }
         </LabelledField>
       );
-    }
-
-    if(states.every(state => state === "finished")) {
-      // LRO Finished
-      return (
-        <React.Fragment>
-          <LabelledField label="LRO Progress">
-            Finished
-          </LabelledField>
-          <LabelledField hidden={!this.props.objectStore.object.canEdit}>
-            <Action onClick={this.FinalizeABRMezzanine}>
-              Finalize
-            </Action>
-          </LabelledField>
-        </React.Fragment>
-      );
-    }
-
-    const progress = Object.values(status).map(info => info.progress.percentage);
-    const percentage = progress.reduce((total, percent) => total + percent, 0) / progress.length;
+    });
 
     return (
-      <LabelledField label="LRO Progress">
-        { `${percentage.toFixed(1)}%` }
-      </LabelledField>
+      <React.Fragment>
+        <LabelledField label="LRO Progress" />
+        { statusLabels }
+      </React.Fragment>
     );
   }
 

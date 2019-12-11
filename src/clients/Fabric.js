@@ -518,17 +518,19 @@ const Fabric = {
       metadata.public = {};
     }
 
-    let lroStatus;
-    if(metadata.lro_draft && metadata.lro_draft.write_token) {
-      try {
-        lroStatus = await client.LROStatus({libraryId, objectId});
-      } catch(error) {
-        // eslint-disable-next-line no-console
-        console.error("Unable to retrieve LRO status: ");
-        // eslint-disable-next-line no-console
-        console.error(error);
-      }
-    }
+    const lroStatus = await Promise.all(
+      Object.keys(metadata)
+        .filter(key => key.startsWith("lro_draft_"))
+        .map(async lroKey => {
+          const offeringKey = lroKey.replace(/^lro_draft_/, "");
+
+          const status = await client.LROStatus({libraryId, objectId, offeringKey});
+          return {
+            offeringKey,
+            status
+          };
+        })
+    );
 
     const imageUrl = await Fabric.GetContentObjectImageUrl({libraryId, objectId, versionHash: object.hash, metadata});
 
