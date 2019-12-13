@@ -207,6 +207,8 @@ class ContentObject extends React.Component {
     if(!statuses || statuses.length === 0) { return; }
 
     const statusLabels = statuses.map(({offeringKey, status}) => {
+      if(!status) { return; }
+
       const states = Object.values(status).map(info => info.run_state);
 
       if(states.includes("failed")) {
