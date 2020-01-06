@@ -6,22 +6,6 @@ import BaseContentContract from "elv-client-js/src/contracts/BaseContent";
 import BaseAccessGroupContract from "elv-client-js/src/contracts/BaseAccessControlGroup";
 import {Bytes32ToUtf8, EqualAddress, FormatAddress} from "../utils/Helpers";
 
-/* Undocumented feature: If privateKey param is set, use that to intialize the client */
-let privateKey;
-let queryParams = window.location.search.split("?")[1];
-
-if(queryParams) {
-  queryParams = queryParams.split("&");
-
-  queryParams.forEach(param => {
-    const key = param.split("=")[0];
-    if(key === "privateKey") {
-      privateKey = param.split("=")[1];
-    }
-  });
-}
-
-const isFrameClient = window.self !== window.top;
 let client = new FrameClient({
   target: window.parent,
   timeout: 30
@@ -31,28 +15,11 @@ const Fabric = {
   /* Utils */
   currentAccountAddress: undefined,
   utils: client.utils,
-  isFrameClient,
   cachedImages: {},
   concurrencyLimit: 5,
 
   async Initialize() {
-    if(!isFrameClient) {
-      const ElvClient = (await import(
-        /* webpackChunkName: "elv-client-js" */
-        /* webpackMode: "lazy" */
-        "elv-client-js"
-      )).ElvClient;
-      client = await ElvClient.FromConfigurationUrl({configUrl: EluvioConfiguration["config-url"]});
-      await client.SetSigner({signer: client.GenerateWallet().AddAccount({privateKey})});
-    } else {
-      // Contained in IFrame
-      client = new FrameClient({
-        target: window.parent,
-        timeout: 30
-      });
-    }
-
-    window.fabricBrowserClient = client;
+    window.client = client;
 
     this.contentSpaceId = await client.ContentSpaceId();
     this.contentSpaceLibraryId = this.contentSpaceId.replace("ispc", "ilib");
@@ -63,33 +30,17 @@ const Fabric = {
     await client.ResetRegion();
   },
 
-  async GetFramePath() {
-    if(Fabric.isFrameClient) {
-      return await client.SendMessage({
-        options: {
-          operation: "GetFramePath"
-        }
-      });
-    }
-  },
-
   async SetFramePath({path}) {
-    if(Fabric.isFrameClient) {
-      return await client.SendMessage({
-        options: {
-          operation: "SetFramePath",
-          path
-        }
-      });
-    }
+    return await client.SendMessage({
+      options: {
+        operation: "SetFramePath",
+        path
+      }
+    });
   },
 
   async ExecuteFrameRequest({request, Respond}) {
-    if(isFrameClient) {
-      Respond(await client.PassRequest({request, Respond}));
-    } else {
-      Respond(await client.CallFromFrameMessage(request));
-    }
+    Respond(await client.PassRequest({request, Respond}));
   },
 
   CurrentAccountAddress: async () => {

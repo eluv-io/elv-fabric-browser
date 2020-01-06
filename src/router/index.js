@@ -44,18 +44,9 @@ import withRouter from "react-router/es/withRouter";
 @inject("notificationStore")
 @inject("routeStore")
 @observer
+// Update app state and notify Core whenever route changes
 class WatchedRouteClass extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      routeSet: false
-    };
-  }
-
   async componentDidMount() {
-    // Redirect to initial path
-    const initialRoute = await Fabric.GetFramePath();
     this.setState({
       DisposeRouteReaction: reaction(
         () => ({
@@ -73,7 +64,10 @@ class WatchedRouteClass extends React.Component {
       )
     });
 
-    this.props.history.push(initialRoute);
+    // Initial load
+    await this.props.routeStore.UpdateRoute(
+      this.props.computedMatch
+    );
   }
 
   componentWillUnmount() {
@@ -83,10 +77,6 @@ class WatchedRouteClass extends React.Component {
   }
 
   render() {
-    if(!this.state.routeSet) {
-      return null;
-    }
-
     return (
       <Route
         exact={this.props.exact}
@@ -103,10 +93,23 @@ class Router extends React.Component {
   constructor(props) {
     super(props);
 
-    Fabric.Initialize();
+    this.state = {
+      initialized: false
+    };
+  }
+
+  async componentWillMount() {
+    await Fabric.Initialize();
+
+    this.setState({initialized: true});
   }
 
   render() {
+    // Wait for Fabric client to initialize before rendering
+    if(!this.state.initialized) {
+      return null;
+    }
+
     return (
       <div className="main-content-container">
         <Switch>

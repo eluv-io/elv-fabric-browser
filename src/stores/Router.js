@@ -1,10 +1,9 @@
-import {observable, action, runInAction} from "mobx";
+import {observable, action} from "mobx";
 import {FormatAddress} from "../utils/Helpers";
+import UrlJoin from "url-join";
 import Fabric from "../clients/Fabric";
 
 class RouterStore {
-  @observable initialRoute;
-
   @observable path;
 
   @observable libraryId;
@@ -13,13 +12,10 @@ class RouterStore {
 
   constructor(rootStore) {
     this.rootStore = rootStore;
-
-    Fabric.GetFramePath().then(path => runInAction(() => this.initialRoute = path));
   }
 
   @action.bound
   UpdateRoute(match) {
-    this.initialRoute = undefined;
     this.path = match.url;
     this.libraryId = match.params.libraryId;
     this.objectId = match.params.objectId;
@@ -32,7 +28,7 @@ class RouterStore {
 
     this.rootStore.notificationStore.ChangeRoute();
 
-    Fabric.SetFramePath({path: this.path});
+    Fabric.SetFramePath({path: UrlJoin("#", this.path)});
   }
 }
 

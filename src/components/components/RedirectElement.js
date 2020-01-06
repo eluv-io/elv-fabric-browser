@@ -27,6 +27,13 @@ class RedirectElement extends React.Component {
         this.props.children,
         {
           onClick,
+          onMouseDown: e => {
+            if(e.button !== 1) { return; }
+
+            // Open in new tab on middle click
+            e.preventDefault();
+            window.open("/#/" + this.props.to);
+          },
           onKeyPress: onClick,
           tabIndex: "0"
         }
