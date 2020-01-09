@@ -1,6 +1,6 @@
 $aspect-ratio: 0.75; // 4/3
 $grid-listing-width: 150px;
-$table-listing-width: 110px;
+$table-listing-width: 95px;
 
 .listing {
   $table-listing-height: calc(#{$table-listing-width} * #{$aspect-ratio});

@@ -376,7 +376,7 @@ const Fabric = {
   ListContentObjects: async ({libraryId, params}) => {
     const filterOptions = {
       select: ["name", "eluv.description", "image", "description", "public"],
-      sort: "name",
+      sort: "/public/name",
       limit: params.perPage
     };
 
@@ -385,7 +385,7 @@ const Fabric = {
     }
 
     if(params.filter) {
-      filterOptions.filter = {key: "name", type: "cnt", filter: params.filter};
+      filterOptions.filter = {key: "/public/name", type: "cnt", filter: params.filter};
     }
 
     if(params.cacheId) {
