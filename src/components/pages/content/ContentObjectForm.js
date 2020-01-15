@@ -21,6 +21,9 @@ import {inject, observer} from "mobx-react";
 import {Percentage} from "../../../utils/Helpers";
 import {toJS} from "mobx";
 
+import MaximizeIcon from "../../../static/icons/maximize.svg";
+import MinimizeIcon from "../../../static/icons/minimize.svg";
+
 const defaultSchema = [
   {
     "key": "public",
@@ -54,7 +57,8 @@ class ContentObjectForm extends React.Component {
       completed: false,
       metadata: "",
       publicMetadata: "",
-      uploadStatus: {}
+      uploadStatus: {},
+      fullScreen: false
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -439,7 +443,7 @@ class ContentObjectForm extends React.Component {
   }
 
   AppFormSelection() {
-    if(!this.state.manageAppUrl) { return null; }
+    if(!this.state.manageAppUrl || this.state.fullScreen) { return null; }
 
     return (
       <Tabs
@@ -447,6 +451,30 @@ class ContentObjectForm extends React.Component {
         selected={this.state.showManageApp}
         onChange={(value) => this.setState({showManageApp: value})}
         options={[["App", true], ["Form", false]]}
+      />
+    );
+  }
+
+  BackLink() {
+    if(this.state.fullScreen) { return; }
+
+    return (
+      <div className="actions-container manage-actions">
+        <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+      </div>
+    );
+  }
+
+  FullscreenButton() {
+    const icon = this.state.fullScreen ? MinimizeIcon : MaximizeIcon;
+    const title = this.state.fullScreen ? "Show form options" : "Hide form options";
+
+    return (
+      <IconButton
+        icon={icon}
+        title={title}
+        className="fullscreen-button"
+        onClick={() => this.setState({fullScreen: !this.state.fullScreen})}
       />
     );
   }
@@ -463,10 +491,9 @@ class ContentObjectForm extends React.Component {
 
     return (
       <React.Fragment>
-        <div className="actions-container manage-actions">
-          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
-        </div>
-        <form className="app-form">
+        { this.BackLink() }
+        <form className={`app-form ${this.state.fullScreen ? "app-form-fullscreen" : ""}`}>
+          { this.FullscreenButton() }
           <div role="group" className="app-form-fieldset">
             { this.AppFormSelection() }
             { this.TypeField() }
@@ -486,16 +513,15 @@ class ContentObjectForm extends React.Component {
 
   FormContent(legend, redirectPath, cancelPath) {
     return (
-      <div>
-        <div className="actions-container manage-actions">
-          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
-        </div>
+      <React.Fragment>
+        { this.BackLink() }
         <Form
           legend={legend}
           redirectPath={redirectPath}
           cancelPath={cancelPath}
           OnSubmit={this.HandleSubmit}
         >
+          { this.FullscreenButton() }
           <div>
             {this.AppFormSelection()}
             <div className="form-content">
@@ -507,7 +533,7 @@ class ContentObjectForm extends React.Component {
             </div>
           </div>
         </Form>
-      </div>
+      </React.Fragment>
     );
   }
 
