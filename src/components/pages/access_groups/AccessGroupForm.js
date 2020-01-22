@@ -4,6 +4,7 @@ import Path from "path";
 import {Action, Form} from "elv-components-js";
 import {inject, observer} from "mobx-react";
 import AsyncComponent from "../../components/AsyncComponent";
+import JsonTextArea from "elv-components-js/src/components/JsonInput";
 
 @inject("groupStore")
 @observer
@@ -15,6 +16,9 @@ class AccessGroupForm extends React.Component {
       createForm: !props.groupStore.contractAddress,
       name: "",
       description: "",
+      isOauthGroup: false,
+      oauthIssuer: "",
+      oauthClaims: ""
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -33,11 +37,29 @@ class AccessGroupForm extends React.Component {
       address: this.props.groupStore.contractAddress,
       name: this.state.name,
       description: this.state.description,
+      oauthIssuer: this.state.oauthIssuer,
+      oauthClaims: this.state.oauthClaims
     });
 
     this.setState({
       contractAddress,
     });
+  }
+
+  OauthInfo() {
+    if(!this.state.isOauthGroup) {
+      return null;
+    }
+
+    return (
+      <React.Fragment>
+        <label htmlFor="oauthIssuer">Issuer</label>
+        <input name="oauthIssuer" value={this.state.oauthIssuer} onChange={this.HandleInputChange} />
+
+        <label htmlFor="oauthClaims" className="align-top">Claims</label>
+        <JsonTextArea name="oauthClaims" value={this.state.oauthClaims} onChange={this.HandleInputChange} />
+      </React.Fragment>
+    );
   }
 
   PageContent() {
@@ -61,6 +83,16 @@ class AccessGroupForm extends React.Component {
 
             <label htmlFor="description" className="align-top">Description</label>
             <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
+
+            <label htmlFor="isOauthGroup">Link with OAuth</label>
+            <input
+              name="isOauthGroup"
+              type="checkbox"
+              checked={this.state.isOauthGroup}
+              onChange={() => this.setState({isOauthGroup: !this.state.isOauthGroup})}
+            />
+
+            { this.OauthInfo() }
           </div>
         </Form>
       </div>
@@ -77,9 +109,14 @@ class AccessGroupForm extends React.Component {
                 contractAddress: this.props.groupStore.contractAddress
               });
 
+              const group = this.props.groupStore.accessGroup;
+
               this.setState({
-                name: this.props.groupStore.accessGroup.name,
-                description: this.props.groupStore.accessGroup.description,
+                name: group.name,
+                description: group.description,
+                isOauthGroup: !!group.oauthIssuer,
+                oauthIssuer: group.oauthIssuer || "",
+                oauthClaims: group.oauthClaims || ""
               });
             }
           }

@@ -53,8 +53,8 @@ const Fabric = {
 
   /* Access Groups */
 
-  CreateAccessGroup: async ({name, metadata={}}) => {
-    return await client.CreateAccessGroup({name, metadata});
+  CreateAccessGroup: async ({name, description, metadata={}}) => {
+    return await client.CreateAccessGroup({name, description, metadata});
   },
 
   DeleteAccessGroup: async ({address}) => {
@@ -1373,7 +1373,9 @@ const Fabric = {
     return {
       address: contractAddress,
       name: (metadata.public && metadata.public.name) || metadata.name || contractAddress,
-      description: metadata.description,
+      description: (metadata.public && metadata.public.description) || metadata.description,
+      oauthIssuer: metadata.oauthIssuer,
+      oauthClaims: metadata.oauthClaims,
       metadata,
       owner,
       ownerName,

@@ -38,7 +38,7 @@ class GroupStore {
   });
 
   @action.bound
-  SaveAccessGroup = flow(function * ({name, description, address}) {
+  SaveAccessGroup = flow(function * ({name, description, address, oauthIssuer, oauthClaims}) {
     if(address) {
       const objectId = Fabric.utils.AddressToObjectId(address);
 
@@ -52,7 +52,13 @@ class GroupStore {
             writeToken,
             metadata: {
               name,
-              description
+              description,
+              public: {
+                name,
+                description
+              },
+              oauthIssuer,
+              oauthClaims
             }
           });
         }
@@ -64,7 +70,14 @@ class GroupStore {
       });
     } else {
       // New access group - deploy contract
-      address = yield Fabric.CreateAccessGroup({name, metadata: { description }});
+      address = yield Fabric.CreateAccessGroup({
+        name,
+        description,
+        metadata: {
+          oauthIssuer,
+          oauthClaims
+        }
+      });
 
       this.rootStore.notificationStore.SetNotificationMessage({
         message: "Access group successfully created",

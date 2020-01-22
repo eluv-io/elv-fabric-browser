@@ -159,16 +159,45 @@ class AccessGroup extends React.Component {
       return <Redirect push to={Path.dirname(this.props.match.url)}/>;
     }
 
-    const ownerText = this.props.groupStore.accessGroup.ownerName ?
-      <span>{this.props.groupStore.accessGroup.ownerName}<span className="help-text">({this.props.groupStore.accessGroup.owner})</span></span> :
-      this.props.groupStore.accessGroup.owner;
+    const group = this.props.groupStore.accessGroup;
 
-    const description = <ClippedText className="object-description" text={this.props.groupStore.accessGroup.description} />;
+    const ownerText = group.ownerName ?
+      <span>{group.ownerName}<span className="help-text">({group.owner})</span></span> :
+      group.owner;
+
+    const description = <ClippedText className="object-description" text={group.description} />;
+
+    let oauthIssuer, oauthGroups;
+    if(group.oauthIssuer) {
+      oauthIssuer = (
+        <LabelledField label="OAuth Issuer">
+          { group.oauthIssuer }
+        </LabelledField>
+      );
+    }
+
+    if(group.oauthClaims) {
+      try {
+        const claims = JSON.parse(group.oauthClaims);
+        if(claims.groups) {
+          oauthGroups = (
+            <LabelledField label="OAuth Groups">
+              { claims.groups }
+            </LabelledField>
+          );
+        }
+      } catch(error) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to parse OAuth claims:");
+        // eslint-disable-next-line no-console
+        console.error(error);
+      }
+    }
 
     return (
       <div className="page-container access-group-page-container">
         { this.Actions() }
-        <PageHeader header={this.props.groupStore.accessGroup.name} />
+        <PageHeader header={group.name} />
         <div className="page-content">
           <div className="label-box">
             <LabelledField label="Description">
@@ -181,9 +210,12 @@ class AccessGroup extends React.Component {
 
             <LabelledField label="Contract Address">
               <Link className="inline-link" to={UrlJoin(this.props.match.url, "contract")}>
-                { this.props.groupStore.accessGroup.address }
+                { group.address }
               </Link>
             </LabelledField>
+
+            { oauthIssuer }
+            { oauthGroups }
           </div>
           <Tabs
             options={[
