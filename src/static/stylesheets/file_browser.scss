@@ -30,6 +30,33 @@
     }
   }
 
+  .encrypted-file-icon {
+    fill: $elv-color-darkgray;
+    stroke: transparent;
+  }
+
+  .file-icon {
+    height: 25px;
+    width: 25px;
+  }
+
+  .download-indicator {
+    .animated-icon {
+      div {
+        height: $elv-font-xxl;
+        width: $elv-font-xxl;
+      }
+    }
+  }
+
+  .download-progress {
+    margin: 0;
+    max-height: 35px;
+    overflow: hidden;
+    padding: 0;
+    width: auto;
+  }
+
   svg {
     &.-elv-icon {
       padding: $elv-spacing-xxs;
@@ -83,6 +110,7 @@
   tr {
     border-top: 1px solid $elv-color-lightergray;
     height: 35px;
+    max-height: 35px;
 
     &.directory {
       cursor: pointer;
@@ -95,11 +123,16 @@
     td {
       @include elv-ellipsis;
       height: 35px;
+      max-height: 35px;
 
       &.item-icon {
         align-items: center;
         display: flex;
         justify-content: center;
+      }
+
+      .encrypted-file-icon {
+        padding: 5px;
       }
 
       &.info-cell {

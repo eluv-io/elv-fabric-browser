@@ -66,8 +66,7 @@ class ContentObject extends React.Component {
       appRef: React.createRef(),
       view: "info",
       partDownloadProgress: {},
-      pageVersion: 0,
-      fileVersion: 0
+      pageVersion: 0
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -694,6 +693,12 @@ class ContentObject extends React.Component {
         <div className="object-files">
           <FileBrowser
             baseFileUrl={this.props.objectStore.object.baseFileUrl}
+            DownloadFile={async ({filePath, callback}) => await this.props.objectStore.DownloadFile({
+              libraryId: this.props.objectStore.libraryId,
+              objectId: this.props.objectStore.objectId,
+              filePath,
+              callback
+            })}
           />
         </div>
       );

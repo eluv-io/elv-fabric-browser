@@ -1,20 +1,68 @@
-import React from "react";
+import React, {useState} from "react";
 import PropTypes from "prop-types";
 import PrettyBytes from "pretty-bytes";
 import UrlJoin from "url-join";
 import URI from "urijs";
 import Path from "path";
-import {Action, Modal, IconButton, ImageIcon, Copy, Confirm, ToolTip} from "elv-components-js";
+import {
+  Action,
+  Modal,
+  IconButton,
+  ImageIcon,
+  Copy,
+  Confirm,
+  ToolTip,
+  BallClipRotate
+} from "elv-components-js";
 import FileUploadWidget from "./FileUploadWidget";
 
 import DirectoryIcon from "../../static/icons/directory.svg";
 import FileIcon from "../../static/icons/file.svg";
+import EncryptedFileIcon from "../../static/icons/encrypted-file.svg";
 import DownloadIcon from "../../static/icons/download.svg";
 import PreviewIcon from "../../static/icons/image.svg";
 import BackIcon from "../../static/icons/directory_back.svg";
 import LinkIcon from "../../static/icons/link.svg";
 import DeleteIcon from "../../static/icons/trash.svg";
 import {inject, observer} from "mobx-react";
+
+const DownloadButton = ({name, DownloadFile}) => {
+  const [downloading, setDownloading] = useState(false);
+  const [progress, setProgress] = useState(undefined);
+
+  if(downloading) {
+    if(!progress) {
+      return (
+        <div title={`Downloading ${name}`} className="download-indicator">
+          <BallClipRotate />
+        </div>
+      );
+    } else {
+      return (
+        <span title={`Downloading ${name}`} className="download-progress">
+          { ((progress.bytesFinished / progress.bytesTotal) * 100).toFixed(1) }
+        </span>
+      );
+    }
+  }
+
+  const callback = progress => setProgress(progress);
+
+  return (
+    <IconButton
+      title={`Download ${name}`}
+      icon={DownloadIcon}
+      label={"Download " + name}
+      onClick={async () => {
+        setDownloading(true);
+        await DownloadFile(callback);
+
+        setDownloading(false);
+      }}
+      className="download-button"
+    />
+  );
+};
 
 @inject("objectStore")
 @observer
@@ -91,7 +139,7 @@ class FileBrowser extends React.Component {
     return uri.toString();
   }
 
-  FileIcon(name, fileUrl) {
+  FileIcon(name, fileUrl, encrypted) {
     const mimeTypes = this.props.objectStore.object.meta["mime-types"] || {};
     const extension = name.split(".").pop();
     const mimeType = mimeTypes[extension] || "";
@@ -100,7 +148,13 @@ class FileBrowser extends React.Component {
       ["jpg", "jpeg", "png", "gif", "webp"].includes(extension);
 
     if(!isImage) {
-      return <ImageIcon icon={FileIcon} label="File"/>;
+      return (
+        <ImageIcon
+          icon={encrypted ? EncryptedFileIcon : FileIcon}
+          className={encrypted ? "encrypted-file-icon" : "file-icon"}
+          label="File"
+        />
+      );
     }
 
     return (
@@ -121,24 +175,28 @@ class FileBrowser extends React.Component {
   File(name, info) {
     const size = PrettyBytes(info.size || 0);
     const fileUrl = this.FileUrl(this.state.path, name);
+    const encrypted = info.encryption && info.encryption.scheme === "cgck";
     return (
       <tr key={`entry-${this.state.path}-${name}`}>
         <td className="item-icon">
-          { this.FileIcon(name, fileUrl) }
+          { this.FileIcon(name, fileUrl, encrypted) }
         </td>
         <td title={name}>{ name }</td>
-        <td title={size} className="info-cell">{ size }</td>
+        <td title={size} className="info-cell">
+          { size }
+        </td>
         <td className="actions-cell">
-          <a href={fileUrl} target="_blank">
-            <ImageIcon
-              title={`Download ${name}`}
-              icon={DownloadIcon}
-              label={"Download " + name}
-              className="download-button"
-            />
-          </a>
+          <DownloadButton
+            name={name}
+            size={size}
+            DownloadFile={async (callback) => await this.props.DownloadFile({
+              filePath: UrlJoin(this.state.path, name),
+              callback
+            })}
+          />
           <Copy copy={fileUrl}>
             <IconButton
+              hidden={encrypted}
               title={`Copy link to ${name}`}
               icon={LinkIcon}
               label={"Copy direct link to " + name}
@@ -214,7 +272,11 @@ class FileBrowser extends React.Component {
         } else {
           return item1.name.toLowerCase() < item2.name.toLowerCase() ? -1 : 1;
         }
-      }).map(item => item.info.type === "directory" ? this.Directory(item): this.File(item.name, item.info))
+      }).map(item =>
+        item.info.type === "directory" ?
+          this.Directory(item) :
+          this.File(item.name, item.info)
+      )
     );
   }
 
@@ -282,6 +344,7 @@ class FileBrowser extends React.Component {
 
 FileBrowser.propTypes = {
   baseFileUrl: PropTypes.string.isRequired,
+  DownloadFile: PropTypes.func.isRequired,
   Reload: PropTypes.func
 };
 

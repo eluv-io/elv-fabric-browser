@@ -253,8 +253,8 @@ class ObjectStore {
     });
   });
 
-  async DownloadFile({libraryId, objectId, versionHash, filePath}) {
-    let blob = await Fabric.DownloadFile({libraryId, objectId, versionHash, filePath, format: "blob"});
+  async DownloadFile({libraryId, objectId, versionHash, filePath, callback}) {
+    let blob = await Fabric.DownloadFile({libraryId, objectId, versionHash, filePath, format: "blob", callback});
     let url = window.URL.createObjectURL(blob);
 
     await DownloadFromUrl(url, Path.basename(filePath));
