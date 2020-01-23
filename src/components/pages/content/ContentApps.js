@@ -50,6 +50,7 @@ class ContentApps extends React.Component {
           legend={`Upload ${this.state.role} Application`}
           path={this.state.path}
           displayPath={this.state.displayPath}
+          encryptable={false}
           Upload={this.HandleSubmit}
           OnCancel={closeModal}
           OnComplete={() => {

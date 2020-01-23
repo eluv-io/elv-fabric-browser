@@ -929,8 +929,15 @@ const Fabric = {
 
   /* Files */
 
-  UploadFiles: async ({libraryId, objectId, writeToken, fileInfo, callback}) => {
-    return await client.UploadFiles({libraryId, objectId, writeToken, fileInfo, callback});
+  UploadFiles: async ({libraryId, objectId, writeToken, fileInfo, encrypt, callback}) => {
+    return await client.UploadFiles({
+      libraryId,
+      objectId,
+      writeToken,
+      fileInfo,
+      encryption: encrypt ? "cgck" : "none",
+      callback
+    });
   },
 
   DeleteFiles: async ({libraryId, objectId, writeToken, filePaths}) => {

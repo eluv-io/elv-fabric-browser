@@ -80,12 +80,13 @@ class FileBrowser extends React.Component {
     this.DeleteItem = this.DeleteItem.bind(this);
   }
 
-  async UploadFiles({path, fileList, callback}) {
+  async UploadFiles({path, fileList, encrypt, callback}) {
     await this.props.objectStore.UploadFiles({
       libraryId: this.props.objectStore.libraryId,
       objectId: this.props.objectStore.objectId,
       path,
       fileList,
+      encrypt,
       callback
     });
 
@@ -292,6 +293,7 @@ class FileBrowser extends React.Component {
       >
         <FileUploadWidget
           path={this.state.path}
+          encryptable
           legend={`Upload files to ${this.state.displayPath}`}
           Upload={this.UploadFiles}
           OnComplete={() => {

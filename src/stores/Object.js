@@ -234,12 +234,12 @@ class ObjectStore {
   });
 
   @action.bound
-  UploadFiles = flow(function * ({libraryId, objectId, path, fileList, callback}) {
+  UploadFiles = flow(function * ({libraryId, objectId, path, fileList, encrypt, callback}) {
     const writeToken = yield this.EditContentObject({libraryId, objectId});
 
     const fileInfo = yield FileInfo(path, fileList);
 
-    yield Fabric.UploadFiles({libraryId, objectId, writeToken, fileInfo, callback});
+    yield Fabric.UploadFiles({libraryId, objectId, writeToken, fileInfo, encrypt, callback});
 
     this.objects[objectId].meta.files = yield Fabric.GetContentObjectMetadata({
       libraryId,

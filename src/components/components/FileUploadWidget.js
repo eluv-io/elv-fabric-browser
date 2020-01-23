@@ -10,7 +10,8 @@ class FileUploadWidget extends React.Component {
     this.state = {
       files: "",
       directories: false,
-      progress: {}
+      progress: {},
+      encrypt: false
     };
 
     this.HandleSubmit = this.HandleSubmit.bind(this);
@@ -32,8 +33,25 @@ class FileUploadWidget extends React.Component {
       path: this.props.path,
       fileList: this.state.files,
       isDirectory: this.state.directories,
+      encrypt: this.state.encrypt,
       callback
     });
+  }
+
+  EncryptionOptions() {
+    if(!this.props.encryptable) { return; }
+
+    return (
+      <React.Fragment>
+        <label htmlFor="encrypt">Encrypt</label>
+        <input
+          name="encrypt"
+          type="checkbox"
+          checked={this.state.encrypt}
+          onChange={() => this.setState({encrypt: !this.state.encrypt})}
+        />
+      </React.Fragment>
+    );
   }
 
   render() {
@@ -55,6 +73,8 @@ class FileUploadWidget extends React.Component {
               onChange={(event) => this.setState({directories: event.target.value})}
             />
 
+            { this.EncryptionOptions() }
+
             <label htmlFor="files">{this.state.directories ? "Directory" : "Files"}</label>
             <BrowseWidget
               name="files"
@@ -74,6 +94,7 @@ FileUploadWidget.propTypes = {
   legend: PropTypes.string.isRequired,
   path: PropTypes.string,
   progress: PropTypes.object,
+  encryptable: PropTypes.bool,
   Upload: PropTypes.func.isRequired,
   OnComplete: PropTypes.func.isRequired,
   OnCancel: PropTypes.func

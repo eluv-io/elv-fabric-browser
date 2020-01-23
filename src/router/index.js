@@ -40,6 +40,7 @@ import DeployedContractEventsPage from "../components/pages/contracts/deployed/D
 
 import EventsPage from "../components/pages/events/Events";
 import withRouter from "react-router/es/withRouter";
+import { Redirect } from "react-router";
 
 @inject("notificationStore")
 @inject("routeStore")
@@ -199,6 +200,8 @@ class Router extends React.Component {
 
           /* Logs */
           <WatchedRoute exact path="/events" component={EventsPage} />
+
+          <Redirect from="*" to="/content" />
         </Switch>
       </div>
     );
