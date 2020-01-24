@@ -319,6 +319,8 @@ class ContentObject extends React.Component {
   ObjectVersion(versionHash, versionNumber, latestVersion=false) {
     const version = this.props.objectStore.versions[versionHash];
 
+    if(!version) { return null; }
+
     return (
       <div className={"version-info " + (latestVersion ? "" : "indented version-visible")}>
         <h3>{latestVersion ? "Latest Version" : `Version ${versionNumber}`}</h3>

@@ -190,7 +190,7 @@ const Fabric = {
           libraries[libraryId] = {
             libraryId,
             name: meta.name || libraryId,
-            description: meta["eluv.description"],
+            description: (meta.public && meta.public.description) || meta.description,
             imageUrl,
             isContentSpaceLibrary: libraryId === Fabric.contentSpaceLibraryId
           };
@@ -261,8 +261,8 @@ const Fabric = {
       ...libraryInfo,
       libraryId,
       types,
-      name: privateMeta.name || libraryId,
-      description: privateMeta["eluv.description"],
+      name: publicMeta.name || privateMeta.name || libraryId,
+      description: publicMeta.description || privateMeta.description,
       contractAddress: FormatAddress(client.utils.HashToAddress(libraryId)),
       libraryObjectId: libraryId.replace("ilib", "iq__"),
       privateMeta,
@@ -375,7 +375,7 @@ const Fabric = {
   // Make sure not to call anything requiring content object authorization
   ListContentObjects: async ({libraryId, params}) => {
     const filterOptions = {
-      select: ["name", "eluv.description", "image", "description", "public"],
+      select: ["name", "image", "description", "public"],
       sort: "/public/name",
       limit: params.perPage
     };
@@ -423,7 +423,7 @@ const Fabric = {
           hash: object.hash,
           type: object.type,
           name: (publicMeta.name || meta.name || "").toString(),
-          description: meta["eluv.description"] || meta.description,
+          description: publicMeta.description || meta.description,
           accessInfo,
           imageUrl,
           contractAddress: client.utils.HashToAddress(object.id)
@@ -524,7 +524,7 @@ const Fabric = {
       writeToken: "",
       meta: metadata,
       name,
-      description: metadata.public.description || metadata["eluv.description"] || metadata.description,
+      description: metadata.public.description || metadata.description,
       baseFileUrl,
       typeInfo,
       imageUrl,

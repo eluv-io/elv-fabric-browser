@@ -67,7 +67,7 @@ class LibraryStore {
     }
 
     publicMetadata.name = name;
-    publicMetadata["eluv.description"] = description;
+    publicMetadata.description = description;
 
     const libraryId = yield Fabric.CreateContentLibrary({
       name,
@@ -107,10 +107,10 @@ class LibraryStore {
     }
 
     privateMetadata.name = name;
-    privateMetadata["eluv.description"] = description;
+    privateMetadata.description = description;
 
     publicMetadata.name = name;
-    publicMetadata["eluv.description"] = description;
+    publicMetadata.description = description;
 
     delete privateMetadata.public;
 
