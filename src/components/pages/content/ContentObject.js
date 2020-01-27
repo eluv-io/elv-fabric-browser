@@ -19,6 +19,7 @@ import RefreshIcon from "../../../static/icons/refresh.svg";
 import Prompt from "react-router/es/Prompt";
 import ToggleSection from "../../components/ToggleSection";
 import JSONField from "../../components/JSONField";
+import ContentObjectGroups from "./ContentObjectGroups";
 
 const DownloadPart = ({libraryId, objectId, versionHash, partHash, partName, DownloadMethod}) => {
   const [progress, setProgress] = useState(undefined);
@@ -605,6 +606,15 @@ class ContentObject extends React.Component {
       );
     }
 
+    let groupsButton;
+    if(this.props.objectStore.object.isNormalObject && this.props.objectStore.object.isOwner) {
+      groupsButton = (
+        <Action type="link" to={UrlJoin(this.props.match.url, "groups")}>
+          Groups
+        </Action>
+      );
+    }
+
     return (
       <div className="actions-container">
         { backButton }
@@ -613,6 +623,7 @@ class ContentObject extends React.Component {
         <Action type="link" to={UrlJoin(this.props.match.url, "upload")}>
           Upload Parts
         </Action>
+        { groupsButton }
         <Action type="link" to={UrlJoin(this.props.match.url, "apps")}>
           Apps
         </Action>
@@ -650,6 +661,7 @@ class ContentObject extends React.Component {
   Tabs() {
     let tabOptions = [
       ["Content Info", "info"],
+      ["Groups", "groups"],
       ["Files", "files"]
     ];
 
@@ -683,6 +695,8 @@ class ContentObject extends React.Component {
     let pageContent;
     if(this.state.view === "display") {
       pageContent = this.AppFrame();
+    } else if(this.state.view === "groups") {
+      pageContent = <ContentObjectGroups />;
     } else if(this.state.view === "info") {
       pageContent = (
         <React.Fragment>

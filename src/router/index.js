@@ -18,7 +18,7 @@ import ContentTypeFormPage from "../components/pages/content/ContentTypeForm";
 import ContentObjectPage from "../components/pages/content/ContentObject";
 import ContentObjectFormPage from "../components/pages/content/ContentObjectForm";
 import ContentObjectReviewFormPage from "../components/pages/content/ContentObjectReviewForm";
-
+import ContentObjectGroupFormPage from "../components/pages/content/ContentObjectGroupForm";
 import ContentObjectPartsFormPage from "../components/pages/content/ContentObjectPartsForm";
 import ContentObjectAppsPage from "../components/pages/content/ContentApps";
 
@@ -155,6 +155,8 @@ class Router extends React.Component {
 
           <WatchedRoute exact path="/content/:libraryId/:objectId/upload" component={ContentObjectPartsFormPage}/>
           <WatchedRoute exact path="/content-types/:objectId/upload" component={ContentObjectPartsFormPage}/>
+
+          <WatchedRoute exact path="/content/:libraryId/:objectId/groups" component={ContentObjectGroupFormPage} />
 
           <WatchedRoute exact path="/content/:libraryId/:objectId/apps" component={ContentObjectAppsPage}/>
           <WatchedRoute exact path="/content-types/:objectId/apps" component={ContentObjectAppsPage} />

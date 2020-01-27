@@ -591,6 +591,23 @@ const Fabric = {
     return Fabric.cachedImages[objectId];
   },
 
+  GetContentObjectGroupPermissions: async ({objectId}) => {
+    const permissions = await client.ContentObjectGroupPermissions({objectId});
+
+    let permissionInfo = {};
+    await Promise.all(
+      Object.keys(permissions).map(async contractAddress => {
+        permissionInfo[contractAddress] = {
+          ...(await Fabric.GetAccessGroup({contractAddress})),
+          address: contractAddress,
+          permissions: permissions[contractAddress]
+        };
+      })
+    );
+
+    return permissionInfo;
+  },
+
   GetCustomContentContractAddress: async ({libraryId, objectId, metadata={}}) => {
     if(libraryId === Fabric.contentSpaceLibraryId || client.utils.EqualHash(libraryId, objectId)) {
       // Content type or content library object - look at metadata
@@ -727,6 +744,14 @@ const Fabric = {
 
   FinalizeABRMezzanine: async ({libraryId, objectId}) => {
     await client.FinalizeABRMezzanine({libraryId, objectId});
+  },
+
+  AddContentObjectGroupPermission: async ({objectId, groupAddress, permission}) => {
+    await client.AddContentObjectGroupPermission({objectId, groupAddress, permission});
+  },
+
+  RemoveContentObjectGroupPermission: async ({objectId, groupAddress, permission}) => {
+    await client.RemoveContentObjectGroupPermission({objectId, groupAddress, permission});
   },
 
   /* Content Types */

@@ -57,6 +57,11 @@ class ObjectStore {
   });
 
   @action.bound
+  ContentObjectGroupPermissions = flow(function * ({objectId}) {
+    this.objects[objectId].groupPermissions = yield Fabric.GetContentObjectGroupPermissions({objectId});
+  });
+
+  @action.bound
   UpdateFromContentTypeSchema = flow(function * ({libraryId, objectId, type, metadata, publicMetadata, accessCharge, schema, fields, callback}) {
     try {
       metadata = ParseInputJson(metadata);
@@ -358,6 +363,35 @@ class ObjectStore {
     this.rootStore.notificationStore.SetNotificationMessage({
       message: "Successfully finalized ABR Mezzanine"
     });
+  });
+
+  @action.bound
+  UpdateContentObjectGroupPermissions = flow(function * ({
+    objectId,
+    groupAddress,
+    see,
+    access,
+    manage
+  }) {
+    const currentPermissions = (this.object.groupPermissions[groupAddress] || {}).permissions || [];
+
+    let toAdd = [];
+    if(see && !currentPermissions.includes("see")) { toAdd.push("see"); }
+    if(access && !currentPermissions.includes("access")) { toAdd.push("access"); }
+    if(manage && !currentPermissions.includes("manage")) { toAdd.push("manage"); }
+
+    for(let i = 0; i < toAdd.length; i++) {
+      yield Fabric.AddContentObjectGroupPermission({objectId, groupAddress, permission: toAdd[i]});
+    }
+
+    let toRemove = [];
+    if(!see && currentPermissions.includes("see")) { toRemove.push("see"); }
+    if(!access && currentPermissions.includes("access")) { toRemove.push("access"); }
+    if(!manage && currentPermissions.includes("manage")) { toRemove.push("manage"); }
+
+    for(let i = 0; i < toRemove.length; i++) {
+      yield Fabric.RemoveContentObjectGroupPermission({objectId, groupAddress, permission: toRemove[i]});
+    }
   });
 
   @action.bound
