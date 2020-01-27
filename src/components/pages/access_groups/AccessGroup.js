@@ -4,7 +4,7 @@ import UrlJoin from "url-join";
 import Path from "path";
 import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
-import Redirect from "react-router/es/Redirect";
+import {Redirect} from "react-router";
 import {PageHeader} from "../../components/Page";
 import {Action, Confirm, IconButton, Tabs} from "elv-components-js";
 import Listing from "../../components/Listing";

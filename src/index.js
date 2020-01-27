@@ -2,7 +2,7 @@ import "./static/stylesheets/app.scss";
 
 import React from "react";
 import { render } from "react-dom";
-import HashRouter from "react-router-dom/es/HashRouter";
+import {HashRouter} from "react-router-dom";
 import UrlJoin from "url-join";
 
 import "./utils/StringExtensions";

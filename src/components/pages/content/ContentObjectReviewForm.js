@@ -4,7 +4,7 @@ import {Action, Form, RadioSelect} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
 import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
-import Redirect from "react-router/es/Redirect";
+import {Redirect} from "react-router";
 import {inject, observer} from "mobx-react";
 
 @inject("objectStore")

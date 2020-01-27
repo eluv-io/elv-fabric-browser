@@ -1,5 +1,5 @@
 import React from "react";
-import Redirect from "react-router/es/Redirect";
+import {Redirect} from "react-router";
 import PropTypes from "prop-types";
 
 class RedirectElement extends React.Component {

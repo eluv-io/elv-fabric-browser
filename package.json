@@ -29,12 +29,11 @@
     "last 2 versions"
   ],
   "dependencies": {
-    "@babel/polyfill": "^7.2.5",
     "bignumber.js": "^8.1.1",
     "browser-cancelable-events": "^1.0.1",
     "browser-solc": "^1.0.0",
     "elv-client-js": "git+https://github.com/eluv-io/elv-client-js.git#develop",
-    "elv-components-js": "git+https://github.com/eluv-io/elv-components-js.git#develop",
+    "elv-components-js": "git+https://github.com/eluv-io/elv-components-js.git",
     "mobx": "^5.13.1",
     "mobx-react": "^6.1.3",
     "node-fetch": "^2.3.0",
@@ -43,9 +42,8 @@
     "prop-types": "^15.7.2",
     "react": "^16.8.3",
     "react-dom": "^16.8.5",
-    "react-hot-loader": "^4.7.1",
-    "react-router": "^4.3.1",
-    "react-router-dom": "^4.3.1",
+    "react-router": "^5.1.2",
+    "react-router-dom": "^5.1.2",
     "urijs": "^1.19.1",
     "url-join": "^4.0.0"
   },

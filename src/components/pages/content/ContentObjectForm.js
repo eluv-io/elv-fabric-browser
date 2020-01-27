@@ -16,7 +16,7 @@ import TrashIcon from "../../../static/icons/trash.svg";
 import {DownloadFromUrl} from "../../../utils/Files";
 import Fabric from "../../../clients/Fabric";
 import AppFrame from "../../components/AppFrame";
-import Redirect from "react-router/es/Redirect";
+import {Redirect} from "react-router";
 import {inject, observer} from "mobx-react";
 import {Percentage} from "../../../utils/Helpers";
 import {toJS} from "mobx";

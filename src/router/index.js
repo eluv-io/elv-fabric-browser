@@ -39,8 +39,7 @@ import DeployedContractFundsFormPage from "../components/pages/contracts/deploye
 import DeployedContractEventsPage from "../components/pages/contracts/deployed/DeployedContractEvents";
 
 import EventsPage from "../components/pages/events/Events";
-import withRouter from "react-router/es/withRouter";
-import { Redirect } from "react-router";
+import { Redirect, withRouter } from "react-router";
 
 @inject("notificationStore")
 @inject("routeStore")
@@ -99,7 +98,7 @@ class Router extends React.Component {
     };
   }
 
-  async componentWillMount() {
+  async componentDidMount() {
     await Fabric.Initialize();
 
     this.setState({initialized: true});

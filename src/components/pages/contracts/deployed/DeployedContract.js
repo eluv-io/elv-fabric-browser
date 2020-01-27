@@ -3,7 +3,7 @@ import UrlJoin from "url-join";
 import Path from "path";
 import {LabelledField} from "../../../components/LabelledField";
 import {ContractTypes} from "../../../../utils/Contracts";
-import Redirect from "react-router/es/Redirect";
+import {Redirect} from "react-router";
 import {PageHeader} from "../../../components/Page";
 import {Action, Confirm} from "elv-components-js";
 import AsyncComponent from "../../../components/AsyncComponent";

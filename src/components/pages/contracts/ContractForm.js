@@ -1,5 +1,5 @@
 import React from "react";
-import Redirect from "react-router/es/Redirect";
+import {Redirect} from "react-router";
 import {Action, Form} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
 import Path from "path";
