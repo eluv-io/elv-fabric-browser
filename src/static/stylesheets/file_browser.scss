@@ -2,153 +2,110 @@
   padding: $elv-spacing-s;
 }
 
-.file-image-preview-tooltip {
-  &.file-image-preview-tooltip {
-    max-width: 25rem;
-    opacity: 1;
-  }
+.file-browser-table {
+  .file-browser-row {
+    border: 1px solid $elv-color-gray;
+    display: grid;
+    grid-template-columns: 3rem minmax(5rem, 4fr) minmax(6rem, 1fr) 7rem;
+    height: $elv-spacing-ml;
 
-  .file-image-preview {
-    opacity: 1;
-    padding: $elv-spacing-xs;
-    width: 100%;
-  }
-}
-
-.file-browser {
-  font-weight: 300;
-  margin: $elv-spacing-s 0;
-  max-height: 50vh;
-  overflow-y: auto;
-  width: 100%;
-
-  .preview-icon {
-    cursor: pointer;
-
-    &:hover {
-      stroke: $elv-color-black;
+    &:not(:last-child) {
+      border-bottom: 0;
     }
-  }
 
-  .encrypted-file-icon {
-    fill: $elv-color-darkgray;
-    stroke: transparent;
-  }
+    svg {
+      height: $elv-font-xxl;
+      width: $elv-font-xxl;
+    }
 
-  .file-icon {
-    height: 25px;
-    width: 25px;
-  }
+    & > div {
+      align-items: center;
+      display: flex;
+      justify-content: center;
 
-  .download-indicator {
-    .animated-icon {
-      div {
-        height: $elv-font-xxl;
-        width: $elv-font-xxl;
+      & > div {
+        @include elv-ellipsis;
       }
     }
-  }
 
-  .download-progress {
-    margin: 0;
-    max-height: 35px;
-    overflow: hidden;
-    padding: 0;
-    width: auto;
-  }
-
-  svg {
-    &.-elv-icon {
-      padding: $elv-spacing-xxs;
-    }
-  }
-
-  button {
-    &:hover {
-      svg {
-        color: $elv-color-mediumgray;
+    button > svg {
+      &:hover {
+        background-color: $elv-color-gray;
+        border-radius: 5px;
       }
     }
+
+    .encrypted-file-icon {
+      fill: $elv-color-darkgray;
+      stroke: transparent;
+    }
+
+    .directory-header,
+    .directory-cell,
+    .item-name-cell {
+      justify-content: flex-start;
+      padding-left: $elv-spacing-xs;
+    }
+
+    .directory-cell {
+      cursor: pointer;
+    }
+
+    .create-directory-icon {
+      justify-self: flex-end;
+    }
+
+    .actions-cell {
+      justify-content: flex-start;
+
+      & > * {
+        padding-right: $elv-spacing-xs;
+      }
+    }
+
+    .download-indicator {
+      .animated-icon {
+        align-items: center;
+        display: flex;
+        justify-content: center;
+        margin: 0;
+
+        & > div {
+          height: $elv-font-xxl;
+          width: $elv-font-xxl;
+        }
+      }
+    }
+
+    .download-progress {
+      width: auto;
+    }
   }
 
-  table {
-    border: 1px solid $elv-color-lightgray;
-    border-collapse: collapse;
-    table-layout: fixed;
-    width: 100%;
-  }
+  .file-browser-header {
+    grid-template-columns: 3rem minmax(5rem, 3fr) 2fr;
+    height: 3rem;
 
-  thead {
-    height: 45px;
-  }
+    .size-header {
+      justify-content: flex-end;
+    }
 
-  th {
-    text-align: left;
-
-    &.type-header {
-      width: 40px;
+    .actions-header {
+      display: flex;
+      justify-content: flex-end;
 
       button {
-        align-items: center;
-        display: flex;
-        justify-content: center;
-        width: 100%;
+        font-size: $elv-font-s;
+        margin-right: $elv-spacing-s;
+        min-width: 8rem;
       }
-    }
-
-    &.actions-header {
-      padding: $elv-spacing-xxs 0;
-      text-align: center;
-      width: 135px;
-    }
-
-    &.size-header {
-      width: 5em;
     }
   }
 
-  tr {
-    border-top: 1px solid $elv-color-lightergray;
-    height: 35px;
-    max-height: 35px;
-
-    &.directory {
-      cursor: pointer;
-
-      &:hover {
-        background-color: $elv-color-lightestgray;
-      }
-    }
-
-    td {
-      @include elv-ellipsis;
-      height: 35px;
-      max-height: 35px;
-
-      &.item-icon {
-        align-items: center;
-        display: flex;
-        justify-content: center;
-      }
-
-      .encrypted-file-icon {
-        padding: 5px;
-      }
-
-      &.info-cell {
-        text-align: right;
-      }
-
-      &.actions-cell {
-        display: flex;
-        justify-content: center;
-        text-align: center;
-      }
-
-      .item-path {
-        max-width: 150px;
-      }
-    }
+  .file-browser-row-empty {
+    align-items: center;
+    display: flex;
+    height: $elv-spacing-xl;
+    justify-content: center;
   }
 }
-

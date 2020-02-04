@@ -11,16 +11,16 @@ import {
   ImageIcon,
   Copy,
   Confirm,
-  ToolTip,
-  BallClipRotate
+  BallClipRotate,
+  PreviewIcon, Form
 } from "elv-components-js";
 import FileUploadWidget from "./FileUploadWidget";
 
 import DirectoryIcon from "../../static/icons/directory.svg";
 import FileIcon from "../../static/icons/file.svg";
 import EncryptedFileIcon from "../../static/icons/encrypted-file.svg";
+import EncryptedImageIcon from "../../static/icons/encrypted-image.svg";
 import DownloadIcon from "../../static/icons/download.svg";
-import PreviewIcon from "../../static/icons/image.svg";
 import BackIcon from "../../static/icons/directory_back.svg";
 import LinkIcon from "../../static/icons/link.svg";
 import DeleteIcon from "../../static/icons/trash.svg";
@@ -40,7 +40,7 @@ const DownloadButton = ({name, DownloadFile}) => {
     } else {
       return (
         <span title={`Downloading ${name}`} className="download-progress">
-          { ((progress.bytesFinished / progress.bytesTotal) * 100).toFixed(1) }
+          { ((progress.bytesFinished / progress.bytesTotal) * 100).toFixed(1) }%
         </span>
       );
     }
@@ -64,6 +64,29 @@ const DownloadButton = ({name, DownloadFile}) => {
   );
 };
 
+const EncryptedImagePreview = ({DownloadUrl, fileName}) => {
+  const [loading, setLoading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(undefined);
+
+  const Load = async () => {
+    if(loading || previewUrl) { return; }
+
+    setLoading(true);
+    setPreviewUrl(await DownloadUrl());
+    setLoading(false);
+  };
+
+  return (
+    <PreviewIcon
+      onHover={Load}
+      imagePath={fileName}
+      fullUrl={previewUrl || ""}
+      icon={EncryptedImageIcon}
+      additionalContent={loading ? <BallClipRotate/> : null}
+    />
+  );
+};
+
 @inject("objectStore")
 @observer
 class FileBrowser extends React.Component {
@@ -73,7 +96,9 @@ class FileBrowser extends React.Component {
     this.state = {
       path: ".",
       displayPath: "/",
-      showUpload: false
+      showUpload: false,
+      showDirectoryCreate: false,
+      newDirectoryPath: ""
     };
 
     this.UploadFiles = this.UploadFiles.bind(this);
@@ -93,9 +118,9 @@ class FileBrowser extends React.Component {
     if(this.props.Reload) { this.props.Reload(); }
   }
 
-  async DeleteItem(item) {
+  async DeleteItem(item, directory=false) {
     await Confirm({
-      message: "Are you sure you want to delete this file?",
+      message: `Are you sure you want to delete this ${directory ? "directory" : "file"}?`,
       onConfirm: async () => {
         this.props.objectStore.DeleteFiles({
           libraryId: this.props.objectStore.libraryId,
@@ -158,19 +183,23 @@ class FileBrowser extends React.Component {
       );
     }
 
-    return (
-      <ToolTip
-        key={`preview-${name}`}
-        className={"file-image-preview-tooltip"}
-        content={<img src={fileUrl} alt={name} className="file-image-preview"/>}
-      >
-        <ImageIcon
-          icon={PreviewIcon}
-          label={"Preview " + name}
-          className="preview-icon"
+    // Image preview
+
+    if(encrypted) {
+      return (
+        <EncryptedImagePreview
+          fileName={name}
+          DownloadUrl={async () => this.props.DownloadUrl({filePath: UrlJoin(this.state.path, name)})}
         />
-      </ToolTip>
-    );
+      );
+    } else {
+      return (
+        <PreviewIcon
+          baseFileUrl={this.props.baseFileUrl}
+          imagePath={name}
+        />
+      );
+    }
   }
 
   File(name, info) {
@@ -178,15 +207,17 @@ class FileBrowser extends React.Component {
     const fileUrl = this.FileUrl(this.state.path, name);
     const encrypted = info.encryption && info.encryption.scheme === "cgck";
     return (
-      <tr key={`entry-${this.state.path}-${name}`}>
-        <td className="item-icon">
+      <div className="file-browser-row" key={`entry-${this.state.path}-${name}`}>
+        <div className="item-icon">
           { this.FileIcon(name, fileUrl, encrypted) }
-        </td>
-        <td title={name}>{ name }</td>
-        <td title={size} className="info-cell">
+        </div>
+        <div className="item-name-cell" title={name}>
+          <div>{ name }</div>
+        </div>
+        <div title={size} className="info-cell">
           { size }
-        </td>
-        <td className="actions-cell">
+        </div>
+        <div className="actions-cell">
           <DownloadButton
             name={name}
             size={size}
@@ -213,32 +244,37 @@ class FileBrowser extends React.Component {
             }}
             className="delete-button"
           />
-        </td>
-      </tr>
+        </div>
+      </div>
     );
   }
 
   Directory(item) {
     const changeDirectory = () => this.ChangeDirectory(UrlJoin(this.state.path, item.name));
+    const count = Object.keys(item.item).length - 1;
     return (
-      <tr key={`entry-${this.state.path}-${item.name}`} className="directory" onClick={changeDirectory} onKeyPress={changeDirectory}>
-        <td className="item-icon">
+      <div key={`entry-${this.state.path}-${item.name}`} className="file-browser-row directory">
+        <div className="item-icon">
           <ImageIcon icon={DirectoryIcon} label="Directory" />
-        </td>
-        <td tabIndex="0" title={item.name}>{item.name}</td>
-        <td className="info-cell">{(Object.keys(item.item).length - 1) + " Items"}</td>
-        <td className="actions-cell">
+        </div>
+        <div className="directory-cell" tabIndex="0" title={item.name} onClick={changeDirectory} onKeyPress={changeDirectory}>
+          <div>{item.name}</div>
+        </div>
+        <div className="info-cell">
+          { `${count} ${count === 1 ? "Item" : "Items"}` }
+        </div>
+        <div className="actions-cell">
           <IconButton
             title={`Delete ${item.name}`}
             icon={DeleteIcon}
             onClick={event => {
               event.stopPropagation();
-              this.DeleteItem(item.name);
+              this.DeleteItem(item.name, true);
             }}
             className="delete-button"
           />
-        </td>
-      </tr>
+        </div>
+      </div>
     );
   }
 
@@ -257,7 +293,9 @@ class FileBrowser extends React.Component {
 
     if(items.length === 0) {
       return (
-        <tr><td/><td>No files</td><td/><td/></tr>
+        <div className="file-browser-row file-browser-row-empty">
+          No Files
+        </div>
       );
     }
 
@@ -305,13 +343,50 @@ class FileBrowser extends React.Component {
     );
   }
 
+  DirectoryCreateModal() {
+    if(!this.state.showDirectoryCreate) { return null; }
+
+    const closeModal = () => this.setState({
+      showDirectoryCreate: false,
+      newDirectoryPath: ""
+    });
+
+    return (
+      <Modal
+        closable={true}
+        OnClickOutside={closeModal}
+      >
+        <Form
+          legend={"Create Directory"}
+          OnCancel={closeModal}
+          OnSubmit={async () => {
+            await this.props.CreateDirectory({
+              directory: UrlJoin(this.state.path, this.state.newDirectoryPath)
+            });
+          }}
+          OnComplete={closeModal}
+        >
+          <div className="form-content">
+            <label htmlFor="newDirectoryPath">Directory</label>
+            <input
+              name="newDirectoryPath"
+              required
+              placeholder="Directory..."
+              onChange={event => this.setState({newDirectoryPath: event.target.value})}
+            />
+          </div>
+        </Form>
+      </Modal>
+    );
+  }
+
   render() {
     let backButton;
     if(this.state.path && this.state.path !== Path.dirname(this.state.path)) {
       backButton = (
         <IconButton
           icon={BackIcon}
-          label={"Back"}
+          label="Back"
           onClick={() => this.ChangeDirectory(Path.dirname(this.state.path))}
         />
       );
@@ -320,25 +395,30 @@ class FileBrowser extends React.Component {
     return (
       <div className="file-browser">
         { this.UploadModal() }
-        <table>
-          <thead>
-            <tr>
-              <th className="type-header">{backButton}</th>
-              <th title={"Current Directory: " + this.state.displayPath} tabIndex="0">{this.state.displayPath}</th>
-              <th className="size-header" />
-              <th className="actions-header">
-                <Action
-                  onClick={() => this.setState({showUpload: true})}
-                >
-                  Upload
-                </Action>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            { this.Items() }
-          </tbody>
-        </table>
+        { this.DirectoryCreateModal() }
+        <div className="file-browser-table">
+          <div className="file-browser-row file-browser-header">
+            <div className="type-header">
+              {backButton}
+            </div>
+            <div className="directory-header" title={"Current Directory: " + this.state.displayPath} tabIndex="0">
+              <div className="display-path">{this.state.displayPath}</div>
+            </div>
+            <div className="actions-header">
+              <Action
+                onClick={() => this.setState({showDirectoryCreate: true})}
+              >
+                Create Directory
+              </Action>
+              <Action
+                onClick={() => this.setState({showUpload: true})}
+              >
+                Upload Files
+              </Action>
+            </div>
+          </div>
+          { this.Items() }
+        </div>
       </div>
     );
   }
@@ -347,6 +427,8 @@ class FileBrowser extends React.Component {
 FileBrowser.propTypes = {
   baseFileUrl: PropTypes.string.isRequired,
   DownloadFile: PropTypes.func.isRequired,
+  DownloadUrl: PropTypes.func.isRequired,
+  CreateDirectory: PropTypes.func.isRequired,
   Reload: PropTypes.func
 };
 

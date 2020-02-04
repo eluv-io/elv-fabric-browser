@@ -163,6 +163,12 @@ class ObjectStore {
       });
 
       this.objects[objectId].writeToken = write_token;
+      this.objects[objectId].baseFileUrl = yield Fabric.FileUrl({
+        libraryId,
+        objectId,
+        writeToken: write_token,
+        filePath: "/"
+      });
     }
 
     return this.objects[objectId].writeToken;
@@ -258,13 +264,34 @@ class ObjectStore {
     });
   });
 
-  async DownloadFile({libraryId, objectId, versionHash, filePath, callback}) {
-    let blob = await Fabric.DownloadFile({libraryId, objectId, versionHash, filePath, format: "blob", callback});
-    let url = window.URL.createObjectURL(blob);
-
-    await DownloadFromUrl(url, Path.basename(filePath));
+  async DownloadUrl({libraryId, objectId, versionHash, writeToken, filePath, callback}) {
+    let blob = await Fabric.DownloadFile({libraryId, objectId, versionHash, writeToken, filePath, format: "blob", callback});
+    return window.URL.createObjectURL(blob);
   }
 
+  async DownloadFile(params) {
+    await DownloadFromUrl(await this.DownloadUrl(params), Path.basename(params.filePath));
+  }
+
+  @action.bound
+  CreateDirectory = flow(function * ({libraryId, objectId, directory}) {
+    const writeToken = yield this.EditContentObject({libraryId, objectId});
+
+    yield Fabric.CreateDirectory({libraryId, objectId, writeToken, directory});
+
+    this.objects[objectId].meta.files = yield Fabric.GetContentObjectMetadata({
+      libraryId,
+      objectId,
+      writeToken,
+      metadataSubtree: "files"
+    });
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully added directory " + directory
+    });
+  });
+
+  @action.bound
   DeleteFiles = flow(function * ({libraryId, objectId, filePaths}) {
     const writeToken = yield this.EditContentObject({libraryId, objectId});
 

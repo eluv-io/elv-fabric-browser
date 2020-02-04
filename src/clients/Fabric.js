@@ -965,16 +965,25 @@ const Fabric = {
     });
   },
 
+  CreateDirectory: async ({libraryId, objectId, writeToken, directory}) => {
+    return await client.CreateFileDirectories({
+      libraryId,
+      objectId,
+      writeToken,
+      filePaths: [directory]
+    });
+  },
+
   DeleteFiles: async ({libraryId, objectId, writeToken, filePaths}) => {
     return await client.DeleteFiles({libraryId, objectId, writeToken, filePaths});
   },
 
-  DownloadFile: ({libraryId, objectId, versionHash, filePath, format="arrayBuffer", callback}) => {
-    return client.DownloadFile({libraryId, objectId, versionHash, filePath, format, callback});
+  DownloadFile: ({libraryId, objectId, versionHash, writeToken, filePath, format="arrayBuffer", callback}) => {
+    return client.DownloadFile({libraryId, objectId, versionHash, writeToken, filePath, format, callback});
   },
 
-  FileUrl: ({libraryId, objectId, versionHash, filePath}) => {
-    return client.FileUrl({libraryId, objectId, versionHash, filePath});
+  FileUrl: ({libraryId, objectId, versionHash, writeToken, filePath}) => {
+    return client.FileUrl({libraryId, objectId, versionHash, writeToken, filePath});
   },
 
   /* Parts */

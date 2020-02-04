@@ -500,6 +500,7 @@ class ContentObjectForm extends React.Component {
             <br />
             <AppFrame
               appUrl={this.state.manageAppUrl}
+              appUrl={"http://localhost:8085"}
               queryParams={queryParams}
               onComplete={this.FrameCompleted}
               onCancel={this.FrameCompleted}

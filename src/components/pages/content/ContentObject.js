@@ -711,8 +711,21 @@ class ContentObject extends React.Component {
             DownloadFile={async ({filePath, callback}) => await this.props.objectStore.DownloadFile({
               libraryId: this.props.objectStore.libraryId,
               objectId: this.props.objectStore.objectId,
+              writeToken: this.props.objectStore.object.writeToken,
               filePath,
               callback
+            })}
+            DownloadUrl={async ({filePath}) => await this.props.objectStore.DownloadUrl({
+              libraryId: this.props.objectStore.libraryId,
+              objectId: this.props.objectStore.objectId,
+              writeToken: this.props.objectStore.object.writeToken,
+              filePath,
+            })}
+            CreateDirectory={async ({directory}) => await this.props.objectStore.CreateDirectory({
+              libraryId: this.props.objectStore.libraryId,
+              objectId: this.props.objectStore.objectId,
+              writeToken: this.props.objectStore.object.writeToken,
+              directory
             })}
           />
         </div>

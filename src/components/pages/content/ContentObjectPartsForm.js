@@ -12,7 +12,7 @@ class ContentObjectPartsForm extends React.Component {
     super(props);
 
     this.state = {
-      encrypt: true,
+      encrypt: false,
       progress: {}
     };
 
