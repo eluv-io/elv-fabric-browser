@@ -196,7 +196,7 @@ class FileBrowser extends React.Component {
       return (
         <PreviewIcon
           baseFileUrl={this.props.baseFileUrl}
-          imagePath={name}
+          imagePath={UrlJoin(this.state.path, name)}
         />
       );
     }
