@@ -2,6 +2,7 @@ import Fabric from "../clients/Fabric";
 import {action, computed, flow, observable} from "mobx";
 import {FormatAddress} from "../utils/Helpers";
 import {Cancelable} from "../utils/Cancelable";
+import {ParseInputJson} from "elv-components-js";
 
 class GroupStore {
   @observable accessGroups = {};
@@ -38,7 +39,9 @@ class GroupStore {
   });
 
   @action.bound
-  SaveAccessGroup = flow(function * ({name, description, address, oauthIssuer, oauthClaims}) {
+  SaveAccessGroup = flow(function * ({name, description, metadata, address, oauthIssuer, oauthClaims}) {
+    metadata = ParseInputJson(metadata);
+
     if(address) {
       const objectId = Fabric.utils.AddressToObjectId(address);
 
@@ -51,6 +54,7 @@ class GroupStore {
             objectId,
             writeToken,
             metadata: {
+              ...metadata,
               name,
               description,
               public: {
@@ -74,6 +78,7 @@ class GroupStore {
         name,
         description,
         metadata: {
+          ...metadata,
           oauthIssuer,
           oauthClaims
         }

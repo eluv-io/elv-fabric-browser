@@ -5,6 +5,7 @@ import {Action, Form} from "elv-components-js";
 import {inject, observer} from "mobx-react";
 import AsyncComponent from "../../components/AsyncComponent";
 import JsonTextArea from "elv-components-js/src/components/JsonInput";
+import {toJS} from "mobx";
 
 @inject("groupStore")
 @observer
@@ -18,7 +19,9 @@ class AccessGroupForm extends React.Component {
       description: "",
       isOauthGroup: false,
       oauthIssuer: "",
-      oauthClaims: ""
+      oauthClaims: "",
+      modifyMetadata: false,
+      metadata: ""
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -37,6 +40,7 @@ class AccessGroupForm extends React.Component {
       address: this.props.groupStore.contractAddress,
       name: this.state.name,
       description: this.state.description,
+      metadata: this.state.metadata,
       oauthIssuer: this.state.oauthIssuer,
       oauthClaims: this.state.oauthClaims
     });
@@ -62,6 +66,19 @@ class AccessGroupForm extends React.Component {
     );
   }
 
+  Metadata() {
+    if(!this.state.modifyMetadata) {
+      return null;
+    }
+
+    return (
+      <React.Fragment>
+        <label htmlFor="metadata" className="align-top">Metadata</label>
+        <JsonTextArea name="metadata" value={this.state.metadata} onChange={this.HandleInputChange} />
+      </React.Fragment>
+    );
+  }
+
   PageContent() {
     const backPath = Path.dirname(this.props.match.url);
     const redirectPath = this.state.createForm ? UrlJoin(backPath, this.state.contractAddress || "") : backPath;
@@ -83,6 +100,16 @@ class AccessGroupForm extends React.Component {
 
             <label htmlFor="description" className="align-top">Description</label>
             <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
+
+            <label htmlFor="modifyMetadata">Edit Metadata</label>
+            <input
+              name="modifyMetadata"
+              type="checkbox"
+              checked={this.state.modifyMetadata}
+              onChange={() => this.setState({modifyMetadata: !this.state.modifyMetadata})}
+            />
+
+            { this.Metadata() }
 
             <label htmlFor="isOauthGroup">Link with OAuth</label>
             <input
@@ -113,6 +140,7 @@ class AccessGroupForm extends React.Component {
 
               this.setState({
                 name: group.name,
+                metadata: JSON.stringify(toJS(group.metadata), null, 2),
                 description: group.description,
                 isOauthGroup: !!group.oauthIssuer,
                 oauthIssuer: group.oauthIssuer || "",
