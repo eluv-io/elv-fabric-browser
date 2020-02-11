@@ -375,7 +375,7 @@ const Fabric = {
   // Make sure not to call anything requiring content object authorization
   ListContentObjects: async ({libraryId, params}) => {
     const filterOptions = {
-      select: ["name", "image", "description", "public"],
+      select: ["name", "image", "description", "public/name", "public/description", "public/image"],
       sort: "/public/name",
       limit: params.perPage
     };
