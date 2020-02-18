@@ -184,7 +184,7 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
       max-height: 100%;
       max-width: 100%;
       object-fit: contain;
-      width: auto;
+      width: 100%;
     }
 
     svg {
