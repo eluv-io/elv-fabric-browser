@@ -206,6 +206,10 @@ class AppFrame extends React.Component {
           if(this.props.onCancel) { await this.props.onCancel(); }
           break;
 
+        case "Reload":
+          if(this.props.Reload) { await this.props.Reload(); }
+          break;
+
         case "SetFrameDimensions":
           if(this.props.fixedDimensions) { return; }
 
@@ -239,6 +243,7 @@ AppFrame.propTypes = {
   queryParams: PropTypes.object,
   onComplete: PropTypes.func,
   onCancel: PropTypes.func,
+  Reload: PropTypes.func,
   className: PropTypes.string,
   fixedDimensions: PropTypes.bool
 };

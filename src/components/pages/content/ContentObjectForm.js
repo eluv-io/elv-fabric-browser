@@ -58,7 +58,8 @@ class ContentObjectForm extends React.Component {
       metadata: "",
       publicMetadata: "",
       uploadStatus: {},
-      fullScreen: false
+      fullScreen: false,
+      pageVersion: 0
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -503,6 +504,7 @@ class ContentObjectForm extends React.Component {
               queryParams={queryParams}
               onComplete={this.FrameCompleted}
               onCancel={this.FrameCompleted}
+              Reload={() => this.setState({pageVersion: this.state.pageVersion + 1})}
               className="form-frame"
             />
           </div>
@@ -562,6 +564,7 @@ class ContentObjectForm extends React.Component {
   render() {
     return (
       <AsyncComponent
+        key={`object-form-page-${this.state.pageVersion}`}
         Load={
           async () => {
             await this.props.typeStore.ContentTypes();
