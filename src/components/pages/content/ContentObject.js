@@ -606,7 +606,7 @@ class ContentObject extends React.Component {
     }
 
     let groupsButton;
-    if(this.props.objectStore.object.isNormalObject && this.props.objectStore.object.isOwner) {
+    if(this.props.objectStore.object.isOwner) {
       groupsButton = (
         <Action type="link" to={UrlJoin(this.props.match.url, "groups")}>
           Groups
