@@ -191,6 +191,17 @@ class AppFrame extends React.Component {
     } else {
 
       switch(event.data.operation) {
+        case "OpenLink":
+          const libraryId = event.data.libraryId || "";
+          const objectId = event.data.objectId || "";
+
+          const uri = URI(window.location.toString());
+          uri.hash(`#/content/${libraryId}/${objectId}`);
+
+          window.open(uri.toString(), "_blank");
+
+          break;
+
         case "Complete":
           if(this.props.onComplete) { await this.props.onComplete(); }
 
