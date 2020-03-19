@@ -3,8 +3,13 @@
   flex-direction: column;
   position: relative;
 
+  .-elv-tab-container {
+    margin: $elv-spacing-s 0;
+  }
+
   .page-header-container {
-    margin: $elv-spacing-l 0 0;
+    margin: $elv-spacing-s 0 0;
+    padding: 0;
   }
 
   .page-content {

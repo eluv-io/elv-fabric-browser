@@ -368,6 +368,10 @@ const Fabric = {
 
   /* Objects */
 
+  ContentObjectLibraryId: async ({objectId, versionHash}) => {
+    return await client.ContentObjectLibraryId({objectId, versionHash});
+  },
+
   IsNormalObject: async ({objectId}) => {
     return (await client.AccessType({id: objectId})) === "object";
   },
@@ -560,7 +564,7 @@ const Fabric = {
     const version = await client.ContentObject({versionHash});
     const metadata = await Fabric.GetContentObjectMetadata({versionHash});
     //const verification = await Fabric.VerifyContentObject({libraryId, objectId, versionHash: version.hash});
-    const parts = (await Fabric.ListParts({versionHash}));
+    const parts = await Fabric.ListParts({versionHash});
 
     // Must keep versions in order from newest to oldest
     return {
@@ -988,8 +992,16 @@ const Fabric = {
 
   /* Parts */
 
-  ListParts: ({libraryId, objectId, versionHash}) => {
-    return client.ContentParts({libraryId, objectId, versionHash});
+  ListParts: async ({libraryId, objectId, versionHash}) => {
+    try {
+      return await client.ContentParts({libraryId, objectId, versionHash});
+    } catch(error) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to get content parts for ", libraryId, objectId, versionHash);
+      // eslint-disable-next-line no-console
+      console.error(error);
+      return [];
+    }
   },
 
   DownloadPart: ({libraryId, objectId ,versionHash, partHash, format="blob", chunked=false, chunkSize=10000000, callback}) => {

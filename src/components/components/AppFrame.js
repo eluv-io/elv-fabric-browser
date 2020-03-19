@@ -192,8 +192,15 @@ class AppFrame extends React.Component {
 
       switch(event.data.operation) {
         case "OpenLink":
-          const libraryId = event.data.libraryId || "";
-          const objectId = event.data.objectId || "";
+          let { libraryId, objectId, versionHash } = event.data;
+
+          if(!objectId && versionHash) {
+            objectId = Fabric.utils.DecodeVersionHash(versionHash).objectId;
+          }
+
+          if(!libraryId) {
+            libraryId = await Fabric.ContentObjectLibraryId({objectId});
+          }
 
           const uri = URI(window.location.toString());
           uri.hash(`#/content/${libraryId}/${objectId}`);
