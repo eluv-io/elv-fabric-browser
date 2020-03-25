@@ -60,6 +60,7 @@ class GroupStore {
             writeToken,
             metadata: {
               ...fullMetadata,
+              ...metadata,
               name,
               description,
               public: {
