@@ -16,7 +16,7 @@ const Fabric = {
   currentAccountAddress: undefined,
   utils: client.utils,
   cachedImages: {},
-  concurrencyLimit: 5,
+  concurrencyLimit: 10,
 
   async Initialize() {
     window.client = client;

@@ -49,12 +49,17 @@ class GroupStore {
         libraryId: Fabric.contentSpaceLibraryId,
         objectId,
         todo: async (writeToken) => {
-          await Fabric.MergeMetadata({
+          const fullMetadata = await Fabric.GetContentObjectMetadata({
+            libraryId: Fabric.contentSpaceLibraryId,
+            objectId
+          });
+
+          await Fabric.ReplaceMetadata({
             libraryId: Fabric.contentSpaceLibraryId,
             objectId,
             writeToken,
             metadata: {
-              ...metadata,
+              ...fullMetadata,
               name,
               description,
               public: {
