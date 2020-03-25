@@ -93,35 +93,38 @@ class ContentObjectForm extends React.Component {
     let metadata = "";
     let publicMetadata = "";
     let accessCharge = 0;
-    if(this.state.createForm) {
-      let allowedTypes = {};
-      Object.values(this.props.libraryStore.library.types).forEach(type => allowedTypes[type.hash] = type);
 
-      if(Object.keys(allowedTypes).length > 0) {
-        // Allowed types specified on library - limit options to that list
-        type = Object.values(allowedTypes)[0].hash;
-        types = allowedTypes;
-      } else {
-        // No allowed types specified on library - all types allowed
-        Object.values(this.props.typeStore.allTypes).forEach(type => types[type.hash] = type);
-      }
+    let allowedTypes = {};
+    Object.values(this.props.libraryStore.library.types).forEach(type => allowedTypes[type.hash] = type);
 
-      Object.values(types).forEach(type => types[type.hash] = this.FormatType(type));
+    if(Object.keys(allowedTypes).length > 0) {
+      // Allowed types specified on library - limit options to that list
+      type = Object.values(allowedTypes)[0].hash;
+      types = allowedTypes;
     } else {
-      const object = this.props.objectStore.object;
+      // No allowed types specified on library - all types allowed
+      Object.values(this.props.typeStore.allTypes).forEach(type => types[type.hash] = type);
+    }
 
+    Object.values(types).forEach(type => types[type.hash] = this.FormatType(type));
+
+    const object = this.props.objectStore.object;
+
+    if(object) {
       const meta = {...toJS(object.meta)};
       publicMetadata = JSON.stringify(meta.public || {}, null, 2);
       delete meta.public;
       metadata = JSON.stringify(meta, null, 2);
 
       accessCharge = object.accessInfo && object.accessInfo.accessCharge;
-      type = object.type;
 
+      type = object.type;
       if(object.typeInfo) {
-        types = {
-          [type]: this.FormatType(object.typeInfo)
-        };
+        if(!allowedTypes[object.typeInfo.latestTypeHash]) {
+          allowedTypes[object.typeInfo.latestTypeHash] = this.FormatType(object.typeInfo);
+        }
+
+        type = object.typeInfo.latestTypeHash;
       }
     }
 
@@ -134,6 +137,10 @@ class ContentObjectForm extends React.Component {
     });
 
     this.SwitchType(types, type);
+
+    if(!this.state.createForm && this.state.manageAppUrl) {
+      this.setState({showManageApp: true});
+    }
   }
 
   SwitchType(types, type) {
@@ -145,10 +152,8 @@ class ContentObjectForm extends React.Component {
     let schema = typeOptions.schema || defaultSchema;
     if(object && object.manageAppUrl && !object.isContentType) {
       manageAppUrl = object.manageAppUrl;
-      showManageApp = true;
     } else if(typeOptions.manageAppUrl) {
       manageAppUrl = typeOptions.manageAppUrl;
-      showManageApp = true;
     }
 
     const allowCustomMetadata = typeOptions.schema ? typeOptions.allowCustomMetadata : true;
@@ -237,8 +242,6 @@ class ContentObjectForm extends React.Component {
   }
 
   TypeField() {
-    if(!this.state.createForm) { return; }
-
     const types = Object.values(this.state.types).sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
     let options = types.map(({name, hash}) => {
       return <option key={"type-" + hash} name="type" value={hash}>{ name }</option>;
@@ -444,7 +447,7 @@ class ContentObjectForm extends React.Component {
   }
 
   AppFormSelection() {
-    if(!this.state.manageAppUrl || this.state.fullScreen) { return null; }
+    if(this.state.createForm || !this.state.manageAppUrl || this.state.fullScreen) { return null; }
 
     return (
       <Tabs
@@ -486,7 +489,7 @@ class ContentObjectForm extends React.Component {
       libraryId: this.props.objectStore.libraryId,
       objectId: this.props.objectStore.objectId,
       versionHash: this.props.objectStore.object.hash,
-      type: this.state.type,
+      type: this.props.objectStore.object.type,
       action: "manage"
     };
 
@@ -497,7 +500,6 @@ class ContentObjectForm extends React.Component {
           { this.FullscreenButton() }
           <div role="group" className="app-form-fieldset">
             { this.AppFormSelection() }
-            { this.TypeField() }
             <br />
             <AppFrame
               appUrl={this.state.manageAppUrl}

@@ -73,7 +73,7 @@ class ObjectStore {
     let editResponse;
     if(objectId) {
       // Edit
-      editResponse = yield Fabric.EditContentObject({libraryId, objectId});
+      editResponse = yield Fabric.EditContentObject({libraryId, objectId, options: { type }});
     } else {
       // Create
       editResponse = yield Fabric.CreateContentObject({libraryId, type});

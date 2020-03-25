@@ -492,6 +492,7 @@ const Fabric = {
     let typeInfo;
     if(object.type) {
       typeInfo = await Fabric.GetContentType({versionHash: object.type});
+      typeInfo.latestTypeHash = await client.LatestVersionHash({objectId: typeInfo.id});
     }
 
     const customContractAddress = await Fabric.GetCustomContentContractAddress({libraryId, objectId, metadata});
@@ -834,9 +835,11 @@ const Fabric = {
       async type => {
         try {
           const owner = await Fabric.GetContentObjectOwner({objectId: type.id});
+          const appUrls = await Fabric.AppUrls({object: type});
 
           types[type.id] = {
             ...type,
+            ...appUrls,
             name: GetName(type),
             description: type.meta.public ? type.meta.public.description || type.meta.description : type.meta.description,
             owner,
@@ -860,6 +863,7 @@ const Fabric = {
   GetContentType: async ({versionHash}) => {
     const type = await client.ContentType({versionHash});
     const appUrls = await Fabric.AppUrls({object: type});
+
     return {
       ...type,
       ...appUrls
