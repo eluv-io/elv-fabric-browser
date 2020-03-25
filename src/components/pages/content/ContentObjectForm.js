@@ -120,8 +120,8 @@ class ContentObjectForm extends React.Component {
 
       type = object.type;
       if(object.typeInfo) {
-        if(!allowedTypes[object.typeInfo.latestTypeHash]) {
-          allowedTypes[object.typeInfo.latestTypeHash] = this.FormatType(object.typeInfo);
+        if(!types[object.typeInfo.latestTypeHash]) {
+          types[object.typeInfo.latestTypeHash] = this.FormatType(object.typeInfo);
         }
 
         type = object.typeInfo.latestTypeHash;
