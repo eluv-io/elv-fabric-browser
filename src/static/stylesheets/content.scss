@@ -112,3 +112,12 @@
   padding: $elv-spacing-xs $elv-spacing-s;
   word-break: break-all;
 }
+
+.app-selection {
+  display: flex;
+  margin-top: $elv-spacing-s;
+
+  button {
+    margin-right: $elv-spacing-xs;
+  }
+}

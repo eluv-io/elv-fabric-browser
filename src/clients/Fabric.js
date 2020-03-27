@@ -283,7 +283,10 @@ const Fabric = {
     await Object.values(types).limitedMap(
       Fabric.concurrencyLimit,
       async type => {
-        types[type.id].appUrls = await Fabric.AppUrls({object: type});
+        types[type.id] = {
+          ...types[type.id],
+          ...(await Fabric.AppUrls({object: type}))
+        };
       }
     );
 
@@ -496,11 +499,13 @@ const Fabric = {
     }
 
     const customContractAddress = await Fabric.GetCustomContentContractAddress({libraryId, objectId, metadata});
-    const appUrls = await Fabric.AppUrls({object: {
-      id: object.id,
-      hash: object.hash,
-      meta: metadata
-    }});
+    const appUrls = await Fabric.AppUrls({
+      object: {
+        id: object.id,
+        hash: object.hash,
+        meta: metadata
+      }
+    });
 
     const baseFileUrl = await Fabric.FileUrl({
       libraryId,
@@ -520,6 +525,12 @@ const Fabric = {
         contractAddress: client.utils.HashToAddress(objectId),
         abi: BaseContentContract.abi,
         methodName: "canEdit"
+      });
+    } else if(!canEdit && isContentType) {
+      canEdit = await client.CallContractMethod({
+        contractAddress: client.utils.HashToAddress(objectId),
+        abi: BaseContentContract.abi,
+        methodName: "canCommit"
       });
     }
 
@@ -584,8 +595,7 @@ const Fabric = {
         imagePartHash = (metadata.public && metadata.public.image) || metadata.image;
       } else {
         imagePartHash =
-          await client.ContentObjectMetadata({libraryId, objectId, versionHash, metadataSubtree: "public/image"}) ||
-          await client.ContentObjectMetadata({libraryId, objectId, versionHash, metadataSubtree: "image"});
+          await client.ContentObjectMetadata({libraryId, objectId, versionHash, metadataSubtree: "public/image"});
       }
 
       if(!imagePartHash) { return; }
@@ -785,7 +795,9 @@ const Fabric = {
     const appUrls = {};
     // Inject app URLs, if present
     for(const appName of apps) {
-      if(object.meta[`eluv.${appName}App`]) {
+      if(object.meta[`eluv.${appName}App`] === "default") {
+        appUrls[`${appName}AppUrl`] = EluvioConfiguration[`${appName}AppUrl`];
+      } else if(object.meta[`eluv.${appName}App`]) {
         appUrls[`${appName}AppUrl`] = await Fabric.FileUrl({
           libraryId: Fabric.contentSpaceLibraryId,
           objectId: object.id,

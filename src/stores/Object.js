@@ -422,33 +422,48 @@ class ObjectStore {
   });
 
   @action.bound
-  AddApp = flow(function * ({libraryId, objectId, role, isDirectory, fileList, callback}) {
+  AddApp = flow(function * ({libraryId, objectId, role, isDirectory, fileList, callback, useDefault=false}) {
     const app = `${role}App`;
-    const fileInfo = yield FileInfo(app, fileList, false, isDirectory);
 
-    if(!fileInfo.find(file => file.path.endsWith("index.html"))) {
-      throw Error("App must contain an index.html file");
+    let fileInfo;
+    if(!useDefault) {
+      fileInfo = yield FileInfo(app, fileList, false, isDirectory);
+
+      if(!fileInfo.find(file => file.path.endsWith("index.html"))) {
+        throw Error("App must contain an index.html file");
+      }
     }
 
     yield Fabric.EditAndFinalizeContentObject({
       libraryId,
       objectId,
       todo: async (writeToken) => {
-        await Fabric.UploadFiles({
-          libraryId,
-          objectId,
-          writeToken,
-          fileInfo,
-          callback
-        });
+        if(useDefault) {
+          await Fabric.ReplaceMetadata({
+            libraryId,
+            objectId,
+            writeToken,
+            metadataSubtree: `eluv.${role}App`,
+            metadata: "default"
+          });
+        } else {
+          await Fabric.UploadFiles({
+            libraryId,
+            objectId,
+            writeToken,
+            fileInfo,
+            callback
+          });
 
-        await Fabric.ReplaceMetadata({
-          libraryId,
-          objectId,
-          writeToken,
-          metadataSubtree: `eluv.${role}App`,
-          metadata: UrlJoin(app, "index.html")
-        });
+          await Fabric.ReplaceMetadata({
+            libraryId,
+            objectId,
+            writeToken,
+            metadataSubtree: `eluv.${role}App`,
+            metadata: UrlJoin(app, "index.html")
+          });
+        }
+
       }
     });
 
