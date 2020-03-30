@@ -569,18 +569,26 @@ class ContentObjectForm extends React.Component {
         key={`object-form-page-${this.state.pageVersion}`}
         Load={
           async () => {
-            await this.props.typeStore.ContentTypes();
+            let loadTasks = [];
 
-            await this.props.libraryStore.ContentLibrary({
-              libraryId: this.props.objectStore.libraryId
-            });
+            loadTasks.push(async () => await this.props.typeStore.ContentTypes());
+
+            loadTasks.push(
+              async () => await this.props.libraryStore.ContentLibrary({
+                libraryId: this.props.objectStore.libraryId
+              })
+            );
 
             if(this.props.objectStore.objectId) {
-              await this.props.objectStore.ContentObject({
-                libraryId: this.props.objectStore.libraryId,
-                objectId: this.props.objectStore.objectId
-              });
+              loadTasks.push(
+                async () => await this.props.objectStore.ContentObject({
+                  libraryId: this.props.objectStore.libraryId,
+                  objectId: this.props.objectStore.objectId
+                })
+              );
             }
+
+            await Promise.all(loadTasks.map(async task => await task()));
 
             this.setState({
               createForm: !this.props.objectStore.objectId

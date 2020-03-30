@@ -34,7 +34,7 @@ class TypeStore {
 
   @action.bound
   ContentTypes = flow(function * () {
-    this.allTypes = (yield Fabric.ListContentTypes({params: {perPage: 1000}})).types;
+    this.allTypes = (yield Fabric.ListContentTypes({params: {perPage: 1000, skipOwner: true}})).types;
   });
 
   @action.bound

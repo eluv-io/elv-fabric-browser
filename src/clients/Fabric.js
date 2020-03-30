@@ -6,10 +6,14 @@ import BaseContentContract from "elv-client-js/src/contracts/BaseContent";
 import BaseAccessGroupContract from "elv-client-js/src/contracts/BaseAccessControlGroup";
 import {Bytes32ToUtf8, EqualAddress, FormatAddress} from "../utils/Helpers";
 
+import TypeContract from "elv-client-js/src/contracts/BaseContentType";
+
 let client = new FrameClient({
   target: window.parent,
   timeout: 30
 });
+
+let objectCache = {};
 
 const Fabric = {
   /* Utils */
@@ -455,50 +459,35 @@ const Fabric = {
     const isContentType = libraryId === Fabric.contentSpaceLibraryId && !isContentLibraryObject;
     const isNormalObject = !isContentLibraryObject && !isContentType;
 
-    // Only normal objects have status and access charge
-    let status, accessInfo;
-    if(isNormalObject) {
-      status = await Fabric.GetContentObjectStatus({objectId});
-      accessInfo = await Fabric.GetAccessInfo({objectId});
+    const latestVersionHash = await client.LatestVersionHash({objectId});
+
+    // Cachable
+
+    if(!objectCache[latestVersionHash]) {
+      const object = await client.ContentObject({libraryId, objectId});
+      const metadata = (await client.ContentObjectMetadata({libraryId, objectId})) || {};
+
+      if(!metadata.public) {
+        metadata.public = {};
+      }
+
+      let typeInfo;
+      if(object.type) {
+        typeInfo = await Fabric.GetContentType({versionHash: object.type});
+        typeInfo.latestTypeHash = await client.LatestVersionHash({objectId: typeInfo.id});
+      }
+
+      objectCache[latestVersionHash] = {
+        object,
+        metadata,
+        typeInfo
+      };
     }
 
-    const owner = await Fabric.GetContentObjectOwner({objectId: objectId});
-
-    const ownerName = await client.userProfileClient.PublicUserMetadata({
-      address: owner,
-      metadataSubtree: "name"
-    });
-
-    const object = await client.ContentObject({libraryId, objectId});
-    const metadata = (await client.ContentObjectMetadata({libraryId, objectId})) || {};
-
-    if(!metadata.public) {
-      metadata.public = {};
-    }
-
-    const lroStatus = await Promise.all(
-      Object.keys(metadata)
-        .filter(key => key.startsWith("lro_draft_"))
-        .map(async lroKey => {
-          const offeringKey = lroKey.replace(/^lro_draft_/, "");
-
-          const status = await client.LROStatus({libraryId, objectId, offeringKey});
-          return {
-            offeringKey,
-            status
-          };
-        })
-    );
+    // Derived from cachable
+    const { object, metadata, typeInfo } = objectCache[latestVersionHash];
 
     const imageUrl = await Fabric.GetContentObjectImageUrl({libraryId, objectId, versionHash: object.hash, metadata});
-
-    let typeInfo;
-    if(object.type) {
-      typeInfo = await Fabric.GetContentType({versionHash: object.type});
-      typeInfo.latestTypeHash = await client.LatestVersionHash({objectId: typeInfo.id});
-    }
-
-    const customContractAddress = await Fabric.GetCustomContentContractAddress({libraryId, objectId, metadata});
     const appUrls = await Fabric.AppUrls({
       object: {
         id: object.id,
@@ -518,6 +507,35 @@ const Fabric = {
       name = object.id;
     }
 
+    // Non-cachable (contract / LRO status)
+    const lroStatus = await Promise.all(
+      Object.keys(metadata)
+        .filter(key => key.startsWith("lro_draft_"))
+        .map(async lroKey => {
+          const offeringKey = lroKey.replace(/^lro_draft_/, "");
+
+          const status = await client.LROStatus({libraryId, objectId, offeringKey});
+          return {
+            offeringKey,
+            status
+          };
+        })
+    );
+
+    // Only normal objects have status and access charge
+    let status, accessInfo;
+    if(isNormalObject) {
+      status = await Fabric.GetContentObjectStatus({objectId});
+      accessInfo = await Fabric.GetAccessInfo({objectId});
+    }
+
+    const owner = await Fabric.GetContentObjectOwner({objectId: objectId});
+    const ownerName = await client.userProfileClient.PublicUserMetadata({
+      address: owner,
+      metadataSubtree: "name"
+    });
+
+    const customContractAddress = await Fabric.GetCustomContentContractAddress({libraryId, objectId, metadata});
     const isOwner = EqualAddress(owner, await Fabric.CurrentAccountAddress());
     let canEdit = isOwner;
     if(!canEdit && isNormalObject) {
@@ -846,17 +864,28 @@ const Fabric = {
       5,
       async type => {
         try {
-          const owner = await Fabric.GetContentObjectOwner({objectId: type.id});
           const appUrls = await Fabric.AppUrls({object: type});
 
           types[type.id] = {
             ...type,
             ...appUrls,
             name: GetName(type),
-            description: type.meta.public ? type.meta.public.description || type.meta.description : type.meta.description,
-            owner,
-            isOwner: EqualAddress(owner, await Fabric.CurrentAccountAddress())
+            description: type.meta.public ? type.meta.public.description || type.meta.description : type.meta.description
           };
+
+          if(!params.skipOwner) {
+            // TODO: Until authv3 branch is merged, use type contract
+            // to avoid triggering eth_getCode calls due to mismatched contract
+            const owner = await client.CallContractMethod({
+              contractAddress: client.utils.HashToAddress(type.id),
+              abi: TypeContract.abi,
+              methodName: "owner"
+            });
+
+            types[type.id].owner = owner;
+            types[type.id].isOwner = EqualAddress(owner, await Fabric.CurrentAccountAddress());
+          }
+
         } catch(error) {
           /* eslint-disable no-console */
           console.error("Failed to list content type " + type.id);

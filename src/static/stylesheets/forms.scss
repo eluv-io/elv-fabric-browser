@@ -6,7 +6,7 @@ form {
   &.app-form {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    min-height: 90vh;
     padding-bottom: $elv-spacing-m;
     width: 80rem;
 
