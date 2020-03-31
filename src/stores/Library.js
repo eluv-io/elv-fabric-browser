@@ -78,9 +78,17 @@ class LibraryStore {
     });
 
     if(image) {
-      yield Fabric.SetContentLibraryImage({
+      yield Fabric.EditAndFinalizeContentObject({
         libraryId,
-        image: yield new Response(image).blob()
+        objectId: Fabric.utils.AddressToObjectId(Fabric.utils.HashToAddress(libraryId)),
+        todo: async (writeToken) => {
+          await Fabric.SetContentLibraryImage({
+            libraryId,
+            writeToken,
+            image: await new Response(image).blob(),
+            imageName: image.name
+          });
+        }
       });
     }
 
@@ -128,15 +136,17 @@ class LibraryStore {
             public: publicMetadata
           }
         });
+
+        if(image) {
+          await Fabric.SetContentLibraryImage({
+            libraryId,
+            writeToken,
+            image: await new Response(image).blob(),
+            imageName: image.name
+          });
+        }
       }
     });
-
-    if(image) {
-      yield Fabric.SetContentLibraryImage({
-        libraryId,
-        image: yield new Response(image).blob()
-      });
-    }
 
     this.rootStore.notificationStore.SetNotificationMessage({
       message: "Successfully updated content library '" + name + "'",

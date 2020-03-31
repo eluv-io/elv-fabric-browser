@@ -129,7 +129,7 @@ class ContentApps extends React.Component {
       );
     } else {
       const typeMeta = (this.props.objectStore.object.typeInfo && this.props.objectStore.object.typeInfo.meta) || {};
-      const typeApp = typeMeta[`eluv.${role}App`];
+      const typeApp = (typeMeta.public || {})[`eluv.${role}App`] || typeMeta[`eluv.${role}App`];
       if(typeApp) {
         const typeName = typeMeta.name || "content type";
         info = (
@@ -200,8 +200,9 @@ class ContentApps extends React.Component {
             });
 
             let apps = {};
+            const meta = this.props.objectStore.object.meta;
             this.AppRoles().map(role => {
-              const appFile = this.props.objectStore.object.meta[`eluv.${role}App`];
+              const appFile = (meta.public || {})[`eluv.${role}App`] || meta[`eluv.${role}App`];
 
               if(appFile) {
                 apps[role] = {

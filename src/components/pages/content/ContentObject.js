@@ -708,6 +708,11 @@ class ContentObject extends React.Component {
         <div className="object-files">
           <FileBrowser
             baseFileUrl={this.props.objectStore.object.baseFileUrl}
+            SetObjectImage={async ({filePath}) => await this.props.objectStore.SetExistingObjectImage({
+              libraryId: this.props.objectStore.libraryId,
+              objectId: this.props.objectStore.objectId,
+              filePath
+            })}
             DownloadFile={async ({filePath, callback}) => await this.props.objectStore.DownloadFile({
               libraryId: this.props.objectStore.libraryId,
               objectId: this.props.objectStore.objectId,

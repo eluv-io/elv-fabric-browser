@@ -18,6 +18,7 @@ import FileUploadWidget from "./FileUploadWidget";
 
 import DirectoryIcon from "../../static/icons/directory.svg";
 import FileIcon from "../../static/icons/file.svg";
+import PictureIcon from "../../static/icons/image.svg";
 import EncryptedFileIcon from "../../static/icons/encrypted-file.svg";
 import EncryptedImageIcon from "../../static/icons/encrypted-image.svg";
 import DownloadIcon from "../../static/icons/download.svg";
@@ -165,7 +166,7 @@ class FileBrowser extends React.Component {
     return uri.toString();
   }
 
-  FileIcon(name, fileUrl, encrypted) {
+  IsImage(name) {
     const mimeTypes = this.props.objectStore.object.meta["mime-types"] || {};
     const extension = name.split(".").pop();
     const mimeType = mimeTypes[extension] || "";
@@ -173,7 +174,11 @@ class FileBrowser extends React.Component {
       mimeType.startsWith("image") ||
       ["jpg", "jpeg", "png", "gif", "webp"].includes(extension);
 
-    if(!isImage) {
+    return isImage;
+  }
+
+  FileIcon(name, fileUrl, encrypted) {
+    if(!this.IsImage(name)) {
       return (
         <ImageIcon
           icon={encrypted ? EncryptedFileIcon : FileIcon}
@@ -206,6 +211,7 @@ class FileBrowser extends React.Component {
     const size = PrettyBytes(info.size || 0);
     const fileUrl = this.FileUrl(this.state.path, name);
     const encrypted = info.encryption && info.encryption.scheme === "cgck";
+
     return (
       <div className="file-browser-row" key={`entry-${this.state.path}-${name}`}>
         <div className="item-icon">
@@ -218,6 +224,22 @@ class FileBrowser extends React.Component {
           { size }
         </div>
         <div className="actions-cell">
+          <IconButton
+            hidden={!this.props.SetObjectImage || !this.IsImage(name) || encrypted}
+            title={`Set ${name} as display image`}
+            icon={PictureIcon}
+            onClick={async event => {
+              event.stopPropagation();
+
+              await Confirm({
+                message: `Are you sure you want to set this object's display image to ${name}?`,
+                onConfirm: async () => await this.props.SetObjectImage({
+                  filePath: UrlJoin(this.state.path, name).replace("./", "")
+                })
+              });
+            }}
+            className="delete-button"
+          />
           <DownloadButton
             name={name}
             size={size}
@@ -429,6 +451,7 @@ FileBrowser.propTypes = {
   DownloadFile: PropTypes.func.isRequired,
   DownloadUrl: PropTypes.func.isRequired,
   CreateDirectory: PropTypes.func.isRequired,
+  SetObjectImage: PropTypes.func,
   Reload: PropTypes.func
 };
 

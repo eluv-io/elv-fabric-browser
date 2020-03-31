@@ -95,7 +95,7 @@ class ContractStore {
     const isAccessGroup = path.startsWith("/access-groups");
     const isCustomContentObjectContract = path.includes("custom-contract");
 
-    let {type, description, abi, contractAddress} = DetermineContractInterface({
+    let {type, description, contractAddress} = DetermineContractInterface({
       libraryId: this.libraryId,
       objectId: this.objectId,
       contractAddressParam,
@@ -103,12 +103,13 @@ class ContractStore {
       isCustomContentObjectContract,
     });
 
-    let name;
+    let name, abi;
     switch(type) {
       case ContractTypes.library:
         yield this.rootStore.libraryStore.ContentLibrary({libraryId: this.libraryId});
 
         const library = this.rootStore.libraryStore.library.name || this.libraryId;
+        abi = yield Fabric.ContractAbi({id: this.libraryId});
         name = `${library} - Content Library Contract`;
 
         break;
@@ -134,6 +135,7 @@ class ContractStore {
         });
 
         const object = this.rootStore.objectStore.object.meta.name || this.objectId;
+        abi = yield Fabric.ContractAbi({id: this.objectId});
         name = `${object} - Content Object Contract`;
 
         break;
@@ -142,6 +144,7 @@ class ContractStore {
         yield this.rootStore.groupStore.ListAccessGroups({params: {paginate: false}});
 
         const accessGroup = this.rootStore.groupStore.accessGroup.name || "Access Group";
+        abi = yield Fabric.ContractAbi({contractAddress: this.rootStore.groupStore.accessGroup.address});
         name = `${accessGroup} - Access Group Contract`;
 
         break;
@@ -433,6 +436,10 @@ class ContractStore {
 
   @action.bound
   CallContractMethod = flow(function * ({contractAddress, abi, methodName, methodArgs, value=0}) {
+    if(!abi) {
+      abi = yield Fabric.ContractAbi({contractAddress});
+    }
+
     abi = toJS(abi);
 
     const method = Object.values(abi).find(entry => entry.type === "function" && entry.name === methodName);
