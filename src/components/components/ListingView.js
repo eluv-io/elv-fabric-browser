@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import {ImageIcon} from "elv-components-js";
 import {Redirect} from "react-router";
 import {Link} from "react-router-dom";
-import RedirectElement from "./RedirectElement";
 import {observer} from "mobx-react";
 
 @observer
@@ -23,12 +22,12 @@ class ListingItem extends React.Component {
   AsTableRow() {
     let className = "listing-row";
     let elements = [
-      <div title={this.props.title}>
+      <div key={`listing-title-${this.props.id}`} title={this.props.title}>
         <div className="title cropped-text" tabIndex={-1}>
           {this.props.title}
         </div>
       </div>,
-      <div title={this.props.description}>
+      <div key={`listing-description-${this.props.id}`} title={this.props.description}>
         <div className="description cropped-text" tabIndex={-1}>
           {this.props.description}
         </div>
@@ -41,7 +40,11 @@ class ListingItem extends React.Component {
       const isSVG = typeof this.props.icon === "string" && this.props.icon.startsWith("<svg");
 
       elements.unshift(
-        <div hidden={this.props.noIcon} className={`icon-container ${isSVG ? "svg-icon-container" : ""}`}>
+        <div
+          key={`listing-icon-${this.props.id}`}
+          hidden={this.props.noIcon}
+          className={`icon-container ${isSVG ? "svg-icon-container" : ""}`}
+        >
           <ImageIcon icon={this.props.icon}/>
         </div>
       );
@@ -51,28 +54,38 @@ class ListingItem extends React.Component {
       className += " listing-row-no-status";
     } else {
       elements.push(
-        <div className="status" title={this.props.status} hidden={this.props.noStatus}>
+        <div
+          key={`listing-status-${this.props.id}`}
+          className="status"
+          title={this.props.status}
+          hidden={this.props.noStatus}
+        >
           {this.props.status}
         </div>
       );
     }
 
     return (
-      <RedirectElement to={this.props.link}>
-        <div
-          aria-label={this.props.title}
-          className={className}
-        >
-          { elements }
-        </div>
-      </RedirectElement>
+      <Link
+        title={this.props.title}
+        to={this.props.link}
+        aria-label={this.props.title}
+        className={className}
+      >
+        { elements }
+      </Link>
     );
   }
 
   AsGridElement() {
     const isSVG = typeof this.props.icon === "string" && this.props.icon.startsWith("<svg");
     return (
-      <Link to={this.props.link} title={this.props.title} aria-label={this.props.title} className="grid-listing-element">
+      <Link
+        to={this.props.link}
+        title={this.props.title}
+        aria-label={this.props.title}
+        className="grid-listing-element"
+      >
         <div className={`icon-container ${isSVG ? "svg-icon-container" : ""}`}>
           <ImageIcon icon={this.props.icon} />
         </div>

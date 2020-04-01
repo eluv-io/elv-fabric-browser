@@ -118,11 +118,6 @@ const Fabric = {
 
           // TODO: Find way to determine if contract has been killed
           // Call library contract to ensure library exists
-          await client.CallContractMethod({
-            contractAddress,
-            methodName: "version"
-          });
-
           const publicMeta = (await client.ContentObjectMetadata({
             libraryId,
             objectId: libraryObjectId,
@@ -816,13 +811,15 @@ const Fabric = {
     const appUrls = {};
     // Inject app URLs, if present
     for(const appName of apps) {
-      if(object.meta[`eluv.${appName}App`] === "default") {
+      const app = (object.meta.public || {})[`eluv.${appName}App`] || object.meta[`eluv.${appName}App`];
+
+      if(app === "default") {
         appUrls[`${appName}AppUrl`] = EluvioConfiguration[`${appName}AppUrl`];
-      } else if(object.meta[`eluv.${appName}App`]) {
+      } else if(app) {
         appUrls[`${appName}AppUrl`] = await Fabric.FileUrl({
           libraryId: Fabric.contentSpaceLibraryId,
           objectId: object.id,
-          filePath: object.meta[`eluv.${appName}App`]
+          filePath: app
         });
       }
     }

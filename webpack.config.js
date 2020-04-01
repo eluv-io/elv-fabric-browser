@@ -62,6 +62,7 @@ module.exports = {
       inlineSource: ".(js|css)$",
       favicon: "node_modules/elv-components-js/src/icons/favicon.png"
     })
+    //,new BundleAnalyzerPlugin()
   ],
   module: {
     rules: [

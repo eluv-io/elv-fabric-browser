@@ -38,9 +38,7 @@ export const Percentage = (done, total) => {
 };
 
 export const AccessChargeDisplay = (accessCharge) => {
-  if(accessCharge === 0 || accessCharge === "0") {
-    return "Free";
-  } else {
+  if(accessCharge && parseInt(accessCharge) > 0) {
     return <Balance balance={accessCharge} />;
   }
 };
