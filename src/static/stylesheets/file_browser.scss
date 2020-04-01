@@ -6,7 +6,7 @@
   .file-browser-row {
     border: 1px solid $elv-color-gray;
     display: grid;
-    grid-template-columns: 3rem minmax(5rem, 4fr) minmax(6rem, 1fr) 7rem;
+    grid-template-columns: 3rem minmax(5rem, 4fr) minmax(6rem, 1fr) 8rem;
     height: $elv-spacing-ml;
 
     &:not(:last-child) {

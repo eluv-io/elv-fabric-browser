@@ -62,7 +62,18 @@ class ObjectStore {
   });
 
   @action.bound
-  UpdateFromContentTypeSchema = flow(function * ({libraryId, objectId, type, metadata, publicMetadata, accessCharge, schema, fields, callback}) {
+  UpdateFromContentTypeSchema = flow(function * ({
+    libraryId,
+    objectId,
+    type,
+    metadata,
+    publicMetadata,
+    image,
+    accessCharge,
+    schema,
+    fields,
+    callback
+  }) {
     try {
       metadata = ParseInputJson(metadata);
       publicMetadata = ParseInputJson(publicMetadata);
@@ -103,6 +114,16 @@ class ObjectStore {
 
     if(yield Fabric.IsNormalObject({objectId})) {
       yield Fabric.SetAccessCharge({objectId: objectId, accessCharge});
+    }
+
+    if(image) {
+      yield Fabric.SetContentObjectImage({
+        libraryId,
+        objectId,
+        writeToken,
+        image: yield new Response(image).blob(),
+        imageName: image.name
+      });
     }
 
     yield Fabric.FinalizeContentObject({libraryId, objectId, writeToken});
@@ -261,6 +282,22 @@ class ObjectStore {
 
     this.rootStore.notificationStore.SetNotificationMessage({
       message: "Successfully uploaded files"
+    });
+  });
+
+  // Set object image from existing file
+  @action.bound
+  SetExistingObjectImage = flow(function * ({libraryId, objectId, filePath}) {
+    const writeToken = yield this.EditContentObject({libraryId, objectId});
+
+    yield Fabric.ReplaceMetadata({
+      libraryId,
+      objectId,
+      writeToken,
+      metadataSubtree: "public/display_image",
+      metadata: {
+        "/": UrlJoin(".", "files", filePath)
+      }
     });
   });
 
@@ -446,6 +483,13 @@ class ObjectStore {
             metadataSubtree: `eluv.${role}App`,
             metadata: "default"
           });
+          await Fabric.ReplaceMetadata({
+            libraryId,
+            objectId,
+            writeToken,
+            metadataSubtree: `public/eluv.${role}App`,
+            metadata: "default"
+          });
         } else {
           await Fabric.UploadFiles({
             libraryId,
@@ -460,6 +504,13 @@ class ObjectStore {
             objectId,
             writeToken,
             metadataSubtree: `eluv.${role}App`,
+            metadata: UrlJoin(app, "index.html")
+          });
+          await Fabric.ReplaceMetadata({
+            libraryId,
+            objectId,
+            writeToken,
+            metadataSubtree: `public/eluv.${role}App`,
             metadata: UrlJoin(app, "index.html")
           });
         }

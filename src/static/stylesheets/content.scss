@@ -121,3 +121,16 @@
     margin-right: $elv-spacing-xs;
   }
 }
+
+.-elv-browse-widget {
+  .-elv-image-preview {
+    &.-elv-image-preview {
+      justify-content: flex-start;
+    }
+
+    img {
+      max-height: 10rem;
+      object-fit: contain;
+    }
+  }
+}

@@ -6,6 +6,7 @@ import EventLogs from "../../../components/EventLogs";
 import {Form} from "elv-components-js";
 import {inject, observer} from "mobx-react";
 import {toJS} from "mobx";
+import {ContractTypes} from "../../../../utils/Contracts";
 
 @inject("contractStore")
 @observer
@@ -80,9 +81,15 @@ class DeployedContractMethodForm extends React.Component {
 
     const methodArgs = Object.values(inputs);
 
+    // Only specify ABI for unknown contracts
+    const abi = [ContractTypes.customObject, ContractTypes.unknown]
+      .includes(this.props.contractStore.contract.type) ?
+      this.props.contractStore.contract.abi :
+      undefined;
+
     const methodResults = await this.props.contractStore.CallContractMethod({
       contractAddress: this.props.contractStore.contractAddress,
-      abi: this.props.contractStore.contract.abi,
+      abi,
       methodName: this.state.method,
       methodArgs,
       value: funds

@@ -58,11 +58,14 @@ class ContentObjectForm extends React.Component {
       metadata: "",
       publicMetadata: "",
       uploadStatus: {},
+      imageSelection: undefined,
+      isDefault: true,
       fullScreen: false,
       pageVersion: 0
     };
 
     this.PageContent = this.PageContent.bind(this);
+    this.HandleImageChange = this.HandleImageChange.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleFieldChange = this.HandleFieldChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
@@ -76,7 +79,7 @@ class ContentObjectForm extends React.Component {
     // Skip "none" type
     if(!type.hash) { return type; }
 
-    const typeName = (type.meta && (type.meta.name)) || type.hash;
+    const typeName = (type.meta && type.meta.public && type.meta.public.name) || type.hash;
 
     return {
       ...type,
@@ -150,6 +153,7 @@ class ContentObjectForm extends React.Component {
     let manageAppUrl;
     let showManageApp = false;
     let schema = typeOptions.schema || defaultSchema;
+    let isDefault = !typeOptions.schema;
     if(object && object.manageAppUrl && !object.isContentType) {
       manageAppUrl = object.manageAppUrl;
     } else if(typeOptions.manageAppUrl) {
@@ -165,10 +169,19 @@ class ContentObjectForm extends React.Component {
       type,
       fields: initialFields,
       schema: schema,
+      isDefault,
       allowCustomMetadata,
       manageAppUrl,
       showManageApp
     });
+  }
+
+  HandleImageChange(event) {
+    if(event.target.files) {
+      this.setState({
+        imageSelection: event.target.files[0]
+      });
+    }
   }
 
   HandleInputChange(event) {
@@ -234,11 +247,31 @@ class ContentObjectForm extends React.Component {
       fields: this.state.fields,
       metadata: this.state.metadata,
       publicMetadata: this.state.publicMetadata,
+      image: this.state.imageSelection,
       accessCharge: this.state.accessCharge,
       callback: this.UploadStatusCallback
     });
 
     this.setState({objectId});
+  }
+
+  Image() {
+    if(!this.state.isDefault) { return; }
+
+    return (
+      <React.Fragment>
+        <label key="image-selection-label" htmlFor="imageSelection" className="align-top">Image</label>
+        <BrowseWidget
+          key="image-selection"
+          name="image"
+          required={false}
+          multiple={false}
+          accept="image/*"
+          preview={true}
+          onChange={this.HandleImageChange}
+        />
+      </React.Fragment>
+    );
   }
 
   TypeField() {
@@ -530,6 +563,7 @@ class ContentObjectForm extends React.Component {
             {this.AppFormSelection()}
             <div className="form-content">
               {this.TypeField()}
+              {this.Image()}
               {this.BuildType(this.state.schema)}
               {this.PublicMetadataField()}
               {this.MetadataField()}
@@ -569,18 +603,26 @@ class ContentObjectForm extends React.Component {
         key={`object-form-page-${this.state.pageVersion}`}
         Load={
           async () => {
-            await this.props.typeStore.ContentTypes();
+            let loadTasks = [];
 
-            await this.props.libraryStore.ContentLibrary({
-              libraryId: this.props.objectStore.libraryId
-            });
+            loadTasks.push(async () => await this.props.typeStore.ContentTypes());
+
+            loadTasks.push(
+              async () => await this.props.libraryStore.ContentLibrary({
+                libraryId: this.props.objectStore.libraryId
+              })
+            );
 
             if(this.props.objectStore.objectId) {
-              await this.props.objectStore.ContentObject({
-                libraryId: this.props.objectStore.libraryId,
-                objectId: this.props.objectStore.objectId
-              });
+              loadTasks.push(
+                async () => await this.props.objectStore.ContentObject({
+                  libraryId: this.props.objectStore.libraryId,
+                  objectId: this.props.objectStore.objectId
+                })
+              );
             }
+
+            await Promise.all(loadTasks.map(async task => await task()));
 
             this.setState({
               createForm: !this.props.objectStore.objectId

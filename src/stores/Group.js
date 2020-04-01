@@ -33,9 +33,7 @@ class GroupStore {
 
   @action.bound
   AccessGroup = flow(function * ({contractAddress}) {
-    const accessGroup = yield Fabric.GetAccessGroup({contractAddress});
-
-    this.accessGroups[contractAddress] = accessGroup;
+    this.accessGroups[contractAddress] = yield Fabric.GetAccessGroup({contractAddress});
   });
 
   @action.bound
