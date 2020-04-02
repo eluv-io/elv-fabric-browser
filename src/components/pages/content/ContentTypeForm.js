@@ -1,24 +1,25 @@
 import React from "react";
-import PropTypes from "prop-types";
 import UrlJoin from "url-join";
 import Path from "path";
-import { JsonTextArea } from "../../../utils/Input";
-import {Action, BrowseWidget, Form} from "elv-components-js";
+import {Action, BrowseWidget, Form, JsonInput} from "elv-components-js";
+import AsyncComponent from "../../components/AsyncComponent";
+import {inject, observer} from "mobx-react";
 
+@inject("typeStore")
+@observer
 class ContentTypeForm extends React.Component {
   constructor(props) {
     super(props);
 
-    const object = props.object || {};
-
     this.state = {
-      name: object.name || "",
-      description: object.description || "",
-      metadata: JSON.stringify(object.meta, null, 2),
-      isContentLibraryObject: object.isContentLibraryObject || false,
+      createForm: !this.props.typeStore.typeId,
+      name: "",
+      description: "",
+      metadata: "",
       redirectPath: Path.dirname(this.props.match.url)
     };
 
+    this.PageContent = this.PageContent.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleBitcodeChange = this.HandleBitcodeChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
@@ -37,16 +38,21 @@ class ContentTypeForm extends React.Component {
   }
 
   async HandleSubmit() {
-    const objectId = await this.props.methods.Submit({
-      libraryId: this.props.libraryId,
-      objectId: this.props.objectId,
+    const Method = this.state.createForm ?
+      this.props.typeStore.CreateContentType :
+      this.props.typeStore.UpdateContentType;
+
+    const typeId = await Method({
+      typeId: this.props.typeStore.typeId,
       name: this.state.name,
       description: this.state.description,
       metadata: this.state.metadata,
       bitcode: this.state.bitcode
     });
 
-    this.setState({objectId});
+    this.setState({
+      typeId,
+    });
   }
 
   BitcodeSelection() {
@@ -63,14 +69,11 @@ class ContentTypeForm extends React.Component {
     ];
   }
 
-  render() {
-    const legend = this.props.createForm ? "Create content type" : "Manage content type";
-
-    let status = {...this.props.methodStatus.Submit};
-    status.completed = status.completed && !!this.state.objectId;
+  PageContent() {
+    const legend = this.state.createForm ? "Create content type" : "Manage content type";
 
     const backPath = Path.dirname(this.props.match.url);
-    const redirectPath = this.props.createForm ? UrlJoin(backPath, this.state.objectId || "") : backPath;
+    const redirectPath = this.state.createForm ? UrlJoin(backPath, this.state.typeId || "") : backPath;
 
     return (
       <div>
@@ -81,12 +84,11 @@ class ContentTypeForm extends React.Component {
           legend={legend}
           redirectPath={redirectPath}
           cancelPath={backPath}
-          status={status}
           OnSubmit={this.HandleSubmit}
         >
           <div className="form-content">
             <label htmlFor="name">Name</label>
-            <input name="name" value={this.state.name} onChange={this.HandleInputChange} readOnly={this.state.isContentLibraryObject} />
+            <input name="name" value={this.state.name} onChange={this.HandleInputChange} />
 
             { this.BitcodeSelection() }
 
@@ -94,27 +96,39 @@ class ContentTypeForm extends React.Component {
             <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
 
             <label className="align-top" htmlFor="metadata">Metadata</label>
-            <JsonTextArea
+            <JsonInput
               name={"metadata"}
               value={this.state.metadata}
               onChange={this.HandleInputChange}
-              UpdateValue={formattedMetadata => this.setState({metadata: formattedMetadata})}
             />
           </div>
         </Form>
       </div>
     );
   }
-}
 
-ContentTypeForm.propTypes = {
-  libraryId: PropTypes.string.isRequired,
-  objectId: PropTypes.string,
-  object: PropTypes.object,
-  createForm: PropTypes.bool.isRequired,
-  methods: PropTypes.shape({
-    Submit: PropTypes.func.isRequired
-  })
-};
+  render() {
+    return (
+      <AsyncComponent
+        Load={
+          async () => {
+            if(!this.state.createForm) {
+              await this.props.typeStore.ContentType({
+                typeId: this.props.typeStore.typeId
+              });
+
+              this.setState({
+                name: this.props.typeStore.type.name,
+                description: this.props.typeStore.type.description,
+                metadata: JSON.stringify(this.props.typeStore.type.meta, null, 2)
+              });
+            }
+          }
+        }
+        render={this.PageContent}
+      />
+    );
+  }
+}
 
 export default ContentTypeForm;

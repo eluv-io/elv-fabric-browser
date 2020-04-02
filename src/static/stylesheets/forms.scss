@@ -3,6 +3,48 @@
 form {
   @include elv-form;
 
+  &.app-form {
+    display: flex;
+    flex-direction: column;
+    min-height: 90vh;
+    padding-bottom: $elv-spacing-m;
+    width: 80rem;
+
+    &.app-form-fullscreen {
+      .app-form-fieldset {
+        border: 0;
+      }
+    }
+  }
+
+  .app-form-fieldset {
+    border: 1px solid $elv-color-gray;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    padding: 0 $elv-spacing-l $elv-spacing-l;
+  }
+
+  .fullscreen-button {
+    position: absolute;
+    right: $elv-spacing-xs;
+    top: $elv-spacing-xs;
+
+    svg {
+      stroke: $elv-color-mediumgray;
+    }
+
+    &:hover {
+      svg {
+        stroke: $elv-color-darkergray;
+      }
+    }
+  }
+
+  &.small-form {
+    width: 40rem;
+  }
+
   input {
     height: 2em;
   }
@@ -63,5 +105,17 @@ form {
         }
       }
     }
+  }
+}
+
+fieldset {
+  display: flex;
+  flex-direction: column;
+
+  &.app-form {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    width: 100%;
   }
 }

@@ -1,5 +1,5 @@
 import React from "react";
-import Utils from "elv-client-js/src/Utils";
+import Utils from "@eluvio/elv-client-js/src/Utils";
 import BigNumber from "bignumber.js";
 import {Balance} from "elv-components-js";
 
@@ -33,10 +33,12 @@ export const EqualAddress = (address1, address2) => {
   return FormatAddress(address1) === FormatAddress(address2);
 };
 
+export const Percentage = (done, total) => {
+  return total > 0 ? `${(done * 100 / total).toFixed(1)}%` : "100.0%";
+};
+
 export const AccessChargeDisplay = (accessCharge) => {
-  if(accessCharge === 0 || accessCharge === "0") {
-    return "Free";
-  } else {
+  if(accessCharge && parseInt(accessCharge) > 0) {
     return <Balance balance={accessCharge} />;
   }
 };

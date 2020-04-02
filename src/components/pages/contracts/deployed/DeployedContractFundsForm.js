@@ -1,18 +1,21 @@
 import React from "react";
-import PropTypes from "prop-types";
 import Path from "path";
-import {Action, Form, RadioSelect} from "elv-components-js";
+import {Action, Form} from "elv-components-js";
+import AsyncComponent from "../../../components/AsyncComponent";
 import {PageHeader} from "../../../components/Page";
+import {inject, observer} from "mobx-react";
 
+@inject("contractStore")
+@observer
 class DeployedContractFundsForm extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      amount: 0,
-      direction: "deposit"
+      amount: 0
     };
 
+    this.PageContent = this.PageContent.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
   }
@@ -24,49 +27,29 @@ class DeployedContractFundsForm extends React.Component {
   }
 
   async HandleSubmit() {
-    if(this.state.direction === "deposit") {
-      await this.props.methods.SendFunds({
-        recipient: this.props.contract.address,
-        ether: this.state.amount
-      });
-    } else {
-      await this.props.methods.WithdrawContractFunds({
-        contractAddress: this.props.contract.address,
-        abi: this.props.contract.abi,
-        ether: this.state.amount
-      });
-    }
+    await this.props.contractStore.SendFunds({
+      recipient: this.state.contract.contractAddress,
+      ether: this.state.amount
+    });
   }
 
-  render() {
-    const status = this.state.direction === "deposit" ?
-      this.props.methodStatus.SendFunds : this.props.methodStatus.WithdrawContractFunds;
-
+  PageContent() {
     return (
       <div className="page-container">
         <div className="actions-container">
           <Action type="link" className="secondary" to={Path.dirname(this.props.match.url)}>Back</Action>
         </div>
-        <PageHeader header={this.props.contract.name} subHeader={this.props.contract.description} />
+        <PageHeader header={this.state.contract.name} subHeader={this.state.contract.description} />
         <Form
           legend="Transfer Contract Funds"
           redirectPath={Path.dirname(this.props.match.url)}
           cancelPath={Path.dirname(this.props.match.url)}
-          status={status}
           OnSubmit={this.HandleSubmit}
+          className="small-form"
         >
           <div className="form-content">
             <label>Current Balance</label>
-            <span>{this.props.deployedContract.balance}</span>
-
-            <label htmlFor="direction">Direction</label>
-            <RadioSelect
-              name="direction"
-              inline={true}
-              options={[["Deposit", "deposit"], ["Withdraw", "withdraw"]]}
-              selected={this.state.direction}
-              onChange={this.HandleInputChange}
-            />
+            <span>{this.state.contract.balance}</span>
 
             <label htmlFor="amount">Amount</label>
             <input name="amount" type="number" step={0.0000000001} value={this.state.amount} onChange={this.HandleInputChange} />
@@ -75,15 +58,21 @@ class DeployedContractFundsForm extends React.Component {
       </div>
     );
   }
-}
 
-DeployedContractFundsForm.propTypes = {
-  contract: PropTypes.object.isRequired,
-  deployedContracts: PropTypes.object.isRequired,
-  methods: PropTypes.shape({
-    SendFunds: PropTypes.func.isRequired,
-    WithdrawContractFunds: PropTypes.func.isRequired
-  })
-};
+  render() {
+    return (
+      <AsyncComponent
+        Load={
+          async () => {
+            this.setState({
+              contract: await this.props.contractStore.DeployedContractInfo()
+            });
+          }
+        }
+        render={this.PageContent}
+      />
+    );
+  }
+}
 
 export default DeployedContractFundsForm;

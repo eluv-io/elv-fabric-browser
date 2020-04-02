@@ -5,7 +5,7 @@
     align-items: center;
     display: flex;
     font-size: 18px;
-    font-weight: bold;
+    font-weight: 400;
     height: 50vh;
     justify-content: center;
     width: 100%;
@@ -37,7 +37,7 @@
 
       input,
       button {
-        font-size: 14px;
+        font-size: $elv-font-m;
         height: 100%;
 
         &:not(:last-child) {
@@ -51,7 +51,7 @@
 
         &.event-filter {
           flex-grow: 1;
-          font-size: 16px;
+          font-size: $elv-font-l;
           margin-right: $elv-spacing-s;
         }
       }
@@ -75,7 +75,7 @@
   }
 
   .events-container {
-    height: 75vh;
+    height: 70vh;
     max-height: 75vh;
     overflow-y: auto;
     padding: $elv-spacing-s $elv-spacing-xs $elv-spacing-s 0;
@@ -104,14 +104,29 @@
     .info {
       color: $elv-color-text-light;
       font-family: $elv-font-monospace;
-      font-size: 12px;
+      font-size: $elv-font-s;
     }
   }
 }
 
+.events-raw {
+  position: relative;
+}
+
+.events-copy-button {
+  position: absolute;
+  right: $elv-spacing-s;
+  top: $elv-spacing-s;
+}
+
+.events-raw-text {
+  font-family: $elv-font-monospace;
+  font-size: $elv-font-s;
+}
+
 .event {
   border: 1px solid $elv-color-darkgray;
-  font-size: 12px;
+  font-size: $elv-font-m;
   margin-bottom: $elv-spacing-m;
   padding: $elv-spacing-s;
 }
@@ -122,7 +137,6 @@
   padding: $elv-spacing-s;
 
   .labelled-field {
-    align-items: center;
     display: flex;
     line-height: 1.6;
 
@@ -134,13 +148,13 @@
     .value {
       @include elv-ellipsis;
       font-family: $elv-font-monospace;
-      font-size: 12px;
+      font-size: $elv-font-s;
       max-width: 50vw;
     }
   }
 
   .section-label {
-    font-size: 12px;
+    font-size: $elv-font-m;
     font-weight: 600;
     margin: $elv-spacing-s 0 $elv-spacing-xxs;
   }

@@ -43,10 +43,16 @@ module.exports = {
     }
   },
   plugins: [
-    new CopyWebpackPlugin([{
-      from: Path.join(__dirname, "configuration.js"),
-      to: Path.join(__dirname, "dist", "configuration.js")
-    }]),
+    new CopyWebpackPlugin([
+      {
+        from: Path.join(__dirname, "configuration.js"),
+        to: Path.join(__dirname, "dist", "configuration.js")
+      },
+      {
+        from: Path.join(__dirname, "Logo.png"),
+        to: Path.join(__dirname, "dist", "Logo.png")
+      }
+    ]),
     new HtmlWebpackPlugin({
       title: "Eluvio Fabric Browser",
       template: Path.join(__dirname, "src", "index.html"),
@@ -56,6 +62,7 @@ module.exports = {
       inlineSource: ".(js|css)$",
       favicon: "node_modules/elv-components-js/src/icons/favicon.png"
     })
+    //,new BundleAnalyzerPlugin()
   ],
   module: {
     rules: [
@@ -83,11 +90,12 @@ module.exports = {
         exclude: /node_modules\/(?!elv-components-js)/,
         loader: "babel-loader",
         options: {
-          presets: ["@babel/preset-env", "@babel/preset-react"],
+          presets: ["@babel/preset-env", "@babel/preset-react", "babel-preset-mobx"],
           plugins: [
             require("@babel/plugin-proposal-object-rest-spread"),
             require("@babel/plugin-transform-regenerator"),
-            require("@babel/plugin-transform-runtime")
+            require("@babel/plugin-transform-runtime"),
+            require("@babel/plugin-syntax-dynamic-import")
           ]
         }
       },

@@ -1,8 +1,3 @@
-import BaseContentSpaceContract from "elv-client-js/src/contracts/BaseContentSpace";
-import BaseContentContract from "elv-client-js/src/contracts/BaseContent";
-import BaseContentTypeContract from "elv-client-js/src/contracts/BaseContentType";
-import BaseLibraryContract from "elv-client-js/src/contracts/BaseLibrary";
-import BaseAccessGroupContract from "elv-client-js/src/contracts/BaseAccessControlGroup";
 import Fabric from "../clients/Fabric";
 
 export const ContractTypes = {
@@ -30,7 +25,6 @@ export const DetermineContractInterface = ({
     return {
       type: ContractTypes.accessGroup,
       description: "Base Access Group Contract",
-      abi: BaseAccessGroupContract.abi,
       contractAddress: contractAddressParam
     };
   }
@@ -40,7 +34,6 @@ export const DetermineContractInterface = ({
     return {
       type: ContractTypes.contentSpace,
       description: "Base Content Space Contract",
-      abi: BaseContentSpaceContract.abi,
       contractAddress: Fabric.utils.HashToAddress(libraryId)
     };
   }
@@ -50,7 +43,6 @@ export const DetermineContractInterface = ({
     return {
       type: ContractTypes.library,
       description: "Base Content Library Contract",
-      abi: BaseLibraryContract.abi,
       contractAddress: Fabric.utils.HashToAddress(libraryId)
     };
   }
@@ -60,7 +52,6 @@ export const DetermineContractInterface = ({
     return {
       type: ContractTypes.contentType,
       description: "Base Content Type Contract",
-      abi: BaseContentTypeContract.abi,
       contractAddress: Fabric.utils.HashToAddress(objectId)
     };
   }
@@ -71,7 +62,6 @@ export const DetermineContractInterface = ({
       return {
         type: ContractTypes.customObject,
         description: "Custom Content Object Contract",
-        abi: undefined,
         contractAddress: undefined
       };
     } else {
@@ -79,7 +69,6 @@ export const DetermineContractInterface = ({
       return {
         type: ContractTypes.object,
         description: "Base Content Object Contract",
-        abi: BaseContentContract.abi,
         contractAddress: Fabric.utils.HashToAddress(objectId)
       };
     }
@@ -89,7 +78,6 @@ export const DetermineContractInterface = ({
   return {
     type: ContractTypes.unknown,
     description: undefined,
-    abi: undefined,
-    contractAddress: contractAddressParam
+    contractAddress: Fabric.utils.FormatAddress(contractAddressParam)
   };
 };

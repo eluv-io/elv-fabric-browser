@@ -1,10 +1,11 @@
 import React from "react";
 import PropTypes from "prop-types";
-import {CroppedIcon} from "elv-components-js";
-import Redirect from "react-router/es/Redirect";
-import Link from "react-router-dom/es/Link";
-import RedirectElement from "./RedirectElement";
+import {ImageIcon} from "elv-components-js";
+import {Redirect} from "react-router";
+import {Link} from "react-router-dom";
+import {observer} from "mobx-react";
 
+@observer
 class ListingItem extends React.Component {
   constructor(props) {
     super(props);
@@ -19,34 +20,76 @@ class ListingItem extends React.Component {
   }
 
   AsTableRow() {
+    let className = "listing-row";
+    let elements = [
+      <div key={`listing-title-${this.props.id}`} title={this.props.title}>
+        <div className="title cropped-text" tabIndex={-1}>
+          {this.props.title}
+        </div>
+      </div>,
+      <div key={`listing-description-${this.props.id}`} title={this.props.description}>
+        <div className="description cropped-text" tabIndex={-1}>
+          {this.props.description}
+        </div>
+      </div>
+    ];
+
+    if(this.props.noIcon) {
+      className += " listing-row-no-icon";
+    } else {
+      const isSVG = typeof this.props.icon === "string" && this.props.icon.startsWith("<svg");
+
+      elements.unshift(
+        <div
+          key={`listing-icon-${this.props.id}`}
+          hidden={this.props.noIcon}
+          className={`icon-container ${isSVG ? "svg-icon-container" : ""}`}
+        >
+          <ImageIcon icon={this.props.icon}/>
+        </div>
+      );
+    }
+
+    if(this.props.noStatus) {
+      className += " listing-row-no-status";
+    } else {
+      elements.push(
+        <div
+          key={`listing-status-${this.props.id}`}
+          className="status"
+          title={this.props.status}
+          hidden={this.props.noStatus}
+        >
+          {this.props.status}
+        </div>
+      );
+    }
+
     return (
-      <RedirectElement to={this.props.link}>
-        <tr title={this.props.title} aria-label={this.props.title} className={this.props.link ? "listing-link" : ""}>
-          <td className="icon-cell" hidden={this.props.noIcon}>
-            <CroppedIcon className="icon-container" icon={this.props.icon}/>
-          </td>
-          <td className="title-cell" title={this.props.title}>
-            <div className="cropped-text" tabIndex={-1}>
-              {this.props.title}
-            </div>
-          </td>
-          <td className="description-cell" title={this.props.description}>
-            <div className="cropped-text" tabIndex={-1}>
-              {this.props.description}
-            </div>
-          </td>
-          <td className="status-cell" title={this.props.status} hidden={this.props.noStatus}>
-            {this.props.status}
-          </td>
-        </tr>
-      </RedirectElement>
+      <Link
+        title={this.props.title}
+        to={this.props.link}
+        aria-label={this.props.title}
+        className={className}
+      >
+        { elements }
+      </Link>
     );
   }
 
   AsGridElement() {
+    const isSVG = typeof this.props.icon === "string" && this.props.icon.startsWith("<svg");
     return (
-      <Link to={this.props.link} title={this.props.title} aria-label={this.props.title} className="grid-listing-element">
-        <CroppedIcon className="icon-container" icon={this.props.icon}/>
+      <Link
+        to={this.props.link}
+        title={this.props.title}
+        aria-label={this.props.title}
+        className="grid-listing-element"
+      >
+        <div className={`icon-container ${isSVG ? "svg-icon-container" : ""}`}>
+          <ImageIcon icon={this.props.icon} />
+        </div>
+
         <div className="listing-info">
           <div className="title">
             {this.props.title}
@@ -88,6 +131,7 @@ ListingItem.propTypes = {
   noIcon: PropTypes.bool
 };
 
+@observer
 class Listing extends React.Component {
   render() {
     if(!this.props.count || this.props.count === 0) {
@@ -101,26 +145,17 @@ class Listing extends React.Component {
 
     if(this.props.display === "list") {
       return (
-        <table>
-          <thead>
-            <tr>
-              <th className="icon-header" hidden={this.props.noIcon} />
-              <th className="title-header" />
-              <th className="description-header" />
-              <th className="status-header" hidden={this.props.noStatus} />
-            </tr>
-          </thead>
-          <tbody>
-            { content.map(item =>
-              <ListingItem
-                key={item.id}
-                display={"list"}
-                noIcon={this.props.noIcon}
-                noStatus={this.props.noStatus}
-                {...item}
-              />)}
-          </tbody>
-        </table>
+        <div className="table-listing">
+          { content.map(item =>
+            <ListingItem
+              key={item.id}
+              display={"list"}
+              noIcon={this.props.noIcon}
+              noStatus={this.props.noStatus}
+              {...item}
+            />
+          )}
+        </div>
       );
     } else {
       return (

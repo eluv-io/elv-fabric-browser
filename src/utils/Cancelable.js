@@ -1,4 +1,4 @@
-export const WithCancel = async (cancelable, f) => {
+export const Cancelable = async (cancelable, f) => {
   if(cancelable) {
     return await cancelable.promise(() => f());
   } else {

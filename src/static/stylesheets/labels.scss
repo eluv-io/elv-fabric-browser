@@ -13,19 +13,20 @@
   }
 
   .labelled-field {
+    align-items: center;
     display: flex;
+    max-width: 100%;
     min-height: 1.8em;
     padding: $elv-spacing-xxs $elv-spacing-s $elv-spacing-xxs 0;
 
+    &.align-top {
+      align-items: flex-start;
+    }
+
     label {
-      align-items: center;
       color: $elv-color-text-light;
       display: flex;
       min-width: 150px;
-
-      &.align-top {
-        align-items: flex-start;
-      }
 
       &.wide {
         min-width: 250px;
@@ -33,6 +34,44 @@
 
       &.bold {
         font-weight: bold;
+      }
+    }
+
+    .editable-field {
+      overflow: visible;
+      word-wrap: break-word;
+    }
+
+    .editing-field {
+      max-width: 100%;
+
+      input,
+      textarea {
+        font-size: $elv-font-l;
+        min-width: 250px;
+      }
+
+      input {
+        height: $elv-spacing-l;
+      }
+
+      textarea {
+        height: 20rem;
+        padding: $elv-spacing-xxs;
+        width: 100%;
+      }
+    }
+
+    .-elv-truncated-field {
+      cursor: pointer;
+      max-width: 100%;
+
+      &:not(.truncated) {
+        span {
+          max-width: 100%;
+          white-space: break-spaces;
+          word-break: break-word;
+        }
       }
     }
 

@@ -1,16 +1,19 @@
 import React from "react";
-import PropTypes from "prop-types";
 import UrlJoin from "url-join";
 import {PageHeader} from "../../components/Page";
 import {Action, Tabs} from "elv-components-js";
 import Listing from "../../components/Listing";
+import {inject, observer} from "mobx-react";
 
+@inject("contractStore")
+@observer
 class Contracts extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      view: this.props.match.url.endsWith("/saved") ? "saved" : "deployed"
+      view: this.props.match.url.endsWith("/saved") ? "saved" : "deployed",
+      listingVersion: 0
     };
 
     this.Contracts = this.Contracts.bind(this);
@@ -50,10 +53,14 @@ class Contracts extends React.Component {
           className="compact"
           pageId="Contracts"
           paginate={true}
-          count={this.props.count.contracts}
-          loadingStatus={this.props.methodStatus.ListContracts}
-          LoadContent={(({params}) => this.props.methods.ListContracts({params}))}
-          RenderContent={() => this.Contracts(this.props.contracts)}
+          count={this.props.contractStore.contractsCount}
+          LoadContent={
+            async ({params}) => {
+              await this.props.contractStore.ListContracts({params});
+              this.setState({listingVersion: this.state.listingVersion + 1});
+            }
+          }
+          RenderContent={() => this.Contracts(this.props.contractStore.contracts)}
           noIcon={true}
         />
       );
@@ -63,10 +70,14 @@ class Contracts extends React.Component {
           key="deployed-contracts-listing"
           pageId="Contracts"
           paginate={true}
-          count={this.props.count.deployedContracts}
-          loadingStatus={this.props.methodStatus.ListDeployedContracts}
-          LoadContent={(({params}) => this.props.methods.ListDeployedContracts({params}))}
-          RenderContent={() => this.Contracts(this.props.deployedContracts)}
+          count={this.props.contractStore.deployedContractsCount}
+          LoadContent={
+            async ({params}) => {
+              await this.props.contractStore.ListDeployedContracts({params});
+              this.setState({listingVersion: this.state.listingVersion + 1});
+            }
+          }
+          RenderContent={() => this.Contracts(this.props.contractStore.deployedContracts)}
           noIcon={true}
         />
       );
@@ -99,13 +110,5 @@ class Contracts extends React.Component {
     );
   }
 }
-
-Contracts.propTypes = {
-  contracts: PropTypes.object.isRequired,
-  deployedContracts: PropTypes.object.isRequired,
-  methods: PropTypes.shape({
-    ListContracts: PropTypes.func.isRequired
-  })
-};
 
 export default Contracts;

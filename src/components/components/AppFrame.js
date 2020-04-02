@@ -9,6 +9,7 @@ import React from "react";
 import Fabric from "../../clients/Fabric";
 import PropTypes from "prop-types";
 import URI from "urijs";
+import {inject, observer} from "mobx-react";
 
 // Ensure error objects can be properly serialized in messages
 if(!("toJSON" in Error.prototype)) {
@@ -75,7 +76,8 @@ class IFrameBase extends React.Component {
       "allow-pointer-lock",
       "allow-orientation-lock",
       "allow-popups",
-      "allow-presentation"
+      "allow-presentation",
+      "allow-same-origin",
     ].join(" ");
   }
 
@@ -98,6 +100,7 @@ class IFrameBase extends React.Component {
         ref={this.props.appRef}
         src={this.props.appUrl}
         allow="encrypted-media *"
+        allowFullScreen
         sandbox={this.SandboxPermissions()}
         className={"app-frame " + (this.props.className || "")}
       />
@@ -116,6 +119,8 @@ const IFrame = React.forwardRef(
   (props, appRef) => <IFrameBase appRef={appRef} {...props} />
 );
 
+@inject("notificationStore")
+@observer
 class AppFrame extends React.Component {
   constructor(props) {
     super(props);
@@ -125,6 +130,11 @@ class AppFrame extends React.Component {
     };
 
     this.ApiRequestListener = this.ApiRequestListener.bind(this);
+  }
+
+  async componentWillUnmount() {
+    // Ensure region is reset after app is unloaded in case app changed it
+    await Fabric.ResetRegion();
   }
 
   AppUrl() {
@@ -181,21 +191,52 @@ class AppFrame extends React.Component {
     } else {
 
       switch(event.data.operation) {
+        case "OpenLink":
+          let { libraryId, objectId, versionHash } = event.data;
+
+          if(!objectId && versionHash) {
+            objectId = Fabric.utils.DecodeVersionHash(versionHash).objectId;
+          }
+
+          if(!libraryId) {
+            libraryId = await Fabric.ContentObjectLibraryId({objectId});
+          }
+
+          const uri = URI(window.location.toString());
+          uri.hash(`#/content/${libraryId}/${objectId}`);
+
+          window.open(uri.toString(), "_blank");
+
+          break;
+
         case "Complete":
           if(this.props.onComplete) { await this.props.onComplete(); }
+
+          if(event.data.message) {
+            this.props.notificationStore.SetNotificationMessage({
+              message: event.data.message
+            });
+          }
+
           break;
 
         case "Cancel":
           if(this.props.onCancel) { await this.props.onCancel(); }
           break;
 
+        case "Reload":
+          if(this.props.Reload) { await this.props.Reload(); }
+          break;
+
         case "SetFrameDimensions":
+          if(this.props.fixedDimensions) { return; }
+
           if(event.data.width) {
-            this.state.appRef.current.style.width = Math.min(parseInt(event.data.width), 1200) + "px";
+            this.state.appRef.current.style.width = Math.min(parseInt(event.data.width), 3000) + "px";
           }
 
           if(event.data.height) {
-            this.state.appRef.current.style.height = Math.min(parseInt(event.data.height), 1200) + "px";
+            this.state.appRef.current.style.height = Math.min(parseInt(event.data.height), 5000) + "px";
           }
 
           break;
@@ -220,7 +261,9 @@ AppFrame.propTypes = {
   queryParams: PropTypes.object,
   onComplete: PropTypes.func,
   onCancel: PropTypes.func,
-  className: PropTypes.string
+  Reload: PropTypes.func,
+  className: PropTypes.string,
+  fixedDimensions: PropTypes.bool
 };
 
 export default AppFrame;

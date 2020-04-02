@@ -1,5 +1,16 @@
+html,
+body,
+.app,
+.app-container,
+.view-container,
+.main-content-container {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  max-width: 100%;
+}
+
 .app {
-  height: 100%;
   max-width: 100vw;
   width: 100%;
 }
@@ -22,11 +33,13 @@
 
 .main-content-container {
   grid-area: main-content;
-  padding: $elv-spacing-s $elv-spacing-ml $elv-spacing-xl;
+  overflow-y: auto;
+  padding: $elv-spacing-s $elv-spacing-ml $elv-spacing-xxl;
 }
 
 .page-container {
   height: 100%;
+  position: relative;
   width: 100%;
 
   .page-header-container {
@@ -43,6 +56,7 @@
   }
 
   .page-content {
+    padding-bottom: $elv-spacing-xs;
     width: 100%;
   }
 }

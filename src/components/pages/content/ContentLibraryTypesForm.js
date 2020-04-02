@@ -1,21 +1,23 @@
 import React from "react";
-import PropTypes from "prop-types";
 import Path from "path";
 import {Action, Form, IconButton} from "elv-components-js";
+import AsyncComponent from "../../components/AsyncComponent";
 import DeleteIcon from "../../../static/icons/trash.svg";
+import {inject, observer} from "mobx-react";
 
+@inject("libraryStore")
+@inject("typeStore")
+@observer
 class ContentLibraryTypesForm extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      libraryTypes: {
-        ...props.library.types
-      },
-      selectedTypeIds: Object.values(props.library.types).map(type => type.id),
+      selectedTypeIds: [],
       selectedTypeId: ""
     };
 
+    this.PageContent = this.PageContent.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleAddType = this.HandleAddType.bind(this);
     this.HandleRemoveType = this.HandleRemoveType.bind(this);
@@ -52,15 +54,16 @@ class ContentLibraryTypesForm extends React.Component {
   }
 
   async HandleSubmit() {
-    await this.props.methods.Submit({
-      libraryId: this.props.libraryId,
+    await this.props.libraryStore.UpdateContentLibraryTypes({
+      libraryId: this.props.libraryStore.libraryId,
       typeIds: this.state.selectedTypeIds
     });
   }
 
   AvailableTypes() {
-    return Object.values(this.props.types)
-      .filter(type => !this.state.selectedTypeIds.includes(type.id));
+    return Object.values(this.props.typeStore.allTypes)
+      .filter(type => !this.state.selectedTypeIds.includes(type.id))
+      .sort((a, b) => a.meta.name < b.meta.name ? -1 : 1);
   }
 
   TypeSelector() {
@@ -97,7 +100,7 @@ class ContentLibraryTypesForm extends React.Component {
     if(this.state.selectedTypeIds.length === 0) { return null; }
 
     return this.state.selectedTypeIds.map(typeId => {
-      const type = Object.values(this.props.types).find(type => type.id === typeId);
+      const type = Object.values(this.props.typeStore.allTypes).find(type => type.id === typeId);
 
       return (
         <div className="list-item" key={"added-type-" + type.id}>
@@ -111,7 +114,7 @@ class ContentLibraryTypesForm extends React.Component {
     });
   }
 
-  render() {
+  PageContent() {
     return (
       <div>
         <div className="actions-container manage-actions">
@@ -121,8 +124,8 @@ class ContentLibraryTypesForm extends React.Component {
           legend={"Manage Library Types"}
           redirectPath={Path.dirname(this.props.match.url)}
           cancelPath={Path.dirname(this.props.match.url)}
-          status={this.props.methodStatus.Submit}
           OnSubmit={this.HandleSubmit}
+          className="small-form"
         >
           <div className="form-content">
             <label htmlFor={"typeId"}>Content Types</label>
@@ -137,15 +140,28 @@ class ContentLibraryTypesForm extends React.Component {
       </div>
     );
   }
-}
 
-ContentLibraryTypesForm.propTypes = {
-  libraryId: PropTypes.string.isRequired,
-  library: PropTypes.object.isRequired,
-  types: PropTypes.object.isRequired,
-  methods: PropTypes.shape({
-    Submit: PropTypes.func.isRequired
-  })
-};
+  render() {
+    return (
+      <AsyncComponent
+        Load={
+          async () => {
+            await this.props.libraryStore.ContentLibrary({
+              libraryId: this.props.libraryStore.libraryId
+            });
+
+            await this.props.typeStore.ContentTypes();
+
+            this.setState({
+              selectedTypeId: Object.keys(this.props.typeStore.allTypes)[0],
+              selectedTypeIds: Object.values(this.props.libraryStore.library.types).map(type => type.id)
+            });
+          }
+        }
+        render={this.PageContent}
+      />
+    );
+  }
+}
 
 export default ContentLibraryTypesForm;

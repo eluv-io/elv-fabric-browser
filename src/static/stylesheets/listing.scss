@@ -1,6 +1,12 @@
 $aspect-ratio: 0.75; // 4/3
-$grid-listing-width: 215px;
-$table-listing-width: 125px;
+$grid-listing-width: 150px;
+$table-listing-width: 95px;
+
+$listing-row-height: 4.5rem;
+$listing-icon-width: calc(#{$listing-row-height} * 16 / 9);
+
+$listing-grid-height: 9rem;
+$listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
 
 .listing {
   $table-listing-height: calc(#{$table-listing-width} * #{$aspect-ratio});
@@ -156,175 +162,143 @@ $table-listing-width: 125px;
     margin: $elv-spacing-xs 0 $elv-spacing-s;
   }
 
-  // Grid view
-
-  .grid-listing {
-    display: grid;
-    grid-gap: $elv-spacing-l $elv-spacing-m;
-    grid-template-columns: repeat(auto-fill, $grid-listing-width);
+  .listing-empty {
+    margin-top: $elv-spacing-xl;
   }
 
-  .grid-listing-element {
-    &:hover,
-    &:focus {
-      .listing-info {
-        background-color: $elv-color-lightgray;
-      }
+  .icon-container {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: center;
+    width: 100%;
+
+    &:not(.svg-icon-container) {
+      background-color: $elv-color-bg-black;
     }
 
-    .icon-container {
-      $image-height: calc(#{$grid-listing-width} * #{$aspect-ratio});
-      @include elv-cropped-image($grid-listing-width, $image-height, 0, $grid-listing-width, $image-height);
-
-      i {
-        padding: $elv-spacing-xs $elv-spacing-l $elv-spacing-l !important; // sass-lint:disable-line no-important
-      }
+    img,
+    svg {
+      flex-grow: 1;
+      max-height: 100%;
+      max-width: 100%;
+      object-fit: contain;
+      width: 100%;
     }
 
-    .listing-info {
-      height: 120px;
-      padding: $elv-spacing-xs $elv-spacing-xxs 0;
-    }
-
-    .title {
-      color: $elv-color-text-dark;
-      font-size: 18px;
-      margin-bottom: $elv-spacing-xs;
-    }
-
-    .description {
-      font-size: 14px;
-      height: 50px;
-      margin-bottom: $elv-spacing-xs;
-      max-height: 80px;
-      overflow: hidden;
-    }
-
-    .title,
-    .status {
-      @include elv-ellipsis;
-    }
-
-    .title,
-    .description,
-    .status {
-      text-align: center;
+    svg {
+      background-color: transparent;
     }
   }
 
   // Table view
-
-  table {
-    border-collapse: collapse;
-    max-width: 100%;
-    table-layout: fixed;
+  .table-listing {
+    @include elv-no-select;
+    cursor: pointer;
     width: 100%;
 
-    * {
-      border: 0;
-    }
-  }
+    .listing-row {
+      display: grid;
+      grid-template-columns: $listing-icon-width 3fr 3fr 1fr;
+      margin-bottom: 3px;
+      max-height: $listing-row-height;
+      min-height: $listing-row-height;
+      width: 100%;
 
-  thead {
-    tr {
-      th {
-        margin: 0;
-        padding: 0;
+      &.listing-row-no-icon {
+        grid-template-columns: 3fr 3fr 1fr;
+      }
 
-        &.icon-header {
-          width: $table-listing-width;
+      &.listing-row-no-status {
+        grid-template-columns: $listing-icon-width 1fr 1fr;
+
+        &.listing-row-no-icon {
+          grid-template-columns: 1fr 1fr;
         }
+      }
 
-        &.title-header {
-          width: 35%;
-        }
+      &:hover {
+        background-color: $elv-color-bg-light-dark;
+      }
 
-        &.status-header {
-          width: 150px;
+      div {
+        align-items: center;
+        display: flex;
+        height: $listing-row-height;
+        max-height: $listing-row-height;
+
+        &:not(.icon-container) {
+          padding-left: $elv-spacing-xs;
         }
+      }
+
+      .description {
+        overflow-y: hidden;
+        padding: $elv-spacing-xs;
+      }
+
+      .description,
+      .status {
+        color: $elv-color-text-lighter;
+        font-size: $elv-font-m;
+      }
+
+      .status {
+        justify-content: center;
       }
     }
   }
 
-  tbody {
-    tr {
-      height: calc(#{$table-listing-height} + #{$elv-spacing-xs});
-      max-height: calc(#{$table-listing-height} + #{$elv-spacing-xs});
-
-      &:hover,
-      &:focus {
-        background-color: $elv-color-lightestgray;
-      }
-
-      td {
-        color: $elv-color-text-light;
-        margin: 0;
-        overflow: hidden;
-        padding: $elv-spacing-xs 0 $elv-spacing-xs $elv-spacing-s;
-        word-wrap: break-word;
-
-        &.icon-cell {
-          padding: 0;
-        }
-
-        &.title-cell {
-          color: $elv-color-text-dark;
-          font-size: 18px;
-        }
-
-        &.status-cell {
-          font-size: 14px;
-        }
-
-        .cropped-text {
-          height: auto;
-          max-height: 70px;
-          overflow-x: visible;
-          overflow-y: hidden;
-          white-space: normal;
-        }
-
-        .icon-container {
-          $image-height: calc(#{$table-listing-width} * #{$aspect-ratio});
-          @include elv-cropped-image($table-listing-width, $image-height, 0, $table-listing-width, $image-height);
-
-          i {
-            padding: 0 $elv-spacing-s !important; // sass-lint:disable-line no-important
-          }
-        }
-
-        a {
-          display: block;
-          height: 100%;
-          width: 100%;
-        }
-      }
-    }
+  // Grid view
+  .grid-listing {
+    display: grid;
+    grid-gap: $elv-spacing-s;
+    grid-template-columns: repeat(auto-fill, $listing-grid-icon-width);
   }
 
-  &.compact {
-    thead {
-      th {
-        &.title-header {
-          width: 45%;
-        }
+  .grid-listing-element {
+    display: block;
+    max-height: $listing-grid-height;
+    max-width: $listing-grid-icon-width;
+    min-height: $listing-grid-height;
+    min-width: $listing-grid-icon-width;
+    outline: 1px solid $elv-color-lightgray;
+    position: relative;
+
+    .listing-info {
+      background-color: $elv-color-black;
+      bottom: 0;
+      color: $elv-color-text-white;
+      display: flex;
+      flex-direction: column;
+      height: auto;
+      justify-content: flex-end;
+      left: 0;
+      max-width: $listing-grid-icon-width;
+      min-width: $listing-grid-icon-width;
+      opacity: 0.7;
+      padding: $elv-spacing-xs;
+      position: absolute;
+      text-align: center;
+      word-break: break-all;
+      z-index: 10;
+    }
+
+    &:hover {
+      .listing-info {
+        opacity: 0.9;
       }
     }
 
-    tbody {
-      tr {
-        height: 70px;
-      }
+    .title {
+      @include elv-ellipsis;
+    }
 
-      td {
-        &.title-cell {
-          font-size: 16px;
-        }
-
-        &.description-cell {
-          font-size: 14px;
-        }
-      }
+    .status,
+    .description {
+      @include elv-ellipsis;
+      font-size: $elv-font-s;
     }
   }
 

@@ -1,21 +1,24 @@
 import React from "react";
-import PropTypes from "prop-types";
 import Path from "path";
 import {Action, Form, RadioSelect} from "elv-components-js";
+import AsyncComponent from "../../components/AsyncComponent";
 import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
-import Redirect from "react-router/es/Redirect";
+import {Redirect} from "react-router";
+import {inject, observer} from "mobx-react";
 
+@inject("objectStore")
+@observer
 class ContentObjectReviewForm extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
       approve: true,
-      note: "",
-      reviewAppUrl: props.object.reviewAppUrl || (props.object.typeInfo && props.object.typeInfo.reviewAppUrl)
+      note: ""
     };
 
+    this.PageContent = this.PageContent.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
     this.FrameCompleted = this.FrameCompleted.bind(this);
@@ -28,9 +31,9 @@ class ContentObjectReviewForm extends React.Component {
   }
 
   async HandleSubmit() {
-    await this.props.methods.Submit({
-      libraryId: this.props.libraryId,
-      objectId: this.props.objectId,
+    await this.props.objectStore.ReviewContentObject({
+      libraryId: this.props.objectStore.libraryId,
+      objectId: this.props.objectStore.objectId,
       approve: this.state.approve,
       note: this.state.note
     });
@@ -43,9 +46,9 @@ class ContentObjectReviewForm extends React.Component {
   ReviewAppFrame(legend) {
     const queryParams = {
       contentSpaceId: Fabric.contentSpaceId,
-      libraryId: this.props.libraryId,
-      objectId: this.props.objectId,
-      type: this.props.object.type,
+      libraryId: this.props.objectStore.libraryId,
+      objectId: this.props.objectStore.objectId,
+      type: this.props.objectStore.object.type,
       action: "review"
     };
 
@@ -67,12 +70,12 @@ class ContentObjectReviewForm extends React.Component {
     );
   }
 
-  render() {
+  PageContent() {
     if(this.state.completed) {
       return <Redirect push to={Path.dirname(this.props.match.url)} />;
     }
 
-    const legend = `Review "${this.props.object.name}"`;
+    const legend = `Review "${this.props.objectStore.object.name}"`;
 
     if(this.state.reviewAppUrl) {
       return this.ReviewAppFrame(legend);
@@ -86,7 +89,6 @@ class ContentObjectReviewForm extends React.Component {
             legend={legend}
             redirectPath={Path.dirname(this.props.match.url)}
             cancelPath={Path.dirname(this.props.match.url)}
-            status={this.props.methodStatus.Submit}
             OnSubmit={this.HandleSubmit}
           >
             <div className="form-content">
@@ -107,15 +109,27 @@ class ContentObjectReviewForm extends React.Component {
       );
     }
   }
-}
 
-ContentObjectReviewForm.propTypes = {
-  libraryId: PropTypes.string.isRequired,
-  objectId: PropTypes.string.isRequired,
-  object: PropTypes.object.isRequired,
-  methods: PropTypes.shape({
-    Submit: PropTypes.func.isRequired
-  })
-};
+  render() {
+    return (
+      <AsyncComponent
+        Load={
+          async () => {
+            await this.props.objectStore.ContentObject({
+              libraryId: this.props.objectStore.libraryId,
+              objectId: this.props.objectStore.objectId
+            });
+
+            this.setState({
+              reviewAppUrl: this.props.objectStore.object.reviewAppUrl ||
+                (this.props.objectStore.object.typeInfo && this.props.objectStore.object.typeInfo.reviewAppUrl)
+            });
+          }
+        }
+        render={this.PageContent}
+      />
+    );
+  }
+}
 
 export default ContentObjectReviewForm;

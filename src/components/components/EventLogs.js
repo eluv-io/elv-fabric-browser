@@ -2,26 +2,50 @@ import React from "react";
 import PropTypes from "prop-types";
 import {FormatAddress, ParseBytes32} from "../../utils/Helpers";
 import Fabric from "../../clients/Fabric";
-import {Balance} from "elv-components-js";
+import {Balance, Copy, ImageIcon} from "elv-components-js";
+import {inject, observer} from "mobx-react";
+import {Tabs} from "elv-components-js";
 
+import ClipboardIcon from "../../static/icons/clipboard.svg";
+
+@inject("eventsStore")
+@observer
 class EventLogs extends React.PureComponent {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      view: "formatted"
+    };
+  }
+
   Key(log) {
     return `log-${log.transactionHash}-${log.logIndex}`;
   }
 
   Inputs(log) {
-    const inputs = Object.entries(log.values)
+    if(!log.values) { return []; }
+
+    return Object.entries(log.values)
       .filter(([key]) => key !== "length" && parseInt(key).toString() !== key)
       .map(([key, value]) => {
-        if(typeof value === "object" && value._hex) {
+        if(value === null || value === undefined) {
+          return [key, "null"];
+        } else if(typeof value === "object" && value._hex) {
           return [key, `${parseInt(value._hex, 16)} (${value._hex})`];
         } else if(value.length === 66) {
           // bytes32
           return [key, ParseBytes32(value), value];
+        } else if(value.toString().startsWith("0x") && value.length === 42) {
+          return [key, FormatAddress(value)];
         } else {
-          return [key, value];
+          return [key, value.toString()];
         }
       });
+  }
+
+  InputFields(log) {
+    const inputs = this.Inputs(log);
 
     if(inputs.length === 0) { return null; }
 
@@ -44,24 +68,34 @@ class EventLogs extends React.PureComponent {
     );
   }
 
-  Id(eventName, address) {
-    let id;
-    if(eventName.startsWith("BaseContentSpace")) {
-      id = Fabric.utils.AddressToSpaceId(address);
-    } else if(eventName.startsWith("BaseLibrary")) {
-      id = Fabric.utils.AddressToLibraryId(address);
-    } else if(eventName.startsWith("BaseContent")) {
-      id = Fabric.utils.AddressToObjectId(address);
-    } else {
-      return;
+  Id(log) {
+    let contractName = this.props.eventsStore.contractNames[FormatAddress(log.address)];
+    if(!contractName || contractName === "Unknown") {
+      contractName = log.contract;
     }
 
-    return (
-      <div className="labelled-field">
-        <label>ID</label>
-        <div className="value">{id}</div>
-      </div>
-    );
+    let id;
+    switch(contractName) {
+      case "BaseContentSpace":
+        id = Fabric.utils.AddressToSpaceId(log.address);
+        break;
+
+      case "BaseLibrary":
+        id = Fabric.utils.AddressToLibraryId(log.address);
+        break;
+
+      case "BaseContent":
+      case "BaseContentType":
+      case "BsAccessWallet":
+      case "BsAccessCtrlGrp":
+        id = Fabric.utils.AddressToObjectId(log.address);
+        break;
+
+      default:
+        return;
+    }
+
+    return id;
   }
 
   Value(value) {
@@ -82,57 +116,69 @@ class EventLogs extends React.PureComponent {
     );
   }
 
+  From(log) {
+    return log.fromName ?
+      <span>{log.fromName}<span className="help-text">({FormatAddress(log.from)})</span></span> :
+      FormatAddress(log.from);
+  }
+
+  To(log) {
+    if(log.address) {
+      return FormatAddress(log.address);
+    }
+
+    return log.toName ?
+      <span>{log.toName}<span className="help-text">({FormatAddress(log.to)})</span></span> :
+      FormatAddress(log.to);
+  }
+
   ParsedLog(log) {
-    const eventName = log.contract ? `${log.contract} :: ${log.name}` : log.name;
+    let contractName = this.props.eventsStore.contractNames[FormatAddress(log.address)];
+    if(!contractName || contractName === "Unknown") {
+      contractName = log.contract;
+    }
+
+    let eventName;
+
+    if(contractName && contractName !== "Unknown") {
+      eventName = log.name ?  `${contractName} ｜ ${log.name}` : contractName;
+    } else {
+      eventName = log.name;
+    }
+
+    const id = this.Id(log);
+    let idDetails;
+    if(id) {
+      idDetails = (
+        <div className="labelled-field">
+          <label>ID</label>
+          <div className="value">{id}</div>
+        </div>
+      );
+    }
 
     return (
       <div className="log" key={this.Key(log)}>
         <div className="header">
-          <div className="title bold">{eventName}</div>
-          <div className="info">{log.logIndex}</div>
+          <div className="title bold">{eventName || "Transaction"}</div>
+          <div className="info">{(log.logIndex || 0) + 1}</div>
         </div>
         <div className="inputs indented">
           <div className="labelled-field">
             <label>Transaction Hash</label>
             <div className="value">{log.transactionHash}</div>
           </div>
-          { this.Id(eventName, log.address) }
+          { idDetails }
           <div className="labelled-field">
-            <label>Contract Address</label>
-            <div className="value">{FormatAddress(log.address)}</div>
+            <label>{log.address ? "Contract Address" : "To"}</label>
+            <div className="value">{this.To(log)}</div>
           </div>
           <div className="labelled-field">
             <label>From</label>
-            <div className="value">{FormatAddress(log.from)}</div>
+            <div className="value">{this.From(log)}</div>
           </div>
           { this.Value(log.value) }
-          { this.Inputs(log) }
-        </div>
-      </div>
-    );
-  }
-
-  RawLog(log) {
-    return (
-      <div className="log" key={this.Key(log)}>
-        <div className="header">
-          <div className="title" />
-          <div className="info">{log.logIndex}</div>
-        </div>
-        <div className="indented">
-          <div className="labelled-field">
-            <label>Transaction Hash</label>
-            <div className="value">{log.hash}</div>
-          </div>
-          <div className="labelled-field">
-            <label>From</label>
-            <div className="value">{FormatAddress(log.from)}</div>
-          </div>
-          <div className="labelled-field">
-            <label>{!log.to && log.contractAddress ? "Contract Address" : "To"}</label>
-            <div className="value">{FormatAddress(log.to) || `${FormatAddress(log.contractAddress)}`}</div>
-          </div>
-          { this.Value(log.value) }
+          { this.InputFields(log) }
         </div>
       </div>
     );
@@ -149,10 +195,74 @@ class EventLogs extends React.PureComponent {
           <div className="info">{blockNumber}</div>
         </div>
         <div className="logs">
-          { event.map(log => log.name ? this.ParsedLog(log) : this.RawLog(log)) }
+          { event.map(log => log.name ? this.ParsedLog(log) : this.ParsedLog(log)) }
         </div>
       </div>
     );
+  }
+
+  // Raw text version of logs
+  Text(events) {
+    return events.map(event => {
+      if(!Array.isArray(event)) { event = [event]; }
+
+      if(!event) { return; }
+
+      const blockNumber = event && event[0] ? event[0].blockNumber : "unknown";
+
+      const logs = event.map(log => {
+        let contractName = this.props.eventsStore.contractNames[FormatAddress(log.address)];
+        if(!contractName || contractName === "Unknown") {
+          contractName = log.contract;
+        }
+
+        let eventName;
+
+        if(contractName && contractName !== "Unknown") {
+          eventName = log.name ?  `${contractName} ｜ ${log.name}` : contractName;
+        } else {
+          eventName = log.name;
+        }
+
+        const id = this.Id(log);
+        const inputs = this.Inputs(log);
+        const value = Fabric.utils.WeiToEther(parseInt(log.value._hex, 16));
+        const valueInfo = value && value > 0 ? `Value: ${value}` : "";
+
+        let inputFields;
+        if(inputs.length > 0) {
+          inputFields = inputs.map(([key, value]) => `${key}: ${value}`);
+          inputFields.unshift("Method Inputs");
+          inputFields = inputFields.join("\n\t\t");
+        }
+
+        let to;
+        if(log.address) {
+          to = `Contract Address: ${FormatAddress(log.address)}`;
+        } else {
+          to = log.toName ? `${log.toName} (${FormatAddress(log.to)}` : FormatAddress(log.to);
+        }
+
+        return [
+          eventName,
+          `Transaction Hash: ${log.hash}`,
+          (id ? `ID: ${this.Id(log)}`: ""),
+          to,
+          `From: ${log.fromName ? `${log.fromName} (${FormatAddress(log.from)})` : FormatAddress(log.from)}`,
+          valueInfo,
+          inputFields
+        ]
+          .filter(l => l)
+          .join("\n\t");
+      }).join("\n\n\t");
+
+      return [
+        `Block ${blockNumber}`,
+        `\t${logs}`
+      ].join("\n");
+    })
+      .filter(e => e)
+      .join("\n\n");
   }
 
   render() {
@@ -168,7 +278,11 @@ class EventLogs extends React.PureComponent {
           (log.address || "").toLowerCase().includes(filter) ||
           (log.to || "").toLowerCase().includes(filter) ||
           (log.from || "").toLowerCase().includes(filter) ||
-          (log.contractAddress || "").toLowerCase().includes(filter)
+          (log.contractAddress || "").toLowerCase().includes(filter) ||
+          (
+            (this.props.eventsStore.contractNames[FormatAddress(log.address)] || "")
+              .toLowerCase().includes(filter)
+          )
         )
       );
     }
@@ -176,15 +290,37 @@ class EventLogs extends React.PureComponent {
     if(filteredEvents.length === 0) { return <h4>No events found</h4>; }
 
     return (
-      <div className="events-container">
-        { filteredEvents.map(event => this.RenderEvent(event)) }
-        <div
-          ref={(bottom)=> {
-            if(bottom && this.props.scrollToBottom) {
-              bottom.scrollIntoView();
-            }
-          }}
+      <div className="events-page">
+        <Tabs
+          options={[["Formatted", "formatted"], ["Raw", "raw"]]}
+          selected={this.state.view}
+          onChange={view => this.setState({view})}
         />
+
+        <div className="events-container">
+          {
+            this.state.view === "formatted" ?
+              filteredEvents.map(event => this.RenderEvent(event)) :
+              <div className="events-raw">
+                <Copy copy={this.Text(filteredEvents)} className="events-copy-button">
+                  <ImageIcon
+                    icon={ClipboardIcon}
+                  />
+                </Copy>
+                <pre className="events-raw-text">
+                  { this.Text(filteredEvents) }
+                </pre>
+              </div>
+          }
+
+          <div
+            ref={(bottom)=> {
+              if(bottom && this.props.scrollToBottom) {
+                bottom.scrollIntoView();
+              }
+            }}
+          />
+        </div>
       </div>
     );
   }

@@ -1,24 +1,28 @@
 import React from "react";
-import PropTypes from "prop-types";
 import UrlJoin from "url-join";
 import TypeIcon from "../../../static/icons/content.svg";
 import {PageHeader} from "../../components/Page";
 import {Action} from "elv-components-js";
 import Listing from "../../components/Listing";
+import {inject, observer} from "mobx-react";
 
+@inject("typeStore")
+@observer
 class ContentTypes extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      listingVersion: 0
+    };
 
     this.ContentTypes = this.ContentTypes.bind(this);
   }
 
   ContentTypes() {
-    if(!this.props.types) { return []; }
+    if(!this.props.typeStore.types) { return []; }
 
-    const types = Object.keys(this.props.types).sort().map(typeId => {
-      const type = this.props.types[typeId];
+    const types = Object.keys(this.props.typeStore.types).sort().map(typeId => {
+      const type = this.props.typeStore.types[typeId];
 
       return {
         id: typeId,
@@ -30,7 +34,7 @@ class ContentTypes extends React.Component {
       };
     });
 
-    return types.sort((a, b) => a.sortKey > b.sortKey ? 1 : -1);
+    return types.sort((a, b) => a.sortKey.toLowerCase() > b.sortKey.toLowerCase() ? 1 : -1);
   }
 
   render() {
@@ -44,9 +48,13 @@ class ContentTypes extends React.Component {
           <Listing
             pageId="ContentTypes"
             paginate={true}
-            count={this.props.count}
-            loadingStatus={this.props.methodStatus.ListContentTypes}
-            LoadContent={({params}) => this.props.methods.ListContentTypes({params})}
+            count={this.props.typeStore.count}
+            LoadContent={
+              async ({params}) => {
+                await this.props.typeStore.ListContentTypes({params});
+                this.setState({listingVersion: this.state.listingVersion + 1});
+              }
+            }
             RenderContent={this.ContentTypes}
           />
         </div>
@@ -54,13 +62,5 @@ class ContentTypes extends React.Component {
     );
   }
 }
-
-ContentTypes.propTypes = {
-  types: PropTypes.object.isRequired,
-  count: PropTypes.number.isRequired,
-  methods: PropTypes.shape({
-    ListContentTypes: PropTypes.func.isRequired
-  })
-};
 
 export default ContentTypes;

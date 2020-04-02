@@ -1,17 +1,22 @@
 import React from "react";
-import PropTypes from "prop-types";
 import Path from "path";
 import {Action, BrowseWidget, Form} from "elv-components-js";
+import AsyncComponent from "../../components/AsyncComponent";
+import {inject, observer} from "mobx-react";
+import {Percentage} from "../../../utils/Helpers";
 
+@inject("objectStore")
+@observer
 class ContentObjectPartsForm extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      encrypt: true,
+      encrypt: false,
       progress: {}
     };
 
+    this.PageContent = this.PageContent.bind(this);
     this.HandleFileSelect = this.HandleFileSelect.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
   }
@@ -24,7 +29,7 @@ class ContentObjectPartsForm extends React.Component {
 
   async HandleSubmit() {
     const callback = ({uploaded, total, filename}) => {
-      const progress = `${(uploaded * 100 / total).toFixed(1)}%`;
+      const progress = Percentage(uploaded, total);
 
       this.setState({
         progress: {
@@ -34,26 +39,26 @@ class ContentObjectPartsForm extends React.Component {
       );
     };
 
-    await this.props.methods.Submit({
-      libraryId: this.props.libraryId,
-      objectId: this.props.objectId,
+    await this.props.objectStore.UploadParts({
+      libraryId: this.props.objectStore.libraryId,
+      objectId: this.props.objectStore.objectId,
       files: this.state.files,
       encrypt: this.state.encrypt,
       callback
     });
   }
 
-  render() {
+  PageContent() {
     return (
       <div>
         <div className="actions-container manage-actions">
           <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
         </div>
         <Form
-          legend="Upload parts"
+          legend={`Upload parts to ${this.props.objectStore.object.meta.name || this.props.objectStore.objectId}`}
           redirectPath={Path.dirname(this.props.match.url)}
           cancelPath={Path.dirname(this.props.match.url)}
-          status={this.props.methodStatus.Submit}
+          className="small-form"
           OnSubmit={this.HandleSubmit}
         >
           <div className="form-content">
@@ -79,14 +84,22 @@ class ContentObjectPartsForm extends React.Component {
       </div>
     );
   }
-}
 
-ContentObjectPartsForm.propTypes = {
-  libraryId: PropTypes.string.isRequired,
-  objectId: PropTypes.string.isRequired,
-  methods: PropTypes.shape({
-    Submit: PropTypes.func.isRequired
-  })
-};
+  render() {
+    return (
+      <AsyncComponent
+        Load={
+          async () => {
+            await this.props.objectStore.ContentObject({
+              libraryId: this.props.objectStore.libraryId,
+              objectId: this.props.objectStore.objectId
+            });
+          }
+        }
+        render={this.PageContent}
+      />
+    );
+  }
+}
 
 export default ContentObjectPartsForm;

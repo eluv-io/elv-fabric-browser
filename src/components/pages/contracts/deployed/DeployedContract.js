@@ -1,14 +1,17 @@
 import React from "react";
-import PropTypes from "prop-types";
 import UrlJoin from "url-join";
 import Path from "path";
 import {LabelledField} from "../../../components/LabelledField";
 import {ContractTypes} from "../../../../utils/Contracts";
-import Redirect from "react-router/es/Redirect";
+import {Redirect} from "react-router";
 import {PageHeader} from "../../../components/Page";
+import {Action, Confirm} from "elv-components-js";
+import AsyncComponent from "../../../components/AsyncComponent";
+import {inject, observer} from "mobx-react";
 import DeployedContractMethodForm from "./DeployedContractMethodForm";
-import {Action, Confirm, LoadingElement} from "elv-components-js";
 
+@inject("contractStore")
+@observer
 class DeployedContract extends React.Component {
   constructor(props) {
     super(props);
@@ -16,6 +19,7 @@ class DeployedContract extends React.Component {
     this.state = {
       visibleMethods: {},
       method: "",
+      removed: false
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -30,7 +34,7 @@ class DeployedContract extends React.Component {
 
   // Allow removal (aka stop watching) deployed custom contract
   DeleteButton() {
-    if(this.props.contract.type !== ContractTypes.unknown) { return null; }
+    if(this.props.contractStore.contract.type !== ContractTypes.unknown) { return null; }
 
     return (
       <Action
@@ -38,7 +42,13 @@ class DeployedContract extends React.Component {
         onClick={async () => {
           await Confirm({
             message: "Are you sure you want to stop watching this contract?",
-            onConfirm: async () => await this.props.methods.RemoveDeployedContract({address: this.props.contract.address})
+            onConfirm: async () => {
+              await this.props.contractStore.RemoveDeployedContract({
+                address: this.props.contractStore.contractAddress
+              });
+
+              this.setState({removed: true});
+            }
           });
         }}
       >
@@ -72,10 +82,10 @@ class DeployedContract extends React.Component {
   }
 
   AbiInfo() {
-    if(!this.props.contract.abi) { return null; }
+    if(!this.props.contractStore.contract.abi) { return null; }
 
     const abiDisplayInfo = this.state.visibleMethods["__abi"] ?
-      <pre key="abi-content">{JSON.stringify(this.props.contract.abi, null, 2)}</pre> : null;
+      <pre key="abi-content">{JSON.stringify(this.props.contractStore.contract.abi, null, 2)}</pre> : null;
 
     return [
       <LabelledField key="abi-label" label="ABI">
@@ -88,36 +98,42 @@ class DeployedContract extends React.Component {
   PageContent() {
     let backPath = Path.dirname(this.props.match.url);
     // Some routes require going back one path, others two
-    if([ContractTypes.contentSpace, ContractTypes.library, ContractTypes.unknown].includes(this.props.contract.type)) {
+    if([ContractTypes.contentSpace, ContractTypes.library, ContractTypes.unknown].includes(this.props.contractStore.contract.type)) {
       backPath = Path.dirname(backPath);
-    } else if(this.props.contract.type === ContractTypes.accessGroup && !this.props.accessGroup) {
+    } else if(this.props.contractStore.contract.type === ContractTypes.accessGroup && !this.props.accessGroup) {
+      // TODO: this
       // Access group contract, but access group is unknown. Skip access group details page
       backPath = Path.dirname(backPath);
     }
 
-    const balance =`φ${Math.round((this.props.deployedContract.balance || 0) * 1000) / 1000}`;
+    if(this.state.removed) {
+      return <Redirect push to={backPath} />;
+    }
+
+    const balance =`φ${Math.round((this.props.contractStore.contract.balance || 0) * 1000) / 1000}`;
+
     return (
       <div className="page-container contracts-page-container">
         <div className="actions-container">
           <Action type="link" to={backPath} className="secondary" >Back</Action>
           <Action type="link" to={UrlJoin(this.props.match.url, "funds")}>Transfer Funds</Action>
-          <Action type="link" to={UrlJoin(this.props.match.url, "logs")}>Contract Logs</Action>
+          <Action type="link" to={UrlJoin(this.props.match.url, "events")}>Contract Events</Action>
           { this.DeleteButton() }
         </div>
-        <PageHeader header={this.props.contract.name} subHeader={this.props.contract.description} />
+        <PageHeader header={this.props.contractStore.contract.name} subHeader={this.props.contractStore.contract.description} />
         <div className="page-content">
           <div className="label-box">
             <h3>Contract Info</h3>
             <LabelledField label="Name">
-              { this.props.contract.name }
+              { this.props.contractStore.contract.name }
             </LabelledField>
 
             <LabelledField label="Description">
-              { this.props.contract.description }
+              { this.props.contractStore.contract.description }
             </LabelledField>
 
             <LabelledField label="Contract Address">
-              { this.props.contract.address }
+              { this.props.contractStore.contract.contractAddress }
             </LabelledField>
 
             <LabelledField label="Balance">
@@ -126,7 +142,7 @@ class DeployedContract extends React.Component {
 
             { this.AbiInfo() }
             <h3>Contract Methods</h3>
-            <DeployedContractMethodForm {...this.props} />
+            <DeployedContractMethodForm contract={this.props.contractStore.contract} />
           </div>
         </div>
       </div>
@@ -134,31 +150,17 @@ class DeployedContract extends React.Component {
   }
 
   render() {
-    if(this.props.methodStatus.RemoveDeployedContract.completed) {
-      return <Redirect push to={Path.dirname(Path.dirname(this.props.match.url))} />;
-    }
-
     return (
-      <LoadingElement
-        fullPage={true}
-        loading={this.props.methodStatus.RemoveDeployedContract.loading}
+      <AsyncComponent
+        Load={
+          async () => {
+            await this.props.contractStore.DeployedContractInfo();
+          }
+        }
         render={this.PageContent}
       />
     );
   }
 }
-
-DeployedContract.propTypes = {
-  contract: PropTypes.object.isRequired,
-  deployedContract: PropTypes.object.isRequired,
-  libraryId: PropTypes.string,
-  library: PropTypes.object,
-  objectId: PropTypes.string,
-  object: PropTypes.object,
-  accessGroup: PropTypes.object,
-  methods: PropTypes.shape({
-    RemoveDeployedContract: PropTypes.func
-  })
-};
 
 export default DeployedContract;

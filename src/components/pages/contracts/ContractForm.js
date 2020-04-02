@@ -1,35 +1,32 @@
 import React from "react";
-import PropTypes from "prop-types";
-import Redirect from "react-router/es/Redirect";
+import {Redirect} from "react-router";
 import {Action, Form} from "elv-components-js";
+import AsyncComponent from "../../components/AsyncComponent";
 import Path from "path";
+import UrlJoin from "url-join";
+import {inject, observer} from "mobx-react";
 
+@inject("contractStore")
+@observer
 class ContractForm extends React.Component {
   constructor(props) {
     super(props);
 
-    const contract = props.contract || this.props.contractData && Object.keys(this.props.contractData)[0] || {};
+    //const contract = props.contract || this.props.contractData && Object.keys(this.props.contractData)[0] || {};
 
     // Keep redirect path synchronized with name changes
     this.state = {
-      contract,
-      contractName: this.props.contractName,
-      name: contract.name || "",
-      description: contract.description || "",
-      abi: contract.abi || "",
-      bytecode: contract.bytecode || ""
+      contractName: "",
+      name: "",
+      description: "",
+      abi: "",
+      bytecode: "",
     };
 
+    this.PageContent = this.PageContent.bind(this);
     this.SwitchContract = this.SwitchContract.bind(this);
     this.HandleInputChange = this.HandleInputChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
-  }
-
-  componentDidMount() {
-    if(this.props.createForm && this.props.contractData) {
-      const firstContractName = Object.keys(this.props.contractData)[0];
-      this.SwitchContract(firstContractName);
-    }
   }
 
   HandleInputChange(event) {
@@ -39,10 +36,10 @@ class ContractForm extends React.Component {
   }
 
   SwitchContract(contractName) {
-    if(!this.props.contractData) { return; }
+    if(!this.props.contractStore.compiledContracts) { return; }
 
     const formattedName = contractName.split(":").slice(-1)[0];
-    const contract = this.props.contractData[contractName];
+    const contract = this.props.contractStore.compiledContracts[contractName];
 
     this.setState({
       name: formattedName,
@@ -54,7 +51,7 @@ class ContractForm extends React.Component {
   }
 
   async HandleSubmit() {
-    await this.props.methods.Submit({
+    await this.props.contractStore.SaveContract({
       name: this.state.name,
       oldContractName: this.state.contractName || this.state.name,
       description: this.state.description,
@@ -64,7 +61,7 @@ class ContractForm extends React.Component {
   }
 
   AvailableContracts() {
-    const options = Object.keys(this.props.contractData).map(contract => {
+    const options = Object.keys(this.props.contractStore.compiledContracts).map(contract => {
       return <option key={contract} value={contract}>{contract}</option>;
     });
 
@@ -76,7 +73,7 @@ class ContractForm extends React.Component {
   }
 
   ContractSelection() {
-    if(!this.props.createForm) { return null; }
+    if(!this.state.createForm) { return null; }
 
     return [
       <label key="selected-contract-label" htmlFor="selectedContract">Contract</label>,
@@ -84,19 +81,17 @@ class ContractForm extends React.Component {
     ];
   }
 
-  render() {
-    const backPath = Path.dirname(this.props.match.url);
-
-    if(this.props.createForm) {
+  PageContent() {
+    if(this.state.createForm) {
       // Ensure contract data is set from compilation
-      if(!this.props.contractData) {
-        this.props.SetErrorMessage({
-          message: "No contract data",
-          redirect: true
-        });
-
-        return <Redirect to={backPath} />;
+      if(!this.props.contractStore.compiledContracts) {
+        return <Redirect to={Path.dirname(this.props.match.url)}/>;
       }
+    }
+
+    let backPath = Path.dirname(this.props.match.url);
+    if(this.props.contractStore.contract) {
+      backPath = UrlJoin(Path.dirname(Path.dirname(this.props.match.url)), this.state.name);
     }
 
     return (
@@ -105,10 +100,9 @@ class ContractForm extends React.Component {
           <Action type="link" to={backPath} className="secondary">Back</Action>
         </div>
         <Form
-          legend={this.props.contract ? "Edit Contract" : "Save contract"}
+          legend={this.state.createForm ? "Save contract" : "Edit Contract"}
           redirectPath={backPath}
           cancelPath={backPath}
-          status={this.props.methodStatus.Submit}
           OnSubmit={this.HandleSubmit}
         >
           <div className="form-content">
@@ -124,17 +118,38 @@ class ContractForm extends React.Component {
       </div>
     );
   }
-}
 
-ContractForm.propTypes = {
-  contract: PropTypes.object,
-  contracts: PropTypes.object.isRequired,
-  contractData: PropTypes.object,
-  createForm: PropTypes.bool.isRequired,
-  contractName: PropTypes.string,
-  methods: PropTypes.shape({
-    Submit: PropTypes.func.isRequired
-  })
-};
+  render() {
+    return (
+      <AsyncComponent
+        Load={
+          async () => {
+            await this.props.contractStore.ListContracts({params: {paginate: false}});
+            await this.props.contractStore.ListDeployedContracts({params: {paginate: false}});
+
+            const contract = this.props.contractStore.contract || {};
+
+            // Keep redirect path synchronized with name changes
+            this.setState({
+              createForm: !this.props.contractStore.contract,
+              contract,
+              contractName: contract.name,
+              name: contract.name || "",
+              description: contract.description || "",
+              abi: contract.abi || "",
+              bytecode: contract.bytecode || ""
+            });
+
+            if(this.state.createForm && this.props.contractStore.compiledContracts) {
+              const firstContractName = Object.keys(this.props.contractStore.compiledContracts)[0];
+              this.SwitchContract(firstContractName);
+            }
+          }
+        }
+        render={this.PageContent}
+      />
+    );
+  }
+}
 
 export default ContractForm;

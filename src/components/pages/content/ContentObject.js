@@ -1,58 +1,151 @@
-import React from "react";
-import PropTypes from "prop-types";
+import React, {useState} from "react";
 import {Link} from "react-router-dom";
 import UrlJoin from "url-join";
 import Path from "path";
 import PrettyBytes from "pretty-bytes";
 import { LabelledField } from "../../components/LabelledField";
-import DashVideo from "../DashVideo";
-import Redirect from "react-router/es/Redirect";
+import {Redirect, Prompt} from "react-router";
 import ClippedText from "../../components/ClippedText";
 import {PageHeader} from "../../components/Page";
 import {DownloadFromUrl} from "../../../utils/Files";
 import FileBrowser from "../../components/FileBrowser";
 import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
-import {Action, Confirm, LoadingElement, Tabs} from "elv-components-js";
-import {AccessChargeDisplay} from "../../../utils/Helpers";
+import {Action, Confirm, IconButton, ImageIcon, Tabs, ToolTip} from "elv-components-js";
+import AsyncComponent from "../../components/AsyncComponent";
+import {AccessChargeDisplay, Percentage} from "../../../utils/Helpers";
+import {inject, observer} from "mobx-react";
+import ToggleSection from "../../components/ToggleSection";
+import JSONField from "../../components/JSONField";
+import ContentObjectGroups from "./ContentObjectGroups";
 
+import RefreshIcon from "../../../static/icons/refresh.svg";
+import InfoIcon from "../../../static/icons/help-circle.svg";
+
+const VisibilityInfo = (visibility) => {
+  if(visibility <= 0) {
+    return {
+      name: "Private",
+      description: "Only authorized users can access this object.",
+      visibility: 0
+    };
+  } else if(visibility < 10) {
+    return {
+      name: "Publicly Listable",
+      description: "Anyone can access the public portion of the object, but only accounts with specific rights can access the full object.",
+      visibility: 1
+    };
+  } else if(visibility < 100) {
+    return {
+      name: "Public",
+      description: "Anyone can access this object",
+      visibility: 10
+    };
+  } else {
+    return {
+      name: "Publicly Managable",
+      description: "Anyone can access and manage this object",
+      visibility: 100
+    };
+  }
+};
+
+const DownloadPart = ({libraryId, objectId, versionHash, partHash, partName, DownloadMethod}) => {
+  const [progress, setProgress] = useState(undefined);
+
+  const downloadButton = (
+    <Action
+      className="action-compact secondary"
+      onClick={async () => {
+        setProgress("0.0%");
+
+        const downloadUrl = await DownloadMethod({
+          libraryId,
+          objectId,
+          versionHash,
+          partHash,
+          callback: async ({bytesFinished, bytesTotal}) => {
+            setProgress({bytesFinished, bytesTotal});
+          }
+        });
+
+        await DownloadFromUrl(downloadUrl, partName || partHash);
+      }}
+    >
+      Download
+    </Action>
+  );
+
+  const downloadProgress = progress === undefined ? null :
+    <span className="download-progress">
+      <progress value={100 * progress.bytesFinished / progress.bytesTotal} max={100} />
+      { Percentage(progress.bytesFinished, progress.bytesTotal) }
+    </span>;
+
+  return progress ? downloadProgress : downloadButton;
+};
+
+@inject("libraryStore")
+@inject("objectStore")
+@observer
 class ContentObject extends React.Component {
   constructor(props) {
     super(props);
 
-    const typeInfo = props.object.typeInfo || {};
-
-    let initialView = "info";
-    const displayAppUrl = props.object.displayAppUrl || (typeInfo.displayAppUrl);
-
-    if(props.view) {
-      initialView = props.view;
-    } else if((displayAppUrl || props.object.videoUrl) && !props.object.isContentType) {
-      //initialView = "display";
-    }
-
     this.state = {
-      visibleVersions: {},
       appRef: React.createRef(),
-      view: initialView,
-      displayAppUrl,
-      typeId: typeInfo.id || "",
-      typeHash: typeInfo.hash,
-      typeName: (typeInfo.meta && typeInfo.meta.name) ? typeInfo.meta.name : typeInfo.hash,
-      partDownloadProgress: {}
+      view: "info",
+      partDownloadProgress: {},
+      pageVersion: 0
     };
 
     this.PageContent = this.PageContent.bind(this);
     this.SubmitContentObject = this.SubmitContentObject.bind(this);
+    this.FinalizeABRMezzanine = this.FinalizeABRMezzanine.bind(this);
+    this.UpdateMetadata = this.UpdateMetadata.bind(this);
   }
 
   async SubmitContentObject(confirmationMessage) {
     await Confirm({
       message: confirmationMessage,
       onConfirm: async () => {
-        await this.props.methods.PublishContentObject({objectId: this.props.objectId});
+        await this.props.objectStore.PublishContentObject({
+          objectId: this.props.objectStore.objectId
+        });
 
-        await this.props.Load({componentParams: {view: "info"}});
+        this.setState({pageVersion: this.state.pageVersion + 1});
+      }
+    });
+  }
+
+  async SaveContentObjectDraft() {
+    await Confirm({
+      message: "Are you sure you want to save changes to this content object?",
+      onConfirm: async () => {
+        await this.props.objectStore.FinalizeContentObject({
+          libraryId: this.props.objectStore.libraryId,
+          objectId: this.props.objectStore.objectId
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        this.setState({pageVersion: this.state.pageVersion + 1});
+      }
+    });
+  }
+
+  async FinalizeABRMezzanine() {
+    await Confirm({
+      message: "Are you sure you want to finalize this content object?",
+      onConfirm: async () => {
+        await this.props.objectStore.FinalizeABRMezzanine({
+          libraryId: this.props.objectStore.libraryId,
+          objectId: this.props.objectStore.objectId
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        this.setState({pageVersion: this.state.pageVersion + 1});
       }
     });
   }
@@ -61,72 +154,61 @@ class ContentObject extends React.Component {
     await Confirm({
       message: "Are you sure you want to delete this content object?",
       onConfirm: async () => {
-        await this.props.methods.DeleteContentObject({
-          libraryId: this.props.libraryId,
-          objectId: this.props.objectId
+        await this.props.objectStore.DeleteContentObject({
+          libraryId: this.props.objectStore.libraryId,
+          objectId: this.props.objectStore.objectId
         });
+
+        this.setState({deleted: true});
       }
+    });
+  }
+
+  async UpdateMetadata({metadataSubtree="/", metadata}) {
+    await this.props.objectStore.UpdateMetadata({
+      libraryId: this.props.objectStore.libraryId,
+      objectId: this.props.objectStore.objectId,
+      metadataSubtree,
+      metadata
     });
   }
 
   DeleteVersionButton(versionHash) {
     // Don't allow deleting of last version
-    if(this.props.object.versions.length === 1) { return null; }
+    if(this.props.objectStore.object.versions.length === 1) { return null; }
 
     const DeleteVersion = async () => {
       await Confirm({
         message: "Are you sure you want to delete this content version?",
         onConfirm: async () => {
-          await this.props.methods.DeleteContentVersion({
-            libraryId: this.props.libraryId,
-            objectId: this.props.objectId,
+          await this.props.objectStore.DeleteContentObjectVersion({
+            libraryId: this.props.objectStore.libraryId,
+            objectId: this.props.objectStore.objectId,
             versionHash
           });
 
-          await this.props.Load({componentParams: {view: "info"}});
+          this.setState({pageVersion: this.state.pageVersion + 1});
         }
       });
     };
 
+    // TODO: Make this component indicate loading
     return (
-      <LoadingElement loading={this.props.methodStatus.DeleteContentVersion.loading} loadingIcon="rotate" >
-        <Action
-          className="danger action-compact action-wide"
-          onClick={DeleteVersion}>
-          Delete Content Version
-        </Action>
-      </LoadingElement>
-    );
-  }
-
-  ToggleVersion(hash) {
-    this.setState({
-      visibleVersions: {
-        ...this.state.visibleVersions,
-        [hash]: !this.state.visibleVersions[hash]
-      }
-    });
-  }
-
-  ToggleButton(label, id) {
-    const toggleVisible = () => this.ToggleVersion(id);
-    const visible = this.state.visibleVersions[id];
-    const toggleButtonText = (visible ? "Hide " : "Show ") + label;
-
-    return (
-      <Action className={"action-compact action-wide " + (visible ? "" : "secondary")} onClick={toggleVisible}>
-        { toggleButtonText }
+      <Action
+        className="danger action-compact action-wide"
+        onClick={DeleteVersion}>
+        Delete Content Version
       </Action>
     );
   }
 
   PublishButton() {
-    if(!this.props.object.isNormalObject) { return null; }
+    if(!this.props.objectStore.object.isNormalObject) { return null; }
 
-    const reviewerGroups = this.props.library.groups.reviewer;
+    const reviewerGroups = this.props.libraryStore.library.groups.reviewer;
     const reviewRequired = reviewerGroups.length > 0;
 
-    if(this.props.object.status.code < 0 && this.props.object.isOwner) {
+    if(this.props.object.status.code < 0 && this.props.objectStore.object.isOwner) {
       const actionText = reviewRequired ? "Submit for Review" : "Publish";
       const confirmationMessage = reviewRequired ?
         "Are you sure you want to submit this content object for review?" :
@@ -139,7 +221,7 @@ class ContentObject extends React.Component {
       );
     }
 
-    if(this.props.object.status.code > 0 && this.props.object.permissions.canReview) {
+    if(this.props.objectStore.object.status.code > 0 && this.props.objectStore.object.permissions.canReview) {
       return (
         <Action type="link" to={UrlJoin(this.props.match.url, "review")}>
           Review
@@ -148,109 +230,93 @@ class ContentObject extends React.Component {
     }
   }
 
+  LROStatus() {
+    const statuses = this.props.objectStore.object.lroStatus;
+
+    if(!statuses || statuses.length === 0) { return; }
+
+    const statusLabels = statuses.map(({offeringKey, status}) => {
+      if(!status) { return; }
+
+      const states = Object.values(status).map(info => info.run_state);
+
+      if(states.includes("failed")) {
+        // LRO Failed
+        return (
+          <LabelledField label={offeringKey}>
+            Failed
+          </LabelledField>
+        );
+      }
+
+      if(states.every(state => state === "finished")) {
+        // LRO Finished
+        return (
+          <React.Fragment>
+            <LabelledField label={offeringKey}>
+              Finished
+            </LabelledField>
+            <LabelledField hidden={!this.props.objectStore.object.canEdit}>
+              <Action onClick={this.FinalizeABRMezzanine}>
+                Finalize
+              </Action>
+            </LabelledField>
+          </React.Fragment>
+        );
+      }
+
+      const progress = Object.values(status).map(info => info.progress.percentage);
+      const percentage = progress.reduce((total, percent) => total + percent, 0) / progress.length;
+
+      return (
+        <LabelledField label={offeringKey}>
+          { `${percentage.toFixed(1)}%` }
+        </LabelledField>
+      );
+    });
+
+    return (
+      <React.Fragment>
+        <LabelledField label="LRO Progress" />
+        { statusLabels }
+      </React.Fragment>
+    );
+  }
+
   VersionSize(version) {
+    if(!version) { return; }
+
     return PrettyBytes(version.parts.reduce((a, part) => a + part.size, 0));
   }
 
-  ToggleSection(label, id, value, format=true) {
-    const visible = this.state.visibleVersions[id];
-
-    let content;
-    if(visible) {
-      if(format) {
-        content = <pre className="content-object-data">{JSON.stringify(value, null, 2)}</pre>;
-      } else { content = value; }
-    }
+  Image() {
+    if(!this.props.objectStore.object.imageUrl) { return null; }
 
     return (
-      <div className="formatted-data">
-        <LabelledField label={label}>
-          { this.ToggleButton(label, id) }
-        </LabelledField>
-        { content }
+      <div className="object-image">
+        <img src={this.props.objectStore.object.imageUrl} />
       </div>
     );
   }
 
-  ObjectMedia() {
-    let image;
-    let video;
-
-    if(this.props.object.imageUrl) {
-      image = (
-        <div className="object-image">
-          <img src={this.props.object.imageUrl} />
-        </div>
-      );
-    }
-
-    if(this.props.object.meta["offering.en"]) {
-      video = (
-        <div className="object-video">
-          <DashVideo videoUrl={this.props.object.imageUrl} />
-        </div>
-      );
-    }
-
-    if(!image && !video) {
-      return null;
-    } else {
-      return (
-        <div className="object-media">
-          {video}
-          {image}
-        </div>
-      );
-    }
-  }
-
   ObjectParts(version) {
-    if(!version.parts || version.parts.length === 0) { return null; }
+    if(!version || !version.parts || version.parts.length === 0) { return null; }
 
-    let partNames = this.props.object.meta["eluv-fb.parts"] || {};
+    let partNames = this.props.objectStore.object.meta["eluv-fb.parts"] || {};
     let names = {};
     Object.keys(partNames).forEach(name => {
       names[partNames[name]] = name;
     });
 
     const parts = (version.parts.map((part, partNumber) => {
-      const downloadButton = (
-        <Action
-          className="action-compact secondary"
-          onClick={async () => {
-            const downloadUrl = await this.props.DownloadPart({
-              libraryId: this.props.libraryId,
-              objectId: this.props.objectId,
-              versionHash: version.hash,
-              partHash: part.hash,
-              callback: async ({bytesFinished, bytesTotal}) => {
-                this.setState({
-                  partDownloadProgress: {
-                    ...this.state.partDownloadProgress,
-                    [version.hash]: {
-                      ...this.state.partDownloadProgress[version.hash],
-                      [part.hash]: (bytesFinished * 100) / bytesTotal
-                    }
-                  }
-                });
-              }
-            });
-
-            await DownloadFromUrl(downloadUrl, names[part.hash] || part.hash);
-          }}
-        >
-          Download
-        </Action>
-      );
-
-      const progress = this.state.partDownloadProgress[version.hash] &&
-        this.state.partDownloadProgress[version.hash][part.hash];
-      const downloadProgress = progress !== undefined ?
-        <span className="download-progress">
-          <progress value={progress} max={100} />
-          {`${progress.toFixed(1)}%`}
-        </span> :
-        undefined;
+      const download = <DownloadPart
+        libraryId={this.props.objectStore.libraryId}
+        objectId={this.props.objectStore.objectId}
+        versionHash={version.hash}
+        partHash={part.hash}
+        partName={names[part.hash]}
+        DownloadMethod={this.props.objectStore.DownloadPart}
+      />;
 
       const name = names[part.hash] ? <LabelledField label="Name" value={names[part.hash]}/> : null;
 
@@ -266,7 +332,7 @@ class ContentObject extends React.Component {
           </LabelledField>
 
           <LabelledField label="Download">
-            { downloadProgress || downloadButton }
+            { download }
           </LabelledField>
         </div>
       );
@@ -280,94 +346,46 @@ class ContentObject extends React.Component {
     );
   }
 
-  ObjectFiles() {
-    const downloadMethod = async (filePath) => {
-      await this.props.DownloadFile({
-        libraryId: this.props.libraryId,
-        objectId: this.props.objectId,
-        filePath
-      });
-    };
+  ObjectVersion(versionHash, versionNumber, latestVersion=false) {
+    const version = this.props.objectStore.versions[versionHash];
 
-    const uploadMethod = async (path, fileList) => {
-      await this.props.methods.UploadFiles({
-        libraryId: this.props.libraryId,
-        objectId: this.props.objectId,
-        path,
-        fileList
-      });
-    };
-
-    const urlMethod = async (filePath) => {
-      return await this.props.FileUrl({
-        libraryId: this.props.libraryId,
-        objectId: this.props.objectId,
-        filePath
-      });
-    };
+    if(!version) { return null; }
 
     return (
-      <div className="object-files">
-        <h3>Files</h3>
-        <FileBrowser
-          files={this.props.object.meta.files || {}}
-          Reload={() => this.props.Load({componentParams: {view: "files"}})}
-          uploadStatus={this.props.methodStatus.UploadFiles}
-          Upload={uploadMethod}
-          Download={downloadMethod}
-          FileUrl={urlMethod}
-        />
-      </div>
-    );
-  }
-
-  ObjectVersion(version, versionNumber, latestVersion=false) {
-    const visible = latestVersion || this.state.visibleVersions[version.hash];
-
-    let versionHeader;
-    if(!latestVersion) {
-      versionHeader = (
-        <LabelledField label={"Version " + versionNumber}>
-          { this.ToggleButton("Version", version.hash) }
-        </LabelledField>
-      );
-    } else {
-      versionHeader = <h3>{"Latest Version"}</h3>;
-    }
-
-    if(!visible) {
-      return (
-        <div key={"version-" + versionNumber} className="version-info indented">
-          { versionHeader }
-        </div>
-      );
-    }
-
-    return (
-      <div key={"version-" + versionNumber} className={"version-info " + (latestVersion ? "" : "indented version-visible")}>
-        { versionHeader }
+      <div className={"version-info " + (latestVersion ? "" : "indented version-visible")}>
+        <h3>{latestVersion ? "Latest Version" : `Version ${versionNumber}`}</h3>
 
         <div className="indented">
-          <LabelledField label="Hash" copyValue={version.hash}>
-            { version.hash }
+          <LabelledField label="Hash" copyValue={versionHash}>
+            { versionHash }
           </LabelledField>
 
           <LabelledField label="Parts">
-            { version.parts.length }
+            { version.parts.length.toString() }
           </LabelledField>
 
           <LabelledField label="Total size">
             { this.VersionSize(version) }
           </LabelledField>
 
-          { this.ToggleSection("Metadata", "metadata-" + versionNumber, version.meta) }
-          { this.ToggleSection("Verification", "verification-" + versionNumber, version.verification) }
-          { this.ToggleSection("Parts", "parts-" + versionNumber, this.ObjectParts(version), false) }
+          <ToggleSection label="Metadata">
+            <div className="indented">
+              <JSONField json={version.meta} />
+            </div>
+          </ToggleSection>
+
+          <ToggleSection label="Verification">
+            <pre className="content-object-data">{JSON.stringify(version.verification, null, 2)}</pre>
+          </ToggleSection>
+
+          <ToggleSection label="Parts">
+            { this.ObjectParts(version) }
+          </ToggleSection>
 
           <br/>
 
-          <LabelledField hidden={true}>
-            { this.DeleteVersionButton(version.hash) }
+          <LabelledField hidden={!this.props.objectStore.object.isOwner}>
+            { this.DeleteVersionButton(versionHash) }
           </LabelledField>
         </div>
       </div>
@@ -375,17 +393,35 @@ class ContentObject extends React.Component {
   }
 
   PreviousVersions() {
-    if(this.props.object.versions.length < 2) { return null; }
+    if(this.props.objectStore.object.versions.length < 2) { return null; }
 
     return (
-      <div>
+      <React.Fragment>
         <h3>Previous Versions</h3>
 
-        { this.props.object.versions.slice(1).map((version, i) => {
-          const versionNumber = (i+1 - this.props.object.versions.length) * -1;
-          return this.ObjectVersion(version, versionNumber);
+        { this.props.objectStore.object.versions.slice(1).map((versionHash, i) => {
+          const versionNumber = (i+1 - this.props.objectStore.object.versions.length) * -1;
+
+          return (
+            <ToggleSection
+              label={`Version ${versionNumber}`}
+              key={`version-${versionNumber}`}
+              className="version-info indented"
+            >
+              <AsyncComponent
+                Load={
+                  async () => {
+                    await this.props.objectStore.ContentObjectVersion({
+                      versionHash
+                    });
+                  }
+                }
+                render={() => this.ObjectVersion(versionHash, versionNumber)}
+              />
+            </ToggleSection>
+          );
         })}
-      </div>
+      </React.Fragment>
     );
   }
 
@@ -394,13 +430,13 @@ class ContentObject extends React.Component {
     contractInfo.push(
       <LabelledField key="contract-address" label="Contract Address">
         <Link className="inline-link" to={UrlJoin(this.props.match.url, "contract")}>
-          { this.props.object.contractAddress }
+          { this.props.objectStore.object.contractAddress }
         </Link>
       </LabelledField>
     );
 
-    if(!this.props.object.isContentLibraryObject && this.props.object.customContractAddress) {
-      const customContractAddress = this.props.object.customContractAddress;
+    if(!this.props.objectStore.object.isContentLibraryObject && this.props.objectStore.object.customContractAddress) {
+      const customContractAddress = this.props.objectStore.object.customContractAddress;
 
       contractInfo.push(
         <LabelledField key={"contract-" + customContractAddress} label="Custom Contract">
@@ -416,16 +452,16 @@ class ContentObject extends React.Component {
 
   // Display object status and review/submit/publish actions
   ObjectStatus() {
-    if(!this.props.object.isNormalObject) { return null; }
+    if(!this.props.objectStore.object.isNormalObject) { return null; }
 
     let reviewNote, reviewer;
-    if(this.props.object.meta["eluv.reviewNote"]) {
+    if(this.props.objectStore.object.meta["eluv.reviewNote"]) {
       reviewer = (
         <LabelledField label="Reviewer">
-          { this.props.object.meta["eluv.reviewer"] }
+          { this.props.objectStore.object.meta["eluv.reviewer"] }
         </LabelledField>
       );
-      const note = <ClippedText className="object-description" text={this.props.object.meta["eluv.reviewNote"]} />;
+      const note = <ClippedText className="object-description" text={this.props.objectStore.object.meta["eluv.reviewNote"]} />;
       reviewNote = (
         <LabelledField label="Review Note">
           { note }
@@ -434,70 +470,158 @@ class ContentObject extends React.Component {
     }
 
     return (
-      <div>
+      <React.Fragment>
         <LabelledField label="Status">
-          { this.props.object.status.description }
+          { this.props.objectStore.object.status.description }
         </LabelledField>
         { reviewer }
         { reviewNote }
+      </React.Fragment>
+    );
+  }
+
+  Visibility() {
+    const visibilityLevels = [
+      VisibilityInfo(10),
+      VisibilityInfo(1),
+      VisibilityInfo(0)
+    ];
+
+    const infoIcon = (
+      <ToolTip className="visibility-tooltip"
+        content={
+          <div className="label-box">
+            {
+              visibilityLevels.map(({name, description}) =>
+                <LabelledField alignTop={true} key={`visibility-info-${name}`} label={name}>
+                  <div>{ description }</div>
+                </LabelledField>
+              )
+            }
+          </div>
+        }
+      >
+        <ImageIcon className="visibility-info-icon" icon={InfoIcon} />
+      </ToolTip>
+    );
+
+    let info = <div>{ VisibilityInfo(this.props.objectStore.object.visibility).name }</div>;
+    if(this.props.objectStore.object.canEdit) {
+      const options = visibilityLevels.map(({name, visibility}) =>
+        <option key={`visibility-option-${visibility}`} value={visibility}>{ name }</option>
+      );
+
+      info = (
+        <select
+          value={this.props.objectStore.object.visibility}
+          onChange={
+            async event =>
+              await this.props.objectStore.SetVisibility({
+                objectId: this.props.objectStore.objectId,
+                visibility: event.target.value
+              })
+          }
+        >
+          { options }
+        </select>
+      );
+    }
+
+    return (
+      <div className="visibility-info">
+        { info }
+        { infoIcon }
       </div>
     );
   }
 
   ObjectInfo() {
-    const latestVersion = this.props.object.versions[0];
-    const description = <ClippedText className="object-description" text={this.props.object.description} />;
+    const object = this.props.objectStore.object;
+
+    const latestVersion = this.props.objectStore.versions[object.versions[0]];
+
     let accessCharge;
-    if(this.props.object.accessInfo) {
+    if(object.accessInfo) {
       accessCharge = (
         <LabelledField label="Access charge">
-          { AccessChargeDisplay(this.props.object.accessInfo.accessCharge) }
+          { AccessChargeDisplay(object.accessInfo.accessCharge) }
         </LabelledField>
       );
     }
 
+    const ownerText = object.ownerName ?
+      <span>{object.ownerName}<span className="help-text">({object.owner})</span></span> :
+      object.owner;
+
+    const typeLink = object.type ?
+      <Link className="inline-link" to={UrlJoin("/content-types", object.typeInfo.id)}>
+        { object.typeInfo.name || object.typeInfo.id }
+      </Link> :
+      "None";
+
     return (
       <div className="object-info label-box">
-        <LabelledField label="Name">
-          { this.props.object.name }
+        <LabelledField
+          label="Name"
+          editable={true}
+          onChange={async newName => {
+            await this.UpdateMetadata({metadataSubtree: "public/name", metadata: newName});
+            await this.UpdateMetadata({metadataSubtree: "name", metadata: newName});
+          }}
+        >
+          { object.meta.public.name || object.id }
         </LabelledField>
 
-        <LabelledField label="Description" alignTop={true}>
-          { description }
+        <LabelledField
+          label="Description"
+          type="textarea"
+          editable={true}
+          onChange={async newDescription => {
+            await this.UpdateMetadata({metadataSubtree: "public/description", metadata: newDescription.trim()});
+            await this.UpdateMetadata({metadataSubtree: "description", metadata: newDescription.trim()});
+          }}
+        >
+          { object.meta.public.description || "" }
         </LabelledField>
 
         { accessCharge }
 
+        { this.LROStatus() }
+
         <br />
 
-        <LabelledField label="Library ID" hidden={this.props.object.isContentType}>
-          <Link className="inline-link" to={UrlJoin("/content", this.props.libraryId)} >{ this.props.libraryId}</Link>
-        </LabelledField>
-
-        <LabelledField label="Object ID">
-          { this.props.objectId }
-        </LabelledField>
-
-        <LabelledField label="Type" hidden={this.props.object.isContentType}>
-          <Link className="inline-link" to={UrlJoin("/content-types", this.state.typeId)}>
-            { this.state.typeName || this.state.typeId }
+        <LabelledField label="Library ID" hidden={object.isContentType}>
+          <Link className="inline-link" to={UrlJoin("/content", this.props.objectStore.libraryId)} >
+            { this.props.objectStore.libraryId}
           </Link>
         </LabelledField>
 
-        <LabelledField label="Type Hash" hidden={this.props.object.isContentType} copyValue={this.state.typeHash}>
-          { this.state.typeHash }
+        <LabelledField label="Object ID">
+          { object.id }
+        </LabelledField>
+
+        <LabelledField label="Type" hidden={object.isContentType}>
+          { typeLink }
+        </LabelledField>
+
+        <LabelledField label="Type Hash" hidden={!object.type || object.isContentType} copyValue={object.type}>
+          { object.type }
         </LabelledField>
 
         { this.ContractInfo() }
 
         <LabelledField label="Owner">
-          { this.props.object.owner }
+          { ownerText }
+        </LabelledField>
+
+        <LabelledField label="Visibility" alignTop={false}>
+          { this.Visibility() }
         </LabelledField>
 
         <br />
 
         <LabelledField label="Versions">
-          { this.props.object.versions.length }
+          { object.versions.length }
         </LabelledField>
 
         <LabelledField label="Parts">
@@ -508,7 +632,7 @@ class ContentObject extends React.Component {
           { this.VersionSize(latestVersion) }
         </LabelledField>
 
-        { this.ObjectVersion(this.props.object.versions[0], this.props.object.versions.length, true) }
+        { this.ObjectVersion(object.versions[0], object.versions.length, true) }
 
         { this.PreviousVersions() }
       </div>
@@ -516,20 +640,34 @@ class ContentObject extends React.Component {
   }
 
   Actions() {
-    let manageAppsLink;
-    if(this.props.object.isOwner) {
-      manageAppsLink = (
-        <Action type="link" to={UrlJoin(this.props.match.url, "apps")}>
-          Apps
-        </Action>
+    const refreshButton = (
+      <IconButton
+        className="refresh-button"
+        icon={RefreshIcon}
+        label="Refresh"
+        onClick={() => this.setState({pageVersion: this.state.pageVersion + 1})}
+      />
+    );
+
+    const backButton = (
+      <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">
+        Back
+      </Action>
+    );
+
+    if(!this.props.objectStore.object.canEdit) {
+      return (
+        <div className="actions-container">
+          { backButton }
+          { refreshButton }
+        </div>
       );
     }
 
     let setContractButton;
     if(
-      !this.props.object.customContractAddress &&
-      (this.props.object.isNormalObject || this.props.object.isContentType) &&
-      this.props.object.isOwner
+      !this.props.objectStore.object.customContractAddress &&
+      (this.props.objectStore.object.isNormalObject || this.props.objectStore.object.isContentType)
     ) {
       setContractButton = (
         <Action type="link" to={UrlJoin(this.props.match.url, "deploy")}>
@@ -539,7 +677,7 @@ class ContentObject extends React.Component {
     }
 
     let deleteObjectButton;
-    if(!this.props.object.isContentLibraryObject) {
+    if(this.props.objectStore.object.isOwner && !this.props.objectStore.object.isContentLibraryObject) {
       deleteObjectButton = (
         <Action className="danger" onClick={() => this.DeleteContentObject()}>
           Delete
@@ -547,24 +685,39 @@ class ContentObject extends React.Component {
       );
     }
 
+    let saveDraftButton;
+    if(this.props.objectStore.object.writeToken) {
+      saveDraftButton = (
+        <Action className="important" onClick={() => this.SaveContentObjectDraft()}>
+          Save Draft
+        </Action>
+      );
+    }
+
+    let groupsButton;
+    if(this.props.objectStore.object.isOwner) {
+      groupsButton = (
+        <Action type="link" to={UrlJoin(this.props.match.url, "groups")}>
+          Groups
+        </Action>
+      );
+    }
+
     return (
       <div className="actions-container">
-        <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+        { backButton }
         <Action type="link" to={UrlJoin(this.props.match.url, "edit")}>Manage</Action>
         { setContractButton }
-        <Action type="link" to={UrlJoin(this.props.match.url, "upload")}>Upload Parts</Action>
-        { manageAppsLink }
+        <Action type="link" to={UrlJoin(this.props.match.url, "upload")}>
+          Upload Parts
+        </Action>
+        { groupsButton }
+        <Action type="link" to={UrlJoin(this.props.match.url, "apps")}>
+          Apps
+        </Action>
         { deleteObjectButton }
-      </div>
-    );
-  }
-
-  DisplayVideo() {
-    return (
-      <div className="video-player">
-        <video poster={this.props.object.imageUrl} controls={true}>
-          <source src={this.props.object.videoUrl} />
-        </video>
+        { saveDraftButton }
+        { refreshButton }
       </div>
     );
   }
@@ -572,14 +725,12 @@ class ContentObject extends React.Component {
   AppFrame() {
     if(!this.state.displayAppUrl) { return null; }
 
-    const latestVersion = this.props.object.versions[0];
-
     const queryParams = {
       contentSpaceId: Fabric.contentSpaceId,
-      libraryId: this.props.libraryId,
-      objectId: this.props.objectId,
-      versionHash: latestVersion.hash,
-      type: this.state.typeHash,
+      libraryId: this.props.objectStore.libraryId,
+      objectId: this.props.objectStore.objectId,
+      versionHash: this.props.objectStore.object.hash,
+      type: this.props.objectStore.type ? this.props.objectStore.type.hash : "",
       action: "display"
     };
 
@@ -588,8 +739,9 @@ class ContentObject extends React.Component {
         className="display-frame"
         appUrl={this.state.displayAppUrl}
         queryParams={queryParams}
-        onComplete={this.LoadObject}
+        onComplete={() => this.setState({pageVersion: this.state.pageVersion + 1})}
         onCancel={() => this.setState({deleted: true})}
+        fixedDimensions
       />
     );
   }
@@ -597,10 +749,11 @@ class ContentObject extends React.Component {
   Tabs() {
     let tabOptions = [
       ["Content Info", "info"],
+      ["Groups", "groups"],
       ["Files", "files"]
     ];
 
-    if(this.state.displayAppUrl || this.props.object.videoUrl) {
+    if(!this.props.objectStore.object.isContentType && this.state.displayAppUrl) {
       tabOptions.unshift(["Display", "display"]);
     }
 
@@ -614,42 +767,78 @@ class ContentObject extends React.Component {
   }
 
   PageContent() {
-    if(this.props.methodStatus.DeleteContentObject.completed) {
+    if(this.state.deleted) {
       return <Redirect push to={Path.dirname(this.props.match.url)} />;
     }
 
     let header;
-    if(this.props.object.isContentLibraryObject) {
-      header = this.props.library.name + " > Library Object";
-    } else if(this.props.object.isContentType) {
-      header = "Content Types > " + this.props.object.name;
+    if(this.props.objectStore.object.isContentLibraryObject) {
+      header = this.props.libraryStore.library.name + " > Library Object";
+    } else if(this.props.objectStore.object.isContentType) {
+      header = "Content Types > " + this.props.objectStore.object.name;
     } else {
-      header = this.props.library.name + " > " + this.props.object.name;
+      header = this.props.libraryStore.library.name + " > " + this.props.objectStore.object.name;
     }
 
     let pageContent;
     if(this.state.view === "display") {
-      if(this.state.displayAppUrl) {
-        pageContent = this.AppFrame();
-      } else {
-        pageContent = this.DisplayVideo();
-      }
+      pageContent = this.AppFrame();
+    } else if(this.state.view === "groups") {
+      pageContent = <ContentObjectGroups />;
     } else if(this.state.view === "info") {
       pageContent = (
-        <div>
-          { this.ObjectMedia() }
+        <React.Fragment>
+          { this.Image() }
           { this.ObjectInfo() }
-        </div>
+        </React.Fragment>
       );
     } else {
-      pageContent = this.ObjectFiles();
+      pageContent = (
+        <div className="object-files">
+          <FileBrowser
+            baseFileUrl={this.props.objectStore.object.baseFileUrl}
+            SetObjectImage={async ({filePath}) => await this.props.objectStore.SetExistingObjectImage({
+              libraryId: this.props.objectStore.libraryId,
+              objectId: this.props.objectStore.objectId,
+              filePath
+            })}
+            DownloadFile={async ({filePath, callback}) => await this.props.objectStore.DownloadFile({
+              libraryId: this.props.objectStore.libraryId,
+              objectId: this.props.objectStore.objectId,
+              writeToken: this.props.objectStore.object.writeToken,
+              filePath,
+              callback
+            })}
+            DownloadUrl={async ({filePath}) => await this.props.objectStore.DownloadUrl({
+              libraryId: this.props.objectStore.libraryId,
+              objectId: this.props.objectStore.objectId,
+              writeToken: this.props.objectStore.object.writeToken,
+              filePath,
+            })}
+            CreateDirectory={async ({directory}) => await this.props.objectStore.CreateDirectory({
+              libraryId: this.props.objectStore.libraryId,
+              objectId: this.props.objectStore.objectId,
+              writeToken: this.props.objectStore.object.writeToken,
+              directory
+            })}
+          />
+        </div>
+      );
     }
 
     return (
       <div className="page-container content-page-container">
+        <Prompt
+          message={"Are you sure you want to navigate away from this page? You have unsaved changes that will be lost."}
+          when={!!this.props.objectStore.object.writeToken}
+        />
+
         { this.Actions() }
-        <PageHeader header={header} subHeader={this.props.object.description} />
+
+        <PageHeader header={header} subHeader={this.props.objectStore.object.description} />
+
         { this.Tabs() }
+
         <div className="page-content">
           { pageContent }
         </div>
@@ -658,30 +847,39 @@ class ContentObject extends React.Component {
   }
 
   render() {
-    const loading = this.props.methodStatus.DeleteContentObject.loading || this.props.methodStatus.PublishContentObject.loading;
-
     return (
-      <LoadingElement
-        fullPage={true}
-        loading={loading}
+      <AsyncComponent
+        key={`object-page-${this.state.pageVersion}`}
+        Load={
+          async () => {
+            await Promise.all(
+              [
+                this.props.libraryStore.ContentLibrary({
+                  libraryId: this.props.objectStore.libraryId
+                }),
+                this.props.objectStore.ContentObject({
+                  libraryId: this.props.objectStore.libraryId,
+                  objectId: this.props.objectStore.objectId
+                })
+              ]
+            );
+
+            await this.props.objectStore.ContentObjectVersions({
+              libraryId: this.props.objectStore.libraryId,
+              objectId: this.props.objectStore.objectId
+            });
+
+            this.setState({
+              displayAppUrl:
+                this.props.objectStore.object.displayAppUrl ||
+                (this.props.objectStore.object.typeInfo || {}).displayAppUrl
+            });
+          }
+        }
         render={this.PageContent}
       />
     );
   }
 }
-
-ContentObject.propTypes = {
-  libraryId: PropTypes.string.isRequired,
-  library: PropTypes.object.isRequired,
-  objectId: PropTypes.string.isRequired,
-  object: PropTypes.object.isRequired,
-  methods: PropTypes.shape({
-    UploadFiles: PropTypes.func.isRequired,
-    DeleteContentObject: PropTypes.func.isRequired,
-    DeleteContentVersion: PropTypes.func.isRequired
-  }),
-  DownloadPart: PropTypes.func.isRequired,
-  DownloadFile: PropTypes.func.isRequired,
-};
 
 export default ContentObject;

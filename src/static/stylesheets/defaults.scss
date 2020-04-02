@@ -1,5 +1,9 @@
 @import "~elv-components-js/src/stylesheets/defaults";
 
+.app-version {
+  display: none;
+}
+
 // sass-lint:disable no-important
 .hidden {
   display: none !important;
@@ -24,6 +28,32 @@
 
   .-elv-button {
     margin-right: $elv-spacing-xs;
+
+    &.important {
+      background-color: $elv-color-mediumgreen;
+      border: 1px solid $elv-color-mediumgreen;
+
+      &:not(:active) {
+        &:hover {
+          background-color: $elv-color-white;
+          border: 1px solid $elv-color-mediumgreen;
+          color: $elv-color-mediumgreen;
+        }
+      }
+    }
+  }
+
+  .refresh-button {
+    position: absolute;
+    right: 0;
+
+    svg {
+      stroke: $elv-color-mediumgray;
+
+      &:hover {
+        stroke: $elv-color-darkgray;
+      }
+    }
   }
 }
 
