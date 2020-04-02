@@ -12,13 +12,14 @@ export const LabelledField = ({
   onChange,
   alignTop=false,
   wideLabel=false,
-  hidden=false
+  hidden=false,
+  className=""
 }) => {
   if(typeof label === "string" && label.length > 0) {
     label = label + ":";
   }
 
-  const labelClass = (wideLabel ? "wide" : "") + (alignTop || type === "textarea" ? "align-top" : "");
+  const labelClass = (wideLabel ? "wide" : "");
 
   let content = <div aria-label={label} title={value}>{ children || value }</div>;
   if(copyValue) {
@@ -38,7 +39,7 @@ export const LabelledField = ({
   }
 
   return (
-    <div className={"labelled-field" + (hidden ? " hidden" : "")}>
+    <div className={"labelled-field " + className + (hidden ? " hidden" : "") + (alignTop || type === "textarea" ? "align-top" : "")}>
       <label htmlFor={label} className={labelClass}>{ label }</label>
       { content }
     </div>

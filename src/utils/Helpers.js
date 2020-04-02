@@ -1,5 +1,5 @@
 import React from "react";
-import Utils from "elv-client-js/src/Utils";
+import Utils from "@eluvio/elv-client-js/src/Utils";
 import BigNumber from "bignumber.js";
 import {Balance} from "elv-components-js";
 

@@ -11,14 +11,44 @@ import {DownloadFromUrl} from "../../../utils/Files";
 import FileBrowser from "../../components/FileBrowser";
 import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
-import {Action, Confirm, IconButton, Tabs} from "elv-components-js";
+import {Action, Confirm, IconButton, ImageIcon, Tabs, ToolTip} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
 import {AccessChargeDisplay, Percentage} from "../../../utils/Helpers";
 import {inject, observer} from "mobx-react";
-import RefreshIcon from "../../../static/icons/refresh.svg";
 import ToggleSection from "../../components/ToggleSection";
 import JSONField from "../../components/JSONField";
 import ContentObjectGroups from "./ContentObjectGroups";
+
+import RefreshIcon from "../../../static/icons/refresh.svg";
+import InfoIcon from "../../../static/icons/help-circle.svg";
+
+const VisibilityInfo = (visibility) => {
+  if(visibility <= 0) {
+    return {
+      name: "Private",
+      description: "Only authorized users can access this object.",
+      visibility: 0
+    };
+  } else if(visibility < 10) {
+    return {
+      name: "Publicly Listable",
+      description: "Anyone can access the public portion of the object, but only accounts with specific rights can access the full object.",
+      visibility: 1
+    };
+  } else if(visibility < 100) {
+    return {
+      name: "Public",
+      description: "Anyone can access this object",
+      visibility: 10
+    };
+  } else {
+    return {
+      name: "Publicly Managable",
+      description: "Anyone can access and manage this object",
+      visibility: 100
+    };
+  }
+};
 
 const DownloadPart = ({libraryId, objectId, versionHash, partHash, partName, DownloadMethod}) => {
   const [progress, setProgress] = useState(undefined);
@@ -450,6 +480,61 @@ class ContentObject extends React.Component {
     );
   }
 
+  Visibility() {
+    const visibilityLevels = [
+      VisibilityInfo(10),
+      VisibilityInfo(1),
+      VisibilityInfo(0)
+    ];
+
+    const infoIcon = (
+      <ToolTip className="visibility-tooltip"
+        content={
+          <div className="label-box">
+            {
+              visibilityLevels.map(({name, description}) =>
+                <LabelledField alignTop={true} key={`visibility-info-${name}`} label={name}>
+                  <div>{ description }</div>
+                </LabelledField>
+              )
+            }
+          </div>
+        }
+      >
+        <ImageIcon className="visibility-info-icon" icon={InfoIcon} />
+      </ToolTip>
+    );
+
+    let info = <div>{ VisibilityInfo(this.props.objectStore.object.visibility).name }</div>;
+    if(this.props.objectStore.object.canEdit) {
+      const options = visibilityLevels.map(({name, visibility}) =>
+        <option key={`visibility-option-${visibility}`} value={visibility}>{ name }</option>
+      );
+
+      info = (
+        <select
+          value={this.props.objectStore.object.visibility}
+          onChange={
+            async event =>
+              await this.props.objectStore.SetVisibility({
+                objectId: this.props.objectStore.objectId,
+                visibility: event.target.value
+              })
+          }
+        >
+          { options }
+        </select>
+      );
+    }
+
+    return (
+      <div className="visibility-info">
+        { info }
+        { infoIcon }
+      </div>
+    );
+  }
+
   ObjectInfo() {
     const object = this.props.objectStore.object;
 
@@ -527,6 +612,10 @@ class ContentObject extends React.Component {
 
         <LabelledField label="Owner">
           { ownerText }
+        </LabelledField>
+
+        <LabelledField label="Visibility" alignTop={false}>
+          { this.Visibility() }
         </LabelledField>
 
         <br />

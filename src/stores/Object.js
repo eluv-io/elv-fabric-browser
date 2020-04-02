@@ -299,6 +299,27 @@ class ObjectStore {
         "/": UrlJoin(".", "files", filePath)
       }
     });
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully updated image on object draft"
+    });
+  });
+
+  @action.bound
+  SetVisibility = flow(function * ({objectId, visibility}) {
+    if(visibility < 0 || visibility > 100) {
+      this.rootStore.notificationStore.SetErrorMessage({message: `Invalid visibility: ${visibility}`});
+    }
+
+    yield Fabric.SetVisibility({id: objectId, visibility});
+
+    if(this.objects[objectId]) {
+      this.objects[objectId].visibility = visibility;
+    }
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully updated visibility"
+    });
   });
 
   async DownloadUrl({libraryId, objectId, versionHash, writeToken, filePath, callback}) {

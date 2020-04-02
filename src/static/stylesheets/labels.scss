@@ -13,19 +13,20 @@
   }
 
   .labelled-field {
+    align-items: center;
     display: flex;
     max-width: 100%;
     min-height: 1.8em;
     padding: $elv-spacing-xxs $elv-spacing-s $elv-spacing-xxs 0;
 
+    &.align-top {
+      align-items: flex-start;
+    }
+
     label {
       color: $elv-color-text-light;
       display: flex;
       min-width: 150px;
-
-      &.align-top {
-        align-items: flex-start;
-      }
 
       &.wide {
         min-width: 250px;

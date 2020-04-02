@@ -134,3 +134,40 @@
     }
   }
 }
+
+.visibility-info {
+  align-items: center;
+  display: flex;
+
+  .visibility-info-icon {
+    cursor: pointer;
+    margin-left: $elv-spacing-xs;
+    padding: $elv-spacing-xxs;
+  }
+}
+
+.visibility-tooltip {
+  &.-elv-tooltip {
+    background-color: $elv-color-bg-white;
+    flex-direction: column;
+    font-size: $elv-font-l;
+    max-width: 35rem;
+    padding: $elv-spacing-xs $elv-spacing-s;
+    text-align: left;
+    width: auto;
+  }
+
+  .label-box {
+    label {
+      font-weight: 500;
+    }
+
+    .labelled-field {
+      & > div {
+        overflow: visible;
+        text-overflow: unset;
+        white-space: normal;
+      }
+    }
+  }
+}

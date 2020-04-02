@@ -1,5 +1,5 @@
 import {configure, observable, action, flow} from "mobx";
-import {FrameClient} from "elv-client-js/src/FrameClient";
+import {FrameClient} from "@eluvio/elv-client-js/src/FrameClient";
 
 import LibraryStore from "./Library";
 import RouterStore from "./Router";

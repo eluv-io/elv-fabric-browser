@@ -1,4 +1,4 @@
-import { FrameClient } from "elv-client-js/src/FrameClient";
+import { FrameClient } from "@eluvio/elv-client-js/src/FrameClient";
 import UrlJoin from "url-join";
 import {Bytes32ToUtf8, EqualAddress, FormatAddress} from "../utils/Helpers";
 
@@ -515,6 +515,8 @@ const Fabric = {
       accessInfo = await Fabric.GetAccessInfo({objectId});
     }
 
+    const visibility = await client.Visibility({id: objectId});
+
     const owner = await Fabric.GetContentObjectOwner({objectId: objectId});
     const ownerName = await client.userProfileClient.PublicUserMetadata({
       address: owner,
@@ -549,6 +551,7 @@ const Fabric = {
       lroStatus,
       contractAddress: FormatAddress(client.utils.HashToAddress(objectId)),
       customContractAddress,
+      visibility,
       owner,
       ownerName,
       isOwner,
@@ -781,8 +784,12 @@ const Fabric = {
     await client.RemoveContentObjectGroupPermission({objectId, groupAddress, permission});
   },
 
-  SetContentObjectImage: async ({libraryId, objectId, writeToken, image, imageName}) =>{
+  SetContentObjectImage: async ({libraryId, objectId, writeToken, image, imageName}) => {
     await client.SetContentObjectImage({libraryId, objectId, writeToken, image, imageName});
+  },
+
+  SetVisibility: async ({id, visibility}) => {
+    await client.SetVisibility({id, visibility});
   },
 
   /* Content Types */
