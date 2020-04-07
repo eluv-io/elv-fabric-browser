@@ -57,6 +57,7 @@
   border: 1px solid $elv-color-lightergray;
   display: block;
   flex-grow: 1;
+  min-height: 85vh;
   width: 100%;
 
   &.display-frame {
@@ -140,9 +141,16 @@
   display: flex;
 
   .visibility-info-icon {
+    align-self: flex-start;
     cursor: pointer;
-    margin-left: $elv-spacing-xs;
-    padding: $elv-spacing-xxs;
+    height: auto;
+    margin-left: $elv-spacing-xxs;
+    margin-top: $elv-spacing-xxs;
+    width: $elv-font-l;
+  }
+
+  select {
+    width: 10rem;
   }
 }
 
