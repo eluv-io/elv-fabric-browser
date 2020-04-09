@@ -99,7 +99,6 @@ class IFrameBase extends React.Component {
       <iframe
         ref={this.props.appRef}
         src={this.props.appUrl}
-        allow="encrypted-media *"
         allowFullScreen
         sandbox={this.SandboxPermissions()}
         className={"app-frame " + (this.props.className || "")}

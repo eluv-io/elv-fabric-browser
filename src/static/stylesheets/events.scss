@@ -162,10 +162,10 @@
 
 @keyframes watch-pulse {
   from {
-    color: $elv-color-lightblue;
+    stroke: $elv-color-lightblue;
   }
 
   to {
-    color: $elv-color-darkblue;
+    stroke: $elv-color-darkblue;
   }
 }

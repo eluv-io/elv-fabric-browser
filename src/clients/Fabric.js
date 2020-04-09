@@ -21,7 +21,7 @@ const Fabric = {
 
     this.contentSpaceId = await client.ContentSpaceId();
     this.contentSpaceLibraryId = this.contentSpaceId.replace("ispc", "ilib");
-    this.contentSpaceObjectId = this.contentSpaceId.replace("ispc", "iq__");
+    this.contentSpaceId = this.contentSpaceId.replace("ispc", "iq__");
   },
 
   async ResetRegion() {
@@ -361,8 +361,74 @@ const Fabric = {
 
   /* Objects */
 
+  LookupContent: async (contentId) => {
+    contentId = contentId.replace(/ /g, "");
+
+    if(!contentId) { return; }
+
+    try {
+      let libraryId, objectId, accessType;
+      if(contentId.startsWith("ilib")) {
+        libraryId = contentId;
+        accessType = "library";
+      } else if(contentId.startsWith("hq__")) {
+        objectId = Fabric.utils.DecodeVersionHash(contentId).objectId;
+      } else if(contentId.startsWith("iq__")) {
+        objectId = contentId;
+      } else if(contentId.startsWith("0x")) {
+        const id = Fabric.utils.AddressToObjectId(contentId);
+        accessType = await Fabric.AccessType({id});
+
+        if(accessType === "library") {
+          libraryId = Fabric.utils.AddressToLibraryId(contentId);
+        } else {
+          objectId = id;
+        }
+      } else {
+        objectId = Fabric.utils.AddressToObjectId(Fabric.utils.HashToAddress(contentId));
+      }
+
+      if(objectId && !libraryId) {
+        libraryId = await Fabric.ContentObjectLibraryId({objectId});
+      }
+
+      if(!accessType) {
+        accessType = await Fabric.AccessType({id: objectId});
+      }
+
+      switch(accessType) {
+        case "library":
+          if(objectId) {
+            return { path: `/content/${libraryId}/${objectId}` };
+          } else {
+            return { path: `/content/${libraryId}` };
+          }
+
+        case "group":
+          return { path: `/access-groups/${Fabric.utils.HashToAddress(objectId)}` };
+
+        case "type":
+          return { path: `/content-types/${objectId}` };
+
+        default:
+          return { path: `/content/${libraryId}/${objectId}` };
+      }
+    } catch(error) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to look up ID:");
+      // eslint-disable-next-line no-console
+      console.error(error);
+
+      return { error: "Invalid content ID" };
+    }
+  },
+
   ContentObjectLibraryId: async ({objectId, versionHash}) => {
     return await client.ContentObjectLibraryId({objectId, versionHash});
+  },
+
+  AccessType: async ({id}) => {
+    return await client.AccessType({id});
   },
 
   IsNormalObject: async ({objectId}) => {

@@ -15,7 +15,7 @@
 
   .navbar-link {
     color: $elv-color-darkgray;
-    font-size: 16px;
+    font-size: $elv-font-l;
     padding: 0 $elv-spacing-s;
 
     &:hover {

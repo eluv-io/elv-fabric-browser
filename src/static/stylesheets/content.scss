@@ -179,3 +179,22 @@
     }
   }
 }
+
+.content-lookup-actions-container {
+  display: flex;
+  position: relative;
+}
+
+.content-lookup-container {
+  display: flex;
+  height: 100%;
+  position: absolute;
+  right: 0;
+
+  input {
+    font-size: $elv-font-m;
+    height: 100%;
+    margin-right: $elv-spacing-xs;
+    width: 20rem;
+  }
+}
