@@ -272,6 +272,18 @@ class LibraryStore {
 
     this.libraries[libraryId].listingParams = {};
   }
+
+  async LookupContent(contentId) {
+    const { path, error } = await Fabric.LookupContent(contentId);
+
+    if(error) {
+      this.rootStore.notificationStore.SetErrorMessage({
+        message: error
+      });
+    } else {
+      return path;
+    }
+  }
 }
 
 

@@ -49,7 +49,7 @@ body,
       @include elv-ellipsis;
       color: $elv-color-text-light;
 
-      font-size: 14px;
+      font-size: $elv-font-m;
       margin-top: $elv-spacing-xxs;
       width: 70vw;
     }
