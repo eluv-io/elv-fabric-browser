@@ -267,10 +267,18 @@ class LibraryStore {
   });
 
   @action.bound
-  ClearLibraryCache({libraryId}) {
+  ClearLibraryCache({libraryId, keepParams=false}) {
     if(!this.libraries[libraryId]) { return; }
 
-    this.libraries[libraryId].listingParams = {};
+    if(keepParams) {
+      // Invalidate cache ID, but keep listing params
+      if(this.libraries[libraryId].listingParams) {
+        delete this.libraries[libraryId].listingParams.cacheId;
+      }
+    } else {
+      // Reset listing params
+      this.libraries[libraryId].listingParams = {};
+    }
   }
 
   async LookupContent(contentId) {

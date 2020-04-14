@@ -134,7 +134,7 @@ class ObjectStore {
     });
 
     // Clear library listing cache
-    this.rootStore.libraryStore.ClearLibraryCache({libraryId});
+    this.rootStore.libraryStore.ClearLibraryCache({libraryId, keepParams: true});
 
     return objectId;
   });
@@ -149,7 +149,7 @@ class ObjectStore {
     });
 
     // Clear library listing cache
-    this.rootStore.libraryStore.ClearLibraryCache({libraryId});
+    this.rootStore.libraryStore.ClearLibraryCache({libraryId, keepParams: true});
   });
 
   @action.bound
@@ -164,7 +164,7 @@ class ObjectStore {
     });
 
     // Clear library listing cache
-    this.rootStore.libraryStore.ClearLibraryCache({libraryId});
+    this.rootStore.libraryStore.ClearLibraryCache({libraryId, keepParams: true});
   });
 
   @action.bound
