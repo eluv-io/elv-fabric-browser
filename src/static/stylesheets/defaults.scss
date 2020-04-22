@@ -1,4 +1,5 @@
 @import "~elv-components-js/src/stylesheets/defaults";
+@import "~elv-components-js/src/stylesheets/buttons";
 
 .app-version {
   display: none;
@@ -30,16 +31,7 @@
     margin-right: $elv-spacing-xs;
 
     &.important {
-      background-color: $elv-color-mediumgreen;
-      border: 1px solid $elv-color-mediumgreen;
-
-      &:not(:active) {
-        &:hover {
-          background-color: $elv-color-white;
-          border: 1px solid $elv-color-mediumgreen;
-          color: $elv-color-mediumgreen;
-        }
-      }
+      @include elv-button-colors($elv-color-mediumgreen, $elv-color-bg-white, $elv-color-text-white, $elv-color-mediumgreen, $elv-color-mediumgreen, $elv-color-mediumgreen);
     }
   }
 

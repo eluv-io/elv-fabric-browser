@@ -462,42 +462,52 @@ const Fabric = {
     const cacheId = paging.cache_id;
 
     let objects = {};
-    for(const object of contents) {
-      try {
-        //const owner = await Fabric.GetContentObjectOwner({objectId: object.id});
 
-        const latestVersion = object.versions[0];
+    await client.utils.LimitedMap(
+      10,
+      contents,
+      async object => {
+        try {
+          //const owner = await Fabric.GetContentObjectOwner({objectId: object.id});
 
-        const imageUrl = await Fabric.GetContentObjectImageUrl({
-          libraryId,
-          objectId: object.id,
-          versionHash: latestVersion.hash,
-          metadata: object.versions[0].meta
-        });
+          const latestVersion = object.versions[0];
 
-        const accessInfo = await Fabric.GetAccessInfo({objectId: object.id});
-        const meta = latestVersion.meta || {};
-        const publicMeta = meta.public || {};
-        objects[object.id] = {
-          // Pull latest version info up to top level
-          ...latestVersion,
-          id: object.id,
-          objectId: object.id,
-          hash: object.hash,
-          type: object.type,
-          name: (publicMeta.name || meta.name || "").toString(),
-          description: publicMeta.description || meta.description,
-          accessInfo,
-          imageUrl,
-          contractAddress: client.utils.HashToAddress(object.id)
-        };
-      } catch(error) {
-        /* eslint-disable no-console */
-        console.error("Failed to list content object " + object.id);
-        console.error(error);
-        /* eslint-enable no-console */
+          const visibility = await client.Visibility({id: object.id});
+
+          let imageUrl;
+          if(visibility > 0) {
+            imageUrl = await Fabric.GetContentObjectImageUrl({
+              libraryId,
+              objectId: object.id,
+              versionHash: latestVersion.hash,
+              metadata: object.versions[0].meta
+            });
+          }
+
+          const accessInfo = await Fabric.GetAccessInfo({objectId: object.id});
+          const meta = latestVersion.meta || {};
+          const publicMeta = meta.public || {};
+          objects[object.id] = {
+            // Pull latest version info up to top level
+            ...latestVersion,
+            id: object.id,
+            objectId: object.id,
+            hash: object.hash,
+            type: object.type,
+            name: (publicMeta.name || meta.name || "").toString(),
+            description: publicMeta.description || meta.description,
+            accessInfo,
+            imageUrl,
+            contractAddress: client.utils.HashToAddress(object.id)
+          };
+        } catch(error) {
+          /* eslint-disable no-console */
+          console.error("Failed to list content object " + object.id);
+          console.error(error);
+          /* eslint-enable no-console */
+        }
       }
-    }
+    );
 
     return {
       objects,
