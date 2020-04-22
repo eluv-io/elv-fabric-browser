@@ -35,7 +35,7 @@
     "bignumber.js": "^8.1.1",
     "browser-cancelable-events": "^1.0.1",
     "browser-solc": "^1.0.0",
-    "elv-components-js": "git+https://github.com/eluv-io/elv-components-js.git#645165da87ec42845a908a9ce0817db202523866",
+    "elv-components-js": "git+https://github.com/eluv-io/elv-components-js.git#686933243cda82288bb537a1bf1aba3c1c0263b3",
     "mobx": "^5.13.1",
     "mobx-react": "^6.1.3",
     "node-fetch": "^2.3.0",
