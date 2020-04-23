@@ -464,25 +464,21 @@ const Fabric = {
     let objects = {};
 
     await client.utils.LimitedMap(
-      10,
+      Fabric.concurrencyLimit,
       contents,
       async object => {
         try {
           //const owner = await Fabric.GetContentObjectOwner({objectId: object.id});
 
           const latestVersion = object.versions[0];
-
-          const visibility = await client.Visibility({id: object.id});
-
+          
           let imageUrl;
-          if(visibility > 0) {
-            imageUrl = await Fabric.GetContentObjectImageUrl({
-              libraryId,
-              objectId: object.id,
-              versionHash: latestVersion.hash,
-              metadata: object.versions[0].meta
-            });
-          }
+          imageUrl = await Fabric.GetContentObjectImageUrl({
+            libraryId,
+            objectId: object.id,
+            versionHash: latestVersion.hash,
+            metadata: object.versions[0].meta
+          });
 
           const accessInfo = await Fabric.GetAccessInfo({objectId: object.id});
           const meta = latestVersion.meta || {};
@@ -944,7 +940,7 @@ const Fabric = {
     let types = {};
 
     await contentTypes.limitedMap(
-      5,
+      Fabric.concurrencyLimit,
       async type => {
         try {
           const appUrls = await Fabric.AppUrls({object: type});
