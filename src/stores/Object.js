@@ -3,7 +3,6 @@ import {action, computed, flow, observable} from "mobx";
 import {DownloadFromUrl, FileInfo} from "../utils/Files";
 import UrlJoin from "url-join";
 import {ParseInputJson} from "elv-components-js";
-import {ToList} from "../utils/TypeSchema";
 import Path from "path";
 
 const concurrentUploads = 3;
@@ -62,46 +61,45 @@ class ObjectStore {
   });
 
   @action.bound
-  UpdateFromContentTypeSchema = flow(function * ({
+  UpdateContentObject = flow(function * ({
     libraryId,
     objectId,
     type,
-    metadata,
+    name,
+    description,
+    privateMetadata,
     publicMetadata,
     image,
-    accessCharge,
-    schema,
-    fields,
-    callback
+    accessCharge
   }) {
     try {
-      metadata = ParseInputJson(metadata);
+      privateMetadata = ParseInputJson(privateMetadata);
       publicMetadata = ParseInputJson(publicMetadata);
     } catch(error) {
       throw `Invalid Metadata: ${error.message}`;
     }
 
+    const create = !objectId;
+
     let editResponse;
-    if(objectId) {
-      // Edit
-      editResponse = yield Fabric.EditContentObject({libraryId, objectId, options: { type }});
-    } else {
+    if(create) {
       // Create
       editResponse = yield Fabric.CreateContentObject({libraryId, type});
+    } else {
+      // Edit
+      editResponse = yield Fabric.EditContentObject({libraryId, objectId, options: { type }});
     }
 
     const writeToken = editResponse.write_token;
     objectId = editResponse.id;
 
-    const collectedMetadata = yield this.CollectMetadata({libraryId, writeToken, schema, fields, callback});
-
-    metadata = {
-      ...metadata,
-      ...collectedMetadata,
+    const metadata = {
+      ...privateMetadata,
       public: {
-        ...(metadata.public || {}),
+        ...(privateMetadata.public || {}),
         ...publicMetadata,
-        ...(collectedMetadata.public || {})
+        name,
+        description
       }
     };
 
@@ -129,7 +127,7 @@ class ObjectStore {
     yield Fabric.FinalizeContentObject({libraryId, objectId, writeToken});
 
     this.rootStore.notificationStore.SetNotificationMessage({
-      message: "Successfully updated content",
+      message: `Successfully ${create ? "created": "updated"} content`,
       redirect: true
     });
 
@@ -565,81 +563,6 @@ class ObjectStore {
       redirect: true
     });
   });
-
-  async CollectMetadata({libraryId, objectId, writeToken, schema, fields, callback}) {
-    let metadata = {};
-
-    for(const entry of schema) {
-      switch(entry.type) {
-        case "label":
-        case "attachedFile":
-          break;
-        case "file":
-          // Freshly uploaded files will be a FileList
-          // previously uploaded files will either be a string or a list of strings
-          if(Array.isArray(fields[entry.key]) || typeof fields[entry.key] === "string") {
-            metadata[entry.key] = fields[entry.key];
-            break;
-          }
-
-          const files = Array.from(fields[entry.key]);
-          let partResponses = [];
-
-          for(const file of files) {
-            let uploadCallback;
-            if(callback) {
-              uploadCallback = ({status, uploaded, total}) =>
-                callback({key: entry.key, status, uploaded, total, filename: file.name});
-            }
-
-            partResponses.push(
-              await Fabric.UploadPart({
-                libraryId,
-                objectId,
-                writeToken,
-                file,
-                chunkSize: 2000000,
-                callback: uploadCallback
-              })
-            );
-          }
-
-          if(entry.multiple) {
-            metadata[entry.key] = partResponses.map(partResponse => partResponse.part.hash);
-          } else {
-            metadata[entry.key] = partResponses.length > 0 ? partResponses[0].part.hash : "";
-          }
-
-          break;
-
-        case "json":
-          try {
-            metadata[entry.key] = ParseInputJson(fields[entry.key]);
-          } catch(error) {
-            throw `Invalid ${entry.key}: ${error.message}`;
-          }
-          break;
-
-        case "list":
-          metadata[entry.key] = ToList(fields[entry.key]).filter(item => item);
-          break;
-        case "object":
-          metadata[entry.key] = await this.CollectMetadata({
-            libraryId,
-            objectId,
-            writeToken,
-            schema: entry.fields,
-            fields: fields[entry.key]
-          });
-          break;
-
-        default:
-          metadata[entry.key] = fields[entry.key];
-      }
-    }
-
-    return metadata;
-  }
 
   @action.bound
   PublishContentObject = flow(function * ({objectId}) {
