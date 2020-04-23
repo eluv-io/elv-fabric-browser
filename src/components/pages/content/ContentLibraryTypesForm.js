@@ -63,12 +63,12 @@ class ContentLibraryTypesForm extends React.Component {
   AvailableTypes() {
     return Object.values(this.props.typeStore.allTypes)
       .filter(type => !this.state.selectedTypeIds.includes(type.id))
-      .sort((a, b) => a.meta.name < b.meta.name ? -1 : 1);
+      .sort((a, b) => (a.name || `zzz${a.hash}`).toLowerCase() < (b.name || `zzz${b.hash}`).toLowerCase() ? -1 : 1);
   }
 
   TypeSelector() {
     const typeOptions = this.AvailableTypes().map(type => {
-      const typeName = type.meta.name || type.id;
+      const typeName = type.name || type.id;
 
       return <option name="selectedTypeId" key={type.id} value={type.id}>{typeName}</option>;
     });
@@ -104,7 +104,7 @@ class ContentLibraryTypesForm extends React.Component {
 
       return (
         <div className="list-item" key={"added-type-" + type.id}>
-          <span>{type.meta.name || type.id}</span>
+          <span>{type.name || type.id}</span>
           <IconButton
             icon={DeleteIcon}
             onClick={() => this.HandleRemoveType(type.id)}

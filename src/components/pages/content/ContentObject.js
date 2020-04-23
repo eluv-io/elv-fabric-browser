@@ -561,25 +561,13 @@ class ContentObject extends React.Component {
 
     return (
       <div className="object-info label-box">
-        <LabelledField
-          label="Name"
-          editable={true}
-          onChange={async newName => {
-            await this.UpdateMetadata({metadataSubtree: "public/name", metadata: newName});
-            await this.UpdateMetadata({metadataSubtree: "name", metadata: newName});
-          }}
-        >
+        <LabelledField label="Name">
           { object.meta.public.name || object.id }
         </LabelledField>
 
         <LabelledField
           label="Description"
           type="textarea"
-          editable={true}
-          onChange={async newDescription => {
-            await this.UpdateMetadata({metadataSubtree: "public/description", metadata: newDescription.trim()});
-            await this.UpdateMetadata({metadataSubtree: "description", metadata: newDescription.trim()});
-          }}
         >
           { object.meta.public.description || "" }
         </LabelledField>
