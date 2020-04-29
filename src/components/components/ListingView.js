@@ -4,6 +4,9 @@ import {ImageIcon} from "elv-components-js";
 import {Redirect} from "react-router";
 import {Link} from "react-router-dom";
 import {observer} from "mobx-react";
+import Fabric from "../../clients/Fabric";
+
+const IMAGE_HEIGHT = 300;
 
 @observer
 class ListingItem extends React.Component {
@@ -45,7 +48,7 @@ class ListingItem extends React.Component {
           hidden={this.props.noIcon}
           className={`icon-container ${isSVG ? "svg-icon-container" : ""}`}
         >
-          <ImageIcon icon={this.props.icon}/>
+          <ImageIcon icon={Fabric.utils.ResizeImage({imageUrl: this.props.icon, height: IMAGE_HEIGHT})} />
         </div>
       );
     }
@@ -87,7 +90,7 @@ class ListingItem extends React.Component {
         className="grid-listing-element"
       >
         <div className={`icon-container ${isSVG ? "svg-icon-container" : ""}`}>
-          <ImageIcon icon={this.props.icon} />
+          <ImageIcon icon={Fabric.utils.ResizeImage({imageUrl: this.props.icon, height: IMAGE_HEIGHT})} />
         </div>
 
         <div className="listing-info">
