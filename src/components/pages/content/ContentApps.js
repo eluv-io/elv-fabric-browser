@@ -128,7 +128,8 @@ class ContentApps extends React.Component {
         </LabelledField>
       );
     } else {
-      const typeMeta = (this.props.objectStore.object.typeInfo && this.props.objectStore.object.typeInfo.meta) || {};
+      const typeInfo = this.props.objectStore.object.typeInfo || {};
+      const typeMeta = (typeInfo.latestType && typeInfo.latestType.meta) || {};
       const typeApp = (typeMeta.public || {})[`eluv.${role}App`] || typeMeta[`eluv.${role}App`];
       if(typeApp) {
         const typeName = typeMeta.name || "content type";

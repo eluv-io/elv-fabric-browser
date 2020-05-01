@@ -471,7 +471,7 @@ const Fabric = {
           //const owner = await Fabric.GetContentObjectOwner({objectId: object.id});
 
           const latestVersion = object.versions[0];
-          
+
           let imageUrl;
           imageUrl = await Fabric.GetContentObjectImageUrl({
             libraryId,
@@ -978,12 +978,16 @@ const Fabric = {
   },
 
   GetContentType: async ({versionHash}) => {
+    if(!versionHash) { return; }
+
     const type = await client.ContentType({versionHash});
-    const appUrls = await Fabric.AppUrls({object: type});
+    const latestType = await client.ContentType({typeId: client.utils.DecodeVersionHash(versionHash).objectId});
+    const appUrls = await Fabric.AppUrls({object: latestType});
 
     return {
       ...type,
-      ...appUrls
+      ...appUrls,
+      latestType
     };
   },
 
