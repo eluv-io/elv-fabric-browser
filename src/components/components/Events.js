@@ -260,13 +260,15 @@ class Events extends React.Component {
       this.props.eventsStore.events;
 
     return (
-      <div className="events page-content">
-        { this.FilterControls()}
+      <div className="events page-content-container">
+        <div className="page-content">
+          { this.FilterControls()}
 
-        <EventLogs events={events} filter={this.state.filter} scrollToBottom={this.state.scrollToBottom}/>
+          <EventLogs events={events} filter={this.state.filter} scrollToBottom={this.state.scrollToBottom}/>
 
-        <div className="load-more">
-          { this.LoadMoreEventsButton() }
+          <div className="load-more">
+            { this.LoadMoreEventsButton() }
+          </div>
         </div>
       </div>
     );

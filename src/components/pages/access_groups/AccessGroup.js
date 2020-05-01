@@ -198,34 +198,36 @@ class AccessGroup extends React.Component {
       <div className="page-container access-group-page-container">
         { this.Actions() }
         <PageHeader header={group.name} />
-        <div className="page-content">
-          <div className="label-box">
-            <LabelledField label="Description">
-              { description }
-            </LabelledField>
+        <div className="page-content-container">
+          <div className="page-content">
+            <div className="label-box">
+              <LabelledField label="Description">
+                { description }
+              </LabelledField>
 
-            <LabelledField label="Owner">
-              { ownerText }
-            </LabelledField>
+              <LabelledField label="Owner">
+                { ownerText }
+              </LabelledField>
 
-            <LabelledField label="Contract Address">
-              <Link className="inline-link" to={UrlJoin(this.props.match.url, "contract")}>
-                { group.address }
-              </Link>
-            </LabelledField>
+              <LabelledField label="Contract Address">
+                <Link className="inline-link" to={UrlJoin(this.props.match.url, "contract")}>
+                  { group.address }
+                </Link>
+              </LabelledField>
 
-            { oauthIssuer }
-            { oauthGroups }
+              { oauthIssuer }
+              { oauthGroups }
+            </div>
+            <Tabs
+              options={[
+                ["Members", "members"],
+                ["Managers", "managers"]
+              ]}
+              selected={this.state.view}
+              onChange={(value) => this.setState({view: value})}
+            />
+            { this.AccessGroupMembersListing() }
           </div>
-          <Tabs
-            options={[
-              ["Members", "members"],
-              ["Managers", "managers"]
-            ]}
-            selected={this.state.view}
-            onChange={(value) => this.setState({view: value})}
-          />
-          { this.AccessGroupMembersListing() }
         </div>
       </div>
     );

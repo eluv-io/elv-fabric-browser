@@ -12,12 +12,6 @@
     padding: 0;
   }
 
-  .page-content {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .page-content,
   .display-frame {
     flex: 1 1 auto;
   }
@@ -62,6 +56,8 @@
 
   &.display-frame {
     margin-bottom: $elv-spacing-m;
+    max-height: 75vh;
+    min-height: 75vh;
   }
 }
 

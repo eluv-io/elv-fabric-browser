@@ -7,7 +7,10 @@ body,
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
+  height: auto;
   max-width: 100%;
+  min-height: 100%;
+  width: 100%;
 }
 
 .app {
@@ -33,12 +36,14 @@ body,
 
 .main-content-container {
   grid-area: main-content;
+  max-height: 80vh;
   overflow-y: auto;
-  padding: $elv-spacing-s $elv-spacing-ml $elv-spacing-xxl;
+  padding: $elv-spacing-s $elv-spacing-ml;
+  position: relative;
 }
 
 .page-container {
-  height: 100%;
+  flex: 1 1 auto;
   position: relative;
   width: 100%;
 
@@ -54,20 +59,25 @@ body,
       width: 70vw;
     }
   }
+}
 
-  .page-content {
-    padding-bottom: $elv-spacing-xs;
-    width: 100%;
-  }
+.page-content-container,
+.page-content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+}
+
+.page-content {
+  padding-bottom: $elv-spacing-xl;
 }
 
 .view-container {
   display: grid;
-  grid-template:
-  "navbar notifications" 35px
-  "navbar main-content" 1fr
-  / 200px;
-  min-height: 100%;
+  flex: 1 1 auto;
+  grid-template: "navbar notifications" 35px "navbar main-content" 1fr / 200px;
+  position: absolute;
 }
 
 .error-page {

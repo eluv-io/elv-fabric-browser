@@ -44,19 +44,21 @@ class ContentTypes extends React.Component {
           <Action type="link" to={UrlJoin("/content-types", "create")}>New Content Type</Action>
         </div>
         <PageHeader header="Content Types" />
-        <div className="page-content">
-          <Listing
-            pageId="ContentTypes"
-            paginate={true}
-            count={this.props.typeStore.count}
-            LoadContent={
-              async ({params}) => {
-                await this.props.typeStore.ListContentTypes({params});
-                this.setState({listingVersion: this.state.listingVersion + 1});
+        <div className="page-content-container">
+          <div className="page-content">
+            <Listing
+              pageId="ContentTypes"
+              paginate={true}
+              count={this.props.typeStore.count}
+              LoadContent={
+                async ({params}) => {
+                  await this.props.typeStore.ListContentTypes({params});
+                  this.setState({listingVersion: this.state.listingVersion + 1});
+                }
               }
-            }
-            RenderContent={this.ContentTypes}
-          />
+              RenderContent={this.ContentTypes}
+            />
+          </div>
         </div>
       </div>
     );

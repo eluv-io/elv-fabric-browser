@@ -77,20 +77,16 @@ class ContentLibraries extends React.Component {
           { this.ContentLookup() }
         </div>
         <PageHeader header="Content Libraries" />
-        <div className="page-content">
-          <Listing
-            pageId="ContentLibraries"
-            paginate={true}
-            count={this.props.libraryStore.count}
-            selectFilterLabel="Library Types"
-            selectFilterOptions={[
-              ["Content", "content"],
-              ["All", "all"],
-              ["Eluvio Media Platform", "elv-media-platform"]
-            ]}
-            LoadContent={this.props.libraryStore.ListContentLibraries}
-            RenderContent={this.ContentLibraries}
-          />
+        <div className="page-content-container">
+          <div className="page-content">
+            <Listing
+              pageId="ContentLibraries"
+              paginate={true}
+              count={this.props.libraryStore.count}
+              LoadContent={this.props.libraryStore.ListContentLibraries}
+              RenderContent={this.ContentLibraries}
+            />
+          </div>
         </div>
       </div>
     );
