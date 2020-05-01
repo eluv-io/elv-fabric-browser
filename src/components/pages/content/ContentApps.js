@@ -174,9 +174,11 @@ class ContentApps extends React.Component {
           <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
         </div>
         <PageHeader header={header} subHeader="App management" />
-        <div className="page-content">
-          <div className="label-box">
-            { this.AppRoles().map(role => this.AppEntry(role))}
+        <div className="page-content-container">
+          <div className="page-content">
+            <div className="label-box">
+              { this.AppRoles().map(role => this.AppEntry(role))}
+            </div>
           </div>
         </div>
         { this.UploadModal() }

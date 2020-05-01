@@ -227,9 +227,11 @@ class ContentObjectForm extends React.Component {
     return (
       <div className="page-container">
         { this.BackLink() }
-        <div className={"page-content"}>
-          { this.AppFormSelection() }
-          { content }
+        <div className="page-content-container">
+          <div className="page-content">
+            { this.AppFormSelection() }
+            { content }
+          </div>
         </div>
       </div>
     );

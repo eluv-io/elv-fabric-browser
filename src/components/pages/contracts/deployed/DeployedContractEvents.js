@@ -27,13 +27,15 @@ class DeployedContractEvents extends React.Component {
           header={this.props.contractStore.contract.name}
           subHeader={this.props.contractStore.contract.description}
         />
-        <div className="page-content">
-          <div className="label-box">
-            <div className="contract-events">
-              <Events
-                contractAddress={this.props.contractStore.contractAddress}
-                abi={this.props.contractStore.contract.abi}
-              />
+        <div className="page-content-container">
+          <div className="page-content">
+            <div className="label-box">
+              <div className="contract-events">
+                <Events
+                  contractAddress={this.props.contractStore.contractAddress}
+                  abi={this.props.contractStore.contract.abi}
+                />
+              </div>
             </div>
           </div>
         </div>

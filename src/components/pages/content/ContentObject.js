@@ -827,8 +827,10 @@ class ContentObject extends React.Component {
 
         { this.Tabs() }
 
-        <div className="page-content">
-          { pageContent }
+        <div className="page-content-container">
+          <div className="page-content">
+            { pageContent }
+          </div>
         </div>
       </div>
     );

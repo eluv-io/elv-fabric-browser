@@ -90,42 +90,44 @@ class ContentLibraryForm extends React.Component {
         <div className="actions-container manage-actions">
           <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
         </div>
-        <div className="page-content">
-          <Form
-            legend={legend}
-            redirectPath={redirectPath}
-            cancelPath={Path.dirname(this.props.match.url)}
-            OnSubmit={this.HandleSubmit}
-          >
-            <div className="form-content">
-              <label htmlFor="name">Name</label>
-              <input name="name" value={this.state.name} required={true} onChange={this.HandleInputChange} disabled={this.state.isContentSpaceLibrary} />
+        <div className="page-content-container">
+          <div className="page-content">
+            <Form
+              legend={legend}
+              redirectPath={redirectPath}
+              cancelPath={Path.dirname(this.props.match.url)}
+              OnSubmit={this.HandleSubmit}
+            >
+              <div className="form-content">
+                <label htmlFor="name">Name</label>
+                <input name="name" value={this.state.name} required={true} onChange={this.HandleInputChange} disabled={this.state.isContentSpaceLibrary} />
 
-              { this.Image() }
+                { this.Image() }
 
-              <label className="align-top" htmlFor="description">Description</label>
-              <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
+                <label className="align-top" htmlFor="description">Description</label>
+                <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
 
-              <label className="align-top" htmlFor="publicMetadata">Public Metadata</label>
-              <JsonInput
-                name="publicMetadata"
-                value={this.state.publicMetadata}
-                onChange={this.HandleInputChange}
-              />
-              <label className="align-top" htmlFor="privateMetadata">Private Metadata</label>
-              <JsonInput
-                name="privateMetadata"
-                value={this.state.privateMetadata}
-                onChange={this.HandleInputChange}
-              />
+                <label className="align-top" htmlFor="publicMetadata">Public Metadata</label>
+                <JsonInput
+                  name="publicMetadata"
+                  value={this.state.publicMetadata}
+                  onChange={this.HandleInputChange}
+                />
+                <label className="align-top" htmlFor="privateMetadata">Private Metadata</label>
+                <JsonInput
+                  name="privateMetadata"
+                  value={this.state.privateMetadata}
+                  onChange={this.HandleInputChange}
+                />
 
-              <label htmlFor="kmsId">
-                KMS ID
-                <span className="help-text" hidden={!this.state.createForm}>(optional)</span>
-              </label>
-              <input name="kmsId" value={this.state.kmsId} required={false} onChange={this.HandleInputChange} disabled={!this.state.createForm}/>
-            </div>
-          </Form>
+                <label htmlFor="kmsId">
+                  KMS ID
+                  <span className="help-text" hidden={!this.state.createForm}>(optional)</span>
+                </label>
+                <input name="kmsId" value={this.state.kmsId} required={false} onChange={this.HandleInputChange} disabled={!this.state.createForm}/>
+              </div>
+            </Form>
+          </div>
         </div>
       </div>
     );

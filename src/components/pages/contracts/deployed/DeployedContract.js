@@ -121,28 +121,30 @@ class DeployedContract extends React.Component {
           { this.DeleteButton() }
         </div>
         <PageHeader header={this.props.contractStore.contract.name} subHeader={this.props.contractStore.contract.description} />
-        <div className="page-content">
-          <div className="label-box">
-            <h3>Contract Info</h3>
-            <LabelledField label="Name">
-              { this.props.contractStore.contract.name }
-            </LabelledField>
+        <div className="page-content-container">
+          <div className="page-content">
+            <div className="label-box">
+              <h3>Contract Info</h3>
+              <LabelledField label="Name">
+                { this.props.contractStore.contract.name }
+              </LabelledField>
 
-            <LabelledField label="Description">
-              { this.props.contractStore.contract.description }
-            </LabelledField>
+              <LabelledField label="Description">
+                { this.props.contractStore.contract.description }
+              </LabelledField>
 
-            <LabelledField label="Contract Address">
-              { this.props.contractStore.contract.contractAddress }
-            </LabelledField>
+              <LabelledField label="Contract Address">
+                { this.props.contractStore.contract.contractAddress }
+              </LabelledField>
 
-            <LabelledField label="Balance">
-              { balance }
-            </LabelledField>
+              <LabelledField label="Balance">
+                { balance }
+              </LabelledField>
 
-            { this.AbiInfo() }
-            <h3>Contract Methods</h3>
-            <DeployedContractMethodForm contract={this.props.contractStore.contract} />
+              { this.AbiInfo() }
+              <h3>Contract Methods</h3>
+              <DeployedContractMethodForm contract={this.props.contractStore.contract} />
+            </div>
           </div>
         </div>
       </div>

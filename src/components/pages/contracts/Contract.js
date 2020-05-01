@@ -103,33 +103,35 @@ class Contract extends React.Component {
           <Action className="danger" onClick={this.DeleteContract}>Delete Contract</Action>
         </div>
         <PageHeader header={this.props.contractStore.contractName} />
-        <div className="page-content">
-          <div className="label-box">
-            <h3>Contract Info</h3>
-            <LabelledField label="Description">
-              { description }
-            </LabelledField>
+        <div className="page-content-container">
+          <div className="page-content">
+            <div className="label-box">
+              <h3>Contract Info</h3>
+              <LabelledField label="Description">
+                { description }
+              </LabelledField>
 
-            <LabelledField label="ABI">
-              { this.ToggleButton("Full ABI", "__abi") }
-            </LabelledField>
+              <LabelledField label="ABI">
+                { this.ToggleButton("Full ABI", "__abi") }
+              </LabelledField>
 
-            { abiDisplayInfo }
+              { abiDisplayInfo }
 
-            <LabelledField label="Bytecode">
-              { this.ToggleButton("Bytecode", "__bytecode") }
-            </LabelledField>
+              <LabelledField label="Bytecode">
+                { this.ToggleButton("Bytecode", "__bytecode") }
+              </LabelledField>
 
-            { bytecodeDisplayInfo }
+              { bytecodeDisplayInfo }
 
-            <h3>Contract Constructor</h3>
-            { this.ContractInfo(contractConstructor) }
-            <h3>Constant Methods</h3>
-            { this.ContractInfo(constantMethods) }
-            <h3>Dynamic Methods</h3>
-            { this.ContractInfo(dynamicMethods) }
-            <h3>Contract Events</h3>
-            { this.ContractInfo(contractEvents) }
+              <h3>Contract Constructor</h3>
+              { this.ContractInfo(contractConstructor) }
+              <h3>Constant Methods</h3>
+              { this.ContractInfo(constantMethods) }
+              <h3>Dynamic Methods</h3>
+              { this.ContractInfo(dynamicMethods) }
+              <h3>Contract Events</h3>
+              { this.ContractInfo(contractEvents) }
+            </div>
           </div>
         </div>
       </div>

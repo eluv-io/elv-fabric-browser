@@ -345,8 +345,10 @@ class ContentLibrary extends React.Component {
           subHeader={this.props.libraryStore.library.description}
         />
         { tabs }
-        <div className="page-content">
-          { this.PageView() }
+        <div className="page-content-container">
+          <div className="page-content">
+            { this.PageView() }
+          </div>
         </div>
       </div>
     );

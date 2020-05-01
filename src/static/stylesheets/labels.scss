@@ -104,6 +104,10 @@
       max-width: 525px;
     }
 
+    & > div > button {
+      margin-bottom: $elv-spacing-xxs;
+    }
+
     & > span {
       align-items: center;
       display: flex;
