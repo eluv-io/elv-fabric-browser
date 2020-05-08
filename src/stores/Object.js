@@ -51,6 +51,16 @@ class ObjectStore {
   });
 
   @action.bound
+  ContentObjectParts = flow(function * ({versionHash}) {
+    if(this.versions[versionHash] && this.versions[versionHash].parts) { return; }
+
+    // Version should be loaded at this point, but make sure
+    yield this.ContentObjectVersion({versionHash});
+
+    this.versions[versionHash].parts = yield Fabric.ListParts({versionHash});
+  });
+
+  @action.bound
   ContentObjectPermissions = flow(function * ({libraryId, objectId}) {
     this.objects[objectId].permissions = yield Fabric.GetContentObjectPermissions({libraryId, objectId});
   });

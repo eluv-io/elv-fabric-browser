@@ -284,7 +284,7 @@ class ContentObject extends React.Component {
   }
 
   VersionSize(version) {
-    if(!version) { return; }
+    if(!version || !version.parts) { return; }
 
     return PrettyBytes(version.parts.reduce((a, part) => a + part.size, 0));
   }
@@ -360,14 +360,6 @@ class ContentObject extends React.Component {
             { versionHash }
           </LabelledField>
 
-          <LabelledField label="Parts">
-            { version.parts.length.toString() }
-          </LabelledField>
-
-          <LabelledField label="Total size">
-            { this.VersionSize(version) }
-          </LabelledField>
-
           <ToggleSection label="Metadata">
             <div className="indented">
               <JSONField json={version.meta} />
@@ -378,8 +370,25 @@ class ContentObject extends React.Component {
             <pre className="content-object-data">{JSON.stringify(version.verification, null, 2)}</pre>
           </ToggleSection>
 
+          <LabelledField label="Parts">
+            { version.parts ? version.parts.length.toString() : "" }
+          </LabelledField>
+
+          <LabelledField label="Total size">
+            { this.VersionSize(version) }
+          </LabelledField>
+
           <ToggleSection label="Parts">
-            { this.ObjectParts(version) }
+            <AsyncComponent
+              Load={
+                async () => {
+                  await this.props.objectStore.ContentObjectParts({
+                    versionHash
+                  });
+                }
+              }
+              render={() => this.ObjectParts(version)}
+            />
           </ToggleSection>
 
           <br/>
@@ -537,9 +546,7 @@ class ContentObject extends React.Component {
 
   ObjectInfo() {
     const object = this.props.objectStore.object;
-
-    const latestVersion = this.props.objectStore.versions[object.versions[0]];
-
+    
     let accessCharge;
     if(object.accessInfo) {
       accessCharge = (
@@ -610,14 +617,6 @@ class ContentObject extends React.Component {
 
         <LabelledField label="Versions">
           { object.versions.length }
-        </LabelledField>
-
-        <LabelledField label="Parts">
-          { latestVersion.parts.length }
-        </LabelledField>
-
-        <LabelledField label="Total size">
-          { this.VersionSize(latestVersion) }
         </LabelledField>
 
         { this.ObjectVersion(object.versions[0], object.versions.length, true) }

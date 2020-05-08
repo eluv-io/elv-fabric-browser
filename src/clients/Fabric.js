@@ -653,14 +653,12 @@ const Fabric = {
     const version = await client.ContentObject({versionHash});
     const metadata = await Fabric.GetContentObjectMetadata({versionHash});
     //const verification = await Fabric.VerifyContentObject({libraryId, objectId, versionHash: version.hash});
-    const parts = await Fabric.ListParts({versionHash});
 
     // Must keep versions in order from newest to oldest
     return {
       ...version,
       meta: metadata,
-      verification: {},
-      parts
+      verification: {}
     };
   },
 
