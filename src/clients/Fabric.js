@@ -473,12 +473,19 @@ const Fabric = {
           const latestVersion = object.versions[0];
 
           let imageUrl;
-          imageUrl = await Fabric.GetContentObjectImageUrl({
-            libraryId,
-            objectId: object.id,
-            versionHash: latestVersion.hash,
-            metadata: object.versions[0].meta
-          });
+          try {
+            imageUrl = await Fabric.GetContentObjectImageUrl({
+              libraryId,
+              objectId: object.id,
+              versionHash: latestVersion.hash,
+              metadata: object.versions[0].meta
+            });
+          } catch(error) {
+            /* eslint-disable no-console */
+            console.error("Failed to check for display image for" + object.id);
+            console.error(error);
+            /* eslint-enable no-console */
+          }
 
           const accessInfo = await Fabric.GetAccessInfo({objectId: object.id});
           const meta = latestVersion.meta || {};
