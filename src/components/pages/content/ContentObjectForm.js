@@ -240,6 +240,7 @@ class ContentObjectForm extends React.Component {
   render() {
     return (
       <AsyncComponent
+        key={`content-object-form-${this.state.pageVersion}`}
         Load={
           async () => {
             let loadTasks = [];
