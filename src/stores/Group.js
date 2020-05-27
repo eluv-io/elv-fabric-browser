@@ -37,7 +37,7 @@ class GroupStore {
   });
 
   @action.bound
-  SaveAccessGroup = flow(function * ({name, description, metadata, address, oauthIssuer, oauthClaims}) {
+  SaveAccessGroup = flow(function * ({name, description, metadata, address, oauthEnabled, oauthIssuer, oauthAud, oauthGroups, trustAuthorityId}) {
     metadata = ParseInputJson(metadata);
 
     if(address) {
@@ -64,13 +64,23 @@ class GroupStore {
               public: {
                 name,
                 description
-              },
-              oauthIssuer,
-              oauthClaims
+              }
             }
           });
         }
       });
+
+      if(oauthEnabled) {
+        yield Fabric.LinkOAuthGroup({
+          address,
+          oauthIssuer,
+          oauthAud,
+          oauthGroups,
+          trustAuthorityId
+        });
+      } else {
+        yield Fabric.UnlinkOAuthGroup({address});
+      }
 
       this.rootStore.notificationStore.SetNotificationMessage({
         message: "Access group successfully updated",
@@ -81,12 +91,18 @@ class GroupStore {
       address = yield Fabric.CreateAccessGroup({
         name,
         description,
-        metadata: {
-          ...metadata,
-          oauthIssuer,
-          oauthClaims
-        }
+        metadata
       });
+
+      if(oauthEnabled) {
+        yield Fabric.LinkOAuthGroup({
+          address,
+          oauthIssuer,
+          oauthAud,
+          oauthGroups,
+          trustAuthorityId
+        });
+      }
 
       this.rootStore.notificationStore.SetNotificationMessage({
         message: "Access group successfully created",

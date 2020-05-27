@@ -49,6 +49,10 @@ const Fabric = {
     return Fabric.currentAccountAddress;
   },
 
+  DefaultKMSId: async () => {
+    return `ikms${Fabric.utils.AddressToHash(await client.DefaultKMSAddress())}`;
+  },
+
   /* Access Groups */
 
   CreateAccessGroup: async ({name, description, metadata={}}) => {
@@ -258,6 +262,15 @@ const Fabric = {
     });
     const kmsId = `ikms${client.utils.AddressToHash(kmsAddress)}`;
 
+    const encodedTenantId = (await client.CallContractMethod({
+      contractAddress: client.utils.HashToAddress(libraryId),
+      methodName: "getMeta",
+      methodArgs: [
+        "_tenantId"
+      ]
+    })) || "";
+    const tenantId = Buffer.from(encodedTenantId.replace("0x", ""), "hex").toString("utf-8");
+
     /* Types */
     const types = await Fabric.ListLibraryContentTypes({libraryId});
 
@@ -273,6 +286,7 @@ const Fabric = {
       publicMeta,
       imageUrl,
       kmsId,
+      tenantId,
       owner,
       ownerName,
       isOwner: EqualAddress(owner, currentAccountAddress),
@@ -1515,8 +1529,9 @@ const Fabric = {
     contractAddress = Fabric.utils.FormatAddress(contractAddress);
     const currentAccountAddress = await Fabric.CurrentAccountAddress();
 
-    let owner, ownerName, metadata = {};
+    let owner, ownerName, oauthInfo, metadata = {};
     let isManager = false;
+    let isOwner = false;
 
     try {
       owner = Fabric.utils.FormatAddress(
@@ -1525,6 +1540,8 @@ const Fabric = {
           methodName: "owner"
         })
       );
+
+      isOwner = client.utils.EqualAddress(owner, currentAccountAddress);
 
       ownerName = await client.userProfileClient.PublicUserMetadata({
         address: owner,
@@ -1550,6 +1567,30 @@ const Fabric = {
           libraryId: Fabric.contentSpaceLibraryId,
           objectId: client.utils.AddressToObjectId(contractAddress)
         }) || {};
+
+        try {
+          if(isOwner) {
+            const key = `eluv.jwtv.iusr${Fabric.utils.AddressToHash(currentAccountAddress)}`;
+            if(metadata[key]) {
+              oauthInfo = await client.DecryptECIES(metadata[key]);
+
+              const kmsKey = Object.keys(metadata).find(key => key.startsWith("eluv.jwtv.ikms"));
+              if(kmsKey) {
+                oauthInfo.trustAuthorityId = kmsKey.replace("eluv.jwtv.", "");
+              }
+            }
+
+            oauthInfo.oauthEnabled = await client.CallContractMethod({
+              contractAddress,
+              methodName: "oauthEnabled"
+            });
+          }
+        } catch(error) {
+          // eslint-disable-next-line no-console
+          console.error("Failed to determine OAuth info for group", contractAddress);
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
       }
     } catch(error) {
       // eslint-disable-next-line no-console
@@ -1566,8 +1607,27 @@ const Fabric = {
       owner,
       ownerName,
       isManager,
-      isOwner: client.utils.EqualAddress(owner, currentAccountAddress)
+      isOwner,
+      oauthInfo
     };
+  },
+
+  async LinkOAuthGroup({address, oauthIssuer, oauthAud, oauthGroups=[], trustAuthorityId}) {
+    await client.LinkAccessGroupToOauth({
+      groupAddress: address,
+      kmsId: trustAuthorityId,
+      oauthConfig: {
+        issuer: oauthIssuer,
+        claims: {
+          aud: oauthAud,
+          groups: oauthGroups
+        }
+      }
+    });
+  },
+
+  async UnlinkOAuthGroup({address}) {
+    await client.UnlinkAccessGroupFromOauth({groupAddress: address});
   },
 
   async ListAccessGroupMembers({contractAddress, showManagers=false, params}) {

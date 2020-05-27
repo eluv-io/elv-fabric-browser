@@ -232,6 +232,10 @@ class ContentLibrary extends React.Component {
           { library.kmsId }
         </LabelledField>
 
+        <LabelledField label="Tenant ID">
+          { library.tenantId }
+        </LabelledField>
+
         <LabelledField label="Owner">
           { ownerText }
         </LabelledField>
