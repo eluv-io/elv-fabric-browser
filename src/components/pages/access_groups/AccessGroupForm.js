@@ -1,11 +1,15 @@
 import React from "react";
 import UrlJoin from "url-join";
 import Path from "path";
-import {Action, Form} from "elv-components-js";
+import {Action, Form, IconButton} from "elv-components-js";
 import {inject, observer} from "mobx-react";
 import AsyncComponent from "../../components/AsyncComponent";
 import JsonTextArea from "elv-components-js/src/components/JsonInput";
 import {toJS} from "mobx";
+import Fabric from "../../../clients/Fabric";
+
+import AddIcon from "../../../static/icons/plus-square.svg";
+import RemoveIcon from "../../../static/icons/minus-square.svg";
 
 @inject("groupStore")
 @observer
@@ -19,7 +23,9 @@ class AccessGroupForm extends React.Component {
       description: "",
       isOauthGroup: false,
       oauthIssuer: "",
-      oauthClaims: "",
+      oauthAud: "",
+      oauthGroups: [],
+      trustAuthorityId: "",
       modifyMetadata: false,
       metadata: ""
     };
@@ -41,13 +47,61 @@ class AccessGroupForm extends React.Component {
       name: this.state.name,
       description: this.state.description,
       metadata: this.state.metadata,
+      oauthEnabled: this.state.isOauthGroup,
       oauthIssuer: this.state.oauthIssuer,
-      oauthClaims: this.state.oauthClaims
+      oauthAud: this.state.oauthAud,
+      oauthGroups: this.state.oauthGroups,
+      trustAuthorityId: this.state.trustAuthorityId
     });
 
     this.setState({
       contractAddress,
     });
+  }
+
+  OAuthGroups() {
+    const onChange = (event, i) => {
+      let groups = this.state.oauthGroups;
+      groups[i] = event.target.value;
+      this.setState({oauthGroups: groups});
+    };
+
+    return (
+      <React.Fragment>
+        <label>OAuth Groups</label>
+
+        { this.state.oauthGroups.map((groupName, i) => (
+          <React.Fragment key={`oauthGroup-${i}`}>
+            <span className="flex">
+              <input className="flex-grow" value={groupName} onChange={event => onChange(event, i)} />
+              <IconButton
+                icon={RemoveIcon}
+                className="oauth-group-icon"
+                title="Remove Group"
+                onClick={() => {
+                  let groups = this.state.oauthGroups;
+                  groups = groups.filter((_, k) => i !== k);
+                  this.setState({oauthGroups: groups});
+                }}
+              />
+            </span>
+            <label />
+          </React.Fragment>
+        ))}
+
+        <IconButton
+          icon={AddIcon}
+          className="oauth-group-icon"
+          title="Add Group"
+          onClick={() => {
+            let groups = this.state.oauthGroups;
+            groups.push("");
+            this.setState({oauthGroups: groups});
+          }}
+        />
+
+      </React.Fragment>
+    );
   }
 
   OauthInfo() {
@@ -57,11 +111,16 @@ class AccessGroupForm extends React.Component {
 
     return (
       <React.Fragment>
-        <label htmlFor="oauthIssuer">Issuer</label>
+        <label htmlFor="trustAuthorityId">Trust Authority Id</label>
+        <input name="trustAuthorityId" value={this.state.trustAuthorityId} onChange={this.HandleInputChange} />
+
+        <label htmlFor="oauthIssuer">OAuth Issuer</label>
         <input name="oauthIssuer" value={this.state.oauthIssuer} onChange={this.HandleInputChange} />
 
-        <label htmlFor="oauthClaims" className="align-top">Claims</label>
-        <JsonTextArea name="oauthClaims" value={this.state.oauthClaims} onChange={this.HandleInputChange} />
+        <label htmlFor="oauthAud">OAuth AUD</label>
+        <input name="oauthAud" value={this.state.oauthAud} onChange={this.HandleInputChange} />
+
+        { this.OAuthGroups() }
       </React.Fragment>
     );
   }
@@ -116,7 +175,7 @@ class AccessGroupForm extends React.Component {
               <input
                 name="isOauthGroup"
                 type="checkbox"
-                checked={this.state.isOauthGroup}
+                checked={!!this.state.isOauthGroup}
                 onChange={() => this.setState({isOauthGroup: !this.state.isOauthGroup})}
               />
 
@@ -144,9 +203,17 @@ class AccessGroupForm extends React.Component {
                 name: group.name,
                 metadata: JSON.stringify(toJS(group.metadata), null, 2),
                 description: group.description,
-                isOauthGroup: !!group.oauthIssuer,
-                oauthIssuer: group.oauthIssuer || "",
-                oauthClaims: group.oauthClaims || ""
+                isOauthGroup: group.oauthInfo && group.oauthInfo.oauthEnabled,
+                oauthIssuer: group.oauthInfo && group.oauthInfo.issuer || "",
+                oauthAud: group.oauthInfo && group.oauthInfo.claims && group.oauthInfo.claims.aud || "",
+                oauthGroups: group.oauthInfo && group.oauthInfo.claims && toJS(group.oauthInfo.claims.groups) || [],
+                trustAuthorityId: group.oauthInfo && group.oauthInfo.trustAuthorityId || ""
+              });
+            }
+
+            if(!this.state.trustAuthorityId) {
+              this.setState({
+                trustAuthorityId: await Fabric.DefaultKMSId()
               });
             }
           }

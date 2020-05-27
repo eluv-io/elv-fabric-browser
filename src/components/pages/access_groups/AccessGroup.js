@@ -11,6 +11,8 @@ import Listing from "../../components/Listing";
 import RemoveIcon from "../../../static/icons/close.svg";
 import {inject, observer} from "mobx-react";
 import AsyncComponent from "elv-components-js/src/components/AsyncComponent";
+import JSONField from "../../components/JSONField";
+import ToggleSection from "../../components/ToggleSection";
 
 @inject("groupStore")
 @observer
@@ -167,31 +169,31 @@ class AccessGroup extends React.Component {
 
     const description = <ClippedText className="object-description" text={group.description} />;
 
-    let oauthIssuer, oauthGroups;
-    if(group.oauthIssuer) {
+    let oauthIssuer, oauthGroups, metadata;
+    if(group.oauthInfo) {
       oauthIssuer = (
         <LabelledField label="OAuth Issuer">
-          { group.oauthIssuer }
+          { group.oauthInfo.issuer }
         </LabelledField>
       );
+
+      if(group.oauthInfo.claims && group.oauthInfo.claims.groups) {
+        oauthGroups = (
+          <LabelledField label="OAuth Groups">
+            { group.oauthInfo.claims.groups.join(", ") }
+          </LabelledField>
+        );
+      }
     }
 
-    if(group.oauthClaims) {
-      try {
-        const claims = JSON.parse(group.oauthClaims);
-        if(claims.groups) {
-          oauthGroups = (
-            <LabelledField label="OAuth Groups">
-              { claims.groups }
-            </LabelledField>
-          );
-        }
-      } catch(error) {
-        // eslint-disable-next-line no-console
-        console.error("Failed to parse OAuth claims:");
-        // eslint-disable-next-line no-console
-        console.error(error);
-      }
+    if(group.isOwner) {
+      metadata = (
+        <ToggleSection label="Metadata">
+          <div className="indented">
+            <JSONField json={group.metadata} />
+          </div>
+        </ToggleSection>
+      );
     }
 
     return (
@@ -217,6 +219,7 @@ class AccessGroup extends React.Component {
 
               { oauthIssuer }
               { oauthGroups }
+              { metadata }
             </div>
             <Tabs
               options={[

@@ -18,6 +18,14 @@
   width: 100%;
 }
 
+.flex {
+  display: flex;
+}
+
+.flex-grow {
+  flex: 1 0 auto;
+}
+
 .clickable {
   cursor: pointer;
 }

@@ -119,3 +119,20 @@ fieldset {
     width: 100%;
   }
 }
+
+button {
+  &.oauth-group-icon {
+    input + & {
+      margin-left: $elv-spacing-xxs;
+    }
+
+    svg {
+      stroke: $elv-color-mediumgray;
+      width: $elv-spacing-m;
+
+      &:hover {
+        stroke: $elv-color-darkgray;
+      }
+    }
+  }
+}
