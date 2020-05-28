@@ -652,11 +652,9 @@ class ContentObject extends React.Component {
         </Action>
       );
     }
-
-    const currentPermission = CurrentPermission(object);
-
+    
     let groupsButton;
-    if(object.isOwner || (currentPermission !== "owner" && object.canEdit)) {
+    if(object.isOwner || (object.isNormalObject && CurrentPermission(object) !== "owner" && object.canEdit)) {
       groupsButton = (
         <Action type="link" to={UrlJoin(this.props.match.url, "groups")}>
           Groups
