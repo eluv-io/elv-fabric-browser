@@ -5,13 +5,12 @@ import Path from "path";
 import PrettyBytes from "pretty-bytes";
 import { LabelledField } from "../../components/LabelledField";
 import {Redirect, Prompt} from "react-router";
-import ClippedText from "../../components/ClippedText";
 import {PageHeader} from "../../components/Page";
 import {DownloadFromUrl} from "../../../utils/Files";
 import FileBrowser from "../../components/FileBrowser";
 import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
-import {Action, Confirm, IconButton, ImageIcon, Tabs, ToolTip} from "elv-components-js";
+import {Action, Confirm, IconButton, ImageIcon, LoadingElement, Tabs, ToolTip} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
 import {AccessChargeDisplay, Percentage} from "../../../utils/Helpers";
 import {inject, observer} from "mobx-react";
@@ -22,31 +21,49 @@ import ContentObjectGroups from "./ContentObjectGroups";
 import RefreshIcon from "../../../static/icons/refresh.svg";
 import InfoIcon from "../../../static/icons/help-circle.svg";
 
-const VisibilityInfo = (visibility) => {
-  if(visibility <= 0) {
-    return {
-      name: "Private",
-      description: "Only authorized users can access this object.",
-      visibility: 0
-    };
-  } else if(visibility < 10) {
-    return {
-      name: "Publicly Listable",
-      description: "Anyone can access the public portion of the object, but only accounts with specific rights can access the full object.",
-      visibility: 1
-    };
-  } else if(visibility < 100) {
-    return {
-      name: "Public",
-      description: "Anyone can access this object",
-      visibility: 10
-    };
+const PermissionLevels = {
+  "owner": {
+    short: "Owner Only",
+    description: "Only the owner has access to the object and ability to change permissions",
+    settings: { visibility: 0, statusCode: -1, kmsConk: false }
+  },
+  "editable": {
+    short: "Editable",
+    description: "Members of the editors group have full access to the object and the ability to change permissions",
+    settings: { visibility: 0, statusCode: -1, kmsConk: true }
+  },
+  "viewable": {
+    short: "Viewable",
+    description: "In addition to editors, members of the 'accessor' group can have read-only access to the object including playing video and retrieving metadata, images and documents",
+    settings: { visibility: 0, statusCode: 0, kmsConk: true }
+  },
+  "listable": {
+    short: "Publicly Listable",
+    description: "Anyone can list the public portion of this object but only accounts with specific rights can access",
+    settings: { visibility: 1, statusCode: 0, kmsConk: true }
+  },
+  "public": {
+    short: "Public",
+    description: "Anyone can access this object",
+    settings: { visibility: 10, statusCode: 0, kmsConk: true }
+  }
+};
+
+const CurrentPermission = (object) => {
+  const hasKmsConk = !!object.meta[`eluv.caps.${object.kmsId}`];
+  const statusCode = object.status.code;
+  const visibility = object.visibility;
+
+  if(visibility >= 10) {
+    return "public";
+  } else if(visibility >= 1) {
+    return "listable";
+  } else if(statusCode >= 0) {
+    return "viewable";
+  } else if(hasKmsConk) {
+    return "editable";
   } else {
-    return {
-      name: "Publicly Managable",
-      description: "Anyone can access and manage this object",
-      visibility: 100
-    };
+    return "owner";
   }
 };
 
@@ -96,7 +113,8 @@ class ContentObject extends React.Component {
       appRef: React.createRef(),
       view: "info",
       partDownloadProgress: {},
-      pageVersion: 0
+      pageVersion: 0,
+      permissionChanging: false
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -200,34 +218,6 @@ class ContentObject extends React.Component {
         Delete Content Version
       </Action>
     );
-  }
-
-  PublishButton() {
-    if(!this.props.objectStore.object.isNormalObject) { return null; }
-
-    const reviewerGroups = this.props.libraryStore.library.groups.reviewer;
-    const reviewRequired = reviewerGroups.length > 0;
-
-    if(this.props.object.status.code < 0 && this.props.objectStore.object.isOwner) {
-      const actionText = reviewRequired ? "Submit for Review" : "Publish";
-      const confirmationMessage = reviewRequired ?
-        "Are you sure you want to submit this content object for review?" :
-        "Are you sure you want to publish this content object?";
-
-      return (
-        <Action onClick={() => this.SubmitContentObject(confirmationMessage)} >
-          { actionText }
-        </Action>
-      );
-    }
-
-    if(this.props.objectStore.object.status.code > 0 && this.props.objectStore.object.permissions.canReview) {
-      return (
-        <Action type="link" to={UrlJoin(this.props.match.url, "review")}>
-          Review
-        </Action>
-      );
-    }
   }
 
   LROStatus() {
@@ -459,50 +449,16 @@ class ContentObject extends React.Component {
     return contractInfo;
   }
 
-  // Display object status and review/submit/publish actions
-  ObjectStatus() {
-    if(!this.props.objectStore.object.isNormalObject) { return null; }
-
-    let reviewNote, reviewer;
-    if(this.props.objectStore.object.meta["eluv.reviewNote"]) {
-      reviewer = (
-        <LabelledField label="Reviewer">
-          { this.props.objectStore.object.meta["eluv.reviewer"] }
-        </LabelledField>
-      );
-      const note = <ClippedText className="object-description" text={this.props.objectStore.object.meta["eluv.reviewNote"]} />;
-      reviewNote = (
-        <LabelledField label="Review Note">
-          { note }
-        </LabelledField>
-      );
-    }
-
-    return (
-      <React.Fragment>
-        <LabelledField label="Status">
-          { this.props.objectStore.object.status.description }
-        </LabelledField>
-        { reviewer }
-        { reviewNote }
-      </React.Fragment>
-    );
-  }
-
-  Visibility() {
-    const visibilityLevels = [
-      VisibilityInfo(10),
-      VisibilityInfo(1),
-      VisibilityInfo(0)
-    ];
+  Permissions() {
+    if(!this.props.objectStore.object.isNormalObject) { return; }
 
     const infoIcon = (
       <ToolTip className="visibility-tooltip"
         content={
           <div className="label-box">
             {
-              visibilityLevels.map(({name, description}) =>
-                <LabelledField alignTop={true} key={`visibility-info-${name}`} label={name}>
+              Object.values(PermissionLevels).map(({short, description}) =>
+                <LabelledField alignTop={true} key={`visibility-info-${short}`} label={short}>
                   <div>{ description }</div>
                 </LabelledField>
               )
@@ -514,39 +470,53 @@ class ContentObject extends React.Component {
       </ToolTip>
     );
 
-    let info = <div>{ VisibilityInfo(this.props.objectStore.object.visibility).name }</div>;
-    if(this.props.objectStore.object.canEdit) {
-      const options = visibilityLevels.map(({name, visibility}) =>
-        <option key={`visibility-option-${visibility}`} value={visibility}>{ name }</option>
+    const currentPermission = CurrentPermission(this.props.objectStore.object);
+
+    let info = <div>{ PermissionLevels[currentPermission].short }</div>;
+    if(this.props.objectStore.object.isOwner) {
+      const options = Object.keys(PermissionLevels).map(permission =>
+        <option key={`visibility-option-${permission}`} value={permission}>{ PermissionLevels[permission].short }</option>
       );
 
       info = (
-        <select
-          value={this.props.objectStore.object.visibility}
-          onChange={
-            async event =>
-              await this.props.objectStore.SetVisibility({
-                objectId: this.props.objectStore.objectId,
-                visibility: event.target.value
-              })
-          }
-        >
-          { options }
-        </select>
+        <LoadingElement loading={this.state.permissionChanging} loadingClassname="visibility-info-loading">
+          <select
+            value={currentPermission}
+            onChange={
+              async event => {
+                this.setState({permissionChanging: true});
+                try {
+                  await this.props.objectStore.SetPermissions({
+                    objectId: this.props.objectStore.objectId,
+                    settings: PermissionLevels[event.target.value].settings
+                  });
+
+                  await new Promise(resolve => setTimeout(resolve, 1000));
+
+                  this.setState({pageVersion: this.state.pageVersion + 1});
+                } finally {
+                  this.setState({permissionChanging: false});
+                }
+              }
+            }
+          >
+            { options }
+          </select>
+        </LoadingElement>
       );
     }
 
     return (
       <div className="visibility-info">
         { info }
-        { infoIcon }
+        { this.state.permissionChanging ? null : infoIcon }
       </div>
     );
   }
 
   ObjectInfo() {
     const object = this.props.objectStore.object;
-    
+
     let accessCharge;
     if(object.accessInfo) {
       accessCharge = (
@@ -609,8 +579,8 @@ class ContentObject extends React.Component {
           { ownerText }
         </LabelledField>
 
-        <LabelledField label="Visibility" alignTop={false}>
-          { this.Visibility() }
+        <LabelledField label="Permissions" alignTop={false}>
+          { this.Permissions() }
         </LabelledField>
 
         <br />
@@ -627,6 +597,8 @@ class ContentObject extends React.Component {
   }
 
   Actions() {
+    const object = this.props.objectStore.object;
+
     const refreshButton = (
       <IconButton
         className="refresh-button"
@@ -642,7 +614,7 @@ class ContentObject extends React.Component {
       </Action>
     );
 
-    if(!this.props.objectStore.object.canEdit) {
+    if(!object.canEdit) {
       return (
         <div className="actions-container">
           { backButton }
@@ -653,8 +625,8 @@ class ContentObject extends React.Component {
 
     let setContractButton;
     if(
-      !this.props.objectStore.object.customContractAddress &&
-      (this.props.objectStore.object.isNormalObject || this.props.objectStore.object.isContentType)
+      !object.customContractAddress &&
+      (object.isNormalObject || object.isContentType)
     ) {
       setContractButton = (
         <Action type="link" to={UrlJoin(this.props.match.url, "deploy")}>
@@ -664,7 +636,7 @@ class ContentObject extends React.Component {
     }
 
     let deleteObjectButton;
-    if(this.props.objectStore.object.isOwner && !this.props.objectStore.object.isContentLibraryObject) {
+    if(object.isOwner && !object.isContentLibraryObject) {
       deleteObjectButton = (
         <Action className="danger" onClick={() => this.DeleteContentObject()}>
           Delete
@@ -673,7 +645,7 @@ class ContentObject extends React.Component {
     }
 
     let saveDraftButton;
-    if(this.props.objectStore.object.writeToken) {
+    if(object.writeToken) {
       saveDraftButton = (
         <Action className="important" onClick={() => this.SaveContentObjectDraft()}>
           Save Draft
@@ -681,8 +653,10 @@ class ContentObject extends React.Component {
       );
     }
 
+    const currentPermission = CurrentPermission(object);
+
     let groupsButton;
-    if(this.props.objectStore.object.isOwner) {
+    if(object.isOwner || (currentPermission !== "owner" && object.canEdit)) {
       groupsButton = (
         <Action type="link" to={UrlJoin(this.props.match.url, "groups")}>
           Groups

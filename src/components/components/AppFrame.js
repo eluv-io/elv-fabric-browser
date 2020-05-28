@@ -70,6 +70,7 @@ const IsCloneable = (value) => {
 class IFrameBase extends React.Component {
   SandboxPermissions() {
     return [
+      "allow-downloads",
       "allow-scripts",
       "allow-forms",
       "allow-modals",

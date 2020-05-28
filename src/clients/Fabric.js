@@ -608,6 +608,15 @@ const Fabric = {
       accessInfo = await Fabric.GetAccessInfo({objectId});
     }
 
+    let kmsId;
+    if(isNormalObject) {
+      const kmsAddress = await client.CallContractMethod({
+        contractAddress: client.utils.HashToAddress(objectId),
+        methodName: "addressKMS"
+      });
+      kmsId = `ikms${client.utils.AddressToHash(kmsAddress)}`;
+    }
+
     const visibility = await client.Visibility({id: objectId});
 
     const owner = await Fabric.GetContentObjectOwner({objectId: objectId});
@@ -643,6 +652,7 @@ const Fabric = {
       imageUrl,
       lroStatus,
       contractAddress: FormatAddress(client.utils.HashToAddress(objectId)),
+      kmsId,
       customContractAddress,
       visibility,
       owner,
@@ -758,10 +768,17 @@ const Fabric = {
       meta: metadata
     };
 
-    return client.CreateContentObject({
+    const creationCall = await client.CreateContentObject({
       libraryId: libraryId,
       options: requestParams
     });
+
+    await client.SetVisibility({
+      id: creationCall.id,
+      visibility: 0
+    });
+
+    return creationCall;
   },
 
   DeleteContentObject: async ({libraryId, objectId}) => {
@@ -879,8 +896,58 @@ const Fabric = {
     await client.SetContentObjectImage({libraryId, objectId, writeToken, image, imageName});
   },
 
-  SetVisibility: async ({id, visibility}) => {
-    await client.SetVisibility({id, visibility});
+  SetPermissions: async ({objectId, settings}) => {
+    const libraryId = await client.ContentObjectLibraryId({objectId});
+
+    // Visibility
+    await client.SetVisibility({id: objectId, visibility: settings.visibility});
+
+    const statusCode = await client.CallContractMethod({
+      contractAddress: client.utils.HashToAddress(objectId),
+      methodName: "statusCode"
+    });
+
+    if(statusCode !== settings.statusCode) {
+      if(settings.statusCode < 0) {
+        await client.CallContractMethod({
+          contractAddress: client.utils.HashToAddress(objectId),
+          methodName: "setStatusCode",
+          methodArgs: [-1]
+        });
+      } else {
+        await client.CallContractMethod({
+          contractAddress: client.utils.HashToAddress(objectId),
+          methodName: "publish"
+        });
+      }
+    }
+
+    // KMS Conk
+    const kmsAddress = await client.CallContractMethod({
+      contractAddress: client.utils.HashToAddress(objectId),
+      methodName: "addressKMS"
+    });
+    const kmsConkKey = `eluv.caps.ikms${client.utils.AddressToHash(kmsAddress)}`;
+
+    const kmsConk = await client.ContentObjectMetadata({libraryId, objectId, metadataSubtree: kmsConkKey});
+
+    if(kmsConk && !settings.kmsConk) {
+      await Fabric.EditAndFinalizeContentObject({
+        libraryId,
+        objectId,
+        todo: async (writeToken) => {
+          await client.DeleteMetadata({libraryId, objectId, writeToken, metadataSubtree: kmsConkKey});
+        }
+      });
+    } else if(!kmsConk && settings.kmsConk) {
+      await Fabric.EditAndFinalizeContentObject({
+        libraryId,
+        objectId,
+        todo: async (writeToken) => {
+          await client.CreateEncryptionConk({libraryId, objectId, writeToken, createKMSConk: true});
+        }
+      });
+    }
   },
 
   /* Content Types */

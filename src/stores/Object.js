@@ -314,19 +314,14 @@ class ObjectStore {
   });
 
   @action.bound
-  SetVisibility = flow(function * ({objectId, visibility}) {
-    if(visibility < 0 || visibility > 100) {
-      this.rootStore.notificationStore.SetErrorMessage({message: `Invalid visibility: ${visibility}`});
-    }
+  SetPermissions = flow(function * ({objectId, settings}) {
+    this.rootStore.notificationStore.ClearMessage();
 
-    yield Fabric.SetVisibility({id: objectId, visibility});
-
-    if(this.objects[objectId]) {
-      this.objects[objectId].visibility = visibility;
-    }
+    yield Fabric.SetPermissions({objectId, settings});
 
     this.rootStore.notificationStore.SetNotificationMessage({
-      message: "Successfully updated visibility"
+      message: "Successfully updated object permissions",
+      redirect: true
     });
   });
 
