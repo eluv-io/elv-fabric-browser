@@ -141,12 +141,21 @@
     cursor: pointer;
     height: auto;
     margin-left: $elv-spacing-xxs;
-    margin-top: $elv-spacing-xxs;
     width: $elv-font-l;
   }
 
   select {
     width: 10rem;
+  }
+
+  .visibility-info-loading {
+    height: $elv-spacing-l;
+    width: $elv-spacing-l;
+
+    .la-ball-spin-clockwise {
+      height: $elv-spacing-m;
+      width: $elv-spacing-m;
+    }
   }
 }
 
