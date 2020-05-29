@@ -16,12 +16,11 @@ class ObjectStore {
   }
 
   @computed get objectId() {
-    return this.rootStore.routerStore.objectId;
+    return this.rootStore.routerStore.objectId || Fabric.utils.AddressToObjectId(this.rootStore.routerStore.contractAddress);
   }
 
   @computed get object() {
-    const objectId = this.rootStore.routerStore.objectId;
-    return this.objects[objectId];
+    return this.objects[this.objectId];
   }
 
   constructor(rootStore) {

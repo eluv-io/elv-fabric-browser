@@ -3,6 +3,7 @@ import Path from "path";
 import {Action, Form} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
 import {inject, observer} from "mobx-react";
+import Fabric from "../../../clients/Fabric";
 
 @inject("objectStore")
 @inject("groupStore")
@@ -45,9 +46,12 @@ class ContentObjectGroupForm extends React.Component {
   }
 
   Groups() {
-    let options = Object.values(this.props.groupStore.accessGroups).map(group =>
-      <option key={`group-${group.address}`} value={group.address}>{ group.name }</option>
-    );
+    const contractAddress = Fabric.utils.HashToAddress(this.props.objectStore.objectId);
+    let options = Object.values(this.props.groupStore.accessGroups)
+      .filter(group => !Fabric.utils.EqualAddress(group.address, contractAddress))
+      .map(group =>
+        <option key={`group-${group.address}`} value={group.address}>{ group.name }</option>
+      );
 
     options = (
       [
@@ -124,17 +128,9 @@ class ContentObjectGroupForm extends React.Component {
         Load={
           async () => {
             await this.props.groupStore.ListAccessGroups({params: {}});
-            await Promise.all(
-              [
-                this.props.objectStore.ContentObject({
-                  libraryId: this.props.objectStore.libraryId,
-                  objectId: this.props.objectStore.objectId
-                })
-              ]
-            );
-            await this.props.objectStore.ContentObjectGroupPermissions({
-              objectId: this.props.objectStore.objectId
-            });
+            this.props.objectStore.ContentObject({objectId: this.props.objectStore.objectId});
+
+            await this.props.objectStore.ContentObjectGroupPermissions({objectId: this.props.objectStore.objectId});
 
             const initialGroupAddress = Object.keys(this.props.groupStore.accessGroups)[0];
 

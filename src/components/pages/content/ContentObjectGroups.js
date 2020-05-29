@@ -2,8 +2,9 @@ import React from "react";
 import UrlJoin from "url-join";
 import {Tabs} from "elv-components-js";
 import Listing from "../../components/Listing";
-import AsyncComponent from "../../components/AsyncComponent";
 import {inject, observer} from "mobx-react";
+
+import PropTypes from "prop-types";
 
 @inject("objectStore")
 @observer
@@ -16,7 +17,6 @@ class ContentObjectGroups extends React.Component {
       groups: []
     };
 
-    this.AccessGroupsListing = this.AccessGroupsListing.bind(this);
     this.FilterGroups = this.FilterGroups.bind(this);
   }
 
@@ -25,7 +25,7 @@ class ContentObjectGroups extends React.Component {
     const perPage = filterOptions.params.perPage;
 
     let groups = Object
-      .values(this.props.objectStore.object.groupPermissions)
+      .values(this.props.groupPermissions)
       .filter(group => group.permissions.includes(this.state.view))
       .sort((a, b) => (a.name || "zz").toLowerCase() > (b.name || "zz").toLowerCase() ? 1 : -1)
       .slice((page - 1) * perPage, page * perPage);
@@ -54,9 +54,9 @@ class ContentObjectGroups extends React.Component {
     return groupsInfo.sort((a, b) => a.sortKey.toLowerCase() > b.sortKey.toLowerCase() ? 1 : -1);
   }
 
-  AccessGroupsListing() {
+  render() {
     let groupCount = Object
-      .values(this.props.objectStore.object.groupPermissions)
+      .values(this.props.groupPermissions)
       .filter(group => group.permissions.includes(this.state.view))
       .length;
 
@@ -86,17 +86,10 @@ class ContentObjectGroups extends React.Component {
       </div>
     );
   }
-
-  render() {
-    return (
-      <AsyncComponent
-        Load={() => this.props.objectStore.ContentObjectGroupPermissions({
-          objectId: this.props.objectStore.objectId
-        })}
-        render={this.AccessGroupsListing}
-      />
-    );
-  }
 }
+
+ContentObjectGroups.propTypes = {
+  groupPermissions: PropTypes.object.isRequired
+};
 
 export default ContentObjectGroups;

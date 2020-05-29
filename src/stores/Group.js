@@ -37,6 +37,11 @@ class GroupStore {
   });
 
   @action.bound
+  AccessGroupGroupPermissions = flow(function * ({contractAddress}) {
+    this.accessGroups[contractAddress].groupPermissions = yield Fabric.GetContentObjectGroupPermissions({objectId: Fabric.utils.AddressToObjectId(contractAddress)});
+  });
+
+  @action.bound
   SaveAccessGroup = flow(function * ({name, description, metadata, address, oauthEnabled, oauthIssuer, oauthAud, oauthGroups, trustAuthorityId}) {
     metadata = ParseInputJson(metadata);
 

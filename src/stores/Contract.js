@@ -134,7 +134,7 @@ class ContractStore {
           objectId: this.objectId
         });
 
-        const object = this.rootStore.objectStore.object.meta.name || this.objectId;
+        const object = this.rootStore.objectStore.object.name || this.objectId;
         abi = yield Fabric.ContractAbi({id: this.objectId});
         name = `${object} - Content Object Contract`;
 

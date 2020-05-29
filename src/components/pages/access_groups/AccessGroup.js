@@ -13,6 +13,7 @@ import {inject, observer} from "mobx-react";
 import AsyncComponent from "elv-components-js/src/components/AsyncComponent";
 import JSONField from "../../components/JSONField";
 import ToggleSection from "../../components/ToggleSection";
+import ContentObjectGroups from "../content/ContentObjectGroups";
 
 @inject("groupStore")
 @observer
@@ -150,6 +151,7 @@ class AccessGroup extends React.Component {
         <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary" >Back</Action>
         <Action type="link" to={UrlJoin(this.props.match.url, "edit")} hidden={!this.props.groupStore.accessGroup.isOwner}>Manage</Action>
         <Action type="link" to={UrlJoin(this.props.match.url, "add-member")} hidden={!this.props.groupStore.accessGroup.isManager}>Add Member</Action>
+        <Action type="link" to={UrlJoin(this.props.match.url, "groups")} hidden={!this.props.groupStore.accessGroup.isManager}>Groups</Action>
         <Action className="danger" onClick={this.LeaveAccessGroup} hidden={this.props.groupStore.accessGroup.isOwner}>Leave Group</Action>
         <Action className="danger" onClick={this.DeleteAccessGroup} hidden={true || !this.props.groupStore.accessGroup.isOwner}>Delete</Action>
       </div>
@@ -196,6 +198,20 @@ class AccessGroup extends React.Component {
       );
     }
 
+    let pageContent;
+    if(this.state.view === "groups") {
+      pageContent = (
+        <AsyncComponent
+          Load={() => this.props.groupStore.AccessGroupGroupPermissions({
+            contractAddress: this.props.groupStore.contractAddress
+          })}
+          render={() => <ContentObjectGroups groupPermissions={group.groupPermissions} />}
+        />
+      );
+    } else {
+      pageContent = this.AccessGroupMembersListing();
+    }
+
     return (
       <div className="page-container access-group-page-container">
         { this.Actions() }
@@ -224,12 +240,13 @@ class AccessGroup extends React.Component {
             <Tabs
               options={[
                 ["Members", "members"],
-                ["Managers", "managers"]
+                ["Managers", "managers"],
+                ["Groups", "groups"]
               ]}
               selected={this.state.view}
               onChange={(value) => this.setState({view: value})}
             />
-            { this.AccessGroupMembersListing() }
+            { pageContent }
           </div>
         </div>
       </div>
