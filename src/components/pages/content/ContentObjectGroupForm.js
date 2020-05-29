@@ -13,6 +13,7 @@ class ContentObjectGroupForm extends React.Component {
     super(props);
 
     this.state = {
+      groups: [],
       groupAddress: "",
       see: false,
       access: false,
@@ -46,12 +47,9 @@ class ContentObjectGroupForm extends React.Component {
   }
 
   Groups() {
-    const contractAddress = Fabric.utils.HashToAddress(this.props.objectStore.objectId);
-    let options = Object.values(this.props.groupStore.accessGroups)
-      .filter(group => !Fabric.utils.EqualAddress(group.address, contractAddress))
-      .map(group =>
-        <option key={`group-${group.address}`} value={group.address}>{ group.name }</option>
-      );
+    let options = this.state.groups.map(group =>
+      <option key={`group-${group.address}`} value={group.address}>{ group.name }</option>
+    );
 
     options = (
       [
@@ -63,7 +61,7 @@ class ContentObjectGroupForm extends React.Component {
     return (
       <React.Fragment>
         <label htmlFor="groupAddress">Access Group</label>
-        <select name="groupAddress" onChange={this.HandleGroupChange}>
+        <select name="groupAddress" value={this.state.groupAddress} onChange={this.HandleGroupChange}>
           { options }
         </select>
 
@@ -128,11 +126,17 @@ class ContentObjectGroupForm extends React.Component {
         Load={
           async () => {
             await this.props.groupStore.ListAccessGroups({params: {}});
-            this.props.objectStore.ContentObject({objectId: this.props.objectStore.objectId});
 
+            await this.props.objectStore.ContentObject({objectId: this.props.objectStore.objectId});
             await this.props.objectStore.ContentObjectGroupPermissions({objectId: this.props.objectStore.objectId});
 
-            const initialGroupAddress = Object.keys(this.props.groupStore.accessGroups)[0];
+            const contractAddress = Fabric.utils.HashToAddress(this.props.objectStore.objectId);
+            const groups = Object.values(this.props.groupStore.accessGroups)
+              .filter(group => !Fabric.utils.EqualAddress(group.address, contractAddress));
+
+            this.setState({groups});
+
+            const initialGroupAddress = groups[0] && groups[0].address;
 
             if(initialGroupAddress) {
               this.HandleGroupChange({target: {value: initialGroupAddress}});
