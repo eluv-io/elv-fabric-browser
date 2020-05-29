@@ -122,6 +122,7 @@ class Router extends React.Component {
           <WatchedRoute exact path="/access-groups/:contractAddress" component={AccessGroupPage}/>
           <WatchedRoute exact path="/access-groups/:contractAddress/edit" component={AccessGroupFormPage}/>
           <WatchedRoute exact path="/access-groups/:contractAddress/add-member" component={AccessGroupMemberFormPage}/>
+          <WatchedRoute exact path="/access-groups/:contractAddress/groups" component={ContentObjectGroupFormPage}/>
           <WatchedRoute exact path="/access-groups/:contractAddress/contract" component={DeployedContractPage}/>
           <WatchedRoute exact path="/access-groups/:contractAddress/contract/events" component={DeployedContractEventsPage}/>
           <WatchedRoute exact path="/access-groups/:contractAddress/contract/funds" component={DeployedContractFundsFormPage}/>

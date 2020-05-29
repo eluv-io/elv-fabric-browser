@@ -534,6 +534,11 @@ const Fabric = {
   },
 
   GetContentObject: async ({libraryId, objectId}) => {
+    if(!libraryId) {
+      libraryId = await client.ContentObjectLibraryId({objectId});
+    }
+
+    const accessType = await client.AccessType({id: objectId});
     const isContentLibraryObject = client.utils.EqualHash(libraryId, objectId);
     const isContentType = libraryId === Fabric.contentSpaceLibraryId && !isContentLibraryObject;
     const isNormalObject = !isContentLibraryObject && !isContentType;
@@ -541,7 +546,6 @@ const Fabric = {
     const latestVersionHash = await client.LatestVersionHash({objectId});
 
     // Cachable
-
     if(!objectCache[latestVersionHash]) {
       const object = await client.ContentObject({libraryId, objectId});
       const metadata = (await client.ContentObjectMetadata({libraryId, objectId})) || {};
@@ -663,7 +667,8 @@ const Fabric = {
       status,
       isContentLibraryObject,
       isContentType,
-      isNormalObject
+      isNormalObject,
+      accessType
     };
   },
 
@@ -694,32 +699,39 @@ const Fabric = {
   },
 
   GetContentObjectImageUrl: async ({libraryId, objectId, versionHash, metadata}) => {
-    const fileImageUrl = await client.ContentObjectImageUrl({
-      libraryId,
-      objectId,
-      versionHash
-    });
+    try {
+      const fileImageUrl = await client.ContentObjectImageUrl({
+        libraryId,
+        objectId,
+        versionHash
+      });
 
-    if(fileImageUrl) {
-      return fileImageUrl;
-    }
-
-    if(!Fabric.cachedImages[objectId]) {
-      let imagePartHash;
-
-      if(metadata) {
-        imagePartHash = (metadata.public && metadata.public.image) || metadata.image;
-      } else {
-        imagePartHash =
-          await client.ContentObjectMetadata({libraryId, objectId, versionHash, metadataSubtree: "public/image"});
+      if(fileImageUrl) {
+        return fileImageUrl;
       }
 
-      if(imagePartHash) {
-        Fabric.cachedImages[objectId] = await client.PublicRep({libraryId, objectId, versionHash, rep: "image"});
-      }
-    }
+      if(!Fabric.cachedImages[objectId]) {
+        let imagePartHash;
 
-    return Fabric.cachedImages[objectId];
+        if(metadata) {
+          imagePartHash = (metadata.public && metadata.public.image) || metadata.image;
+        } else {
+          imagePartHash =
+            await client.ContentObjectMetadata({libraryId, objectId, versionHash, metadataSubtree: "public/image"});
+        }
+
+        if(imagePartHash) {
+          Fabric.cachedImages[objectId] = await client.PublicRep({libraryId, objectId, versionHash, rep: "image"});
+        }
+      }
+
+      return Fabric.cachedImages[objectId];
+    } catch(error) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to load image for", libraryId || "", objectId || "", versionHash || "");
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
   },
 
   GetContentObjectGroupPermissions: async ({objectId}) => {

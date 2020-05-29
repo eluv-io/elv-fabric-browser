@@ -652,7 +652,7 @@ class ContentObject extends React.Component {
         </Action>
       );
     }
-    
+
     let groupsButton;
     if(object.isOwner || (object.isNormalObject && CurrentPermission(object) !== "owner" && object.canEdit)) {
       groupsButton = (
@@ -743,7 +743,14 @@ class ContentObject extends React.Component {
     if(this.state.view === "display") {
       pageContent = this.AppFrame();
     } else if(this.state.view === "groups") {
-      pageContent = <ContentObjectGroups />;
+      pageContent = (
+        <AsyncComponent
+          Load={() => this.props.objectStore.ContentObjectGroupPermissions({
+            objectId: this.props.objectStore.objectId
+          })}
+          render={() => <ContentObjectGroups groupPermissions={this.props.objectStore.object.groupPermissions} />}
+        />
+      );
     } else if(this.state.view === "info") {
       pageContent = (
         <React.Fragment>
