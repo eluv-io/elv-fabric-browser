@@ -135,7 +135,7 @@ class Events extends React.Component {
 
     if(fromBlock === undefined || fromBlock < 0) {
       if(this.props.contractAddress) {
-        fromBlock = Math.max(1, toBlock - 500);
+        fromBlock = Math.max(1, toBlock - 1000);
       } else {
         fromBlock = Math.max(1, toBlock - 10);
       }
