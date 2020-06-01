@@ -62,7 +62,15 @@ class EventsStore {
       return;
     }
 
-    if(toBlock - fromBlock > 500) {
+    const currentBlocks = this.events.map(block => block[0].blockNumber);
+    const minBlock = Math.min(...currentBlocks);
+    const maxBlock = Math.max(...currentBlocks);
+
+    const newBlocks =
+      Math.max(0, Math.min(minBlock, toBlock + 1) - fromBlock)
+      + Math.max(0, toBlock - Math.max(maxBlock, fromBlock - 1));
+
+    if(newBlocks > 500) {
       this.rootStore.notificationStore.SetErrorMessage({
         message: "Maximum range is 500 blocks"
       });
@@ -70,48 +78,51 @@ class EventsStore {
       return;
     }
 
-    for(let highBlock = toBlock; highBlock > fromBlock; highBlock -= 50) {
-      const lowBlock = Math.max(fromBlock, highBlock - 50);
+    try {
+      for(let highBlock = toBlock; highBlock > fromBlock; highBlock -= 50) {
+        const lowBlock = Math.max(fromBlock, highBlock - 50);
 
-      let newBlocks = [];
-      if(this.events.length > 0) {
-        // Avoid reloading already retrieved blocks
-        const currentBlocks = this.events.map(block => block[0].blockNumber);
-        const minBlock = Math.min(...currentBlocks);
-        const maxBlock = Math.max(...currentBlocks);
+        let newBlocks = [];
+        if(this.events.length > 0) {
+          // Avoid reloading already retrieved blocks
 
-        if(highBlock < minBlock || lowBlock > maxBlock) {
-          newBlocks = yield Fabric.GetBlockchainEvents({
-            toBlock: highBlock,
-            fromBlock: lowBlock,
-          });
-        } else {
-          if(maxBlock < toBlock) {
+          if((highBlock < minBlock || lowBlock > maxBlock) && highBlock > lowBlock) {
             newBlocks = yield Fabric.GetBlockchainEvents({
               toBlock: highBlock,
-              fromBlock: maxBlock + 1,
+              fromBlock: lowBlock,
             });
-          }
+          } else {
+            if(maxBlock < toBlock && highBlock > maxBlock) {
+              newBlocks = yield Fabric.GetBlockchainEvents({
+                toBlock: highBlock,
+                fromBlock: maxBlock + 1,
+              });
+            }
 
-          if(minBlock - 1 > fromBlock) {
-            newBlocks = newBlocks.concat(
-              yield Fabric.GetBlockchainEvents({
-                toBlock: minBlock,
-                fromBlock: lowBlock,
-              })
-            );
+            if(minBlock - 1 > fromBlock && minBlock > lowBlock) {
+              newBlocks = newBlocks.concat(
+                yield Fabric.GetBlockchainEvents({
+                  toBlock: minBlock,
+                  fromBlock: lowBlock,
+                })
+              );
+            }
           }
+        } else {
+          newBlocks = yield Fabric.GetBlockchainEvents({toBlock: highBlock, fromBlock: lowBlock});
         }
-      } else {
-        newBlocks = yield Fabric.GetBlockchainEvents({toBlock: highBlock, fromBlock: lowBlock});
+
+        this.events = this.SortBlocks(newBlocks.concat(this.events))
+          .filter(block => block[0].blockNumber <= toBlock && block[0].blockNumber >= fromBlock);
+
+        yield this.ContractNames(
+          this.events.map(events => FormatAddress(events[0].address))
+        );
       }
-
-      this.events = this.SortBlocks(newBlocks.concat(this.events))
-        .filter(block => block[0].blockNumber <= toBlock && block[0].blockNumber >= fromBlock);
-
-      yield this.ContractNames(
-        this.events.map(events => FormatAddress(events[0].address))
-      );
+    } catch(error) {
+      this.rootStore.notificationStore.SetErrorMessage({
+        message: error.message || error
+      });
     }
   });
 
