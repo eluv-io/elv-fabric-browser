@@ -16,7 +16,8 @@ class ObjectStore {
   }
 
   @computed get objectId() {
-    return this.rootStore.routerStore.objectId || Fabric.utils.AddressToObjectId(this.rootStore.routerStore.contractAddress);
+    return this.rootStore.routerStore.objectId ||
+      this.rootStore.routerStore.contractAddress && Fabric.utils.AddressToObjectId(this.rootStore.routerStore.contractAddress);
   }
 
   @computed get object() {
