@@ -68,27 +68,30 @@ class ListingItem extends React.Component {
       );
     }
 
-    return (
-      <Link
-        title={this.props.title}
-        to={this.props.link}
-        aria-label={this.props.title}
-        className={className}
-      >
-        { elements }
-      </Link>
-    );
+    if(this.props.link) {
+      return (
+        <Link
+          title={this.props.title}
+          to={this.props.link}
+          aria-label={this.props.title}
+          className={className}
+        >
+          { elements }
+        </Link>
+      );
+    } else {
+      return (
+        <div title={this.props.title} aria-label={this.props.title} className={className}>
+          { elements }
+        </div>
+      );
+    }
   }
 
   AsGridElement() {
     const isSVG = typeof this.props.icon === "string" && this.props.icon.startsWith("<svg");
-    return (
-      <Link
-        to={this.props.link}
-        title={this.props.title}
-        aria-label={this.props.title}
-        className="grid-listing-element"
-      >
+    const elements = (
+      <React.Fragment>
         <div className={`icon-container ${isSVG ? "svg-icon-container" : ""}`}>
           <ImageIcon icon={Fabric.utils.ResizeImage({imageUrl: this.props.icon, height: IMAGE_HEIGHT})} />
         </div>
@@ -104,8 +107,26 @@ class ListingItem extends React.Component {
             {this.props.status}
           </div>
         </div>
-      </Link>
+      </React.Fragment>
     );
+
+    if(this.props.link) {
+      return (
+        <Link
+          title={this.props.title}
+          to={this.props.link}
+          aria-label={this.props.title}
+        >
+          { elements }
+        </Link>
+      );
+    } else {
+      return (
+        <div title={this.props.title} aria-label={this.props.title} className={className}>
+          { elements }
+        </div>
+      );
+    }
   }
 
   render() {

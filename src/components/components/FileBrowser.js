@@ -2,17 +2,17 @@ import React, {useState} from "react";
 import PropTypes from "prop-types";
 import PrettyBytes from "pretty-bytes";
 import UrlJoin from "url-join";
-import URI from "urijs";
 import Path from "path";
 import {
   Action,
   Modal,
   IconButton,
   ImageIcon,
-  Copy,
   Confirm,
   BallClipRotate,
-  PreviewIcon, Form
+  PreviewIcon,
+  Form,
+  AsyncCopy
 } from "elv-components-js";
 import FileUploadWidget from "./FileUploadWidget";
 
@@ -65,7 +65,7 @@ const DownloadButton = ({name, DownloadFile}) => {
   );
 };
 
-const EncryptedImagePreview = ({DownloadUrl, fileName}) => {
+const ImagePreview = ({encrypted, GetFileUrl, fileName}) => {
   const [loading, setLoading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(undefined);
 
@@ -73,7 +73,7 @@ const EncryptedImagePreview = ({DownloadUrl, fileName}) => {
     if(loading || previewUrl) { return; }
 
     setLoading(true);
-    setPreviewUrl(await DownloadUrl());
+    setPreviewUrl(await GetFileUrl());
     setLoading(false);
   };
 
@@ -82,7 +82,7 @@ const EncryptedImagePreview = ({DownloadUrl, fileName}) => {
       onHover={Load}
       imagePath={fileName}
       fullUrl={previewUrl || ""}
-      icon={EncryptedImageIcon}
+      icon={encrypted ? EncryptedImageIcon : PictureIcon}
       additionalContent={loading ? <BallClipRotate/> : null}
     />
   );
@@ -158,14 +158,6 @@ class FileBrowser extends React.Component {
     });
   }
 
-  FileUrl(path, filename) {
-    const uri = URI(this.props.baseFileUrl);
-
-    uri.path(UrlJoin(uri.path(), path, filename).replace("//", "/"));
-
-    return uri.toString();
-  }
-
   IsImage(name) {
     const mimeTypes = this.props.objectStore.object.meta["mime-types"] || {};
     const extension = name.split(".").pop();
@@ -177,7 +169,7 @@ class FileBrowser extends React.Component {
     return isImage;
   }
 
-  FileIcon(name, fileUrl, encrypted) {
+  FileIcon(name, encrypted) {
     if(!this.IsImage(name)) {
       return (
         <ImageIcon
@@ -189,33 +181,23 @@ class FileBrowser extends React.Component {
     }
 
     // Image preview
-
-    if(encrypted) {
-      return (
-        <EncryptedImagePreview
-          fileName={name}
-          DownloadUrl={async () => this.props.DownloadUrl({filePath: UrlJoin(this.state.path, name)})}
-        />
-      );
-    } else {
-      return (
-        <PreviewIcon
-          baseFileUrl={this.props.baseFileUrl}
-          imagePath={UrlJoin(this.state.path, name)}
-        />
-      );
-    }
+    return (
+      <ImagePreview
+        encrypted={encrypted}
+        fileName={name}
+        GetFileUrl={async () => this.props.GetFileUrl({filePath: UrlJoin(this.state.path, name)})}
+      />
+    );
   }
 
   File(name, info) {
     const size = PrettyBytes(info.size || 0);
-    const fileUrl = this.FileUrl(this.state.path, name);
     const encrypted = info.encryption && info.encryption.scheme === "cgck";
 
     return (
       <div className="file-browser-row" key={`entry-${this.state.path}-${name}`}>
         <div className="item-icon">
-          { this.FileIcon(name, fileUrl, encrypted) }
+          { this.FileIcon(name, encrypted) }
         </div>
         <div className="item-name-cell" title={name}>
           <div>{ name }</div>
@@ -248,15 +230,14 @@ class FileBrowser extends React.Component {
               callback
             })}
           />
-          <Copy copy={fileUrl}>
+          <AsyncCopy Load={async () => this.props.GetFileUrl({filePath: UrlJoin(this.state.path, name)})}>
             <IconButton
-              hidden={encrypted}
               title={`Copy link to ${name}`}
               icon={LinkIcon}
               label={"Copy direct link to " + name}
               className="copy-button"
             />
-          </Copy>
+          </AsyncCopy>
           <IconButton
             title={`Delete ${name}`}
             icon={DeleteIcon}
@@ -447,7 +428,7 @@ class FileBrowser extends React.Component {
 }
 
 FileBrowser.propTypes = {
-  baseFileUrl: PropTypes.string.isRequired,
+  GetFileUrl: PropTypes.func.isRequired,
   DownloadFile: PropTypes.func.isRequired,
   DownloadUrl: PropTypes.func.isRequired,
   CreateDirectory: PropTypes.func.isRequired,

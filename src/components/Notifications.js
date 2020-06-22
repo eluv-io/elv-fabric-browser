@@ -42,7 +42,7 @@ class Notifications extends React.Component {
         <div className="notification-container" key={key}>
           <div className="notification-message-container error-message-container">
             <span>{ this.props.notificationStore.error }</span>
-            <IconButton icon={CloseIcon} label="close" onClick={this.props.notificationStore.ClearMessage} className="clear-notification" />
+            <IconButton icon={CloseIcon} label="clear-notification" onClick={this.props.notificationStore.ClearMessage} className="clear-notification" />
           </div>
         </div>
       );
@@ -51,7 +51,7 @@ class Notifications extends React.Component {
         <div className="notification-container" key={key}>
           <div className="notification-message-container">
             <span>{ this.props.notificationStore.notification }</span>
-            <IconButton icon={CloseIcon} label="close" onClick={this.props.notificationStore.ClearMessage} className="clear-notification" />
+            <IconButton icon={CloseIcon} label="clear-notification" onClick={this.props.notificationStore.ClearMessage} className="clear-notification" />
           </div>
         </div>
       );
