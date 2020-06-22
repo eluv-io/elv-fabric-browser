@@ -294,6 +294,11 @@ class ObjectStore {
   });
 
   // Set object image from existing file
+  async GetFileUrl({libraryId, objectId, writeToken, filePath}) {
+    return await Fabric.FileUrl({libraryId, objectId, writeToken, filePath});
+  }
+
+  // Set object image from existing file
   @action.bound
   SetExistingObjectImage = flow(function * ({libraryId, objectId, filePath}) {
     const writeToken = yield this.EditContentObject({libraryId, objectId});
@@ -326,7 +331,16 @@ class ObjectStore {
   });
 
   async DownloadUrl({libraryId, objectId, versionHash, writeToken, filePath, callback}) {
-    let blob = await Fabric.DownloadFile({libraryId, objectId, versionHash, writeToken, filePath, format: "blob", callback});
+    let blob = await Fabric.DownloadFile({
+      libraryId,
+      objectId,
+      versionHash,
+      writeToken,
+      filePath,
+      format: "blob",
+      callback
+    });
+
     return window.URL.createObjectURL(blob);
   }
 

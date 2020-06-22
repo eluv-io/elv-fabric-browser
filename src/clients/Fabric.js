@@ -1198,8 +1198,8 @@ const Fabric = {
     return await client.DeleteFiles({libraryId, objectId, writeToken, filePaths});
   },
 
-  DownloadFile: ({libraryId, objectId, versionHash, writeToken, filePath, format="arrayBuffer", callback}) => {
-    return client.DownloadFile({libraryId, objectId, versionHash, writeToken, filePath, format, callback});
+  DownloadFile: ({libraryId, objectId, versionHash, writeToken, filePath, format="arrayBuffer", clientSideDecryption, callback}) => {
+    return client.DownloadFile({libraryId, objectId, versionHash, writeToken, filePath, format, clientSideDecryption, callback});
   },
 
   FileUrl: ({libraryId, objectId, versionHash, writeToken, filePath}) => {

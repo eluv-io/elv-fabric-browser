@@ -6,6 +6,8 @@ export const DownloadFromUrl = async (url, filename) => {
   element.download = filename;
 
   element.style.display = "none";
+  element.target = "_blank";
+
   document.body.appendChild(element);
 
   element.click();
