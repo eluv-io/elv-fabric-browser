@@ -198,6 +198,8 @@ class AccessGroupForm extends React.Component {
               });
 
               const group = this.props.groupStore.accessGroup;
+              const oauthGroups = (group.oauthInfo && group.oauthInfo.claims && toJS(group.oauthInfo.claims.groups)) || [];
+
 
               this.setState({
                 name: group.name,
@@ -206,7 +208,7 @@ class AccessGroupForm extends React.Component {
                 isOauthGroup: group.oauthInfo && group.oauthInfo.oauthEnabled,
                 oauthIssuer: group.oauthInfo && group.oauthInfo.issuer || "",
                 oauthAud: group.oauthInfo && group.oauthInfo.claims && group.oauthInfo.claims.aud || "",
-                oauthGroups: group.oauthInfo && group.oauthInfo.claims && toJS(group.oauthInfo.claims.groups) || [],
+                oauthGroups: Array.isArray(oauthGroups) ? oauthGroups : [oauthGroups],
                 trustAuthorityId: group.oauthInfo && group.oauthInfo.trustAuthorityId || ""
               });
             }

@@ -182,7 +182,7 @@ class AccessGroup extends React.Component {
       if(group.oauthInfo.claims && group.oauthInfo.claims.groups) {
         oauthGroups = (
           <LabelledField label="OAuth Groups">
-            { group.oauthInfo.claims.groups.join(", ") }
+            { Array.isArray(group.oauthInfo.claims.groups) ? group.oauthInfo.claims.groups.join(", ") : group.oauthInfo.claims.groups }
           </LabelledField>
         );
       }
