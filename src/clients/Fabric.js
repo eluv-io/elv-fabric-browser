@@ -1613,26 +1613,6 @@ const Fabric = {
     let isOwner = false;
 
     try {
-      owner = Fabric.utils.FormatAddress(
-        await client.CallContractMethod({
-          contractAddress,
-          methodName: "owner"
-        })
-      );
-
-      isOwner = client.utils.EqualAddress(owner, currentAccountAddress);
-
-      ownerName = await client.userProfileClient.PublicUserMetadata({
-        address: owner,
-        metadataSubtree: "name"
-      });
-
-      isManager = await client.CallContractMethod({
-        contractAddress,
-        methodName: "hasManagerAccess",
-        methodArgs: [client.utils.FormatAddress(currentAccountAddress)]
-      });
-
       if(publicOnly) {
         metadata = {
           public: await client.ContentObjectMetadata({
@@ -1642,6 +1622,26 @@ const Fabric = {
           }) || {}
         };
       } else {
+        owner = Fabric.utils.FormatAddress(
+          await client.CallContractMethod({
+            contractAddress,
+            methodName: "owner"
+          })
+        );
+
+        isOwner = client.utils.EqualAddress(owner, currentAccountAddress);
+
+        ownerName = await client.userProfileClient.PublicUserMetadata({
+          address: owner,
+          metadataSubtree: "name"
+        });
+
+        isManager = await client.CallContractMethod({
+          contractAddress,
+          methodName: "hasManagerAccess",
+          methodArgs: [client.utils.FormatAddress(currentAccountAddress)]
+        });
+
         metadata = await client.ContentObjectMetadata({
           libraryId: Fabric.contentSpaceLibraryId,
           objectId: client.utils.AddressToObjectId(contractAddress)

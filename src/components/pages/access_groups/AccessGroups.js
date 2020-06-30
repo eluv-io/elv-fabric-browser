@@ -60,7 +60,9 @@ class AccessGroups extends React.Component {
           <Action type="link" to="/access-groups/create">New Access Group</Action>
         </div>
         <PageHeader header="Access Groups" />
-        { this.AccessGroupsListing() }
+        <div className="page-content">
+          { this.AccessGroupsListing() }
+        </div>
       </div>
     );
   }

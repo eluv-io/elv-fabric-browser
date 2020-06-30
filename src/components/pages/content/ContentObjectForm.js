@@ -278,7 +278,7 @@ class ContentObjectForm extends React.Component {
                 description: object.description || "",
                 publicMetadata,
                 privateMetadata,
-                accessCharge: object.accessInfo.accessCharge || 0,
+                accessCharge: object.accessInfo ? object.accessInfo.accessCharge || 0 : 0,
                 manageAppUrl,
                 showManageApp: !!manageAppUrl
               });

@@ -138,7 +138,11 @@ class ContentLibraryForm extends React.Component {
       <AsyncComponent
         Load={
           async () => {
-            if(!this.state.createForm) {
+            if(this.state.createForm) {
+              this.setState({
+                kmsId: await this.props.libraryStore.DefaultKMSId() || ""
+              });
+            } else {
               await this.props.libraryStore.ContentLibrary({
                 libraryId: this.props.libraryStore.libraryId
               });
