@@ -591,19 +591,26 @@ const Fabric = {
     }
 
     // Non-cachable (contract / LRO status)
-    const lroStatus = await Promise.all(
+    const lroStatus = (await Promise.all(
       Object.keys(metadata)
         .filter(key => key.startsWith("lro_draft_"))
         .map(async lroKey => {
-          const offeringKey = lroKey.replace(/^lro_draft_/, "");
+          try {
+            const offeringKey = lroKey.replace(/^lro_draft_/, "");
 
-          const status = await client.LROStatus({libraryId, objectId, offeringKey});
-          return {
-            offeringKey,
-            status
-          };
+            const status = await client.LROStatus({libraryId, objectId, offeringKey});
+            return {
+              offeringKey,
+              status
+            };
+          } catch(error) {
+            // eslint-disable-next-line no-console
+            console.error("Failed to load LRO status:");
+            // eslint-disable-next-line no-console
+            console.error(error);
+          }
         })
-    );
+    )).filter(status => status);
 
     // Only normal objects have status and access charge
     let status, accessInfo;

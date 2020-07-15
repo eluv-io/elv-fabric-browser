@@ -76,7 +76,7 @@ class ContentTypeForm extends React.Component {
     const redirectPath = this.state.createForm ? UrlJoin(backPath, this.state.typeId || "") : backPath;
 
     return (
-      <div>
+      <div className="page-content">
         <div className="actions-container manage-actions">
           <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
         </div>
