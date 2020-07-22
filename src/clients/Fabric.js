@@ -697,7 +697,6 @@ const Fabric = {
     const metadata = await Fabric.GetContentObjectMetadata({versionHash});
     //const verification = await Fabric.VerifyContentObject({libraryId, objectId, versionHash: version.hash});
 
-    // Must keep versions in order from newest to oldest
     return {
       ...version,
       meta: metadata,
