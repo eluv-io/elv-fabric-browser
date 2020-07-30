@@ -15,6 +15,7 @@ const Fabric = {
   utils: client.utils,
   cachedImages: {},
   concurrencyLimit: 10,
+  permissionLevels: client.permissionLevels,
 
   async Initialize() {
     window.client = client;
@@ -613,10 +614,11 @@ const Fabric = {
     )).filter(status => status);
 
     // Only normal objects have status and access charge
-    let status, accessInfo;
+    let status, accessInfo, permission;
     if(isNormalObject) {
       status = await Fabric.GetContentObjectStatus({objectId});
       accessInfo = await Fabric.GetAccessInfo({objectId});
+      permission = await client.Permission({objectId});
     }
 
     let kmsId;
@@ -672,6 +674,7 @@ const Fabric = {
       canEdit,
       accessInfo,
       status,
+      permission,
       isContentLibraryObject,
       isContentType,
       isNormalObject,
@@ -914,58 +917,8 @@ const Fabric = {
     await client.SetContentObjectImage({libraryId, objectId, writeToken, image, imageName});
   },
 
-  SetPermissions: async ({objectId, settings}) => {
-    const libraryId = await client.ContentObjectLibraryId({objectId});
-
-    // Visibility
-    await client.SetVisibility({id: objectId, visibility: settings.visibility});
-
-    const statusCode = await client.CallContractMethod({
-      contractAddress: client.utils.HashToAddress(objectId),
-      methodName: "statusCode"
-    });
-
-    if(statusCode !== settings.statusCode) {
-      if(settings.statusCode < 0) {
-        await client.CallContractMethod({
-          contractAddress: client.utils.HashToAddress(objectId),
-          methodName: "setStatusCode",
-          methodArgs: [-1]
-        });
-      } else {
-        await client.CallContractMethod({
-          contractAddress: client.utils.HashToAddress(objectId),
-          methodName: "publish"
-        });
-      }
-    }
-
-    // KMS Conk
-    const kmsAddress = await client.CallContractMethod({
-      contractAddress: client.utils.HashToAddress(objectId),
-      methodName: "addressKMS"
-    });
-    const kmsConkKey = `eluv.caps.ikms${client.utils.AddressToHash(kmsAddress)}`;
-
-    const kmsConk = await client.ContentObjectMetadata({libraryId, objectId, metadataSubtree: kmsConkKey});
-
-    if(kmsConk && !settings.kmsConk) {
-      await Fabric.EditAndFinalizeContentObject({
-        libraryId,
-        objectId,
-        todo: async (writeToken) => {
-          await client.DeleteMetadata({libraryId, objectId, writeToken, metadataSubtree: kmsConkKey});
-        }
-      });
-    } else if(!kmsConk && settings.kmsConk) {
-      await Fabric.EditAndFinalizeContentObject({
-        libraryId,
-        objectId,
-        todo: async (writeToken) => {
-          await client.CreateEncryptionConk({libraryId, objectId, writeToken, createKMSConk: true});
-        }
-      });
-    }
+  SetPermission: async ({objectId, permission}) => {
+    await client.SetPermission({objectId, permission});
   },
 
   /* Content Types */
@@ -998,6 +951,9 @@ const Fabric = {
 
       if(app === "default") {
         appUrls[`${appName}AppUrl`] = EluvioConfiguration[`${appName}AppUrl`];
+      } else if(typeof app === "string" && (app.startsWith("http://") || app.startsWith("https://"))) {
+        // App specification is a url
+        appUrls[`${appName}AppUrl`] = app;
       } else if(app) {
         appUrls[`${appName}AppUrl`] = await Fabric.FileUrl({
           libraryId: Fabric.contentSpaceLibraryId,

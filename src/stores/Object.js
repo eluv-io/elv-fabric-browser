@@ -322,10 +322,10 @@ class ObjectStore {
   });
 
   @action.bound
-  SetPermissions = flow(function * ({objectId, settings}) {
+  SetPermission = flow(function * ({objectId, permission}) {
     this.rootStore.notificationStore.ClearMessage();
 
-    yield Fabric.SetPermissions({objectId, settings});
+    yield Fabric.SetPermission({objectId, permission});
 
     this.rootStore.notificationStore.SetNotificationMessage({
       message: "Successfully updated object permissions",
