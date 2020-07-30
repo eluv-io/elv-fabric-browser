@@ -21,52 +21,6 @@ import ContentObjectGroups from "./ContentObjectGroups";
 import RefreshIcon from "../../../static/icons/refresh.svg";
 import InfoIcon from "../../../static/icons/help-circle.svg";
 
-const PermissionLevels = {
-  "owner": {
-    short: "Owner Only",
-    description: "Only the owner has access to the object and ability to change permissions",
-    settings: { visibility: 0, statusCode: -1, kmsConk: false }
-  },
-  "editable": {
-    short: "Editable",
-    description: "Members of the editors group have full access to the object and the ability to change permissions",
-    settings: { visibility: 0, statusCode: -1, kmsConk: true }
-  },
-  "viewable": {
-    short: "Viewable",
-    description: "In addition to editors, members of the 'accessor' group can have read-only access to the object including playing video and retrieving metadata, images and documents",
-    settings: { visibility: 0, statusCode: 0, kmsConk: true }
-  },
-  "listable": {
-    short: "Publicly Listable",
-    description: "Anyone can list the public portion of this object but only accounts with specific rights can access",
-    settings: { visibility: 1, statusCode: 0, kmsConk: true }
-  },
-  "public": {
-    short: "Public",
-    description: "Anyone can access this object",
-    settings: { visibility: 10, statusCode: 0, kmsConk: true }
-  }
-};
-
-const CurrentPermission = (object) => {
-  const hasKmsConk = !!object.meta[`eluv.caps.${object.kmsId}`];
-  const statusCode = object.status.code;
-  const visibility = object.visibility;
-
-  if(visibility >= 10) {
-    return "public";
-  } else if(visibility >= 1) {
-    return "listable";
-  } else if(statusCode >= 0) {
-    return "viewable";
-  } else if(hasKmsConk) {
-    return "editable";
-  } else {
-    return "owner";
-  }
-};
-
 const DownloadPart = ({libraryId, objectId, versionHash, partHash, partName, DownloadMethod}) => {
   const [progress, setProgress] = useState(undefined);
 
@@ -457,7 +411,7 @@ class ContentObject extends React.Component {
         content={
           <div className="label-box">
             {
-              Object.values(PermissionLevels).map(({short, description}) =>
+              Object.values(Fabric.permissionLevels).map(({short, description}) =>
                 <LabelledField alignTop={true} key={`visibility-info-${short}`} label={short}>
                   <div>{ description }</div>
                 </LabelledField>
@@ -470,25 +424,23 @@ class ContentObject extends React.Component {
       </ToolTip>
     );
 
-    const currentPermission = CurrentPermission(this.props.objectStore.object);
-
-    let info = <div>{ PermissionLevels[currentPermission].short }</div>;
+    let info = <div>{ Fabric.permissionLevels[this.props.objectStore.object.permission].short }</div>;
     if(this.props.objectStore.object.isOwner) {
-      const options = Object.keys(PermissionLevels).map(permission =>
-        <option key={`visibility-option-${permission}`} value={permission}>{ PermissionLevels[permission].short }</option>
+      const options = Object.keys(Fabric.permissionLevels).map(permission =>
+        <option key={`visibility-option-${permission}`} value={permission}>{ Fabric.permissionLevels[permission].short }</option>
       );
 
       info = (
         <LoadingElement loading={this.state.permissionChanging} loadingClassname="visibility-info-loading">
           <select
-            value={currentPermission}
+            value={this.props.objectStore.object.permission}
             onChange={
               async event => {
                 this.setState({permissionChanging: true});
                 try {
-                  await this.props.objectStore.SetPermissions({
+                  await this.props.objectStore.SetPermission({
                     objectId: this.props.objectStore.objectId,
-                    settings: PermissionLevels[event.target.value].settings
+                    permission: event.target.value
                   });
 
                   await new Promise(resolve => setTimeout(resolve, 1000));
@@ -654,7 +606,7 @@ class ContentObject extends React.Component {
     }
 
     let groupsButton;
-    if(object.isOwner || (object.isNormalObject && CurrentPermission(object) !== "owner" && object.canEdit)) {
+    if(object.isOwner || (object.isNormalObject && this.props.objectStore.object.permission !== "owner" && object.canEdit)) {
       groupsButton = (
         <Action type="link" to={UrlJoin(this.props.match.url, "groups")}>
           Groups
