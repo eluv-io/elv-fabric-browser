@@ -50,15 +50,8 @@
 .app-frame {
   border: 1px solid $elv-color-lightergray;
   display: block;
-  flex-grow: 1;
-  min-height: 85vh;
+  flex: 1 1 auto;
   width: 100%;
-
-  &.display-frame {
-    margin-bottom: $elv-spacing-m;
-    max-height: 75vh;
-    min-height: 75vh;
-  }
 }
 
 .account-image {
@@ -102,6 +95,7 @@
   }
 }
 
+pre,
 .-elv-traversable-json {
   background-color: $elv-color-lightestgray;
   border: 1px solid $elv-color-lightgray;

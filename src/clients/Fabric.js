@@ -225,10 +225,14 @@ const Fabric = {
     const owner = await Fabric.GetContentLibraryOwner({libraryId});
     const currentAccountAddress = await Fabric.CurrentAccountAddress();
 
-    const ownerName = await client.userProfileClient.PublicUserMetadata({
-      address: owner,
-      metadataSubtree: "name"
-    });
+    let ownerName;
+    try {
+      ownerName = await client.userProfileClient.PublicUserMetadata({
+        address: owner,
+        metadataSubtree: "name"
+      });
+    // eslint-disable-next-line no-empty
+    } catch(error) {}
 
     /* Library object and private metadata */
     const libraryObjectId = libraryId.replace("ilib", "iq__");
@@ -263,14 +267,14 @@ const Fabric = {
     });
     const kmsId = `ikms${client.utils.AddressToHash(kmsAddress)}`;
 
-    const encodedTenantId = (await client.CallContractMethod({
+    let tenantId = (await client.CallContractMethod({
       contractAddress: client.utils.HashToAddress(libraryId),
       methodName: "getMeta",
       methodArgs: [
         "_tenantId"
       ]
     })) || "";
-    const tenantId = Buffer.from(encodedTenantId.replace("0x", ""), "hex").toString("utf-8");
+    tenantId = Buffer.from(tenantId.replace("0x", ""), "hex").toString("utf-8");
 
     /* Types */
     const types = await Fabric.ListLibraryContentTypes({libraryId});
@@ -633,10 +637,15 @@ const Fabric = {
     const visibility = await client.Visibility({id: objectId});
 
     const owner = await Fabric.GetContentObjectOwner({objectId: objectId});
-    const ownerName = await client.userProfileClient.PublicUserMetadata({
-      address: owner,
-      metadataSubtree: "name"
-    });
+
+    let ownerName;
+    try {
+      ownerName = await client.userProfileClient.PublicUserMetadata({
+        address: owner,
+        metadataSubtree: "name"
+      });
+    // eslint-disable-next-line no-empty
+    } catch(error) {}
 
     const customContractAddress = await Fabric.GetCustomContentContractAddress({libraryId, objectId, metadata});
     const isOwner = EqualAddress(owner, await Fabric.CurrentAccountAddress());
@@ -1312,10 +1321,13 @@ const Fabric = {
     await accounts.limitedMap(
       Fabric.concurrencyLimit,
       async address => {
-        accountNames[address] = await client.userProfileClient.PublicUserMetadata({
-          address: address,
-          metadataSubtree: "name"
-        });
+        try {
+          accountNames[address] = await client.userProfileClient.PublicUserMetadata({
+            address: address,
+            metadataSubtree: "name"
+          });
+        // eslint-disable-next-line no-empty
+        } catch(error) {}
       }
     );
 
@@ -1593,10 +1605,13 @@ const Fabric = {
 
         isOwner = client.utils.EqualAddress(owner, currentAccountAddress);
 
-        ownerName = await client.userProfileClient.PublicUserMetadata({
-          address: owner,
-          metadataSubtree: "name"
-        });
+        try {
+          ownerName = await client.userProfileClient.PublicUserMetadata({
+            address: owner,
+            metadataSubtree: "name"
+          });
+        // eslint-disable-next-line no-empty
+        } catch(error) {}
 
         isManager = await client.CallContractMethod({
           contractAddress,
@@ -1679,7 +1694,12 @@ const Fabric = {
     let members = await memberAddresses.limitedMap(
       Fabric.concurrencyLimit,
       async address => {
-        const name = await client.userProfileClient.PublicUserMetadata({address, metadataSubtree: "name"});
+        let name;
+        try {
+          name = await client.userProfileClient.PublicUserMetadata({address, metadataSubtree: "name"});
+        } catch(error) {
+          name = client.utils.FormatAddress(address);
+        }
 
         return {
           name: name || address,

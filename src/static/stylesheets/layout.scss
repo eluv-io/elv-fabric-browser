@@ -43,7 +43,9 @@ body,
 }
 
 .page-container {
+  display: flex;
   flex: 1 1 auto;
+  flex-direction: column;
   position: relative;
   width: 100%;
 
@@ -70,7 +72,7 @@ body,
 }
 
 .page-content {
-  padding-bottom: $elv-spacing-xl;
+  padding-bottom: $elv-spacing-l;
 }
 
 .view-container {
