@@ -9,6 +9,8 @@ import {Action, Confirm} from "elv-components-js";
 import AsyncComponent from "../../../components/AsyncComponent";
 import {inject, observer} from "mobx-react";
 import DeployedContractMethodForm from "./DeployedContractMethodForm";
+import JSONField from "../../../components/JSONField";
+import ToggleSection from "../../../components/ToggleSection";
 
 @inject("contractStore")
 @observer
@@ -140,6 +142,17 @@ class DeployedContract extends React.Component {
               <LabelledField label="Balance">
                 { balance }
               </LabelledField>
+
+              {
+                this.props.contractStore.contract.authContext ?
+                  (
+                    <ToggleSection label="Auth Context">
+                      <div className="indented">
+                        <JSONField json={this.props.contractStore.contract.authContext} />
+                      </div>
+                    </ToggleSection>
+                  ) : null
+              }
 
               { this.AbiInfo() }
               <h3>Contract Methods</h3>

@@ -103,7 +103,7 @@ class ContractStore {
       isCustomContentObjectContract,
     });
 
-    let name, abi;
+    let name, abi, authContext;
     switch(type) {
       case ContractTypes.library:
         yield this.rootStore.libraryStore.ContentLibrary({libraryId: this.libraryId});
@@ -138,6 +138,18 @@ class ContractStore {
         abi = yield Fabric.ContractAbi({id: this.objectId});
         name = `${object} - Content Object Contract`;
 
+        try {
+          authContext = yield client.CallContractMethod({
+            contractAddress: client.utils.HashToAddress(this.objectId),
+            methodName: "getMeta",
+            methodArgs: [
+              "_AUTH_CONTEXT"
+            ]
+          });
+          authContext = JSON.parse(Buffer.from((authContext || "").replace("0x", ""), "hex").toString("utf-8"));
+        // eslint-disable-next-line no-empty
+        } catch(error) {}
+
         break;
 
       case ContractTypes.accessGroup:
@@ -166,7 +178,8 @@ class ContractStore {
       balance,
       description,
       abi,
-      contractAddress
+      contractAddress,
+      authContext
     };
 
     this.contractAddress = contractAddress;
