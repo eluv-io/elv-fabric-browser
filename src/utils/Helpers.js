@@ -38,9 +38,17 @@ export const Percentage = (done, total) => {
 };
 
 export const AccessChargeDisplay = (accessCharge) => {
-  if(accessCharge && parseInt(accessCharge) > 0) {
-    return <Balance balance={accessCharge} />;
+  if(!accessCharge) { return; }
+
+  accessCharge = Utils.ToBigNumber(accessCharge).toNumber();
+
+  if(accessCharge <= 0) { return; }
+
+  if(accessCharge > 2 ** 150) {
+    return "Not Accessible";
   }
+
+  return <Balance balance={accessCharge} />;
 };
 
 export const ParseBytes32 = (bytes32String) => {

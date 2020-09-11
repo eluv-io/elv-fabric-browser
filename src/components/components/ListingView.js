@@ -60,7 +60,7 @@ class ListingItem extends React.Component {
         <div
           key={`listing-status-${this.props.id}`}
           className="status"
-          title={this.props.status}
+          title={(this.props.status || "").toString()}
           hidden={this.props.noStatus}
         >
           {this.props.status}
