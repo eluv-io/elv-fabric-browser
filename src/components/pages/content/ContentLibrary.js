@@ -9,7 +9,6 @@ import {PageHeader} from "../../components/Page";
 import {Action, IconButton, Tabs} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
 
-import {AccessChargeDisplay} from "../../../utils/Helpers";
 import Listing from "../../components/Listing";
 import {inject, observer} from "mobx-react";
 import RefreshIcon from "../../../static/icons/refresh.svg";
@@ -128,17 +127,12 @@ class ContentLibrary extends React.Component {
     const objects = Object.keys(this.props.libraryStore.library.objects).map(objectId => {
       const object = this.props.libraryStore.library.objects[objectId];
 
-      let status;
-      if(object.accessInfo) {
-        status = AccessChargeDisplay(object.accessInfo.accessCharge);
-      }
-
       return {
         id: objectId,
         sortKey: (object.name || "zz").toLowerCase(),
         title: object.name || objectId,
         description: object.description,
-        status: status,
+        status: "",
         icon: object.imageUrl || ContentIcon,
         link: UrlJoin(this.props.match.url, objectId)
       };
