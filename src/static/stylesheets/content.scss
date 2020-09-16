@@ -201,4 +201,8 @@ pre,
 .object-form-tabs {
   max-width: 100%;
   width: auto;
+
+  &.object-form-tabs {
+    margin-top: 0;
+  }
 }

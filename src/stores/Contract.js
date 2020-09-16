@@ -135,8 +135,11 @@ class ContractStore {
         });
 
         const object = this.rootStore.objectStore.object.name || this.objectId;
-        abi = yield Fabric.ContractAbi({id: this.objectId});
-        name = `${object} - Content Object Contract`;
+
+        if(!abi) {
+          abi = yield Fabric.ContractAbi({id: this.objectId});
+          name = `${object} - Content Object Contract`;
+        }
 
         try {
           authContext = yield client.CallContractMethod({
