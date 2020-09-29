@@ -38,7 +38,6 @@ body,
   grid-area: main-content;
   max-height: 80vh;
   overflow-y: auto;
-  padding: $elv-spacing-s $elv-spacing-ml;
   position: relative;
 }
 
@@ -46,6 +45,7 @@ body,
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
+  padding: $elv-spacing-s $elv-spacing-m;
   position: relative;
   width: 100%;
 
@@ -73,12 +73,16 @@ body,
 
 .page-content {
   padding-bottom: $elv-spacing-l;
+
+  &.no-padding {
+    padding: 0;
+  }
 }
 
 .view-container {
   display: grid;
   flex: 1 1 auto;
-  grid-template: "navbar notifications" 35px "navbar main-content" 1fr / 200px;
+  grid-template: "navbar notifications" 35px "navbar main-content" 1fr / 165px;
   position: absolute;
 }
 

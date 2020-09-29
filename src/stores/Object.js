@@ -82,8 +82,7 @@ class ObjectStore {
     description,
     privateMetadata,
     publicMetadata,
-    image,
-    accessCharge
+    image
   }) {
     try {
       privateMetadata = ParseInputJson(privateMetadata);
@@ -122,10 +121,6 @@ class ObjectStore {
       writeToken,
       metadata
     });
-
-    if(yield Fabric.IsNormalObject({objectId})) {
-      yield Fabric.SetAccessCharge({objectId: objectId, accessCharge});
-    }
 
     if(image) {
       yield Fabric.SetContentObjectImage({

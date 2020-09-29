@@ -4,19 +4,19 @@
 }
 
 .navbar-links-container {
-  margin-top: $elv-spacing-s;
+  margin-top: $elv-spacing-xs;
 
   .navbar-link-container {
     display: block;
-    height: 50px;
+    height: 45px;
     text-align: center;
     width: 100%;
   }
 
   .navbar-link {
     color: $elv-color-darkgray;
-    font-size: $elv-font-l;
-    padding: 0 $elv-spacing-s;
+    font-size: 0.9rem;
+    padding: 0 $elv-spacing-ss;
 
     &:hover {
       background: $elv-color-lightergray;
@@ -47,9 +47,9 @@
   .navbar-link-icon {
     color: $elv-color-darkergray;
     display: inline-block;
-    height: 25px;
-    margin-right: $elv-spacing-ss;
-    width: 25px;
+    height: 20px;
+    margin-right: $elv-spacing-xs;
+    width: 20px;
   }
 
   .navbar-link-text {
