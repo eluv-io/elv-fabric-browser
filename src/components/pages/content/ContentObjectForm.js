@@ -25,7 +25,6 @@ class ContentObjectForm extends React.Component {
       privateMetadata: "{}",
       type: "",
       imageSelection: "",
-      accessCharge: 0,
       objectId: "",
       showManageApp: false
     };
@@ -59,8 +58,7 @@ class ContentObjectForm extends React.Component {
       description: this.state.description,
       publicMetadata: this.state.publicMetadata,
       privateMetadata: this.state.privateMetadata,
-      image: this.state.imageSelection,
-      accessCharge: parseInt(this.state.accessCharge)
+      image: this.state.imageSelection
     });
 
     this.setState({
@@ -149,11 +147,6 @@ class ContentObjectForm extends React.Component {
             value={this.state.privateMetadata}
             onChange={this.HandleInputChange}
           />
-
-          <label htmlFor="accessCharge">
-            Access Charge
-          </label>
-          <input name="accessCharge" type="number" step={0.001} value={this.state.accessCharge} required={false} onChange={this.HandleInputChange}/>
         </div>
       </Form>
     );
@@ -228,7 +221,7 @@ class ContentObjectForm extends React.Component {
       <div className="page-container">
         { this.BackLink() }
         <div className="page-content-container">
-          <div className="page-content">
+          <div className={`page-content ${this.state.showManageApp ? "no-padding" : ""}`}>
             { this.AppFormSelection() }
             { content }
           </div>
@@ -278,7 +271,6 @@ class ContentObjectForm extends React.Component {
                 description: object.description || "",
                 publicMetadata,
                 privateMetadata,
-                accessCharge: object.accessInfo ? object.accessInfo.accessCharge || 0 : 0,
                 manageAppUrl,
                 showManageApp: !!manageAppUrl
               });

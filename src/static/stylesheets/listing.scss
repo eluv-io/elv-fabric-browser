@@ -10,6 +10,7 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
 
 .listing {
   $table-listing-height: calc(#{$table-listing-width} * #{$aspect-ratio});
+  margin-bottom: $elv-spacing-m;
 
   .loading {
     align-items: center;
