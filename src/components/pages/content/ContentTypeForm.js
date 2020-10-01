@@ -76,33 +76,35 @@ class ContentTypeForm extends React.Component {
     const redirectPath = this.state.createForm ? UrlJoin(backPath, this.state.typeId || "") : backPath;
 
     return (
-      <div className="page-content">
+      <div className="page-container">
         <div className="actions-container manage-actions">
           <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
         </div>
-        <Form
-          legend={legend}
-          redirectPath={redirectPath}
-          cancelPath={backPath}
-          OnSubmit={this.HandleSubmit}
-        >
-          <div className="form-content">
-            <label htmlFor="name">Name</label>
-            <input name="name" value={this.state.name} onChange={this.HandleInputChange} />
+        <div className="page-content">
+          <Form
+            legend={legend}
+            redirectPath={redirectPath}
+            cancelPath={backPath}
+            OnSubmit={this.HandleSubmit}
+          >
+            <div className="form-content">
+              <label htmlFor="name">Name</label>
+              <input name="name" value={this.state.name} onChange={this.HandleInputChange} />
 
-            { this.BitcodeSelection() }
+              { this.BitcodeSelection() }
 
-            <label className="align-top" htmlFor="description">Description</label>
-            <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
+              <label className="align-top" htmlFor="description">Description</label>
+              <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
 
-            <label className="align-top" htmlFor="metadata">Metadata</label>
-            <JsonInput
-              name={"metadata"}
-              value={this.state.metadata}
-              onChange={this.HandleInputChange}
-            />
-          </div>
-        </Form>
+              <label className="align-top" htmlFor="metadata">Metadata</label>
+              <JsonInput
+                name={"metadata"}
+                value={this.state.metadata}
+                onChange={this.HandleInputChange}
+              />
+            </div>
+          </Form>
+        </div>
       </div>
     );
   }
