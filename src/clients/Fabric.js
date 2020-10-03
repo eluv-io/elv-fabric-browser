@@ -1169,8 +1169,35 @@ const Fabric = {
     return await client.DeleteFiles({libraryId, objectId, writeToken, filePaths});
   },
 
-  DownloadFile: ({libraryId, objectId, versionHash, writeToken, filePath, format="arrayBuffer", clientSideDecryption, callback}) => {
-    return client.DownloadFile({libraryId, objectId, versionHash, writeToken, filePath, format, clientSideDecryption, callback});
+  DownloadFile: async ({libraryId, objectId, versionHash, writeToken, filePath, format="arrayBuffer", clientSideDecryption, callback}) => {
+    const object = await client.ContentObject({libraryId, objectId});
+
+    const kmsAddress = await client.CallContractMethod({
+      contractAddress: client.utils.HashToAddress(objectId),
+      methodName: "addressKMS"
+    });
+
+    const kmsId = kmsAddress && `ikms${client.utils.AddressToHash(kmsAddress)}`;
+
+    let hasKmsConk = false;
+    if(kmsId) {
+      hasKmsConk = !!(await client.ContentObjectMetadata({
+        libraryId: await client.ContentObjectLibraryId({objectId}),
+        objectId,
+        metadataSubtree: `eluv.caps.${kmsId}`
+      }));
+    }
+
+    return await client.DownloadFile({
+      libraryId,
+      objectId,
+      versionHash,
+      writeToken,
+      filePath,
+      format,
+      clientSideDecryption: !hasKmsConk || !object.type || clientSideDecryption,
+      callback
+    });
   },
 
   FileUrl: ({libraryId, objectId, versionHash, writeToken, filePath}) => {

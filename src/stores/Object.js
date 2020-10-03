@@ -329,7 +329,7 @@ class ObjectStore {
   });
 
   async DownloadUrl({libraryId, objectId, versionHash, writeToken, filePath, callback}) {
-    let blob = await Fabric.DownloadFile({
+    const blob = await Fabric.DownloadFile({
       libraryId,
       objectId,
       versionHash,
@@ -343,7 +343,13 @@ class ObjectStore {
   }
 
   async DownloadFile(params) {
-    await DownloadFromUrl(await this.DownloadUrl(params), Path.basename(params.filePath));
+    try {
+      await DownloadFromUrl(await this.DownloadUrl(params), Path.basename(params.filePath));
+    } catch(error) {
+      this.rootStore.notificationStore.SetErrorMessage({
+        message: "Unable to download file"
+      });
+    }
   }
 
   @action.bound
