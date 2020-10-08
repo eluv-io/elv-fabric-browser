@@ -104,12 +104,17 @@ pre,
   word-break: break-all;
 }
 
-.app-selection {
-  display: flex;
-  margin-top: $elv-spacing-s;
+.app-selection-form {
+  &.-elv-form {
+    max-width: 40rem;
 
-  button {
-    margin-right: $elv-spacing-xs;
+    input {
+      width: 100%;
+    }
+
+    .form-actions {
+      margin-top: $elv-spacing-xl;
+    }
   }
 }
 

@@ -24,6 +24,7 @@ class ContentObjectForm extends React.Component {
       publicMetadata: "{}",
       privateMetadata: "{}",
       type: "",
+      types: {},
       imageSelection: "",
       objectId: "",
       showManageApp: false
@@ -238,7 +239,39 @@ class ContentObjectForm extends React.Component {
           async () => {
             let loadTasks = [];
 
-            loadTasks.push(this.props.typeStore.ContentTypes);
+            // Don't wait for types
+            const LoadTypes = async () => {
+              await this.props.typeStore.ContentTypes();
+
+              // Wait for library load to complete
+              let waited = 0;
+              while(!this.props.libraryStore.library) {
+                if(waited > 5000) { return; }
+
+                await new Promise(resolve => setTimeout(resolve, 250));
+                waited += 250;
+              }
+
+              let allowedTypes = {};
+              Object.values(this.props.libraryStore.library.types).forEach(type => allowedTypes[type.hash] = type);
+
+              let initialType = "";
+              let types = {};
+              if(Object.keys(allowedTypes).length > 0) {
+                // Allowed types specified on library - limit options to that list
+                initialType = Object.values(allowedTypes)
+                  .sort((a, b) => (a.name || `zzz${a.hash}`).toLowerCase() < (b.name || `zzz${b.hash}`).toLowerCase() ? -1 : 1)[0].hash;
+                types = allowedTypes;
+              } else {
+                // No allowed types specified on library - all types allowed
+                Object.values(this.props.typeStore.allTypes).forEach(type => types[type.hash] = type);
+                types[""] = { name: "<None>", hash: "" };
+              }
+
+              this.setState({type: this.state.type || initialType, types: { ...toJS(types) }});
+            };
+
+            LoadTypes();
 
             loadTasks.push(
               async () => await this.props.libraryStore.ContentLibrary({
@@ -275,24 +308,6 @@ class ContentObjectForm extends React.Component {
                 showManageApp: !!manageAppUrl
               });
             }
-
-            let allowedTypes = {};
-            Object.values(this.props.libraryStore.library.types).forEach(type => allowedTypes[type.hash] = type);
-
-            let initialType = "";
-            let types = {};
-            if(Object.keys(allowedTypes).length > 0) {
-              // Allowed types specified on library - limit options to that list
-              initialType = Object.values(allowedTypes)
-                .sort((a, b) => (a.name || `zzz${a.hash}`).toLowerCase() < (b.name || `zzz${b.hash}`).toLowerCase() ? -1 : 1)[0].hash;
-              types = allowedTypes;
-            } else {
-              // No allowed types specified on library - all types allowed
-              Object.values(this.props.typeStore.allTypes).forEach(type => types[type.hash] = type);
-              types[""] = { name: "<None>", hash: "" };
-            }
-
-            this.setState({type: this.state.type || initialType, types: { ...toJS(types) }});
           }
         }
         render={this.PageContent}

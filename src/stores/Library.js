@@ -47,8 +47,11 @@ class LibraryStore {
 
     if(!this.libraries[libraryId].isContentSpaceLibrary) {
       // Determine if current user can contribute to the library
-      const contributorGroups = yield Fabric.LibraryGroupAddresses({libraryId, type: "contributor"});
-      const userGroups = yield Fabric.AccessGroupAddresses();
+
+      const [contributorGroups, userGroups] = yield Promise.all([
+        Fabric.LibraryGroupAddresses({libraryId, type: "contributor"}),
+        Fabric.AccessGroupAddresses()
+      ]);
 
       this.libraries[libraryId].canContribute =
         this.libraries[libraryId].isOwner ||
