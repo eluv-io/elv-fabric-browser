@@ -1,7 +1,7 @@
 import React from "react";
 import UrlJoin from "url-join";
 import Path from "path";
-import {Action, BrowseWidget, Form, JsonInput, Tabs} from "elv-components-js";
+import {Action, BrowseWidget, Form, JsonInput, LoadingElement, Tabs} from "elv-components-js";
 import {inject, observer} from "mobx-react";
 import AsyncComponent from "../../components/AsyncComponent";
 import {Redirect} from "react-router";
@@ -27,6 +27,7 @@ class ContentObjectForm extends React.Component {
       types: {},
       imageSelection: "",
       objectId: "",
+      commitMessage: "",
       showManageApp: false
     };
 
@@ -59,7 +60,8 @@ class ContentObjectForm extends React.Component {
       description: this.state.description,
       publicMetadata: this.state.publicMetadata,
       privateMetadata: this.state.privateMetadata,
-      image: this.state.imageSelection
+      image: this.state.imageSelection,
+      commitMessage: this.state.commitMessage
     });
 
     this.setState({
@@ -109,9 +111,11 @@ class ContentObjectForm extends React.Component {
     return (
       <React.Fragment>
         <label htmlFor="type">Type</label>
-        <select name="type" value={this.state.type} onChange={this.HandleInputChange}>
-          { options }
-        </select>
+        <LoadingElement loading={!this.props.typeStore.typesLoaded}>
+          <select name="type" value={this.state.type} onChange={this.HandleInputChange}>
+            { options }
+          </select>
+        </LoadingElement>
       </React.Fragment>
     );
   }
@@ -148,6 +152,9 @@ class ContentObjectForm extends React.Component {
             value={this.state.privateMetadata}
             onChange={this.HandleInputChange}
           />
+
+          <label htmlFor="commitMessage">Commit Message</label>
+          <textarea name="commitMessage" value={this.state.commitMessage} onChange={this.HandleInputChange} />
         </div>
       </Form>
     );

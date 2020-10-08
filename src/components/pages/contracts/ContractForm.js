@@ -95,7 +95,7 @@ class ContractForm extends React.Component {
     }
 
     return (
-      <div>
+      <div className="page-container">
         <div className="actions-container manage-actions">
           <Action type="link" to={backPath} className="secondary">Back</Action>
         </div>

@@ -4,6 +4,7 @@ import {ParseInputJson} from "elv-components-js";
 import {Cancelable} from "../utils/Cancelable";
 
 class TypeStore {
+  @observable typesLoaded = false;
   @observable allTypes = {};
   @observable types = {};
   @observable count = 0;
@@ -35,6 +36,8 @@ class TypeStore {
   @action.bound
   ContentTypes = flow(function * () {
     this.allTypes = (yield Fabric.ListContentTypes({params: {perPage: 1000, skipOwner: true}})).types;
+
+    this.typesLoaded = true;
   });
 
   @action.bound
@@ -66,7 +69,7 @@ class TypeStore {
   });
 
   @action.bound
-  UpdateContentType = flow(function * ({typeId, name, description, bitcode, metadata}) {
+  UpdateContentType = flow(function * ({typeId, name, description, bitcode, metadata, commitMessage}) {
     try {
       metadata = ParseInputJson(metadata);
     } catch(error) {
@@ -78,6 +81,7 @@ class TypeStore {
     yield Fabric.EditAndFinalizeContentObject({
       libraryId,
       objectId: typeId,
+      commitMessage: commitMessage || "Fabric browser form",
       todo: async (writeToken) => {
         metadata = {
           ...metadata,

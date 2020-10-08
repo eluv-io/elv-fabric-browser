@@ -38,7 +38,7 @@ class AccessGroupMemberForm extends React.Component {
     const backPath = Path.dirname(this.props.match.url);
 
     return (
-      <div>
+      <div className="page-container">
         <div className="actions-container manage-actions">
           <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">
             Back

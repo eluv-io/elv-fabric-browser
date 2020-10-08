@@ -929,6 +929,7 @@ const Fabric = {
     libraryId,
     objectId,
     writeToken,
+    commitMessage,
     awaitCommitConfirmation=true
   }) => {
     delete Fabric.cachedImages[objectId];
@@ -937,6 +938,7 @@ const Fabric = {
       libraryId,
       objectId,
       writeToken,
+      commitMessage,
       awaitCommitConfirmation
     });
   },
@@ -945,6 +947,7 @@ const Fabric = {
     libraryId,
     objectId,
     todo,
+    commitMessage,
     awaitCommitConfirmation=true
   }) => {
     const editResponse = await Fabric.EditContentObject({libraryId, objectId});
@@ -954,6 +957,7 @@ const Fabric = {
       libraryId,
       objectId,
       writeToken: editResponse.write_token,
+      commitMessage,
       awaitCommitConfirmation
     });
   },

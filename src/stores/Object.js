@@ -82,7 +82,8 @@ class ObjectStore {
     description,
     privateMetadata,
     publicMetadata,
-    image
+    image,
+    commitMessage
   }) {
     try {
       privateMetadata = ParseInputJson(privateMetadata);
@@ -132,7 +133,12 @@ class ObjectStore {
       });
     }
 
-    yield Fabric.FinalizeContentObject({libraryId, objectId, writeToken});
+    yield Fabric.FinalizeContentObject({
+      libraryId,
+      objectId,
+      writeToken,
+      commitMessage: commitMessage || "Fabric Browser form"
+    });
 
     this.rootStore.notificationStore.SetNotificationMessage({
       message: `Successfully ${create ? "created": "updated"} content`,
@@ -174,7 +180,7 @@ class ObjectStore {
   });
 
   @action.bound
-  EditContentObject = flow(function * ({libraryId, objectId}) {
+  EditContentObject = flow(function * ({libraryId, objectId, action=""}) {
     const object = this.objects[objectId];
 
     if(!object) {
@@ -196,6 +202,12 @@ class ObjectStore {
         writeToken: write_token,
         filePath: "/"
       });
+
+      object.draftActions = [];
+    }
+
+    if(action) {
+      object.draftActions.push(action);
     }
 
     return this.objects[objectId].writeToken;
@@ -215,10 +227,12 @@ class ObjectStore {
       throw Error("No write token for " + objectId);
     }
 
+    const actions = [...new Set((object.draftActions || []))];
     const response = yield Fabric.FinalizeContentObject({
       libraryId,
       objectId,
-      writeToken
+      writeToken,
+      commitMessage: actions.join(", ")
     });
 
     this.objects[objectId].writeToken = "";
@@ -228,7 +242,7 @@ class ObjectStore {
 
   @action.bound
   UpdateMetadata = flow(function * ({libraryId, objectId, metadataSubtree="/", metadata}) {
-    const writeToken = yield this.EditContentObject({libraryId, objectId});
+    const writeToken = yield this.EditContentObject({libraryId, objectId, action: "Update metadata"});
 
     yield Fabric.ReplaceMetadata({
       libraryId,
@@ -251,7 +265,7 @@ class ObjectStore {
 
   @action.bound
   DeleteMetadata = flow(function * ({libraryId, objectId, metadataSubtree="/"}) {
-    const writeToken = yield this.EditContentObject({libraryId, objectId});
+    const writeToken = yield this.EditContentObject({libraryId, objectId, action: "Delete metadata"});
 
     yield Fabric.DeleteMetadata({
       libraryId,
@@ -273,7 +287,7 @@ class ObjectStore {
 
   @action.bound
   UploadFiles = flow(function * ({libraryId, objectId, path, fileList, encrypt, callback}) {
-    const writeToken = yield this.EditContentObject({libraryId, objectId});
+    const writeToken = yield this.EditContentObject({libraryId, objectId, action: "Upload files"});
 
     const fileInfo = yield FileInfo(path, fileList);
 
@@ -299,7 +313,7 @@ class ObjectStore {
   // Set object image from existing file
   @action.bound
   SetExistingObjectImage = flow(function * ({libraryId, objectId, filePath}) {
-    const writeToken = yield this.EditContentObject({libraryId, objectId});
+    const writeToken = yield this.EditContentObject({libraryId, objectId, action: "Set object image"});
 
     yield Fabric.ReplaceMetadata({
       libraryId,
@@ -354,7 +368,7 @@ class ObjectStore {
 
   @action.bound
   CreateDirectory = flow(function * ({libraryId, objectId, directory}) {
-    const writeToken = yield this.EditContentObject({libraryId, objectId});
+    const writeToken = yield this.EditContentObject({libraryId, objectId, action: `Create directory '${directory.replace("./", "")}'`});
 
     yield Fabric.CreateDirectory({libraryId, objectId, writeToken, directory});
 
@@ -372,7 +386,7 @@ class ObjectStore {
 
   @action.bound
   DeleteFiles = flow(function * ({libraryId, objectId, filePaths}) {
-    const writeToken = yield this.EditContentObject({libraryId, objectId});
+    const writeToken = yield this.EditContentObject({libraryId, objectId, action: `Delete file '${filePaths[0]}'`});
 
     yield Fabric.DeleteFiles({libraryId, objectId, writeToken, filePaths});
 
@@ -431,6 +445,7 @@ class ObjectStore {
       libraryId,
       objectId,
       writeToken: contentDraft.write_token,
+      commitMessage: "Upload parts",
       awaitCommitConfirmation: false
     });
 
@@ -502,26 +517,10 @@ class ObjectStore {
 
   @action.bound
   UpdateApps = flow(function * ({libraryId, objectId, apps}) {
-    /*
-    {
-  "display": {
-    "appType": "custom-upload",
-    "appPath": "index.html",
-    "fileParams": {
-      "fileList": {
-        "0": {}
-      },
-      "isDirectory": false,
-      "encrypt": false
-    }
-  },
-  "manage": {}
-}
-     */
-
     yield Fabric.EditAndFinalizeContentObject({
       libraryId,
       objectId,
+      commitMessage: "Update apps",
       todo: async (writeToken) => {
         for(const role of Object.keys(apps)) {
           const appInfo = apps[role];
@@ -592,91 +591,9 @@ class ObjectStore {
         }
       }
     });
-  });
-
-  @action.bound
-  AddApp = flow(function * ({libraryId, objectId, role, isDirectory, fileList, callback, useDefault=false}) {
-    const app = `${role}App`;
-
-    let fileInfo;
-    if(!useDefault) {
-      fileInfo = yield FileInfo(app, fileList, false, isDirectory);
-
-      if(!fileInfo.find(file => file.path.endsWith("index.html"))) {
-        throw Error("App must contain an index.html file");
-      }
-    }
-
-    yield Fabric.EditAndFinalizeContentObject({
-      libraryId,
-      objectId,
-      todo: async (writeToken) => {
-        if(useDefault) {
-          await Fabric.ReplaceMetadata({
-            libraryId,
-            objectId,
-            writeToken,
-            metadataSubtree: `eluv.${role}App`,
-            metadata: "default"
-          });
-          await Fabric.ReplaceMetadata({
-            libraryId,
-            objectId,
-            writeToken,
-            metadataSubtree: `public/eluv.${role}App`,
-            metadata: "default"
-          });
-        } else {
-          await Fabric.UploadFiles({
-            libraryId,
-            objectId,
-            writeToken,
-            fileInfo,
-            callback
-          });
-
-          await Fabric.ReplaceMetadata({
-            libraryId,
-            objectId,
-            writeToken,
-            metadataSubtree: `eluv.${role}App`,
-            metadata: UrlJoin(app, "index.html")
-          });
-          await Fabric.ReplaceMetadata({
-            libraryId,
-            objectId,
-            writeToken,
-            metadataSubtree: `public/eluv.${role}App`,
-            metadata: UrlJoin(app, "index.html")
-          });
-        }
-
-      }
-    });
 
     this.rootStore.notificationStore.SetNotificationMessage({
-      message: "Successfully added " + role + " app",
-      redirect: true
-    });
-  });
-
-  @action.bound
-  RemoveApp = flow(function * ({libraryId, objectId, role}) {
-    yield Fabric.EditAndFinalizeContentObject({
-      libraryId,
-      objectId,
-      todo: async (writeToken) => {
-        await Fabric.DeleteMetadata({
-          libraryId,
-          objectId,
-          writeToken,
-          metadataSubtree: `eluv.${role}App`
-        });
-      }
-    });
-
-    this.rootStore.notificationStore.SetNotificationMessage({
-      message: "Successfully removed " + role + " app",
+      message: "Successfully updated apps",
       redirect: true
     });
   });

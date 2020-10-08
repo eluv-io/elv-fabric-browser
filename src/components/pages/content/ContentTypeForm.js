@@ -1,7 +1,7 @@
 import React from "react";
 import UrlJoin from "url-join";
 import Path from "path";
-import {Action, BrowseWidget, Form, JsonInput} from "elv-components-js";
+import {Action, BrowseWidget, Form, JsonInput, Maybe} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
 import {inject, observer} from "mobx-react";
 
@@ -16,6 +16,7 @@ class ContentTypeForm extends React.Component {
       name: "",
       description: "",
       metadata: "",
+      commitMessage: "",
       redirectPath: Path.dirname(this.props.match.url)
     };
 
@@ -47,7 +48,8 @@ class ContentTypeForm extends React.Component {
       name: this.state.name,
       description: this.state.description,
       metadata: this.state.metadata,
-      bitcode: this.state.bitcode
+      bitcode: this.state.bitcode,
+      commitMessage: this.state.commitMessage
     });
 
     this.setState({
@@ -102,6 +104,16 @@ class ContentTypeForm extends React.Component {
                 value={this.state.metadata}
                 onChange={this.HandleInputChange}
               />
+
+              {
+                Maybe(
+                  !this.state.createForm,
+                  <React.Fragment>
+                    <label htmlFor="commitMessage">Commit Message</label>
+                    <input name="commitMessage" value={this.state.commitMessage} onChange={this.HandleInputChange} />
+                  </React.Fragment>
+                )
+              }
             </div>
           </Form>
         </div>

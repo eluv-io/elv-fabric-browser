@@ -16,6 +16,7 @@ import {AccessChargeDisplay, Percentage} from "../../../utils/Helpers";
 import {inject, observer} from "mobx-react";
 import ToggleSection from "../../components/ToggleSection";
 import JSONField from "../../components/JSONField";
+import {DateTime} from "luxon";
 import ContentObjectGroups from "./ContentObjectGroups";
 
 import RefreshIcon from "../../../static/icons/refresh.svg";
@@ -290,6 +291,36 @@ class ContentObject extends React.Component {
     );
   }
 
+  CommitInfo(versionHash) {
+    const version = this.props.objectStore.versions[versionHash];
+
+    if(!version.meta || !version.meta.commit || typeof version.meta.commit !== "object") { return null; }
+
+    let {author, author_address, message, timestamp} = version.meta.commit;
+    const committedAt = timestamp ? DateTime.fromISO(timestamp) : "";
+
+    if(message.length > 150) {
+      message = message.slice(0, 150) + "...";
+    }
+
+    return (
+      <React.Fragment>
+        <LabelledField label="Commit Info" />
+        <div className="indented">
+          <LabelledField label="Author">
+            { author || author_address } { author !== author_address ? `(${author_address})` : ""}
+          </LabelledField>
+          <LabelledField label="Commit Message">
+            { message }
+          </LabelledField>
+          <LabelledField label="Committed At" hidden={!timestamp}>
+            { committedAt && committedAt.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS) }
+          </LabelledField>
+        </div>
+      </React.Fragment>
+    );
+  }
+
   ObjectVersion(versionHash, versionNumber, latestVersion=false) {
     const version = this.props.objectStore.versions[versionHash];
 
@@ -304,23 +335,15 @@ class ContentObject extends React.Component {
             { versionHash }
           </LabelledField>
 
+          { this.CommitInfo(versionHash) }
+
+          <br />
+
           <ToggleSection label="Metadata">
             <div className="indented">
               <JSONField json={version.meta} />
             </div>
           </ToggleSection>
-
-          <ToggleSection label="Verification">
-            <pre className="content-object-data">{JSON.stringify(version.verification, null, 2)}</pre>
-          </ToggleSection>
-
-          <LabelledField label="Parts">
-            { version.parts ? version.parts.length.toString() : "" }
-          </LabelledField>
-
-          <LabelledField label="Total size">
-            { this.VersionSize(version) }
-          </LabelledField>
 
           <ToggleSection label="Parts">
             <AsyncComponent
@@ -331,7 +354,19 @@ class ContentObject extends React.Component {
                   });
                 }
               }
-              render={() => this.ObjectParts(version)}
+              render={() => (
+                <React.Fragment>
+                  <LabelledField label="Total Parts">
+                    { version.parts ? version.parts.length.toString() : "" }
+                  </LabelledField>
+
+                  <LabelledField label="Total size">
+                    { this.VersionSize(version) }
+                  </LabelledField>
+
+                  { this.ObjectParts(version) }
+                </React.Fragment>
+              )}
             />
           </ToggleSection>
 
