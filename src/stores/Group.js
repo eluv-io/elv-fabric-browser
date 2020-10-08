@@ -42,7 +42,17 @@ class GroupStore {
   });
 
   @action.bound
-  SaveAccessGroup = flow(function * ({name, description, metadata, address, oauthEnabled, oauthIssuer, oauthAud, oauthGroups, trustAuthorityId}) {
+  SaveAccessGroup = flow(function * ({
+    name,
+    description,
+    metadata,
+    address,
+    oauthEnabled,
+    oauthIssuer,
+    oauthAud,
+    oauthGroups,
+    trustAuthorityId
+  }) {
     metadata = ParseInputJson(metadata);
 
     if(address) {
@@ -51,6 +61,7 @@ class GroupStore {
       yield Fabric.EditAndFinalizeContentObject({
         libraryId: Fabric.contentSpaceLibraryId,
         objectId,
+        commitMessage: "Fabric Browser form",
         todo: async (writeToken) => {
           const fullMetadata = await Fabric.GetContentObjectMetadata({
             libraryId: Fabric.contentSpaceLibraryId,

@@ -88,6 +88,7 @@ class LibraryStore {
       yield Fabric.EditAndFinalizeContentObject({
         libraryId,
         objectId: Fabric.utils.AddressToObjectId(Fabric.utils.HashToAddress(libraryId)),
+        commitMessage: "Update library image",
         todo: async (writeToken) => {
           await Fabric.SetContentLibraryImage({
             libraryId,
@@ -133,6 +134,7 @@ class LibraryStore {
     yield Fabric.EditAndFinalizeContentObject({
       libraryId,
       objectId: libraryObjectId,
+      commitMessage: "Fabric Browser form",
       todo: async (writeToken) => {
         await Fabric.ReplaceMetadata({
           libraryId,

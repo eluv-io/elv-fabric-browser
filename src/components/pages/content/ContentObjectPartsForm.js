@@ -50,7 +50,7 @@ class ContentObjectPartsForm extends React.Component {
 
   PageContent() {
     return (
-      <div>
+      <div className="page-container">
         <div className="actions-container manage-actions">
           <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
         </div>

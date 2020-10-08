@@ -143,45 +143,47 @@ class AccessGroupForm extends React.Component {
     const redirectPath = this.state.createForm ? UrlJoin(backPath, this.state.contractAddress || "") : backPath;
 
     return (
-      <div className="page-content-container">
-        <div className="page-content">
-          <div className="actions-container manage-actions">
-            <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+      <div className="page-container">
+        <div className="actions-container manage-actions">
+          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
+        </div>
+        <div className="page-content-container">
+          <div className="page-content">
+            <Form
+              legend={this.state.createForm ? "Create Access Group" : "Manage Access Group"}
+              redirectPath={redirectPath}
+              cancelPath={backPath}
+              OnSubmit={this.HandleSubmit}
+            >
+              <div className="form-content">
+                <label htmlFor="name">Name</label>
+                <input name="name" value={this.state.name} onChange={this.HandleInputChange} />
+
+                <label htmlFor="description" className="align-top">Description</label>
+                <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
+
+                <label htmlFor="modifyMetadata">Edit Metadata</label>
+                <input
+                  name="modifyMetadata"
+                  type="checkbox"
+                  checked={this.state.modifyMetadata}
+                  onChange={() => this.setState({modifyMetadata: !this.state.modifyMetadata})}
+                />
+
+                { this.Metadata() }
+
+                <label htmlFor="isOauthGroup">Link with OAuth</label>
+                <input
+                  name="isOauthGroup"
+                  type="checkbox"
+                  checked={!!this.state.isOauthGroup}
+                  onChange={() => this.setState({isOauthGroup: !this.state.isOauthGroup})}
+                />
+
+                { this.OauthInfo() }
+              </div>
+            </Form>
           </div>
-          <Form
-            legend={this.state.createForm ? "Create Access Group" : "Manage Access Group"}
-            redirectPath={redirectPath}
-            cancelPath={backPath}
-            OnSubmit={this.HandleSubmit}
-          >
-            <div className="form-content">
-              <label htmlFor="name">Name</label>
-              <input name="name" value={this.state.name} onChange={this.HandleInputChange} />
-
-              <label htmlFor="description" className="align-top">Description</label>
-              <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
-
-              <label htmlFor="modifyMetadata">Edit Metadata</label>
-              <input
-                name="modifyMetadata"
-                type="checkbox"
-                checked={this.state.modifyMetadata}
-                onChange={() => this.setState({modifyMetadata: !this.state.modifyMetadata})}
-              />
-
-              { this.Metadata() }
-
-              <label htmlFor="isOauthGroup">Link with OAuth</label>
-              <input
-                name="isOauthGroup"
-                type="checkbox"
-                checked={!!this.state.isOauthGroup}
-                onChange={() => this.setState({isOauthGroup: !this.state.isOauthGroup})}
-              />
-
-              { this.OauthInfo() }
-            </div>
-          </Form>
         </div>
       </div>
     );

@@ -8,6 +8,10 @@
     background: $elv-color-mediumblue;
     color: $elv-color-text-white;
     opacity: 0;
+
+    svg {
+      stroke: $elv-color-white;
+    }
   }
 
   .error-message-container {
@@ -27,10 +31,6 @@
       text-align: center;
       width: 100%;
     }
-  }
-
-  svg {
-    stroke: $elv-color-white;
   }
 
   .clear-notification {

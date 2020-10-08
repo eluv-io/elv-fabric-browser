@@ -118,7 +118,7 @@ class CompileContractForm extends React.Component {
     const redirectPath = this.state.compileFromSource ? UrlJoin(backPath, "save") : UrlJoin(backPath, "saved");
 
     return (
-      <div>
+      <div className="page-container">
         <div className="actions-container manage-actions">
           <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
         </div>
