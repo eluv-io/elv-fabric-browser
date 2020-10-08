@@ -31,6 +31,8 @@
 }
 
 .actions-container {
+  position: relative;
+
   &.manage-actions {
     margin-bottom: $elv-spacing-m;
   }

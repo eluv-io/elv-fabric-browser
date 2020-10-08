@@ -2,14 +2,15 @@ import React from "react";
 import Path from "path";
 import {PageHeader} from "../../components/Page";
 import {LabelledField} from "../../components/LabelledField";
-import {Action, Confirm, Modal} from "elv-components-js";
+import {Action, Form, Modal} from "elv-components-js";
 import FileUploadWidget from "../../components/FileUploadWidget";
 import {inject, observer} from "mobx-react";
 import AsyncComponent from "../../components/AsyncComponent";
 
-const defaultApps = {
-  display: EluvioConfiguration.displayAppUrl,
-  manage: EluvioConfiguration.manageAppUrl
+const appNames = {
+  "asset-manager": "Asset Manager",
+  "avails-manager": "Permissions Manager",
+  "stream-sample": "Stream Sample"
 };
 
 @inject("libraryStore")
@@ -26,19 +27,14 @@ class ContentApps extends React.Component {
     };
 
     this.PageContent = this.PageContent.bind(this);
-    this.DeleteApp = this.DeleteApp.bind(this);
-    this.UseDefaultApp = this.UseDefaultApp.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
   }
 
-  async HandleSubmit({fileList, isDirectory, callback}) {
-    await this.props.objectStore.AddApp({
+  async HandleSubmit() {
+    await this.props.objectStore.UpdateApps({
       libraryId: this.props.objectStore.libraryId,
       objectId: this.props.objectStore.objectId,
-      role: this.state.role,
-      isDirectory,
-      fileList,
-      callback
+      apps: this.state.apps
     });
   }
 
@@ -57,12 +53,20 @@ class ContentApps extends React.Component {
           path={this.state.path}
           displayPath={this.state.displayPath}
           encryptable={false}
-          Upload={this.HandleSubmit}
-          OnCancel={closeModal}
-          OnComplete={() => {
-            closeModal();
-            this.setState({pageVersion: this.state.pageVersion + 1});
+          Upload={args => {
+            this.setState({
+              apps: {
+                ...this.state.apps,
+                [this.state.role]: {
+                  ...this.state.apps[this.state.role],
+                  appPath: args.fileList[0].name,
+                  fileParams: args
+                }
+              }
+            });
           }}
+          OnCancel={closeModal}
+          OnComplete={closeModal}
         />
       </Modal>
     );
@@ -72,92 +76,83 @@ class ContentApps extends React.Component {
     return ["display", "manage"];
   }
 
-  async DeleteApp(role) {
-    await Confirm({
-      message: `Are you sure you want to remove the ${role} app?`,
-      onConfirm: async () => {
-        await this.props.objectStore.RemoveApp({
-          libraryId: this.props.objectStore.libraryId,
-          objectId: this.props.objectStore.objectId,
-          role
-        });
-
-        this.setState({pageVersion: this.state.pageVersion + 1});
-      }
-    });
-  }
-
-  async UseDefaultApp(role) {
-    await Confirm({
-      message: `Are you sure you want to use the default ${role} app?`,
-      onConfirm: async () => {
-        await this.props.objectStore.AddApp({
-          libraryId: this.props.objectStore.libraryId,
-          objectId: this.props.objectStore.objectId,
-          role,
-          useDefault: true
-        });
-
-        this.setState({pageVersion: this.state.pageVersion + 1});
-      }
-    });
+  Apps(role) {
+    return (
+      <LabelledField label="App">
+        <select
+          value={this.state.apps[role].appType}
+          onChange={event => {
+            this.setState({
+              apps: {
+                ...this.state.apps,
+                [role]: {
+                  appType: event.target.value,
+                  appPath: ""
+                }
+              }
+            });
+          }}
+        >
+          <option value="">None</option>
+          <option value="default">Default</option>
+          {
+            Object.keys((EluvioConfiguration["fabricBrowserApps"] || {}))
+              .filter(appKey => appKey in appNames)
+              .map(app =>
+                <option key={`${role}-app-${app}`} value={app}>
+                  { appNames[app] }
+                </option>
+              )
+          }
+          <option value="custom-url">Custom URL</option>
+          <option value="custom-upload">Custom Upload</option>
+        </select>
+      </LabelledField>
+    );
   }
 
   AppEntry(role) {
-    const app = this.state.apps[role];
-
-    let info;
-    let action;
-    let deleteButton;
-    let defaultButton;
-
-    if((!app || (app && app.filename !== "default")) && defaultApps[role]) {
-      defaultButton = <Action onClick={() => this.UseDefaultApp(role)}>Use Default App</Action>;
-    }
-
-    if(app) {
-      // App set for this role - remove button
-      deleteButton = (
-        <Action onClick={() => this.DeleteApp(role)} className="action danger action-compact action-wide">
-          {`Remove ${role.capitalize()} App`}
-        </Action>
-      );
-      info = (
-        <LabelledField label="Name">
-          { app.filename }
-        </LabelledField>
-      );
-    } else {
-      const typeInfo = this.props.objectStore.object.typeInfo || {};
-      const typeMeta = (typeInfo.latestType && typeInfo.latestType.meta) || {};
-      const typeApp = (typeMeta.public || {})[`eluv.${role}App`] || typeMeta[`eluv.${role}App`];
-      if(typeApp) {
-        const typeName = typeMeta.name || "content type";
-        info = (
-          <LabelledField label="Name">
-            { `${typeApp} (${typeName})` }
-          </LabelledField>
-        );
-      }
-    }
-
-    action = (
-      <Action onClick={() => this.setState({showUpload: true, role})} className="action-compact action-wide">
-        {`Add Custom ${role.capitalize()} App`}
-      </Action>
-    );
-
     return (
       <div key={"app-entry" + role}>
         <h3>
           {role.capitalize()} App
         </h3>
         <div className="indented">
-          { info }
           <div className="app-selection">
-            { defaultButton }
-            { action }
-            { deleteButton }
+            { this.Apps(role) }
+            {
+              this.state.apps[role].appType === "custom-url" ?
+                <LabelledField label="App URL">
+                  <input
+                    required
+                    placeholder="App URL..."
+                    value={this.state.apps[role].appPath}
+                    onChange={event => {
+                      this.setState({
+                        apps: {
+                          ...this.state.apps,
+                          [role]: {...this.state.apps[role], appPath: event.target.value}
+                        }
+                      });
+                    }}
+                  />
+                </LabelledField>
+                : null
+            }
+            {
+              this.state.apps[role].appType === "custom-upload" ?
+                <React.Fragment>
+                  <LabelledField label="App File">
+                    { this.state.apps[role].appPath }
+                  </LabelledField>
+                  <LabelledField label="">
+                    <Action onClick={() => this.setState({showUpload: true, role})} className="action-compact action-wide">
+                      {`Upload ${role.capitalize()} App`}
+                    </Action>
+                  </LabelledField>
+                </React.Fragment>
+                : null
+            }
           </div>
         </div>
       </div>
@@ -165,8 +160,8 @@ class ContentApps extends React.Component {
   }
 
   PageContent() {
-    const header = this.props.objectStore.object.isContentLibraryObject ?
-      this.props.libraryStore.library.name + " > Library Object" :
+    const header = this.props.objectStore.object.isContentType ?
+      "Content Types > " + this.props.objectStore.object.name :
       this.props.libraryStore.library.name + " > " + this.props.objectStore.object.name;
 
     return (
@@ -174,12 +169,20 @@ class ContentApps extends React.Component {
         <div className="actions-container">
           <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
         </div>
-        <PageHeader header={header} subHeader="App management" />
+        <PageHeader header={header} />
         <div className="page-content-container">
           <div className="page-content">
-            <div className="label-box">
-              { this.AppRoles().map(role => this.AppEntry(role))}
-            </div>
+            <Form
+              legend="App Management"
+              className="app-selection-form"
+              OnSubmit={this.HandleSubmit}
+              redirectPath={Path.dirname(this.props.match.url)}
+              cancelPath={Path.dirname(this.props.match.url)}
+            >
+              <div className="label-box">
+                { this.AppRoles().map(role => this.AppEntry(role))}
+              </div>
+            </Form>
           </div>
         </div>
         { this.UploadModal() }
@@ -205,13 +208,24 @@ class ContentApps extends React.Component {
             let apps = {};
             const meta = this.props.objectStore.object.meta;
             this.AppRoles().map(role => {
-              const appFile = (meta.public || {})[`eluv.${role}App`] || meta[`eluv.${role}App`];
+              const app = (meta.public || {})[`eluv.${role}App`] || meta[`eluv.${role}App`];
 
-              if(appFile) {
-                apps[role] = {
-                  filename: appFile
-                };
+              let appType;
+              if(app === "default") {
+                appType = "default";
+              } else if((EluvioConfiguration["fabricBrowserApps"] || {})[app]) {
+                appType = app;
+              } else if(typeof app === "string" && (app.startsWith("http://") || app.startsWith("https://"))) {
+                // App specification is a url
+                appType = "custom-url";
+              } else if(app) {
+                appType = "custom-upload";
               }
+
+              apps[role] = {
+                appType,
+                appPath: app
+              };
             });
 
             this.setState({

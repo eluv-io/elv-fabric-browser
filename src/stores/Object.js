@@ -501,6 +501,100 @@ class ObjectStore {
   });
 
   @action.bound
+  UpdateApps = flow(function * ({libraryId, objectId, apps}) {
+    /*
+    {
+  "display": {
+    "appType": "custom-upload",
+    "appPath": "index.html",
+    "fileParams": {
+      "fileList": {
+        "0": {}
+      },
+      "isDirectory": false,
+      "encrypt": false
+    }
+  },
+  "manage": {}
+}
+     */
+
+    yield Fabric.EditAndFinalizeContentObject({
+      libraryId,
+      objectId,
+      todo: async (writeToken) => {
+        for(const role of Object.keys(apps)) {
+          const appInfo = apps[role];
+          const appKey = `${role}App`;
+
+          if(appInfo.appType === "custom-upload") {
+            if(!appInfo.fileParams) {
+              continue;
+            }
+
+            const fileInfo = await FileInfo(appKey, appInfo.fileParams.fileList, false, appInfo.fileParams.isDirectory);
+
+            if(!fileInfo.find(file => file.path.endsWith("index.html"))) {
+              throw Error("App must contain an index.html file");
+            }
+
+            await Fabric.UploadFiles({
+              libraryId,
+              objectId,
+              writeToken,
+              fileInfo
+            });
+
+            await Fabric.ReplaceMetadata({
+              libraryId,
+              objectId,
+              writeToken,
+              metadataSubtree: `public/eluv.${role}App`,
+              metadata: UrlJoin(appKey, "index.html")
+            });
+          } else if(appInfo.appType === "custom-url") {
+            const url = appInfo.appPath;
+
+            if(!url || !(url.startsWith("http://") || url.startsWith("https://"))) {
+              throw Error("App URL is invalid");
+            }
+
+            await Fabric.ReplaceMetadata({
+              libraryId,
+              objectId,
+              writeToken,
+              metadataSubtree: `public/eluv.${role}App`,
+              metadata: url
+            });
+          } else if(!appInfo.appType) {
+            await Fabric.DeleteMetadata({
+              libraryId,
+              objectId,
+              writeToken,
+              metadataSubtree: `public/eluv.${role}App`
+            });
+
+            await Fabric.DeleteMetadata({
+              libraryId,
+              objectId,
+              writeToken,
+              metadataSubtree: `eluv.${role}App`
+            });
+          } else {
+            await Fabric.ReplaceMetadata({
+              libraryId,
+              objectId,
+              writeToken,
+              metadataSubtree: `public/eluv.${role}App`,
+              metadata: appInfo.appType
+            });
+          }
+        }
+      }
+    });
+  });
+
+  @action.bound
   AddApp = flow(function * ({libraryId, objectId, role, isDirectory, fileList, callback, useDefault=false}) {
     const app = `${role}App`;
 

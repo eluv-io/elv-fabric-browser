@@ -11,10 +11,11 @@ let objectCache = {};
 
 const Fabric = {
   /* Utils */
+  client,
   currentAccountAddress: undefined,
   utils: client.utils,
   cachedImages: {},
-  concurrencyLimit: 10,
+  concurrencyLimit: 20,
   permissionLevels: client.permissionLevels,
 
   async Initialize() {
@@ -220,38 +221,17 @@ const Fabric = {
   },
 
   GetContentLibrary: async ({libraryId}) => {
-    /* Library */
-    const libraryInfo = await client.ContentLibrary({libraryId});
-    const owner = await Fabric.GetContentLibraryOwner({libraryId});
-    const currentAccountAddress = await Fabric.CurrentAccountAddress();
-
-    let ownerName;
-    try {
-      ownerName = await client.userProfileClient.PublicUserMetadata({
-        address: owner,
-        metadataSubtree: "name"
-      });
-    // eslint-disable-next-line no-empty
-    } catch(error) {}
+    const objectId = client.utils.AddressToObjectId(client.utils.HashToAddress(libraryId));
+    const latestVersionHash = await client.LatestVersionHash({objectId});
 
     /* Library object and private metadata */
-    const libraryObjectId = libraryId.replace("ilib", "iq__");
+
     let privateMeta = {};
     let publicMeta = {};
-    let imageUrl;
     try {
-      const libraryObject = await Fabric.GetContentObject({libraryId, objectId: libraryObjectId});
       privateMeta = await Fabric.GetContentObjectMetadata({
         libraryId,
-        objectId: libraryObjectId
-      });
-
-      /* Image */
-      imageUrl = await Fabric.GetContentObjectImageUrl({
-        libraryId,
-        objectId: libraryObjectId,
-        versionHash: libraryObject.hash, // Specify version hash to break cache if image is updated,
-        metadata: privateMeta
+        objectId
       });
 
       publicMeta = {...(privateMeta.public || {})};
@@ -261,23 +241,57 @@ const Fabric = {
       console.error(error);
     }
 
-    const kmsAddress = await client.CallContractMethod({
-      contractAddress: client.utils.HashToAddress(libraryId),
-      methodName: "addressKMS"
-    });
-    const kmsId = `ikms${client.utils.AddressToHash(kmsAddress)}`;
+    /* Library */
+    let [
+      libraryInfo,
+      types,
+      owner,
+      currentAccountAddress,
+      imageUrl,
+      kmsAddress,
+      tenantId
+    ] = await Promise.all([
+      client.ContentLibrary({libraryId}), // libraryInfo
+      Fabric.ListLibraryContentTypes({libraryId}), // types
+      Fabric.GetContentLibraryOwner({libraryId}), // owner
+      Fabric.CurrentAccountAddress(), // currentAccountAddress
+      Fabric.GetContentObjectImageUrl({ // imageUrl
+        libraryId,
+        objectId,
+        versionHash: latestVersionHash,
+        metadata: { public: publicMeta }
+      }),
+      client.CallContractMethod({ // kmsAdress
+        contractAddress: client.utils.HashToAddress(libraryId),
+        methodName: "addressKMS"
+      }),
+      client.CallContractMethod({ // tenantId
+        contractAddress: client.utils.HashToAddress(libraryId),
+        methodName: "getMeta",
+        methodArgs: [
+          "_tenantId"
+        ]
+      })
+    ]);
 
-    let tenantId = (await client.CallContractMethod({
-      contractAddress: client.utils.HashToAddress(libraryId),
-      methodName: "getMeta",
-      methodArgs: [
-        "_tenantId"
-      ]
-    })) || "";
-    tenantId = Buffer.from(tenantId.replace("0x", ""), "hex").toString("utf-8");
+    const kmsId = kmsAddress ? `ikms${client.utils.AddressToHash(kmsAddress)}` : "";
 
-    /* Types */
-    const types = await Fabric.ListLibraryContentTypes({libraryId});
+    tenantId = tenantId ? Buffer.from(tenantId.replace("0x", ""), "hex").toString("utf-8") : "";
+
+
+    // Owner name not available
+    let ownerName;
+    /*
+    try {
+      ownerName = await client.userProfileClient.PublicUserMetadata({
+        address: owner,
+        metadataSubtree: "name"
+      });
+    // eslint-disable-next-line no-empty
+    } catch(error) {}
+
+     */
+
 
     return {
       ...libraryInfo,
@@ -543,7 +557,6 @@ const Fabric = {
       libraryId = await client.ContentObjectLibraryId({objectId});
     }
 
-    const accessType = await client.AccessType({id: objectId});
     const isContentLibraryObject = client.utils.EqualHash(libraryId, objectId);
     const isContentType = libraryId === Fabric.contentSpaceLibraryId && !isContentLibraryObject;
     const isNormalObject = !isContentLibraryObject && !isContentType;
@@ -552,52 +565,98 @@ const Fabric = {
 
     // Cachable
     if(!objectCache[latestVersionHash]) {
-      const object = await client.ContentObject({libraryId, objectId});
-      const metadata = (await client.ContentObjectMetadata({libraryId, objectId})) || {};
+      let [object, metadata] = await Promise.all([
+        client.ContentObject({libraryId, objectId}),
+        client.ContentObjectMetadata({libraryId, objectId})
+      ]);
 
-      if(!metadata.public) {
-        metadata.public = {};
-      }
-
-      let typeInfo;
-      if(object.type) {
-        typeInfo = await Fabric.GetContentType({versionHash: object.type});
-        typeInfo.latestTypeHash = await client.LatestVersionHash({objectId: typeInfo.id});
-      }
+      if(!metadata) { metadata = {}; }
+      if(!metadata.public) { metadata.public = {}; }
 
       objectCache[latestVersionHash] = {
-        object,
-        metadata,
-        typeInfo
+        ...object,
+        meta: metadata
       };
     }
 
     // Derived from cachable
-    const { object, metadata, typeInfo } = objectCache[latestVersionHash];
+    const object = objectCache[latestVersionHash];
 
-    const imageUrl = await Fabric.GetContentObjectImageUrl({libraryId, objectId, versionHash: object.hash, metadata});
-    const appUrls = await Fabric.AppUrls({
-      object: {
-        id: object.id,
-        hash: object.hash,
-        meta: metadata
-      }
-    });
+    let typeInfo;
+    if(object.type) {
+      typeInfo = await Fabric.GetContentType({versionHash: object.type});
+      typeInfo.latestTypeHash = typeInfo.latestType ? typeInfo.latestType.hash : "";
+    }
 
-    const baseFileUrl = await Fabric.FileUrl({
-      libraryId,
-      objectId,
-      filePath: "/"
-    });
-
-    let name = metadata.public.name || metadata.name || object.id;
+    let name = object.meta.public.name || object.meta.name || object.id;
     if(typeof name !== "string") {
       name = object.id;
     }
 
+    // Collect network requests to parallelize
+
+    let tasks = [
+      client.AccessType({id: objectId}), // accessType
+      Fabric.GetContentObjectImageUrl({ // imageUrl
+        libraryId,
+        objectId,
+        versionHash:
+        object.hash,
+        metadata: object.meta
+      }),
+      Fabric.AppUrls({ // appUrls
+        object: {
+          id: object.id,
+          hash: object.hash,
+          meta: object.meta
+        }
+      }),
+      Fabric.FileUrl({ // baseFileUrl
+        libraryId,
+        objectId,
+        filePath: "/"
+      }),
+      client.Visibility({id: objectId}), // visibility
+      Fabric.GetContentObjectOwner({objectId: objectId}), // owner
+      Fabric.GetCustomContentContractAddress({ // customContractAddress
+        libraryId,
+        objectId,
+        metadata: object.meta
+      })
+    ];
+
+    if(isNormalObject) {
+      // Only normal objects have status and access charge
+      tasks = tasks.concat([
+        Fabric.GetContentObjectStatus({objectId}), // status
+        Fabric.GetAccessInfo({objectId}), // accessInfo
+        client.Permission({objectId}), // permission
+        client.CallContractMethod({ // kmsAddress
+          contractAddress: client.utils.HashToAddress(objectId),
+          methodName: "addressKMS"
+        })
+      ]);
+    }
+
+    const [
+      accessType,
+      imageUrl,
+      appUrls,
+      baseFileUrl,
+      visibility,
+      owner,
+      customContractAddress,
+      status,
+      accessInfo,
+      permission,
+      kmsAddress
+    ] = await Promise.all(tasks);
+
+    const kmsId = kmsAddress ? `ikms${client.utils.AddressToHash(kmsAddress)}` : undefined;
+
     // Non-cachable (contract / LRO status)
     const lroStatus = (await Promise.all(
-      Object.keys(metadata)
+      Object.keys(object.meta)
         .filter(key => key.startsWith("lro_draft_"))
         .map(async lroKey => {
           try {
@@ -617,28 +676,10 @@ const Fabric = {
         })
     )).filter(status => status);
 
-    // Only normal objects have status and access charge
-    let status, accessInfo, permission;
-    if(isNormalObject) {
-      status = await Fabric.GetContentObjectStatus({objectId});
-      accessInfo = await Fabric.GetAccessInfo({objectId});
-      permission = await client.Permission({objectId});
-    }
 
-    let kmsId;
-    if(isNormalObject) {
-      const kmsAddress = await client.CallContractMethod({
-        contractAddress: client.utils.HashToAddress(objectId),
-        methodName: "addressKMS"
-      });
-      kmsId = `ikms${client.utils.AddressToHash(kmsAddress)}`;
-    }
-
-    const visibility = await client.Visibility({id: objectId});
-
-    const owner = await Fabric.GetContentObjectOwner({objectId: objectId});
-
+    // Not able to get owner name
     let ownerName;
+    /*
     try {
       ownerName = await client.userProfileClient.PublicUserMetadata({
         address: owner,
@@ -647,7 +688,8 @@ const Fabric = {
     // eslint-disable-next-line no-empty
     } catch(error) {}
 
-    const customContractAddress = await Fabric.GetCustomContentContractAddress({libraryId, objectId, metadata});
+     */
+
     const isOwner = EqualAddress(owner, await Fabric.CurrentAccountAddress());
     let canEdit = isOwner;
     if(!canEdit && isNormalObject) {
@@ -666,9 +708,8 @@ const Fabric = {
       ...object,
       ...appUrls,
       writeToken: "",
-      meta: metadata,
       name,
-      description: metadata.public.description || metadata.description,
+      description: object.meta.public.description || object.meta.description,
       baseFileUrl,
       typeInfo,
       imageUrl,
@@ -699,7 +740,14 @@ const Fabric = {
   // parts with proofs, and verification
   GetContentObjectVersions: async({libraryId, objectId}) => {
     return (await client.ContentObjectVersions({libraryId, objectId})).versions
-      .map(version => version.hash);
+      .map((version, i) => {
+        // Clean up object cache if necessary - only latest version is used
+        if(i !== 0 && version.hash in objectCache) {
+          delete objectCache[version.hash];
+        }
+
+        return version.hash;
+      });
   },
 
   // Get all versions of the specified content object, along with metadata,
@@ -958,8 +1006,20 @@ const Fabric = {
     for(const appName of apps) {
       const app = (object.meta.public || {})[`eluv.${appName}App`] || object.meta[`eluv.${appName}App`];
 
+      if(!app) { continue; }
+
       if(app === "default") {
-        appUrls[`${appName}AppUrl`] = EluvioConfiguration[`${appName}AppUrl`];
+        let appUrl = EluvioConfiguration[`${appName}AppUrl`];
+        if(!appUrl && EluvioConfiguration["fabricBrowserApps"]) {
+          appUrl = appName === "display" ?
+            EluvioConfiguration["fabricBrowserApps"]["stream-sample"] :
+            EluvioConfiguration["fabricBrowserApps"]["asset-manager"];
+        }
+
+        appUrls[`${appName}AppUrl`] = appUrl;
+      } else if((EluvioConfiguration["fabricBrowserApps"] || {})[app]) {
+        // Fabric browser app from config
+        appUrls[`${appName}AppUrl`] = EluvioConfiguration["fabricBrowserApps"][app];
       } else if(typeof app === "string" && (app.startsWith("http://") || app.startsWith("https://"))) {
         // App specification is a url
         appUrls[`${appName}AppUrl`] = app;
@@ -1020,17 +1080,6 @@ const Fabric = {
             name: GetName(type),
             description: type.meta.public ? type.meta.public.description || type.meta.description : type.meta.description
           };
-
-          if(!params.skipOwner) {
-            const owner = await client.CallContractMethod({
-              contractAddress: client.utils.HashToAddress(type.id),
-              methodName: "owner"
-            });
-
-            types[type.id].owner = owner;
-            types[type.id].isOwner = EqualAddress(owner, await Fabric.CurrentAccountAddress());
-          }
-
         } catch(error) {
           /* eslint-disable no-console */
           console.error("Failed to list content type " + type.id);
@@ -1049,8 +1098,25 @@ const Fabric = {
   GetContentType: async ({versionHash}) => {
     if(!versionHash) { return; }
 
-    const type = await client.ContentType({versionHash});
-    const latestType = await client.ContentType({typeId: client.utils.DecodeVersionHash(versionHash).objectId});
+    const latestVersionHash = await client.LatestVersionHash({versionHash});
+
+    const GetType = async ({versionHash}) => {
+      if(!objectCache[versionHash]) {
+        objectCache[versionHash] = await client.ContentType({versionHash});
+      }
+
+      return objectCache[versionHash];
+    };
+
+    let [type, latestType] = await Promise.all([
+      GetType({versionHash}),
+      latestVersionHash === versionHash ?
+        undefined :
+        GetType({versionHash: latestVersionHash})
+    ]);
+
+    latestType = latestType || type;
+
     const appUrls = await Fabric.AppUrls({object: latestType});
 
     return {
@@ -1090,17 +1156,18 @@ const Fabric = {
   },
 
   GetContentObjectStatus: async ({objectId}) => {
-    const statusCode = await Fabric.CallContractMethod({
-      contractAddress: client.utils.HashToAddress(objectId),
-      methodName: "statusCode",
-      methodArgs: []
-    });
-
-    const statusDescription = await Fabric.CallContractMethod({
-      contractAddress: client.utils.HashToAddress(objectId),
-      methodName: "statusDescription",
-      methodArgs: []
-    });
+    const [statusCode, statusDescription] = await Promise.all([
+      Fabric.CallContractMethod({
+        contractAddress: client.utils.HashToAddress(objectId),
+        methodName: "statusCode",
+        methodArgs: []
+      }),
+      Fabric.CallContractMethod({
+        contractAddress: client.utils.HashToAddress(objectId),
+        methodName: "statusDescription",
+        methodArgs: []
+      })
+    ]);
 
     return {
       code: parseInt(statusCode._hex, 16),
@@ -1632,6 +1699,7 @@ const Fabric = {
 
         isOwner = client.utils.EqualAddress(owner, currentAccountAddress);
 
+        /*
         try {
           ownerName = await client.userProfileClient.PublicUserMetadata({
             address: owner,
@@ -1639,6 +1707,8 @@ const Fabric = {
           });
         // eslint-disable-next-line no-empty
         } catch(error) {}
+
+         */
 
         isManager = await client.CallContractMethod({
           contractAddress,
