@@ -1,6 +1,6 @@
 import { FrameClient } from "@eluvio/elv-client-js/src/FrameClient";
 import UrlJoin from "url-join";
-import {Bytes32ToUtf8, EqualAddress, FormatAddress} from "../utils/Helpers";
+import {EqualAddress, FormatAddress} from "../utils/Helpers";
 
 let client = new FrameClient({
   target: window.parent,
@@ -628,7 +628,6 @@ const Fabric = {
     if(isNormalObject) {
       // Only normal objects have status and access charge
       tasks = tasks.concat([
-        Fabric.GetContentObjectStatus({objectId}), // status
         Fabric.GetAccessInfo({objectId}), // accessInfo
         client.Permission({objectId}), // permission
         client.CallContractMethod({ // kmsAddress
@@ -646,7 +645,6 @@ const Fabric = {
       visibility,
       owner,
       customContractAddress,
-      status,
       accessInfo,
       permission,
       kmsAddress
@@ -1157,26 +1155,6 @@ const Fabric = {
   GetContentObjectPermissions: async ({libraryId, objectId}) => {
     // All current object permissions are inherited from the library
     return await Fabric.GetContentLibraryPermissions({libraryId});
-  },
-
-  GetContentObjectStatus: async ({objectId}) => {
-    const [statusCode, statusDescription] = await Promise.all([
-      Fabric.CallContractMethod({
-        contractAddress: client.utils.HashToAddress(objectId),
-        methodName: "statusCode",
-        methodArgs: []
-      }),
-      Fabric.CallContractMethod({
-        contractAddress: client.utils.HashToAddress(objectId),
-        methodName: "statusDescription",
-        methodArgs: []
-      })
-    ]);
-
-    return {
-      code: parseInt(statusCode._hex, 16),
-      description: Bytes32ToUtf8(statusDescription)
-    };
   },
 
   PublishContentObject: async ({objectId}) => {
