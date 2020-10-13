@@ -3,6 +3,8 @@ import PropTypes from "prop-types";
 import PrettyBytes from "pretty-bytes";
 import UrlJoin from "url-join";
 import Path from "path";
+import {inject, observer} from "mobx-react";
+
 import {
   Action,
   Modal,
@@ -12,7 +14,8 @@ import {
   BallClipRotate,
   PreviewIcon,
   Form,
-  AsyncCopy
+  AsyncCopy,
+  Maybe
 } from "elv-components-js";
 import FileUploadWidget from "./FileUploadWidget";
 
@@ -21,13 +24,16 @@ import FileIcon from "../../static/icons/file.svg";
 import PictureIcon from "../../static/icons/image.svg";
 import EncryptedFileIcon from "../../static/icons/encrypted-file.svg";
 import EncryptedImageIcon from "../../static/icons/encrypted-image.svg";
+import ReferenceFileIcon from "../../static/icons/external-link.svg";
 import DownloadIcon from "../../static/icons/download.svg";
 import BackIcon from "../../static/icons/directory_back.svg";
 import LinkIcon from "../../static/icons/link.svg";
 import DeleteIcon from "../../static/icons/trash.svg";
-import {inject, observer} from "mobx-react";
 
-const DownloadButton = ({name, DownloadFile}) => {
+
+const DownloadButton = ({name, DownloadFile, hidden}) => {
+  if(hidden) { return null; }
+
   const [downloading, setDownloading] = useState(false);
   const [progress, setProgress] = useState(undefined);
 
@@ -169,13 +175,23 @@ class FileBrowser extends React.Component {
     return isImage;
   }
 
-  FileIcon(name, encrypted) {
+  FileIcon(name, encrypted, reference) {
+    if(reference) {
+      return (
+        <ImageIcon
+          icon={ReferenceFileIcon}
+          className="file-icon"
+          title="S3 Reference File"
+        />
+      );
+    }
+
     if(!this.IsImage(name)) {
       return (
         <ImageIcon
           icon={encrypted ? EncryptedFileIcon : FileIcon}
           className={encrypted ? "encrypted-file-icon" : "file-icon"}
-          label="File"
+          title={encrypted ? "Encrypted File" : "File"}
         />
       );
     }
@@ -193,11 +209,12 @@ class FileBrowser extends React.Component {
   File(name, info) {
     const size = PrettyBytes(info.size || 0);
     const encrypted = info.encryption && info.encryption.scheme === "cgck";
+    const reference = !!info.reference;
 
     return (
       <div className="file-browser-row" key={`entry-${this.state.path}-${name}`}>
         <div className="item-icon">
-          { this.FileIcon(name, encrypted) }
+          { this.FileIcon(name, encrypted, reference) }
         </div>
         <div className="item-name-cell" title={name}>
           <div>{ name }</div>
@@ -207,7 +224,7 @@ class FileBrowser extends React.Component {
         </div>
         <div className="actions-cell">
           <IconButton
-            hidden={!this.props.SetObjectImage || !this.IsImage(name) || encrypted}
+            hidden={reference || !this.props.SetObjectImage || !this.IsImage(name) || encrypted}
             title={`Set ${name} as display image`}
             icon={PictureIcon}
             onClick={async event => {
@@ -223,6 +240,7 @@ class FileBrowser extends React.Component {
             className="delete-button"
           />
           <DownloadButton
+            hidden={reference}
             name={name}
             size={size}
             DownloadFile={async (callback) => await this.props.DownloadFile({
@@ -230,14 +248,19 @@ class FileBrowser extends React.Component {
               callback
             })}
           />
-          <AsyncCopy Load={async () => this.props.GetFileUrl({filePath: UrlJoin(this.state.path, name)})}>
-            <IconButton
-              title={`Copy link to ${name}`}
-              icon={LinkIcon}
-              label={"Copy direct link to " + name}
-              className="copy-button"
-            />
-          </AsyncCopy>
+          {
+            Maybe(
+              !reference,
+              <AsyncCopy hidden={reference} Load={async () => this.props.GetFileUrl({filePath: UrlJoin(this.state.path, name)})}>
+                <IconButton
+                  title={`Copy link to ${name}`}
+                  icon={LinkIcon}
+                  label={"Copy direct link to " + name}
+                  className="copy-button"
+                />
+              </AsyncCopy>
+            )
+          }
           <IconButton
             title={`Delete ${name}`}
             icon={DeleteIcon}
