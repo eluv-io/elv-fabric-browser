@@ -68,8 +68,19 @@ const Fabric = {
   async LeaveAccessGroup({contractAddress}) {
     const currentAccountAddress = await Fabric.CurrentAccountAddress();
 
-    await Fabric.RemoveAccessGroupManager({contractAddress, memberAddress: currentAccountAddress});
-    await Fabric.RemoveAccessGroupMember({contractAddress, memberAddress: currentAccountAddress});
+    try {
+      await Fabric.RemoveAccessGroupManager({contractAddress, memberAddress: currentAccountAddress});
+    // eslint-disable-next-line no-empty
+    } catch(error) {
+      throw Error("Failed to remove access group managership");
+    }
+
+    try {
+      await Fabric.RemoveAccessGroupMember({contractAddress, memberAddress: currentAccountAddress});
+    // eslint-disable-next-line no-empty
+    } catch(error) {
+      throw Error("Failed to remove access group membership");
+    }
   },
 
   async AddAccessGroupMember({contractAddress, memberAddress}) {
@@ -1288,7 +1299,7 @@ const Fabric = {
       const to = Math.min(from + chunkSize, file.size);
 
       // Encrypt next chunk (if necessary) while previous chunk is in flight
-      let chunk = await file.slice(from, to).arrayBuffer();
+      let chunk = await new Response(file.slice(from, to)).arrayBuffer();
       if(encrypt) {
         chunk = await client.Encrypt({libraryId, objectId, writeToken, chunk});
       }
