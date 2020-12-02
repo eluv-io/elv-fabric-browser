@@ -326,6 +326,12 @@ class ContentObject extends React.Component {
 
     if(!version) { return null; }
 
+    const typeLink = version.type ?
+      <Link className="inline-link" to={UrlJoin("/content-types", version.typeInfo.id)}>
+        { version.typeInfo.name || version.typeInfo.id }
+      </Link> :
+      "None";
+
     return (
       <div className={"version-info " + (latestVersion ? "" : "indented version-visible")}>
         <h3>{latestVersion ? "Latest Version" : `Version ${versionNumber}`}</h3>
@@ -333,6 +339,16 @@ class ContentObject extends React.Component {
         <div className="indented">
           <LabelledField label="Hash" copyValue={versionHash}>
             { versionHash }
+          </LabelledField>
+
+          <br />
+          
+          <LabelledField label="Type" hidden={version.isContentType}>
+            { typeLink }
+          </LabelledField>
+
+          <LabelledField label="Type Hash" hidden={!version.type || version.isContentType} copyValue={version.type}>
+            { version.type }
           </LabelledField>
 
           { this.CommitInfo(versionHash) }
@@ -554,10 +570,6 @@ class ContentObject extends React.Component {
 
         <LabelledField label="Type" hidden={object.isContentType}>
           { typeLink }
-        </LabelledField>
-
-        <LabelledField label="Type Hash" hidden={!object.type || object.isContentType} copyValue={object.type}>
-          { object.type }
         </LabelledField>
 
         { this.ContractInfo() }
