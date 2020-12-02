@@ -766,8 +766,15 @@ const Fabric = {
     const metadata = await Fabric.GetContentObjectMetadata({versionHash});
     //const verification = await Fabric.VerifyContentObject({libraryId, objectId, versionHash: version.hash});
 
+    let typeInfo = {};
+    if(version.type) {
+      typeInfo = await Fabric.GetContentType({versionHash: version.type});
+      typeInfo.latestTypeHash = typeInfo.latestType ? typeInfo.latestType.hash : "";
+    }
+
     return {
       ...version,
+      typeInfo,
       meta: metadata,
       verification: {}
     };
