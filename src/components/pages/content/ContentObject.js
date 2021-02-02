@@ -299,7 +299,7 @@ class ContentObject extends React.Component {
     let {author, author_address, message, timestamp} = version.meta.commit;
     const committedAt = timestamp ? DateTime.fromISO(timestamp) : "";
 
-    if(message.length > 150) {
+    if(message && message.length > 150) {
       message = message.slice(0, 150) + "...";
     }
 
@@ -342,7 +342,7 @@ class ContentObject extends React.Component {
           </LabelledField>
 
           <br />
-          
+
           <LabelledField label="Type" hidden={version.isContentType}>
             { typeLink }
           </LabelledField>
