@@ -105,7 +105,8 @@ class FileBrowser extends React.Component {
       displayPath: "/",
       showUpload: false,
       showDirectoryCreate: false,
-      newDirectoryPath: ""
+      newDirectoryPath: "",
+      version: 0
     };
 
     this.UploadFiles = this.UploadFiles.bind(this);
@@ -129,11 +130,13 @@ class FileBrowser extends React.Component {
     await Confirm({
       message: `Are you sure you want to delete this ${directory ? "directory" : "file"}?`,
       onConfirm: async () => {
-        this.props.objectStore.DeleteFiles({
+        await this.props.objectStore.DeleteFiles({
           libraryId: this.props.objectStore.libraryId,
           objectId: this.props.objectStore.objectId,
           filePaths: [UrlJoin(this.state.path, item).replace("./", "")]
         });
+
+        this.setState({version: this.state.version + 1});
 
         if(this.props.Reload) { this.props.Reload(); }
       }
@@ -417,9 +420,9 @@ class FileBrowser extends React.Component {
         />
       );
     }
-
+    
     return (
-      <div className="file-browser">
+      <div className="file-browser" key={`file-browser-${this.state.version}`}>
         { this.UploadModal() }
         { this.DirectoryCreateModal() }
         <div className="file-browser-table">
