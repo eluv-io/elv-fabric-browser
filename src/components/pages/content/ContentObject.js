@@ -644,7 +644,7 @@ class ContentObject extends React.Component {
     }
 
     let saveDraftButton;
-    if(object.writeToken) {
+    if(this.props.objectStore.writeTokens[this.props.objectStore.objectId]) {
       saveDraftButton = (
         <Action className="important" onClick={() => this.SaveContentObjectDraft()}>
           Save Draft
@@ -764,7 +764,7 @@ class ContentObject extends React.Component {
             GetFileUrl={async ({filePath}) => await this.props.objectStore.GetFileUrl({
               libraryId: this.props.objectStore.libraryId,
               objectId: this.props.objectStore.objectId,
-              writeToken: this.props.objectStore.object.writeToken,
+              writeToken: this.props.objectStore.writeTokens[this.props.objectStore.objectId],
               filePath
             })}
             SetObjectImage={async ({filePath}) => await this.props.objectStore.SetExistingObjectImage({
@@ -775,20 +775,20 @@ class ContentObject extends React.Component {
             DownloadFile={async ({filePath, callback}) => await this.props.objectStore.DownloadFile({
               libraryId: this.props.objectStore.libraryId,
               objectId: this.props.objectStore.objectId,
-              writeToken: this.props.objectStore.object.writeToken,
+              writeToken: this.props.objectStore.writeTokens[this.props.objectStore.objectId],
               filePath,
               callback
             })}
             DownloadUrl={async ({filePath}) => await this.props.objectStore.DownloadUrl({
               libraryId: this.props.objectStore.libraryId,
               objectId: this.props.objectStore.objectId,
-              writeToken: this.props.objectStore.object.writeToken,
+              writeToken: this.props.objectStore.writeTokens[this.props.objectStore.objectId],
               filePath,
             })}
             CreateDirectory={async ({directory}) => await this.props.objectStore.CreateDirectory({
               libraryId: this.props.objectStore.libraryId,
               objectId: this.props.objectStore.objectId,
-              writeToken: this.props.objectStore.object.writeToken,
+              writeToken: this.props.objectStore.writeTokens[this.props.objectStore.objectId],
               directory
             })}
           />
@@ -800,7 +800,7 @@ class ContentObject extends React.Component {
       <div className="page-container content-page-container">
         <Prompt
           message={"Are you sure you want to navigate away from this page? You have unsaved changes that will be lost."}
-          when={!!this.props.objectStore.object.writeToken}
+          when={!!this.props.objectStore.writeTokens[this.props.objectStore.objectId]}
         />
 
         { this.Actions() }

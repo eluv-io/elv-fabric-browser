@@ -8,8 +8,7 @@ import Path from "path";
 const concurrentUploads = 3;
 
 class ObjectStore {
-  @observable objects = {};
-  @observable versions = {};
+  @observable writeTokens = {};
 
   @computed get libraryId() {
     return this.rootStore.routerStore.libraryId;
@@ -26,6 +25,10 @@ class ObjectStore {
 
   constructor(rootStore) {
     this.rootStore = rootStore;
+
+    // Don't store objects in observable, it's very slow for large amounts of meta
+    this.objects = {};
+    this.versions = {};
   }
 
   @action.bound
@@ -195,7 +198,8 @@ class ObjectStore {
         objectId
       });
 
-      this.objects[objectId].writeToken = write_token;
+      this.writeTokens[objectId] = write_token;
+
       this.objects[objectId].baseFileUrl = yield Fabric.FileUrl({
         libraryId,
         objectId,
@@ -210,7 +214,7 @@ class ObjectStore {
       object.draftActions.push(action);
     }
 
-    return this.objects[objectId].writeToken;
+    return this.writeTokens[objectId];
   });
 
   @action.bound
@@ -221,7 +225,7 @@ class ObjectStore {
       throw Error("Unknown Object: " + objectId);
     }
 
-    const writeToken = object.writeToken;
+    const writeToken = this.writeTokens[objectId];
 
     if(!writeToken) {
       throw Error("No write token for " + objectId);
@@ -235,7 +239,7 @@ class ObjectStore {
       commitMessage: actions.join(", ")
     });
 
-    this.objects[objectId].writeToken = "";
+    delete this.writeTokens[objectId];
 
     return response;
   });
