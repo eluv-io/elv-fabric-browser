@@ -18,6 +18,7 @@ class ContentObjectForm extends React.Component {
     super(props);
 
     this.state = {
+      pageVersion: 0,
       createForm: !props.objectStore.objectId,
       name: "",
       description: "",

@@ -190,7 +190,7 @@ class ObjectStore {
       throw Error("Unknown Object: " + objectId);
     }
 
-    const writeToken = object.writeToken;
+    const writeToken = this.writeTokens[objectId];
 
     if(!writeToken) {
       const {write_token} = yield Fabric.EditContentObject({
