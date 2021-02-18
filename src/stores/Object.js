@@ -42,11 +42,6 @@ class ObjectStore {
   @action.bound
   ContentObjectVersions = flow(function * ({libraryId, objectId}) {
     this.objects[objectId].versions = yield Fabric.GetContentObjectVersions({libraryId, objectId});
-
-    // Load first version
-    yield this.ContentObjectVersion({
-      versionHash: this.objects[objectId].versions[0]
-    });
   });
 
   @action.bound

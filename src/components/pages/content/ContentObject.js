@@ -69,7 +69,8 @@ class ContentObject extends React.Component {
       view: "info",
       partDownloadProgress: {},
       pageVersion: 0,
-      permissionChanging: false
+      permissionChanging: false,
+      loadingVersions: false
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -148,7 +149,7 @@ class ContentObject extends React.Component {
 
   DeleteVersionButton(versionHash) {
     // Don't allow deleting of last version
-    if(this.props.objectStore.object.versions.length === 1) { return null; }
+    if(this.props.objectStore.object.versionCount <= 0) { return null; }
 
     const DeleteVersion = async () => {
       await Confirm({
@@ -321,8 +322,11 @@ class ContentObject extends React.Component {
     );
   }
 
-  ObjectVersion(versionHash, versionNumber, latestVersion=false) {
-    const version = this.props.objectStore.versions[versionHash];
+  ObjectVersion({versionHash, latestVersion=false}) {
+    let version = this.props.objectStore.object;
+    if(!latestVersion) {
+      version = this.props.objectStore.versions[versionHash];
+    }
 
     if(!version) { return null; }
 
@@ -334,7 +338,7 @@ class ContentObject extends React.Component {
 
     return (
       <div className={"version-info " + (latestVersion ? "" : "indented version-visible")}>
-        <h3>{latestVersion ? "Latest Version" : `Version ${versionNumber}`}</h3>
+        { latestVersion ? <h3>Latest Version</h3> : null }
 
         <div className="indented">
           <LabelledField label="Hash" copyValue={versionHash}>
@@ -400,32 +404,28 @@ class ContentObject extends React.Component {
     if(this.props.objectStore.object.versions.length < 2) { return null; }
 
     return (
-      <React.Fragment>
-        <h3>Previous Versions</h3>
+      this.props.objectStore.object.versions.slice(1).map((versionHash, i) => {
+        const versionNumber = (i+1 - this.props.objectStore.object.versions.length) * -1;
 
-        { this.props.objectStore.object.versions.slice(1).map((versionHash, i) => {
-          const versionNumber = (i+1 - this.props.objectStore.object.versions.length) * -1;
-
-          return (
-            <ToggleSection
-              label={`Version ${versionNumber}`}
-              key={`version-${versionNumber}`}
-              className="version-info indented"
-            >
-              <AsyncComponent
-                Load={
-                  async () => {
-                    await this.props.objectStore.ContentObjectVersion({
-                      versionHash
-                    });
-                  }
+        return (
+          <ToggleSection
+            label={`Version ${versionNumber}`}
+            key={`version-${versionNumber}`}
+            className="version-info indented"
+          >
+            <AsyncComponent
+              Load={
+                async () => {
+                  await this.props.objectStore.ContentObjectVersion({
+                    versionHash
+                  });
                 }
-                render={() => this.ObjectVersion(versionHash, versionNumber)}
-              />
-            </ToggleSection>
-          );
-        })}
-      </React.Fragment>
+              }
+              render={() => this.ObjectVersion({versionHash, versionNumber})}
+            />
+          </ToggleSection>
+        );
+      })
     );
   }
 
@@ -539,6 +539,27 @@ class ContentObject extends React.Component {
       </Link> :
       "None";
 
+    const versionSection = object.versionCount > 0 ?
+      <ToggleSection
+        label="Previous Versions"
+        className="version-info"
+      >
+        <AsyncComponent
+          Load={
+            async () => await this.props.objectStore.ContentObjectVersions({
+              libraryId: this.props.objectStore.libraryId,
+              objectId: this.props.objectStore.objectId
+            })
+          }
+          render={() => (
+            <>
+              <br />
+              { this.PreviousVersions() }
+            </>
+          )}
+        />
+      </ToggleSection> : null;
+
     return (
       <div className="object-info label-box">
         <LabelledField label="Name">
@@ -585,12 +606,14 @@ class ContentObject extends React.Component {
         <br />
 
         <LabelledField label="Versions">
-          { object.versions.length }
+          { object.versionCount + 1 }
         </LabelledField>
 
-        { this.ObjectVersion(object.versions[0], object.versions.length, true) }
+        { this.ObjectVersion({versionHash: object.hash, latestVersion: true}) }
 
-        { this.PreviousVersions() }
+        <br />
+
+        { versionSection }
       </div>
     );
   }
@@ -835,11 +858,6 @@ class ContentObject extends React.Component {
                 })
               ]
             );
-
-            await this.props.objectStore.ContentObjectVersions({
-              libraryId: this.props.objectStore.libraryId,
-              objectId: this.props.objectStore.objectId
-            });
 
             this.setState({
               displayAppUrl:

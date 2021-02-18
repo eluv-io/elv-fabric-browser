@@ -4,7 +4,7 @@ import {EqualAddress, FormatAddress} from "../utils/Helpers";
 
 let client = new FrameClient({
   target: window.parent,
-  timeout: 30
+  timeout: 60
 });
 
 let objectCache = {};
@@ -611,8 +611,7 @@ const Fabric = {
       Fabric.GetContentObjectImageUrl({ // imageUrl
         libraryId,
         objectId,
-        versionHash:
-        object.hash,
+        versionHash: object.hash,
         metadata: object.meta
       }),
       Fabric.AppUrls({ // appUrls
@@ -633,6 +632,10 @@ const Fabric = {
         libraryId,
         objectId,
         metadata: object.meta
+      }),
+      client.CallContractMethod({ // Version count
+        contractAddress: client.utils.HashToAddress(objectId),
+        methodName: "countVersionHashes"
       })
     ];
 
@@ -648,7 +651,7 @@ const Fabric = {
       ]);
     }
 
-    const [
+    let [
       accessType,
       imageUrl,
       appUrls,
@@ -656,10 +659,13 @@ const Fabric = {
       visibility,
       owner,
       customContractAddress,
+      versionCount,
       accessInfo,
       permission,
-      kmsAddress
+      kmsAddress,
     ] = await Promise.all(tasks);
+
+    versionCount = versionCount ? parseInt(versionCount._hex, 16) : 0;
 
     const kmsId = kmsAddress ? `ikms${client.utils.AddressToHash(kmsAddress)}` : undefined;
 
@@ -716,6 +722,7 @@ const Fabric = {
     return {
       ...object,
       ...appUrls,
+      versionCount,
       writeToken: "",
       name,
       description: object.meta.public.description || object.meta.description,

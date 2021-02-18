@@ -63,7 +63,10 @@
   margin-bottom: 10px;
 
   &.version-visible {
-    margin-bottom: 30px;
+    border-bottom: 1px solid $elv-color-lightgray;
+    border-top: 1px solid $elv-color-lightgray;
+    margin: 30px 0;
+    padding: 30px 0;
   }
 }
 
