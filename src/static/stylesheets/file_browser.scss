@@ -13,6 +13,10 @@
       border-bottom: 0;
     }
 
+    &:hover {
+      background-color: $elv-color-lightergray;
+    }
+
     svg {
       height: $elv-font-xxl;
       width: $elv-font-xxl;

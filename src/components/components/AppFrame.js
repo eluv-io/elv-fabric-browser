@@ -134,8 +134,9 @@ class AppFrame extends React.Component {
   }
 
   async componentWillUnmount() {
-    // Ensure region is reset after app is unloaded in case app changed it
+    // Ensure region and static token are reset after app is unloaded in case app changed it
     await Fabric.ResetRegion();
+    await Fabric.ClearStaticToken();
   }
 
   AppUrl() {

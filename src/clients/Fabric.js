@@ -30,6 +30,10 @@ const Fabric = {
     await client.ResetRegion();
   },
 
+  async ClearStaticToken() {
+    await client.ClearStaticToken();
+  },
+
   async SetFramePath({path}) {
     return await client.SendMessage({
       options: {
