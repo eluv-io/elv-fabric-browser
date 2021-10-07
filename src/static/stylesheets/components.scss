@@ -49,3 +49,21 @@
     width: 1.2em;
   }
 }
+
+.diff-block {
+  .part-addition {
+    background-color: $elv-color-green;
+
+    &::before {
+      content: "+";
+    }
+  }
+
+  .part-deletion {
+    background-color: $elv-color-red;
+
+    &::before {
+      content: "-";
+    }
+  }
+}

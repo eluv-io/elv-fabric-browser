@@ -21,6 +21,7 @@ import ContentObjectGroups from "./ContentObjectGroups";
 
 import RefreshIcon from "../../../static/icons/refresh.svg";
 import InfoIcon from "../../../static/icons/help-circle.svg";
+import Diff from "../../components/Diff";
 
 const DownloadPart = ({libraryId, objectId, versionHash, partHash, partName, DownloadMethod}) => {
   const [progress, setProgress] = useState(undefined);
@@ -76,7 +77,8 @@ class ContentObject extends React.Component {
     this.PageContent = this.PageContent.bind(this);
     this.SubmitContentObject = this.SubmitContentObject.bind(this);
     this.FinalizeABRMezzanine = this.FinalizeABRMezzanine.bind(this);
-    this.UpdateMetadata = this.UpdateMetadata.bind(this);}
+    this.UpdateMetadata = this.UpdateMetadata.bind(this);
+  }
 
   async SubmitContentObject(confirmationMessage) {
     await Confirm({
@@ -329,15 +331,6 @@ class ContentObject extends React.Component {
 
     if(!version) { return null; }
 
-    let previousVersionHash = "";
-    if(Array.isArray(this.props.objectStore.object.versions)) {
-      this.props.objectStore.object.versions.map((versionHash, i) => {
-        if(versionHash === version.hash) {
-          previousVersionHash = this.props.objectStore.object.versions[i + 1];
-        }
-      });
-    }
-
     const typeLink = version.type ?
       <Link className="inline-link" to={UrlJoin("/content-types", version.typeInfo.id)}>
         { version.typeInfo.name || version.typeInfo.id }
@@ -367,18 +360,28 @@ class ContentObject extends React.Component {
 
           <br />
 
-          <AsyncComponent
-            Load={
-              async () => await this.props.objectStore.ContentObjectVersion({versionHash: previousVersionHash})
-            }
-            render={() => (
-              <ToggleSection label="Metadata">
-                <div className="indented">
-                  <JSONField json={version.meta} previousVersionJson={this.props.objectStore.versions[previousVersionHash].meta } />
-                </div>
-              </ToggleSection>
-            )}
-          />
+          <ToggleSection label="Metadata">
+            <div className="indented">
+              <JSONField
+                json={version.meta}
+                DiffComponent={() => {
+                  return (
+                    <AsyncComponent
+                      Load={
+                        async () => {
+                          await this.props.objectStore.ContentObjectVersions({
+                            libraryId: this.props.objectStore.libraryId,
+                            objectId: this.props.objectStore.objectId
+                          });
+                        }
+                      }
+                      render={() => <Diff json={version} />}
+                    />
+                  );
+                }}
+              />
+            </div>
+          </ToggleSection>
 
           <ToggleSection label="Parts">
             <AsyncComponent
@@ -559,7 +562,20 @@ class ContentObject extends React.Component {
         label="Previous Versions"
         className="version-info"
       >
-        { this.PreviousVersions() }
+        <AsyncComponent
+          Load={
+            async () => await this.props.objectStore.ContentObjectVersions({
+              libraryId: this.props.objectStore.libraryId,
+              objectId: this.props.objectStore.objectId
+            })
+          }
+          render={() => (
+            <>
+              <br />
+              { this.PreviousVersions() }
+            </>
+          )}
+        />
       </ToggleSection> : null;
 
     return (
@@ -779,20 +795,7 @@ class ContentObject extends React.Component {
       pageContent = (
         <React.Fragment>
           { this.Image() }
-          <AsyncComponent
-            Load={
-              async () => await this.props.objectStore.ContentObjectVersions({
-                libraryId: this.props.objectStore.libraryId,
-                objectId: this.props.objectStore.objectId
-              })
-            }
-            render={() => (
-              <>
-                <br />
-                { this.ObjectInfo() }
-              </>
-            )}
-          />
+          { this.ObjectInfo() }
         </React.Fragment>
       );
     } else {

@@ -1,8 +1,10 @@
 import React, {useState} from "react";
 import {Tabs, TraversableJson} from "elv-components-js";
-import ReactDiffViewer from "react-diff-viewer";
+import Diff from "../components/Diff";
 
-const JSONField = ({json, previousVersionJson = null}) => {
+const JSONField = ({json, diffJson, DiffComponent}) => {
+  typeof json === "string" ? json = JSON.parse(json || "{}") : json;
+
   if(!json || Object.keys(json).length === 0) {
     return <pre className="content-object-data">{JSON.stringify(json, null, 2)}</pre>;
   }
@@ -11,9 +13,7 @@ const JSONField = ({json, previousVersionJson = null}) => {
 
   const options = [["Formatted", "formatted"], ["Raw", "raw"]];
 
-  if(previousVersionJson && Object.keys(previousVersionJson).length > 0) {
-    options.push(["Diff", "diff"]);
-  }
+  if(diffJson || DiffComponent) {options.push(["Diff", "diff"]);}
 
   const tabs = (
     <Tabs
@@ -29,7 +29,12 @@ const JSONField = ({json, previousVersionJson = null}) => {
       case "raw":
         return <pre className="content-object-data">{JSON.stringify(json, null, 2)}</pre>;
       case "diff":
-        return <ReactDiffViewer oldValue={JSON.stringify(json)} newValue={JSON.stringify(previousVersionJson)} splitView={false} hideLineNumbers={true} />;
+        if(diffJson) {
+          return <Diff json={json} diff={diffJson} />;
+        } else if(DiffComponent) {
+          return <DiffComponent />;
+        }
+        break;
       case "formatted":
       default:
         return <TraversableJson json={json} />;
