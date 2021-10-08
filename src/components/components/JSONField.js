@@ -24,27 +24,30 @@ const JSONField = ({json, diffJson, DiffComponent}) => {
     />
   );
 
-  function Content() {
-    switch(viewType) {
-      case "raw":
-        return <pre className="content-object-data">{JSON.stringify(json, null, 2)}</pre>;
-      case "diff":
-        if(diffJson) {
-          return <Diff json={json} diff={diffJson} />;
-        } else if(DiffComponent) {
-          return <DiffComponent />;
-        }
+  let content;
+  switch(viewType) {
+    case "raw":
+      content = <pre className="content-object-data">{JSON.stringify(json, null, 2)}</pre>;
+      break;
+    case "diff":
+      if(diffJson) {
+        content = <Diff json={json} diff={diffJson} />;
         break;
-      case "formatted":
-      default:
-        return <TraversableJson json={json} />;
-    }
+      } else if(DiffComponent) {
+        content = <DiffComponent />;
+        break;
+      }
+      break;
+    case "formatted":
+    default:
+      content = <TraversableJson json={json} />;
+      break;
   }
 
   return (
     <React.Fragment>
       { tabs }
-      { Content() }
+      { content }
     </React.Fragment>
   );
 };

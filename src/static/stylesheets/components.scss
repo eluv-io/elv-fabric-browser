@@ -1,3 +1,6 @@
+$elv-diff-add-color: rgba($elv-color-green, 0.4);
+$elv-diff-delete-color: rgba($elv-color-red, 0.4);
+
 .clipped-text {
   cursor: pointer;
   position: relative;
@@ -52,18 +55,22 @@
 
 .diff-block {
   .part-addition {
-    background-color: $elv-color-green;
+    background-color: $elv-diff-add-color;
 
     &::before {
       content: "+";
+      padding: 0 3px;
+      position: absolute;
     }
   }
 
   .part-deletion {
-    background-color: $elv-color-red;
+    background-color: $elv-diff-delete-color;
 
     &::before {
       content: "-";
+      padding: 0 3px;
+      position: absolute;
     }
   }
 }
