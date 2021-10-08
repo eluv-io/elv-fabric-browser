@@ -1,25 +1,48 @@
 import React, {useState} from "react";
 import {Tabs, TraversableJson} from "elv-components-js";
+import Diff from "../components/Diff";
 
-const JSONField = ({json}) => {
+const JSONField = ({json, diffJson, DiffComponent}) => {
+  typeof json === "string" ? json = JSON.parse(json || "{}") : json;
+
   if(!json || Object.keys(json).length === 0) {
     return <pre className="content-object-data">{JSON.stringify(json, null, 2)}</pre>;
   }
 
-  const [showRaw, setShowRaw] = useState(false);
+  const [viewType, setViewType] = useState("formatted");
+
+  const options = [["Formatted", "formatted"], ["Raw", "raw"]];
+
+  if(diffJson || DiffComponent) {options.push(["Diff", "diff"]);}
 
   const tabs = (
     <Tabs
-      selected={showRaw}
-      onChange={value => setShowRaw(value)}
-      options={[["Formatted", false], ["Raw", true]]}
+      selected={viewType}
+      onChange={value => setViewType(value)}
+      options={options}
       className="secondary"
     />
   );
 
-  const content = showRaw ?
-    <pre className="content-object-data">{JSON.stringify(json, null, 2)}</pre> :
-    <TraversableJson json={json} />;
+  let content;
+  switch(viewType) {
+    case "raw":
+      content = <pre className="content-object-data">{JSON.stringify(json, null, 2)}</pre>;
+      break;
+    case "diff":
+      if(diffJson) {
+        content = <Diff json={json} diff={diffJson} />;
+        break;
+      } else if(DiffComponent) {
+        content = <DiffComponent />;
+        break;
+      }
+      break;
+    case "formatted":
+    default:
+      content = <TraversableJson json={json} />;
+      break;
+  }
 
   return (
     <React.Fragment>

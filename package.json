@@ -35,6 +35,7 @@
     "bignumber.js": "^8.1.1",
     "browser-cancelable-events": "^1.0.1",
     "browser-solc": "^1.0.0",
+    "diff": "^5.0.0",
     "elv-components-js": "git+https://github.com/eluv-io/elv-components-js.git",
     "luxon": "^1.25.0",
     "mobx": "^5.13.1",
