@@ -21,6 +21,7 @@ import ContentObjectGroups from "./ContentObjectGroups";
 
 import RefreshIcon from "../../../static/icons/refresh.svg";
 import InfoIcon from "../../../static/icons/help-circle.svg";
+import Diff from "../../components/Diff";
 
 const DownloadPart = ({libraryId, objectId, versionHash, partHash, partName, DownloadMethod}) => {
   const [progress, setProgress] = useState(undefined);
@@ -361,7 +362,24 @@ class ContentObject extends React.Component {
 
           <ToggleSection label="Metadata">
             <div className="indented">
-              <JSONField json={version.meta} />
+              <JSONField
+                json={version.meta}
+                DiffComponent={() => {
+                  return (
+                    <AsyncComponent
+                      Load={
+                        async () => {
+                          await this.props.objectStore.ContentObjectVersions({
+                            libraryId: this.props.objectStore.libraryId,
+                            objectId: this.props.objectStore.objectId
+                          });
+                        }
+                      }
+                      render={() => <Diff json={version} />}
+                    />
+                  );
+                }}
+              />
             </div>
           </ToggleSection>
 
