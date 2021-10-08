@@ -380,9 +380,7 @@ class ContentObject extends React.Component {
                               });
                             }
                           }
-                          render={() => (
-                            hasPreviousVersion ? <Diff json={version} /> : null
-                          )}
+                          render={() => <Diff json={version} />}
                         />
                       );
                     } :
