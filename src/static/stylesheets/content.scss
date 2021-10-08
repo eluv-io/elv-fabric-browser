@@ -45,6 +45,19 @@
 
 .content-object-data {
   margin: 20px 0;
+
+  .copyable {
+    &.raw-data {
+      display: block;
+      position: relative;
+    }
+
+    .copy-icon {
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+  }
 }
 
 .app-frame {

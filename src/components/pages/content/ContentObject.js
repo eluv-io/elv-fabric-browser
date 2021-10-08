@@ -325,8 +325,11 @@ class ContentObject extends React.Component {
 
   ObjectVersion({versionHash, latestVersion=false}) {
     let version = this.props.objectStore.object;
+    let hasPreviousVersion = this.props.objectStore.object.versionCount > 0;
+
     if(!latestVersion) {
       version = this.props.objectStore.versions[versionHash];
+      hasPreviousVersion = ((this.props.objectStore.object.versions || []).findIndex(storeVersion => storeVersion === (versionHash)) !== (this.props.objectStore.object.versions || []).length - 1);
     }
 
     if(!version) { return null; }
@@ -364,21 +367,27 @@ class ContentObject extends React.Component {
             <div className="indented">
               <JSONField
                 json={version.meta}
-                DiffComponent={() => {
-                  return (
-                    <AsyncComponent
-                      Load={
-                        async () => {
-                          await this.props.objectStore.ContentObjectVersions({
-                            libraryId: this.props.objectStore.libraryId,
-                            objectId: this.props.objectStore.objectId
-                          });
-                        }
-                      }
-                      render={() => <Diff json={version} />}
-                    />
-                  );
-                }}
+                DiffComponent={
+                  hasPreviousVersion ?
+                    () => {
+                      return (
+                        <AsyncComponent
+                          Load={
+                            async () => {
+                              await this.props.objectStore.ContentObjectVersions({
+                                libraryId: this.props.objectStore.libraryId,
+                                objectId: this.props.objectStore.objectId
+                              });
+                            }
+                          }
+                          render={() => (
+                            hasPreviousVersion ? <Diff json={version} /> : null
+                          )}
+                        />
+                      );
+                    } :
+                    null
+                }
               />
             </div>
           </ToggleSection>
