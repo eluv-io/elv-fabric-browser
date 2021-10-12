@@ -1,10 +1,10 @@
 import React from "react";
 import UrlJoin from "url-join";
-import {Tabs} from "elv-components-js";
+import {Action, AsyncComponent, Tabs} from "elv-components-js";
 import Listing from "../../components/Listing";
 import {inject, observer} from "mobx-react";
 
-import PropTypes from "prop-types";
+import ContentObjectGroupForm from "./ContentObjectGroupForm";
 
 @inject("objectStore")
 @observer
@@ -14,7 +14,9 @@ class ContentObjectGroups extends React.Component {
 
     this.state = {
       view: "access",
-      groups: []
+      groups: [],
+      showGroupForm: false,
+      pageVersion: 0
     };
 
     this.FilterGroups = this.FilterGroups.bind(this);
@@ -25,7 +27,7 @@ class ContentObjectGroups extends React.Component {
     const perPage = filterOptions.params.perPage;
 
     let groups = Object
-      .values(this.props.groupPermissions)
+      .values(this.props.objectStore.objectGroupPermissions)
       .filter(group => group.permissions.includes(this.state.view))
       .sort((a, b) => (a.name || "zz").toLowerCase() > (b.name || "zz").toLowerCase() ? 1 : -1)
       .slice((page - 1) * perPage, page * perPage);
@@ -55,41 +57,71 @@ class ContentObjectGroups extends React.Component {
   }
 
   render() {
-    let groupCount = Object
-      .values(this.props.groupPermissions)
-      .filter(group => group.permissions.includes(this.state.view))
-      .length;
+    const GroupCount = () => {
+      return Object
+        .values(this.props.objectStore.objectGroupPermissions)
+        .filter(group => group.permissions.includes(this.state.view))
+        .length;
+    };
+
+    let groupsButton;
+    if(this.props.objectStore.object.isOwner || (this.props.objectStore.object.isNormalObject && this.props.objectStore.object.permission !== "owner" && this.props.objectStore.object.canEdit)) {
+      groupsButton = (
+        <Action onClick={() => this.setState({showGroupForm: true})}>
+          New access group permission
+        </Action>
+      );
+    }
 
     return (
-      <div>
-        <Tabs
-          options={[
-            ["See", "see"],
-            ["Access", "access"],
-            ["Manage", "manage"]
-          ]}
-          className="secondary"
-          selected={this.state.view}
-          onChange={(value) => this.setState({view: value})}
-        />
-        <Listing
-          key={`object-access-group-listing-${this.state.view}`}
-          className="compact"
-          pageId="ObjectAccessGroups"
-          noIcon={true}
-          noStatus={true}
-          paginate={true}
-          count={groupCount}
-          LoadContent={this.FilterGroups}
-          RenderContent={(filterOptions) => this.AccessGroups(filterOptions)}
-        />
-      </div>
+      <AsyncComponent
+        Load={
+          async () => {
+            await this.props.objectStore.ContentObjectGroupPermissions({objectId: this.props.objectStore.objectId});
+          }
+        }
+        render={() => (
+          <div>
+            { groupsButton }
+            <Tabs
+              options={[
+                ["See", "see"],
+                ["Access", "access"],
+                ["Manage", "manage"]
+              ]}
+              className="secondary"
+              selected={this.state.view}
+              onChange={(value) => this.setState({view: value})}
+            />
+            <AsyncComponent
+              Load={
+                async () => {
+                  await this.props.objectStore.ContentObjectGroupPermissions({objectId: this.props.objectStore.objectId});
+                }
+              }
+              render={() => (
+                <Listing
+                  key={`object-access-group-listing-${this.state.view}-${this.state.pageVersion}`}
+                  className="compact"
+                  pageId="ObjectAccessGroups"
+                  noIcon={true}
+                  noStatus={true}
+                  paginate={true}
+                  count={GroupCount()}
+                  LoadContent={this.FilterGroups}
+                  RenderContent={(filterOptions) => this.AccessGroups(filterOptions)}
+                />
+              )}
+            />
+            {
+              this.state.showGroupForm ?
+                <ContentObjectGroupForm CloseModal={() => this.setState({showGroupForm: false, pageVersion: this.state.pageVersion + 1})}/> : null
+            }
+          </div>
+        )}
+      />
     );
   }
 }
-
-ContentObjectGroups.propTypes = {
-  groupPermissions: PropTypes.object.isRequired
-};
 
 export default ContentObjectGroups;

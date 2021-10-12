@@ -23,6 +23,10 @@ class ObjectStore {
     return this.objects[this.objectId];
   }
 
+  @computed get objectGroupPermissions() {
+    return this.objects[this.objectId].groupPermissions;
+  }
+
   constructor(rootStore) {
     this.rootStore = rootStore;
 

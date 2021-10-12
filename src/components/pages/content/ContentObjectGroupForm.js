@@ -1,6 +1,5 @@
 import React from "react";
-import Path from "path";
-import {Action, Form} from "elv-components-js";
+import {Form, Modal} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
 import {inject, observer} from "mobx-react";
 import Fabric from "../../../clients/Fabric";
@@ -26,7 +25,7 @@ class ContentObjectGroupForm extends React.Component {
   }
 
   HandleGroupChange(event) {
-    const permissions = (this.props.objectStore.object.groupPermissions[event.target.value] || {}).permissions || [];
+    const permissions = (this.props.objectStore.objectGroupPermissions[event.target.value] || {}).permissions || [];
 
     this.setState({
       groupAddress: event.target.value,
@@ -44,6 +43,7 @@ class ContentObjectGroupForm extends React.Component {
       access: this.state.access,
       manage: this.state.manage
     });
+    await this.props.objectStore.ContentObjectGroupPermissions({objectId: this.props.objectStore.objectId});
   }
 
   Groups() {
@@ -77,18 +77,15 @@ class ContentObjectGroupForm extends React.Component {
   }
 
   PageContent() {
-    const backPath = Path.dirname(this.props.match.url);
-
     return (
-      <div className="page-container">
-        <div className="actions-container manage-actions">
-          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
-        </div>
+      <Modal
+        closable={true}
+        OnClickOutside={this.props.CloseModal}>
         <Form
           legend={`Manage access group permissions for '${this.props.objectStore.object.name || this.props.objectStore.objectId}'`}
-          redirectPath={backPath}
-          cancelPath={backPath}
+          OnCancel={this.props.CloseModal}
           OnSubmit={this.HandleSubmit}
+          OnComplete={this.props.CloseModal}
           className="small-form"
         >
           <div className="form-content">
@@ -116,7 +113,7 @@ class ContentObjectGroupForm extends React.Component {
             />
           </div>
         </Form>
-      </div>
+      </Modal>
     );
   }
 
