@@ -68,7 +68,7 @@ class ContentObjectGroups extends React.Component {
     if(this.props.objectStore.object.isOwner || (this.props.objectStore.object.isNormalObject && this.props.objectStore.object.permission !== "owner" && this.props.objectStore.object.canEdit)) {
       groupsButton = (
         <Action onClick={() => this.setState({showGroupForm: true})}>
-          New access group permission
+          Manage Group Permissions
         </Action>
       );
     }
