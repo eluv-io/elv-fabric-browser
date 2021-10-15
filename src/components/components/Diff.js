@@ -11,7 +11,7 @@ const Diff = observer(({json, diff}) => {
   const RenderDiff = () => {
     typeof json.meta === "string" ? json.meta = JSON.parse(json.meta || "{}") : json.meta;
 
-    const diffArray = diffJson(json.meta, diff || objectStore.versions[previousVersionHash].meta);
+    const diffArray = diffJson(diff || objectStore.versions[previousVersionHash].meta, json.meta);
     const parts = diffArray.map((part, i) => {
       return <p key={i} className={part.added ? "part-addition" : part.removed ? "part-deletion" : ""}>{part.value}</p>;
     });
