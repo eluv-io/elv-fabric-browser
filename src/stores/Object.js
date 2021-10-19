@@ -497,7 +497,7 @@ class ObjectStore {
     access,
     manage
   }) {
-    const currentPermissions = (this.object.groupPermissions[groupAddress] || {}).permissions || [];
+    const currentPermissions = (this.objects[objectId].groupPermissions[groupAddress] || {}).permissions || [];
 
     let toAdd = [];
     if(see && !currentPermissions.includes("see")) { toAdd.push("see"); }

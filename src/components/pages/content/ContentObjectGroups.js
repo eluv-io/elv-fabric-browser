@@ -14,12 +14,16 @@ class ContentObjectGroups extends React.Component {
 
     this.state = {
       view: "access",
-      groups: [],
       showGroupForm: false,
+      filterOptions: {
+        params: {
+          page: 1,
+          perPage: 10,
+          filter: ""
+        }
+      },
       pageVersion: 0
     };
-
-    this.FilterGroups = this.FilterGroups.bind(this);
   }
 
   FilterGroups(filterOptions) {
@@ -37,13 +41,11 @@ class ContentObjectGroups extends React.Component {
         .includes(filterOptions.params.filter.toLowerCase()));
     }
 
-    this.setState({
-      groups
-    });
+    return groups;
   }
 
   AccessGroups() {
-    const groupsInfo = this.state.groups.map(group => {
+    const groupsInfo = this.FilterGroups(this.state.filterOptions).map(group => {
       return {
         id: group.address,
         sortKey: (group.name || "zz").toLowerCase(),
@@ -67,9 +69,11 @@ class ContentObjectGroups extends React.Component {
     let groupsButton;
     if(this.props.objectStore.object.isOwner || (this.props.objectStore.object.isNormalObject && this.props.objectStore.object.permission !== "owner" && this.props.objectStore.object.canEdit)) {
       groupsButton = (
-        <Action onClick={() => this.setState({showGroupForm: true})}>
-          Manage Group Permissions
-        </Action>
+        <div>
+          <Action className="manage-permissions-button" onClick={() => this.setState({showGroupForm: true})}>
+            Manage Group Permissions
+          </Action>
+        </div>
       );
     }
 
@@ -81,7 +85,7 @@ class ContentObjectGroups extends React.Component {
           }
         }
         render={() => (
-          <div>
+          <React.Fragment>
             { groupsButton }
             <Tabs
               options={[
@@ -93,31 +97,22 @@ class ContentObjectGroups extends React.Component {
               selected={this.state.view}
               onChange={(value) => this.setState({view: value})}
             />
-            <AsyncComponent
-              Load={
-                async () => {
-                  await this.props.objectStore.ContentObjectGroupPermissions({objectId: this.props.objectStore.objectId});
-                }
-              }
-              render={() => (
-                <Listing
-                  key={`object-access-group-listing-${this.state.view}-${this.state.pageVersion}`}
-                  className="compact"
-                  pageId="ObjectAccessGroups"
-                  noIcon={true}
-                  noStatus={true}
-                  paginate={true}
-                  count={GroupCount()}
-                  LoadContent={this.FilterGroups}
-                  RenderContent={(filterOptions) => this.AccessGroups(filterOptions)}
-                />
-              )}
+            <Listing
+              key={`object-access-group-listing-${this.state.view}-${this.state.pageVersion}`}
+              className="compact"
+              pageId="ObjectAccessGroups"
+              noIcon={true}
+              noStatus={true}
+              paginate={true}
+              count={GroupCount()}
+              LoadContent={(filterOptions => this.setState(filterOptions))}
+              RenderContent={() => this.AccessGroups()}
             />
             {
               this.state.showGroupForm ?
                 <ContentObjectGroupForm CloseModal={() => this.setState({showGroupForm: false, pageVersion: this.state.pageVersion + 1})}/> : null
             }
-          </div>
+          </React.Fragment>
         )}
       />
     );
