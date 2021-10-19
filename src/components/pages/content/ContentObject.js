@@ -780,7 +780,13 @@ class ContentObject extends React.Component {
     if(this.state.view === "display") {
       pageContent = this.AppFrame();
     } else if(this.state.view === "groups") {
-      pageContent = <ContentObjectGroups />;
+      pageContent = (
+        <ContentObjectGroups
+          currentPage="contentObject"
+          showGroupPermissionsButton={this.props.objectStore.object.isOwner || (this.props.objectStore.object.isNormalObject && this.props.objectStore.object.permission !== "owner" && this.props.objectStore.object.canEdit)}
+          LoadGroupPermissions={() => this.props.objectStore.ContentObjectGroupPermissions({objectId: this.props.objectStore.objectId})}
+        />
+      );
     } else if(this.state.view === "info") {
       pageContent = (
         <React.Fragment>

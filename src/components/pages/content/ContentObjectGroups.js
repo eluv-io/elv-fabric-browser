@@ -3,10 +3,12 @@ import UrlJoin from "url-join";
 import {Action, AsyncComponent, Tabs} from "elv-components-js";
 import Listing from "../../components/Listing";
 import {inject, observer} from "mobx-react";
+import PropTypes from "prop-types";
 
 import ContentObjectGroupForm from "./ContentObjectGroupForm";
 
 @inject("objectStore")
+@inject("groupStore")
 @observer
 class ContentObjectGroups extends React.Component {
   constructor(props) {
@@ -31,7 +33,7 @@ class ContentObjectGroups extends React.Component {
     const perPage = filterOptions.params.perPage;
 
     let groups = Object
-      .values(this.props.objectStore.objectGroupPermissions)
+      .values(this.props.currentPage === "contentObject" ? this.props.objectStore.objectGroupPermissions : this.props.groupStore.accessGroup.groupPermissions || {})
       .filter(group => group.permissions.includes(this.state.view))
       .sort((a, b) => (a.name || "zz").toLowerCase() > (b.name || "zz").toLowerCase() ? 1 : -1)
       .slice((page - 1) * perPage, page * perPage);
@@ -61,13 +63,13 @@ class ContentObjectGroups extends React.Component {
   render() {
     const GroupCount = () => {
       return Object
-        .values(this.props.objectStore.objectGroupPermissions)
+        .values(this.props.currentPage === "contentObject" ? this.props.objectStore.objectGroupPermissions : this.props.groupStore.accessGroup.groupPermissions || {})
         .filter(group => group.permissions.includes(this.state.view))
         .length;
     };
 
     let groupsButton;
-    if(this.props.objectStore.object.isOwner || (this.props.objectStore.object.isNormalObject && this.props.objectStore.object.permission !== "owner" && this.props.objectStore.object.canEdit)) {
+    if(this.props.showGroupPermissionsButton) {
       groupsButton = (
         <div>
           <Action className="manage-permissions-button" onClick={() => this.setState({showGroupForm: true})}>
@@ -79,11 +81,7 @@ class ContentObjectGroups extends React.Component {
 
     return (
       <AsyncComponent
-        Load={
-          async () => {
-            await this.props.objectStore.ContentObjectGroupPermissions({objectId: this.props.objectStore.objectId});
-          }
-        }
+        Load={async () => await this.props.LoadGroupPermissions}
         render={() => (
           <React.Fragment>
             { groupsButton }
@@ -110,7 +108,11 @@ class ContentObjectGroups extends React.Component {
             />
             {
               this.state.showGroupForm ?
-                <ContentObjectGroupForm CloseModal={() => this.setState({showGroupForm: false, pageVersion: this.state.pageVersion + 1})}/> : null
+                <ContentObjectGroupForm
+                  LoadGroupPermissions={this.props.LoadGroupPermissions}
+                  currentPage={this.props.currentPage}
+                  CloseModal={() => this.setState({showGroupForm: false, pageVersion: this.state.pageVersion + 1})}/> :
+                null
             }
           </React.Fragment>
         )}
@@ -118,5 +120,9 @@ class ContentObjectGroups extends React.Component {
     );
   }
 }
+
+ContentObjectGroups.propTypes = {
+  currentPage: PropTypes.string.isRequired
+};
 
 export default ContentObjectGroups;
