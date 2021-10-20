@@ -81,7 +81,8 @@ class ContentObjectGroupForm extends React.Component {
     return (
       <Modal
         closable={true}
-        OnClickOutside={this.props.CloseModal}>
+        OnClickOutside={this.props.CloseModal}
+      >
         <Form
           legend={`Manage access group permissions for '${this.props.objectStore.object.name || this.props.objectStore.objectId}'`}
           OnCancel={this.props.CloseModal}
@@ -125,7 +126,7 @@ class ContentObjectGroupForm extends React.Component {
           async () => {
             await this.props.groupStore.ListAccessGroups({params: {}});
 
-            if (this.props.currentPage === "accessGroup") {
+            if(this.props.currentPage === "accessGroup") {
               await this.props.groupStore.AccessGroup({contractAddress: this.props.groupStore.contractAddress});
               await this.props.groupStore.AccessGroupGroupPermissions({contractAddress: this.props.groupStore.contractAddress});
             }

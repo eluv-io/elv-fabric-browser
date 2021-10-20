@@ -72,7 +72,7 @@ class ContentObjectGroups extends React.Component {
     if(this.props.showGroupPermissionsButton) {
       groupsButton = (
         <div>
-          <Action className="manage-permissions-button" onClick={() => this.setState({showGroupForm: true})}>
+          <Action onClick={() => this.setState({showGroupForm: true})}>
             Manage Group Permissions
           </Action>
         </div>

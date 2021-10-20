@@ -14,6 +14,7 @@ import {inject, observer} from "mobx-react";
 import RefreshIcon from "../../../static/icons/refresh.svg";
 import ToggleSection from "../../components/ToggleSection";
 import JSONField from "../../components/JSONField";
+import ContentLibraryGroupForm from "./ContentLibraryGroupForm";
 
 @inject("libraryStore")
 @observer
@@ -25,7 +26,9 @@ class ContentLibrary extends React.Component {
       view: "content",
       groupsView: "accessor",
       version: 0,
-      pageVersion: 0
+      pageVersion: 0,
+      showGroupForm: false,
+      listingVersion: 0
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -87,7 +90,12 @@ class ContentLibrary extends React.Component {
   AccessGroupsListing() {
     const type = this.state.groupsView;
     return (
-      <div>
+      <React.Fragment>
+        <div>
+          <Action onClick={() => this.setState({showGroupForm: true})}>
+            Manage Group Permissions
+          </Action>
+        </div>
         <Tabs
           options={[
             ["Accessors", "accessor"],
@@ -112,12 +120,28 @@ class ContentLibrary extends React.Component {
               type: this.state.groupsView,
               params
             });
+            await this.props.libraryStore.ContentLibraryGroupPermissions({libraryId:this.props.libraryStore.libraryId});
 
             this.setState({listingVersion: this.state.listingVersion + 1});
           }}
           RenderContent={this.AccessGroups}
         />
-      </div>
+        {
+          this.state.showGroupForm ?
+            <ContentLibraryGroupForm
+              LoadGroups={async () => {
+                await this.props.libraryStore.ContentLibraryGroupPermissions({libraryId: this.props.libraryStore.libraryId});
+                await this.props.libraryStore.ListLibraryGroups({
+                  libraryId: this.props.libraryStore.libraryId,
+                  type: this.state.groupsView,
+                  params: {}
+                });
+              }}
+              CloseModal={() => this.setState({showGroupForm: false})}
+            /> :
+            null
+        }
+      </React.Fragment>
     );
   }
 
@@ -302,9 +326,6 @@ class ContentLibrary extends React.Component {
         </Action>
         <Action type="link" to={UrlJoin(this.props.match.url, "types")}>
           Types
-        </Action>
-        <Action type="link" to={UrlJoin(this.props.match.url, "groups")}>
-          Groups
         </Action>
         { contributeButton }
         { refreshButton }

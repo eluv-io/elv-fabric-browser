@@ -1,8 +1,8 @@
 import React from "react";
-import Path from "path";
-import {Action, Form} from "elv-components-js";
+import {Form} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
 import {inject, observer} from "mobx-react";
+import {Modal} from "elv-components-js";
 
 @inject("libraryStore")
 @inject("groupStore")
@@ -42,6 +42,8 @@ class ContentLibraryGroupForm extends React.Component {
       reviewer: this.state.reviewer,
       contributor: this.state.contributor
     });
+
+    await this.props.LoadGroups();
   }
 
   Groups() {
@@ -75,17 +77,15 @@ class ContentLibraryGroupForm extends React.Component {
   }
 
   PageContent() {
-    const backPath = Path.dirname(this.props.match.url);
-
     return (
-      <div className="page-container">
-        <div className="actions-container manage-actions">
-          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
-        </div>
+      <Modal
+        closable={true}
+        OnClickOutside={this.props.CloseModal}
+      >
         <Form
           legend={`Manage access group permissions for '${this.props.libraryStore.library.name || this.props.libraryStore.libraryId}'`}
-          redirectPath={backPath}
-          cancelPath={backPath}
+          OnCancel={this.props.CloseModal}
+          OnComplete={this.props.CloseModal}
           OnSubmit={this.HandleSubmit}
           className="small-form"
         >
@@ -114,7 +114,7 @@ class ContentLibraryGroupForm extends React.Component {
             />
           </div>
         </Form>
-      </div>
+      </Modal>
     );
   }
 
@@ -125,7 +125,7 @@ class ContentLibraryGroupForm extends React.Component {
           async () => {
             await this.props.groupStore.ListAccessGroups({params: {}});
             await this.props.libraryStore.ContentLibrary({libraryId: this.props.libraryStore.libraryId});
-            await this.props.libraryStore.ContentLibraryGroupPermissions({libraryId: this.props.libraryStore.libraryId});
+            await this.props.LoadGroups();
 
             const initialGroupAddress = Object.keys(this.props.groupStore.accessGroups)[0];
 
