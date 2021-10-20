@@ -17,6 +17,7 @@ import JSONField from "../../components/JSONField";
 import ContentLibraryGroupForm from "./ContentLibraryGroupForm";
 
 @inject("libraryStore")
+@inject("groupStore")
 @observer
 class ContentLibrary extends React.Component {
   constructor(props) {
@@ -90,58 +91,65 @@ class ContentLibrary extends React.Component {
   AccessGroupsListing() {
     const type = this.state.groupsView;
     return (
-      <React.Fragment>
-        <div>
-          <Action onClick={() => this.setState({showGroupForm: true})}>
-            Manage Group Permissions
-          </Action>
-        </div>
-        <Tabs
-          options={[
-            ["Accessors", "accessor"],
-            ["Contributors", "contributor"],
-            ["Reviewers", "reviewer"]
-          ]}
-          className="secondary"
-          selected={this.state.groupsView}
-          onChange={(value) => this.setState({groupsView: value})}
-        />
-        <Listing
-          key={`library-access-group-listing-${this.state.groupsView}`}
-          className="compact"
-          pageId="LibraryAccessGroups"
-          noIcon={true}
-          noStatus={true}
-          paginate={true}
-          count={this.props.libraryStore.library[`${type}GroupsCount`] || 0}
-          LoadContent={async ({params}) => {
-            await this.props.libraryStore.ListLibraryGroups({
-              libraryId: this.props.libraryStore.libraryId,
-              type: this.state.groupsView,
-              params
-            });
-            await this.props.libraryStore.ContentLibraryGroupPermissions({libraryId:this.props.libraryStore.libraryId});
-
-            this.setState({listingVersion: this.state.listingVersion + 1});
-          }}
-          RenderContent={this.AccessGroups}
-        />
-        {
-          this.state.showGroupForm ?
-            <ContentLibraryGroupForm
-              LoadGroups={async () => {
-                await this.props.libraryStore.ContentLibraryGroupPermissions({libraryId: this.props.libraryStore.libraryId});
+      <AsyncComponent
+        Load={async () => {
+          await this.props.groupStore.ListAccessGroups({params: {}});
+        }}
+        render={() => (
+          <React.Fragment>
+            <div>
+              <Action onClick={() => this.setState({showGroupForm: true})}>
+                Manage Group Permissions
+              </Action>
+            </div>
+            <Tabs
+              options={[
+                ["Accessors", "accessor"],
+                ["Contributors", "contributor"],
+                ["Reviewers", "reviewer"]
+              ]}
+              className="secondary"
+              selected={this.state.groupsView}
+              onChange={(value) => this.setState({groupsView: value})}
+            />
+            <Listing
+              key={`library-access-group-listing-${this.state.groupsView}`}
+              className="compact"
+              pageId="LibraryAccessGroups"
+              noIcon={true}
+              noStatus={true}
+              paginate={true}
+              count={this.props.libraryStore.library[`${type}GroupsCount`] || 0}
+              LoadContent={async ({params}) => {
                 await this.props.libraryStore.ListLibraryGroups({
                   libraryId: this.props.libraryStore.libraryId,
                   type: this.state.groupsView,
-                  params: {}
+                  params
                 });
+                await this.props.libraryStore.ContentLibraryGroupPermissions({libraryId:this.props.libraryStore.libraryId});
+
+                this.setState({listingVersion: this.state.listingVersion + 1});
               }}
-              CloseModal={() => this.setState({showGroupForm: false})}
-            /> :
-            null
-        }
-      </React.Fragment>
+              RenderContent={this.AccessGroups}
+            />
+            {
+              this.state.showGroupForm ?
+                <ContentLibraryGroupForm
+                  LoadGroups={async () => {
+                    await this.props.libraryStore.ContentLibraryGroupPermissions({libraryId: this.props.libraryStore.libraryId});
+                    await this.props.libraryStore.ListLibraryGroups({
+                      libraryId: this.props.libraryStore.libraryId,
+                      type: this.state.groupsView,
+                      params: {}
+                    });
+                  }}
+                  CloseModal={() => this.setState({showGroupForm: false})}
+                /> :
+                null
+            }
+          </React.Fragment>
+        )}
+      />
     );
   }
 

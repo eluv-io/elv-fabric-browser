@@ -123,10 +123,6 @@ class ContentLibraryGroupForm extends React.Component {
       <AsyncComponent
         Load={
           async () => {
-            await this.props.groupStore.ListAccessGroups({params: {}});
-            await this.props.libraryStore.ContentLibrary({libraryId: this.props.libraryStore.libraryId});
-            await this.props.LoadGroups();
-
             const initialGroupAddress = Object.keys(this.props.groupStore.accessGroups)[0];
 
             if(initialGroupAddress) {

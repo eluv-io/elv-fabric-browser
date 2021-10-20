@@ -33,7 +33,7 @@ class ContentObjectGroups extends React.Component {
     const perPage = filterOptions.params.perPage;
 
     let groups = Object
-      .values(this.props.currentPage === "contentObject" ? this.props.objectStore.objectGroupPermissions : this.props.groupStore.accessGroup.groupPermissions || {})
+      .values(this.props.currentPage === "contentObject" ? (this.props.objectStore.objectGroupPermissions || {}) : this.props.groupStore.accessGroup.groupPermissions || {})
       .filter(group => group.permissions.includes(this.state.view))
       .sort((a, b) => (a.name || "zz").toLowerCase() > (b.name || "zz").toLowerCase() ? 1 : -1)
       .slice((page - 1) * perPage, page * perPage);
@@ -63,7 +63,7 @@ class ContentObjectGroups extends React.Component {
   render() {
     const GroupCount = () => {
       return Object
-        .values(this.props.currentPage === "contentObject" ? this.props.objectStore.objectGroupPermissions : this.props.groupStore.accessGroup.groupPermissions || {})
+        .values(this.props.currentPage === "contentObject" ? (this.props.objectStore.objectGroupPermissions || {}) : this.props.groupStore.accessGroup.groupPermissions || {})
         .filter(group => group.permissions.includes(this.state.view))
         .length;
     };
@@ -81,7 +81,10 @@ class ContentObjectGroups extends React.Component {
 
     return (
       <AsyncComponent
-        Load={async () => await this.props.LoadGroupPermissions}
+        Load={async () => {
+          await this.props.groupStore.ListAccessGroups({params: {}});
+          await this.props.LoadGroupPermissions();
+        }}
         render={() => (
           <React.Fragment>
             { groupsButton }

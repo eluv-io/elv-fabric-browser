@@ -124,13 +124,6 @@ class ContentObjectGroupForm extends React.Component {
       <AsyncComponent
         Load={
           async () => {
-            await this.props.groupStore.ListAccessGroups({params: {}});
-
-            if(this.props.currentPage === "accessGroup") {
-              await this.props.groupStore.AccessGroup({contractAddress: this.props.groupStore.contractAddress});
-              await this.props.groupStore.AccessGroupGroupPermissions({contractAddress: this.props.groupStore.contractAddress});
-            }
-
             await this.props.objectStore.ContentObject({objectId: this.props.objectStore.objectId});
             await this.props.objectStore.ContentObjectGroupPermissions({objectId: this.props.objectStore.objectId});
 
