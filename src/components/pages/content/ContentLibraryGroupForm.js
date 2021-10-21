@@ -1,8 +1,8 @@
 import React from "react";
-import Path from "path";
-import {Action, Form} from "elv-components-js";
+import {Form} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
 import {inject, observer} from "mobx-react";
+import {Modal} from "elv-components-js";
 
 @inject("libraryStore")
 @inject("groupStore")
@@ -42,6 +42,8 @@ class ContentLibraryGroupForm extends React.Component {
       reviewer: this.state.reviewer,
       contributor: this.state.contributor
     });
+
+    await this.props.LoadGroups();
   }
 
   Groups() {
@@ -75,68 +77,62 @@ class ContentLibraryGroupForm extends React.Component {
   }
 
   PageContent() {
-    const backPath = Path.dirname(this.props.match.url);
-
     return (
-      <div className="page-container">
-        <div className="actions-container manage-actions">
-          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
-        </div>
-        <Form
-          legend={`Manage access group permissions for '${this.props.libraryStore.library.name || this.props.libraryStore.libraryId}'`}
-          redirectPath={backPath}
-          cancelPath={backPath}
-          OnSubmit={this.HandleSubmit}
-          className="small-form"
-        >
-          <div className="form-content">
-            { this.Groups() }
+      <Modal
+        closable={true}
+        OnClickOutside={this.props.CloseModal}
+      >
+        <AsyncComponent
+          Load={
+            async () => {
+              const initialGroupAddress = Object.keys(this.props.groupStore.accessGroups)[0];
 
-            <label htmlFor="accessor">Accessor</label>
-            <input
-              type="checkbox"
-              checked={this.state.accessor}
-              onChange={() => this.setState({accessor: !this.state.accessor})}
-            />
+              if(initialGroupAddress) {
+                this.HandleGroupChange({target: {value: initialGroupAddress}});
+              }
+            }
+          }
+          render={() => (
+            <Form
+              legend={`Manage access group permissions for '${this.props.libraryStore.library.name || this.props.libraryStore.libraryId}'`}
+              OnCancel={this.props.CloseModal}
+              OnComplete={this.props.CloseModal}
+              OnSubmit={this.HandleSubmit}
+              className="small-form"
+            >
+              <div className="form-content">
+                { this.Groups() }
 
-            <label htmlFor="contributor">Contributor</label>
-            <input
-              type="checkbox"
-              checked={this.state.contributor}
-              onChange={() => this.setState({contributor: !this.state.contributor})}
-            />
+                <label htmlFor="accessor">Accessor</label>
+                <input
+                  type="checkbox"
+                  checked={this.state.accessor}
+                  onChange={() => this.setState({accessor: !this.state.accessor})}
+                />
 
-            <label htmlFor="reviewer">Reviewer</label>
-            <input
-              type="checkbox"
-              checked={this.state.reviewer}
-              onChange={() => this.setState({reviewer: !this.state.reviewer})}
-            />
-          </div>
-        </Form>
-      </div>
+                <label htmlFor="contributor">Contributor</label>
+                <input
+                  type="checkbox"
+                  checked={this.state.contributor}
+                  onChange={() => this.setState({contributor: !this.state.contributor})}
+                />
+
+                <label htmlFor="reviewer">Reviewer</label>
+                <input
+                  type="checkbox"
+                  checked={this.state.reviewer}
+                  onChange={() => this.setState({reviewer: !this.state.reviewer})}
+                />
+              </div>
+            </Form>
+          )}
+        />
+      </Modal>
     );
   }
 
   render() {
-    return (
-      <AsyncComponent
-        Load={
-          async () => {
-            await this.props.groupStore.ListAccessGroups({params: {}});
-            await this.props.libraryStore.ContentLibrary({libraryId: this.props.libraryStore.libraryId});
-            await this.props.libraryStore.ContentLibraryGroupPermissions({libraryId: this.props.libraryStore.libraryId});
-
-            const initialGroupAddress = Object.keys(this.props.groupStore.accessGroups)[0];
-
-            if(initialGroupAddress) {
-              this.HandleGroupChange({target: {value: initialGroupAddress}});
-            }
-          }
-        }
-        render={this.PageContent}
-      />
-    );
+    return this.PageContent();
   }
 }
 
