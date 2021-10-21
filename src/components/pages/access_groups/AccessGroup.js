@@ -151,7 +151,6 @@ class AccessGroup extends React.Component {
         <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary" >Back</Action>
         <Action type="link" to={UrlJoin(this.props.match.url, "edit")} hidden={!this.props.groupStore.accessGroup.isOwner}>Manage</Action>
         <Action type="link" to={UrlJoin(this.props.match.url, "add-member")} hidden={!this.props.groupStore.accessGroup.isManager}>Add Member</Action>
-        <Action type="link" to={UrlJoin(this.props.match.url, "groups")} hidden={!this.props.groupStore.accessGroup.isManager}>Groups</Action>
         <Action className="danger" onClick={this.LeaveAccessGroup} hidden={this.props.groupStore.accessGroup.isOwner}>Leave Group</Action>
         <Action className="danger" onClick={this.DeleteAccessGroup} hidden={true || !this.props.groupStore.accessGroup.isOwner}>Delete</Action>
       </div>
@@ -201,11 +200,10 @@ class AccessGroup extends React.Component {
     let pageContent;
     if(this.state.view === "groups") {
       pageContent = (
-        <AsyncComponent
-          Load={() => this.props.groupStore.AccessGroupGroupPermissions({
-            contractAddress: this.props.groupStore.contractAddress
-          })}
-          render={() => <ContentObjectGroups groupPermissions={group.groupPermissions} />}
+        <ContentObjectGroups
+          currentPage="accessGroup"
+          showGroupPermissionsButton={this.props.groupStore.accessGroup.isManager}
+          LoadGroupPermissions={() => this.props.groupStore.AccessGroupGroupPermissions({contractAddress: this.props.groupStore.contractAddress})}
         />
       );
     } else {

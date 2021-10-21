@@ -1,7 +1,5 @@
 import React from "react";
-import Path from "path";
-import {Action, Form} from "elv-components-js";
-import AsyncComponent from "../../components/AsyncComponent";
+import {AsyncComponent, Form, Modal} from "elv-components-js";
 import {inject, observer} from "mobx-react";
 import Fabric from "../../../clients/Fabric";
 
@@ -13,7 +11,6 @@ class ContentObjectGroupForm extends React.Component {
     super(props);
 
     this.state = {
-      groups: [],
       groupAddress: "",
       see: false,
       access: false,
@@ -26,7 +23,7 @@ class ContentObjectGroupForm extends React.Component {
   }
 
   HandleGroupChange(event) {
-    const permissions = (this.props.objectStore.object.groupPermissions[event.target.value] || {}).permissions || [];
+    const permissions = (this.props.objectStore.objectGroupPermissions[event.target.value] || {}).permissions || [];
 
     this.setState({
       groupAddress: event.target.value,
@@ -44,10 +41,12 @@ class ContentObjectGroupForm extends React.Component {
       access: this.state.access,
       manage: this.state.manage
     });
+
+    await this.props.LoadGroupPermissions();
   }
 
   Groups() {
-    let options = this.state.groups.map(group =>
+    let options = this.FilteredGroups().map(group =>
       <option key={`group-${group.address}`} value={group.address}>{ group.name }</option>
     );
 
@@ -77,75 +76,71 @@ class ContentObjectGroupForm extends React.Component {
   }
 
   PageContent() {
-    const backPath = Path.dirname(this.props.match.url);
-
     return (
-      <div className="page-container">
-        <div className="actions-container manage-actions">
-          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
-        </div>
-        <Form
-          legend={`Manage access group permissions for '${this.props.objectStore.object.name || this.props.objectStore.objectId}'`}
-          redirectPath={backPath}
-          cancelPath={backPath}
-          OnSubmit={this.HandleSubmit}
-          className="small-form"
-        >
-          <div className="form-content">
-            { this.Groups() }
+      <Modal
+        closable={true}
+        OnClickOutside={this.props.CloseModal}
+      >
+        <AsyncComponent
+          Load={
+            async () => {
+              await this.props.objectStore.ContentObject({objectId: this.props.objectStore.objectId});
+              await this.props.objectStore.ContentObjectGroupPermissions({objectId: this.props.objectStore.objectId});
 
-            <label htmlFor="accessor">See</label>
-            <input
-              type="checkbox"
-              checked={this.state.see}
-              onChange={() => this.setState({see: !this.state.see})}
-            />
+              const initialGroupAddress = this.FilteredGroups()[0] && this.FilteredGroups()[0].address;
 
-            <label htmlFor="contributor">Access</label>
-            <input
-              type="checkbox"
-              checked={this.state.access}
-              onChange={() => this.setState({access: !this.state.access})}
-            />
+              if(initialGroupAddress) {
+                this.HandleGroupChange({target: {value: initialGroupAddress}});
+              }
+            }
+          }
+          render={() => (
+            <Form
+              legend={`Manage access group permissions for '${this.props.objectStore.object ? this.props.objectStore.object.name : this.props.objectStore.objectId}'`}
+              OnCancel={this.props.CloseModal}
+              OnSubmit={this.HandleSubmit}
+              OnComplete={this.props.CloseModal}
+              className="small-form"
+            >
+              <div className="form-content">
+                { this.Groups() }
 
-            <label htmlFor="reviewer">Manage</label>
-            <input
-              type="checkbox"
-              checked={this.state.manage}
-              onChange={() => this.setState({manage: !this.state.manage})}
-            />
-          </div>
-        </Form>
-      </div>
+                <label htmlFor="accessor">See</label>
+                <input
+                  type="checkbox"
+                  checked={this.state.see}
+                  onChange={() => this.setState({see: !this.state.see})}
+                />
+
+                <label htmlFor="contributor">Access</label>
+                <input
+                  type="checkbox"
+                  checked={this.state.access}
+                  onChange={() => this.setState({access: !this.state.access})}
+                />
+
+                <label htmlFor="reviewer">Manage</label>
+                <input
+                  type="checkbox"
+                  checked={this.state.manage}
+                  onChange={() => this.setState({manage: !this.state.manage})}
+                />
+              </div>
+            </Form>
+          )}
+        />
+      </Modal>
     );
   }
 
+  FilteredGroups() {
+    const contractAddress = Fabric.utils.HashToAddress(this.props.objectStore.objectId);
+    return Object.values(this.props.groupStore.accessGroups)
+      .filter(group => !Fabric.utils.EqualAddress(group.address, contractAddress));
+  }
+
   render() {
-    return (
-      <AsyncComponent
-        Load={
-          async () => {
-            await this.props.groupStore.ListAccessGroups({params: {}});
-
-            await this.props.objectStore.ContentObject({objectId: this.props.objectStore.objectId});
-            await this.props.objectStore.ContentObjectGroupPermissions({objectId: this.props.objectStore.objectId});
-
-            const contractAddress = Fabric.utils.HashToAddress(this.props.objectStore.objectId);
-            const groups = Object.values(this.props.groupStore.accessGroups)
-              .filter(group => !Fabric.utils.EqualAddress(group.address, contractAddress));
-
-            this.setState({groups});
-
-            const initialGroupAddress = groups[0] && groups[0].address;
-
-            if(initialGroupAddress) {
-              this.HandleGroupChange({target: {value: initialGroupAddress}});
-            }
-          }
-        }
-        render={this.PageContent}
-      />
-    );
+    return this.PageContent();
   }
 }
 

@@ -700,15 +700,6 @@ class ContentObject extends React.Component {
       );
     }
 
-    let groupsButton;
-    if(object.isOwner || (object.isNormalObject && this.props.objectStore.object.permission !== "owner" && object.canEdit)) {
-      groupsButton = (
-        <Action type="link" to={UrlJoin(this.props.match.url, "groups")}>
-          Groups
-        </Action>
-      );
-    }
-
     return (
       <div className="actions-container">
         { backButton }
@@ -717,7 +708,6 @@ class ContentObject extends React.Component {
         <Action type="link" to={UrlJoin(this.props.match.url, "upload")}>
           Upload Parts
         </Action>
-        { groupsButton }
         <Action type="link" to={UrlJoin(this.props.match.url, "apps")}>
           Apps
         </Action>
@@ -791,11 +781,10 @@ class ContentObject extends React.Component {
       pageContent = this.AppFrame();
     } else if(this.state.view === "groups") {
       pageContent = (
-        <AsyncComponent
-          Load={() => this.props.objectStore.ContentObjectGroupPermissions({
-            objectId: this.props.objectStore.objectId
-          })}
-          render={() => <ContentObjectGroups groupPermissions={this.props.objectStore.object.groupPermissions} />}
+        <ContentObjectGroups
+          currentPage="contentObject"
+          showGroupPermissionsButton={this.props.objectStore.object.isOwner || (this.props.objectStore.object.isNormalObject && this.props.objectStore.object.permission !== "owner" && this.props.objectStore.object.canEdit)}
+          LoadGroupPermissions={() => this.props.objectStore.ContentObjectGroupPermissions({objectId: this.props.objectStore.objectId})}
         />
       );
     } else if(this.state.view === "info") {

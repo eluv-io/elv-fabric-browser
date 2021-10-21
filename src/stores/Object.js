@@ -23,6 +23,10 @@ class ObjectStore {
     return this.objects[this.objectId];
   }
 
+  @computed get objectGroupPermissions() {
+    return this.objects[this.objectId].groupPermissions;
+  }
+
   constructor(rootStore) {
     this.rootStore = rootStore;
 
@@ -493,7 +497,7 @@ class ObjectStore {
     access,
     manage
   }) {
-    const currentPermissions = (this.object.groupPermissions[groupAddress] || {}).permissions || [];
+    const currentPermissions = (this.objects[objectId].groupPermissions[groupAddress] || {}).permissions || [];
 
     let toAdd = [];
     if(see && !currentPermissions.includes("see")) { toAdd.push("see"); }

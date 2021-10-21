@@ -9,7 +9,6 @@ import {ErrorHandler} from "elv-components-js";
 import ContentLibrariesPage from "../components/pages/content/ContentLibraries";
 import ContentLibraryPage from "../components/pages/content/ContentLibrary";
 import ContentLibraryFormPage from "../components/pages/content/ContentLibraryForm";
-import ContentLibraryGroupFormPage from "../components/pages/content/ContentLibraryGroupForm";
 import ContentLibraryTypesFormPage from "../components/pages/content/ContentLibraryTypesForm";
 
 import ContentTypesPage from "../components/pages/content/ContentTypes";
@@ -139,7 +138,6 @@ class Router extends React.Component {
 
           <WatchedRoute exact path="/content/:libraryId/edit" component={ContentLibraryFormPage}/>
 
-          <WatchedRoute exact path="/content/:libraryId/groups" component={ContentLibraryGroupFormPage}/>
           <WatchedRoute exact path="/content/:libraryId/types" component={ContentLibraryTypesFormPage}/>
 
           <WatchedRoute exact path="/content/:libraryId/create" component={ContentObjectFormPage}/>
@@ -157,7 +155,6 @@ class Router extends React.Component {
           <WatchedRoute exact path="/content-types/:objectId/upload" component={ContentObjectPartsFormPage}/>
 
           <WatchedRoute exact path="/content/:libraryId/:objectId/groups" component={ContentObjectGroupFormPage} />
-          <WatchedRoute exact path="/content-types/:objectId/groups" component={ContentObjectGroupFormPage} />
 
           <WatchedRoute exact path="/content/:libraryId/:objectId/apps" component={ContentObjectAppsPage}/>
           <WatchedRoute exact path="/content-types/:objectId/apps" component={ContentObjectAppsPage} />
