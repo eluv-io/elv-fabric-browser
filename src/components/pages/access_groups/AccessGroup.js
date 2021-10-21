@@ -201,7 +201,8 @@ class AccessGroup extends React.Component {
     if(this.state.view === "groups") {
       pageContent = (
         <ContentObjectGroups
-          currentPage="accessGroup" showGroupPermissionsButton={this.props.groupStore.accessGroup.isManager}
+          currentPage="accessGroup"
+          showGroupPermissionsButton={this.props.groupStore.accessGroup.isManager}
           LoadGroupPermissions={() => this.props.groupStore.AccessGroupGroupPermissions({contractAddress: this.props.groupStore.contractAddress})}
         />
       );

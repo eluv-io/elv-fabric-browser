@@ -68,9 +68,9 @@ class ContentObjectGroups extends React.Component {
         .length;
     };
 
-    let groupsButton;
+    let groupPermissionsButton;
     if(this.props.showGroupPermissionsButton) {
-      groupsButton = (
+      groupPermissionsButton = (
         <div>
           <Action onClick={() => this.setState({showGroupForm: true})}>
             Manage Group Permissions
@@ -87,7 +87,7 @@ class ContentObjectGroups extends React.Component {
         }}
         render={() => (
           <React.Fragment>
-            { groupsButton }
+            { groupPermissionsButton }
             <Tabs
               options={[
                 ["See", "see"],
