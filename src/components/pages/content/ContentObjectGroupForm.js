@@ -1,5 +1,5 @@
 import React from "react";
-import {Form, LoadingElement, Modal} from "elv-components-js";
+import {AsyncComponent, Form, Modal} from "elv-components-js";
 import {inject, observer} from "mobx-react";
 import Fabric from "../../../clients/Fabric";
 
@@ -11,21 +11,15 @@ class ContentObjectGroupForm extends React.Component {
     super(props);
 
     this.state = {
-      groups: [],
       groupAddress: "",
       see: false,
       access: false,
-      manage: false,
-      loading: true
+      manage: false
     };
 
     this.PageContent = this.PageContent.bind(this);
     this.HandleGroupChange = this.HandleGroupChange.bind(this);
     this.HandleSubmit = this.HandleSubmit.bind(this);
-  }
-
-  componentDidMount() {
-    this.Load();
   }
 
   HandleGroupChange(event) {
@@ -87,40 +81,54 @@ class ContentObjectGroupForm extends React.Component {
         closable={true}
         OnClickOutside={this.props.CloseModal}
       >
-        <LoadingElement loading={this.state.loading}>
-          <Form
-            legend={`Manage access group permissions for '${this.props.objectStore.object ? this.props.objectStore.object.name : this.props.objectStore.objectId}'`}
-            OnCancel={this.props.CloseModal}
-            OnSubmit={this.HandleSubmit}
-            OnComplete={this.props.CloseModal}
-            className="small-form"
-          >
-            <div className="form-content">
-              { this.Groups() }
+        <AsyncComponent
+          Load={
+            async () => {
+              await this.props.objectStore.ContentObject({objectId: this.props.objectStore.objectId});
+              await this.props.objectStore.ContentObjectGroupPermissions({objectId: this.props.objectStore.objectId});
 
-              <label htmlFor="accessor">See</label>
-              <input
-                type="checkbox"
-                checked={this.state.see}
-                onChange={() => this.setState({see: !this.state.see})}
-              />
+              const initialGroupAddress = this.FilteredGroups()[0] && this.FilteredGroups()[0].address;
 
-              <label htmlFor="contributor">Access</label>
-              <input
-                type="checkbox"
-                checked={this.state.access}
-                onChange={() => this.setState({access: !this.state.access})}
-              />
+              if(initialGroupAddress) {
+                this.HandleGroupChange({target: {value: initialGroupAddress}});
+              }
+            }
+          }
+          render={() => (
+            <Form
+              legend={`Manage access group permissions for '${this.props.objectStore.object ? this.props.objectStore.object.name : this.props.objectStore.objectId}'`}
+              OnCancel={this.props.CloseModal}
+              OnSubmit={this.HandleSubmit}
+              OnComplete={this.props.CloseModal}
+              className="small-form"
+            >
+              <div className="form-content">
+                { this.Groups() }
 
-              <label htmlFor="reviewer">Manage</label>
-              <input
-                type="checkbox"
-                checked={this.state.manage}
-                onChange={() => this.setState({manage: !this.state.manage})}
-              />
-            </div>
-          </Form>
-        </LoadingElement>
+                <label htmlFor="accessor">See</label>
+                <input
+                  type="checkbox"
+                  checked={this.state.see}
+                  onChange={() => this.setState({see: !this.state.see})}
+                />
+
+                <label htmlFor="contributor">Access</label>
+                <input
+                  type="checkbox"
+                  checked={this.state.access}
+                  onChange={() => this.setState({access: !this.state.access})}
+                />
+
+                <label htmlFor="reviewer">Manage</label>
+                <input
+                  type="checkbox"
+                  checked={this.state.manage}
+                  onChange={() => this.setState({manage: !this.state.manage})}
+                />
+              </div>
+            </Form>
+          )}
+        />
       </Modal>
     );
   }
@@ -129,19 +137,6 @@ class ContentObjectGroupForm extends React.Component {
     const contractAddress = Fabric.utils.HashToAddress(this.props.objectStore.objectId);
     return Object.values(this.props.groupStore.accessGroups)
       .filter(group => !Fabric.utils.EqualAddress(group.address, contractAddress));
-  }
-
-  async Load() {
-    await this.props.objectStore.ContentObject({objectId: this.props.objectStore.objectId});
-    await this.props.objectStore.ContentObjectGroupPermissions({objectId: this.props.objectStore.objectId});
-
-    const initialGroupAddress = this.FilteredGroups()[0] && this.FilteredGroups()[0].address;
-
-    if(initialGroupAddress) {
-      this.HandleGroupChange({target: {value: initialGroupAddress}}, true);
-    }
-
-    this.setState({loading: false});
   }
 
   render() {

@@ -82,57 +82,57 @@ class ContentLibraryGroupForm extends React.Component {
         closable={true}
         OnClickOutside={this.props.CloseModal}
       >
-        <Form
-          legend={`Manage access group permissions for '${this.props.libraryStore.library.name || this.props.libraryStore.libraryId}'`}
-          OnCancel={this.props.CloseModal}
-          OnComplete={this.props.CloseModal}
-          OnSubmit={this.HandleSubmit}
-          className="small-form"
-        >
-          <div className="form-content">
-            { this.Groups() }
+        <AsyncComponent
+          Load={
+            async () => {
+              const initialGroupAddress = Object.keys(this.props.groupStore.accessGroups)[0];
 
-            <label htmlFor="accessor">Accessor</label>
-            <input
-              type="checkbox"
-              checked={this.state.accessor}
-              onChange={() => this.setState({accessor: !this.state.accessor})}
-            />
+              if(initialGroupAddress) {
+                this.HandleGroupChange({target: {value: initialGroupAddress}});
+              }
+            }
+          }
+          render={() => (
+            <Form
+              legend={`Manage access group permissions for '${this.props.libraryStore.library.name || this.props.libraryStore.libraryId}'`}
+              OnCancel={this.props.CloseModal}
+              OnComplete={this.props.CloseModal}
+              OnSubmit={this.HandleSubmit}
+              className="small-form"
+            >
+              <div className="form-content">
+                { this.Groups() }
 
-            <label htmlFor="contributor">Contributor</label>
-            <input
-              type="checkbox"
-              checked={this.state.contributor}
-              onChange={() => this.setState({contributor: !this.state.contributor})}
-            />
+                <label htmlFor="accessor">Accessor</label>
+                <input
+                  type="checkbox"
+                  checked={this.state.accessor}
+                  onChange={() => this.setState({accessor: !this.state.accessor})}
+                />
 
-            <label htmlFor="reviewer">Reviewer</label>
-            <input
-              type="checkbox"
-              checked={this.state.reviewer}
-              onChange={() => this.setState({reviewer: !this.state.reviewer})}
-            />
-          </div>
-        </Form>
+                <label htmlFor="contributor">Contributor</label>
+                <input
+                  type="checkbox"
+                  checked={this.state.contributor}
+                  onChange={() => this.setState({contributor: !this.state.contributor})}
+                />
+
+                <label htmlFor="reviewer">Reviewer</label>
+                <input
+                  type="checkbox"
+                  checked={this.state.reviewer}
+                  onChange={() => this.setState({reviewer: !this.state.reviewer})}
+                />
+              </div>
+            </Form>
+          )}
+        />
       </Modal>
     );
   }
 
   render() {
-    return (
-      <AsyncComponent
-        Load={
-          async () => {
-            const initialGroupAddress = Object.keys(this.props.groupStore.accessGroups)[0];
-
-            if(initialGroupAddress) {
-              this.HandleGroupChange({target: {value: initialGroupAddress}});
-            }
-          }
-        }
-        render={this.PageContent}
-      />
-    );
+    return this.PageContent();
   }
 }
 
