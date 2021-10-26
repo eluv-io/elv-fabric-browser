@@ -19,28 +19,20 @@ const ContentLookup = observer(() => {
 
   const versionHash = contentLookupId.startsWith("hq__") ? contentLookupId : undefined;
 
+  if(lookupRedirect) { return <Redirect to={{pathname: lookupRedirect, state: {versionHash}}}/>; }
+
   return (
-    <React.Fragment>
-      {
-        lookupRedirect ?
-          <Redirect to={{
-            pathname: lookupRedirect,
-            state: {versionHash}
-          }}/> :
-          null
-      }
-      <div className="content-lookup-container">
-        <input
-          value={contentLookupId}
-          onChange={event => setContentLookupId( event.target.value)}
-          onKeyPress={onEnterPressed(Lookup)}
-          placeholder="Find content by ID, version hash or address"
-        />
-        <Action onClick={Lookup}>
-          Search
-        </Action>
-      </div>
-    </React.Fragment>
+    <div className="content-lookup-container">
+      <input
+        value={contentLookupId}
+        onChange={event => setContentLookupId( event.target.value)}
+        onKeyPress={onEnterPressed(Lookup)}
+        placeholder="Find content by ID, version hash or address"
+      />
+      <Action onClick={Lookup}>
+        Search
+      </Action>
+    </div>
   );
 });
 
