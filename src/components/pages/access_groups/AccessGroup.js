@@ -14,6 +14,7 @@ import AsyncComponent from "elv-components-js/src/components/AsyncComponent";
 import JSONField from "../../components/JSONField";
 import ToggleSection from "../../components/ToggleSection";
 import ContentObjectGroups from "../content/ContentObjectGroups";
+import ContentLookup from "../../components/ContentLookup";
 
 @inject("groupStore")
 @observer
@@ -147,12 +148,15 @@ class AccessGroup extends React.Component {
 
   Actions() {
     return (
-      <div className="actions-container">
-        <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary" >Back</Action>
-        <Action type="link" to={UrlJoin(this.props.match.url, "edit")} hidden={!this.props.groupStore.accessGroup.isOwner}>Manage</Action>
-        <Action type="link" to={UrlJoin(this.props.match.url, "add-member")} hidden={!this.props.groupStore.accessGroup.isManager}>Add Member</Action>
-        <Action className="danger" onClick={this.LeaveAccessGroup} hidden={this.props.groupStore.accessGroup.isOwner}>Leave Group</Action>
-        <Action className="danger" onClick={this.DeleteAccessGroup} hidden={true || !this.props.groupStore.accessGroup.isOwner}>Delete</Action>
+      <div className="actions-wrapper">
+        <div className="actions-container content-lookup-actions-container">
+          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary" >Back</Action>
+          <Action type="link" to={UrlJoin(this.props.match.url, "edit")} hidden={!this.props.groupStore.accessGroup.isOwner}>Manage</Action>
+          <Action type="link" to={UrlJoin(this.props.match.url, "add-member")} hidden={!this.props.groupStore.accessGroup.isManager}>Add Member</Action>
+          <Action className="danger" onClick={this.LeaveAccessGroup} hidden={this.props.groupStore.accessGroup.isOwner}>Leave Group</Action>
+          <Action className="danger" onClick={this.DeleteAccessGroup} hidden={true || !this.props.groupStore.accessGroup.isOwner}>Delete</Action>
+          <ContentLookup />
+        </div>
       </div>
     );
   }

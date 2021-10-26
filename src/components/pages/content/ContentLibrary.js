@@ -15,6 +15,7 @@ import RefreshIcon from "../../../static/icons/refresh.svg";
 import ToggleSection from "../../components/ToggleSection";
 import JSONField from "../../components/JSONField";
 import ContentLibraryGroupForm from "./ContentLibraryGroupForm";
+import ContentLookup from "../../components/ContentLookup";
 
 @inject("libraryStore")
 @inject("groupStore")
@@ -318,25 +319,35 @@ class ContentLibrary extends React.Component {
 
     if(!this.props.libraryStore.library.isOwner) {
       return (
-        <div className="actions-container">
-          { backButton }
-          { contributeButton }
-          { refreshButton }
+        <div className="actions-wrapper">
+          <div className="actions-container">
+            <ContentLookup />
+          </div>
+          <div className="actions-container">
+            { backButton }
+            { contributeButton }
+            { refreshButton }
+          </div>
         </div>
       );
     }
 
     return (
-      <div className="actions-container">
-        { backButton }
-        <Action type="link" to={UrlJoin(this.props.match.url, "edit")}>
-          Manage
-        </Action>
-        <Action type="link" to={UrlJoin(this.props.match.url, "types")}>
-          Types
-        </Action>
-        { contributeButton }
-        { refreshButton }
+      <div className="actions-wrapper">
+        <div className="actions-container">
+          <ContentLookup />
+        </div>
+        <div className="actions-container">
+          { backButton }
+          <Action type="link" to={UrlJoin(this.props.match.url, "edit")}>
+            Manage
+          </Action>
+          <Action type="link" to={UrlJoin(this.props.match.url, "types")}>
+            Types
+          </Action>
+          { contributeButton }
+          { refreshButton }
+        </div>
       </div>
     );
   }

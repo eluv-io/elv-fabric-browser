@@ -22,6 +22,7 @@ import ContentObjectGroups from "./ContentObjectGroups";
 import RefreshIcon from "../../../static/icons/refresh.svg";
 import InfoIcon from "../../../static/icons/help-circle.svg";
 import Diff from "../../components/Diff";
+import ContentLookup from "../../components/ContentLookup";
 
 const DownloadPart = ({libraryId, objectId, versionHash, partHash, partName, DownloadMethod}) => {
   const [progress, setProgress] = useState(undefined);
@@ -71,9 +72,13 @@ class ContentObject extends React.Component {
       partDownloadProgress: {},
       pageVersion: 0,
       permissionChanging: false,
-      loadingVersions: false
+      loadingVersions: false,
+      currentVersionToggled: false,
+      prevVersionsToggled: false,
+      moreOptions: false
     };
 
+    this.toggleRef = React.createRef();
     this.PageContent = this.PageContent.bind(this);
     this.SubmitContentObject = this.SubmitContentObject.bind(this);
     this.FinalizeABRMezzanine = this.FinalizeABRMezzanine.bind(this);
@@ -437,6 +442,7 @@ class ContentObject extends React.Component {
             label={`Version ${versionNumber}`}
             key={`version-${versionNumber}`}
             className="version-info indented"
+            toggleOpen={this.props.location.state && (versionHash === this.props.location.state.versionHash)}
           >
             <AsyncComponent
               Load={
@@ -568,6 +574,7 @@ class ContentObject extends React.Component {
       <ToggleSection
         label="Previous Versions"
         className="version-info"
+        toggleOpen={this.state.prevVersionsToggled}
       >
         <AsyncComponent
           Load={
@@ -663,9 +670,14 @@ class ContentObject extends React.Component {
 
     if(!object.canEdit) {
       return (
-        <div className="actions-container">
-          { backButton }
-          { refreshButton }
+        <div className="actions-wrapper">
+          <div className="actions-container">
+            <ContentLookup />
+          </div>
+          <div className="actions-container">
+            { backButton }
+            { refreshButton }
+          </div>
         </div>
       );
     }
@@ -701,19 +713,24 @@ class ContentObject extends React.Component {
     }
 
     return (
-      <div className="actions-container">
-        { backButton }
-        <Action type="link" to={UrlJoin(this.props.match.url, "edit")}>Manage</Action>
-        { setContractButton }
-        <Action type="link" to={UrlJoin(this.props.match.url, "upload")}>
-          Upload Parts
-        </Action>
-        <Action type="link" to={UrlJoin(this.props.match.url, "apps")}>
-          Apps
-        </Action>
-        { deleteObjectButton }
-        { saveDraftButton }
-        { refreshButton }
+      <div className="actions-wrapper">
+        <div className="actions-container">
+          <ContentLookup />
+        </div>
+        <div className="actions-container">
+          { backButton }
+          <Action type="link" to={UrlJoin(this.props.match.url, "edit")}>Manage</Action>
+          { setContractButton }
+          <Action type="link" to={UrlJoin(this.props.match.url, "upload")}>
+            Upload Parts
+          </Action>
+          <Action type="link" to={UrlJoin(this.props.match.url, "apps")}>
+            Apps
+          </Action>
+          { deleteObjectButton }
+          { saveDraftButton }
+          { refreshButton }
+        </div>
       </div>
     );
   }
@@ -855,6 +872,18 @@ class ContentObject extends React.Component {
     );
   }
 
+  CheckUrlVersionHash() {
+    const urlVersionHash = this.props.location.state && this.props.location.state.versionHash;
+
+    if(!urlVersionHash) { return; }
+
+    if(urlVersionHash === this.props.objectStore.object.hash) {
+      this.setState({currentVersionToggled: true});
+    } else {
+      this.setState({prevVersionsToggled: true});
+    }
+  }
+
   render() {
     return (
       <AsyncComponent
@@ -872,6 +901,8 @@ class ContentObject extends React.Component {
                 })
               ]
             );
+
+            this.CheckUrlVersionHash();
 
             this.setState({
               displayAppUrl:

@@ -2,20 +2,16 @@ import React from "react";
 import UrlJoin from "url-join";
 import LibraryIcon from "../../../static/icons/content.svg";
 import {PageHeader} from "../../components/Page";
-import {Action, onEnterPressed} from "elv-components-js";
+import {Action} from "elv-components-js";
 import Listing from "../../components/Listing";
 import {inject, observer} from "mobx-react";
-import {Redirect} from "react-router";
+import ContentLookup from "../../components/ContentLookup";
 
 @inject("libraryStore")
 @observer
 class ContentLibraries extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      contentLookupId: "",
-      lookupRedirect: ""
-    };
 
     this.ContentLibraries = this.ContentLibraries.bind(this);
   }
@@ -39,42 +35,13 @@ class ContentLibraries extends React.Component {
     return libraries.sort((a, b) => a.sortKey.toLowerCase() > b.sortKey.toLowerCase() ? 1 : -1);
   }
 
-  ContentLookup() {
-    const Lookup = async () => {
-      const redirectPath =
-        await this.props.libraryStore.LookupContent(this.state.contentLookupId);
-
-      if(!redirectPath) { return; }
-
-      this.setState({lookupRedirect: redirectPath});
-    };
-
-    return (
-      <div className="content-lookup-container">
-        <input
-          value={this.state.contentLookupId}
-          onChange={event => this.setState({contentLookupId: event.target.value})}
-          onKeyPress={onEnterPressed(Lookup)}
-          placeholder="Find content by ID, version hash or address"
-        />
-        <Action onClick={Lookup}>
-          Search
-        </Action>
-      </div>
-    );
-  }
-
   render() {
-    if(this.state.lookupRedirect) {
-      return <Redirect to={this.state.lookupRedirect} />;
-    }
-
     // This is the root component, actual path may be "/content" or "/"
     return (
       <div className="page-container contents-page-container">
         <div className="actions-container content-lookup-actions-container">
           <Action type="link" to={UrlJoin("/content", "create")}>New Library</Action>
-          { this.ContentLookup() }
+          <ContentLookup />
         </div>
         <PageHeader header="Content Libraries" />
         <div className="page-content-container">
