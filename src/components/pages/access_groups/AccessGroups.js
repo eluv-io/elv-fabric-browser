@@ -5,6 +5,7 @@ import {PageHeader} from "../../components/Page";
 import {Action} from "elv-components-js";
 import Listing from "../../components/Listing";
 import {inject, observer} from "mobx-react";
+import ContentLookup from "../../components/ContentLookup";
 
 @inject("groupStore")
 @observer
@@ -56,8 +57,9 @@ class AccessGroups extends React.Component {
   render() {
     return (
       <div className="page-container contents-page-container">
-        <div className="actions-container">
+        <div className="actions-container content-lookup-actions-container">
           <Action type="link" to="/access-groups/create">New Access Group</Action>
+          <ContentLookup />
         </div>
         <PageHeader header="Access Groups" />
         <div className="page-content">

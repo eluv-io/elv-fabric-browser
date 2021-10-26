@@ -30,7 +30,16 @@
   cursor: pointer;
 }
 
+.actions-wrapper {
+  .actions-container {
+    &:not(:last-child) {
+      margin-bottom: $elv-spacing-s;
+    }
+  }
+}
+
 .actions-container {
+  min-height: 1.7rem;
   position: relative;
 
   &.manage-actions {
@@ -46,6 +55,7 @@
   }
 
   .refresh-button {
+    margin-right: $elv-spacing-xs;
     position: absolute;
     right: 0;
 
