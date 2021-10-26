@@ -4,6 +4,7 @@ import {PageHeader} from "../../components/Page";
 import {Action, Tabs} from "elv-components-js";
 import Listing from "../../components/Listing";
 import {inject, observer} from "mobx-react";
+import ContentLookup from "../../components/ContentLookup";
 
 @inject("contractStore")
 @observer
@@ -98,10 +99,13 @@ class Contracts extends React.Component {
 
     return (
       <div className="page-container contents-page-container">
-        <div className="actions-container">
-          <Action type="link" to="/contracts/compile">New Contract</Action>
-          <Action type="link" to="/contracts/deploy">Deploy Contract</Action>
-          <Action type="link" to="/contracts/watch">Watch Contract</Action>
+        <div className="actions-wrapper">
+          <div className="actions-container content-lookup-actions-container">
+            <Action type="link" to="/contracts/compile">New Contract</Action>
+            <Action type="link" to="/contracts/deploy">Deploy Contract</Action>
+            <Action type="link" to="/contracts/watch">Watch Contract</Action>
+            <ContentLookup />
+          </div>
         </div>
         <PageHeader header="Contracts" />
         { tabs }

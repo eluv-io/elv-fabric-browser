@@ -1,9 +1,16 @@
-import React, {useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {LabelledField} from "./LabelledField";
 import {Action} from "elv-components-js";
 
-const ToggleSection = ({label, children, className=""}) => {
-  const [show, setShow] = useState(false);
+const ToggleSection = React.forwardRef(({label, children, className="", toggleOpen=false}) => {
+  const [show, setShow] = useState(toggleOpen);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if(toggleOpen && ref.current) {
+      ref.current.scrollIntoView(true);
+    }
+  }, []);
 
   return (
     <div className={`formatted-data ${className || ""}`}>
@@ -12,9 +19,11 @@ const ToggleSection = ({label, children, className=""}) => {
           { `${show ? "Hide" : "Show"} ${label}` }
         </Action>
       </LabelledField>
-      { show ? children : null }
+      <div className="children-wrapper" ref={ref}>
+        { show ? children : null }
+      </div>
     </div>
   );
-};
+});
 
 export default ToggleSection;
