@@ -23,6 +23,7 @@ import RefreshIcon from "../../../static/icons/refresh.svg";
 import InfoIcon from "../../../static/icons/help-circle.svg";
 import Diff from "../../components/Diff";
 import ContentLookup from "../../components/ContentLookup";
+import {ContentBrowserModal} from "../../components/ContentBrowser";
 
 const DownloadPart = ({libraryId, objectId, versionHash, partHash, partName, DownloadMethod}) => {
   const [progress, setProgress] = useState(undefined);
@@ -75,7 +76,8 @@ class ContentObject extends React.Component {
       loadingVersions: false,
       currentVersionToggled: false,
       prevVersionsToggled: false,
-      moreOptions: false
+      moreOptions: false,
+      showCopyObjectModal: false
     };
 
     this.toggleRef = React.createRef();
@@ -712,6 +714,12 @@ class ContentObject extends React.Component {
       );
     }
 
+    const copyObjectButton = (
+      <Action className="primary" onClick={() => this.setState({showCopyObjectModal: true})}>
+        Copy
+      </Action>
+    );
+
     return (
       <div className="actions-wrapper">
         <div className="actions-container">
@@ -727,6 +735,7 @@ class ContentObject extends React.Component {
           <Action type="link" to={UrlJoin(this.props.match.url, "apps")}>
             Apps
           </Action>
+          { copyObjectButton }
           { deleteObjectButton }
           { saveDraftButton }
           { refreshButton }
@@ -777,6 +786,23 @@ class ContentObject extends React.Component {
         onChange={(value) => this.setState({view: value})}
       />
     );
+  }
+
+  CopyObject = async (object) => {
+    const originalObject = object.name ? object : this.props.objectStore.object;
+
+    await this.props.objectStore.CopyContentObject({
+      libraryId: object.libraryId,
+      originalVersionHash: originalObject.versionHash || originalObject.hash,
+      options: {
+        meta: {
+          public: {
+            name: `${originalObject.name} (copy)`
+          }
+        }
+      },
+      originalObject: originalObject
+    });
   }
 
   PageContent() {
@@ -868,6 +894,15 @@ class ContentObject extends React.Component {
             { pageContent }
           </div>
         </div>
+        {
+          this.state.showCopyObjectModal ?
+            <ContentBrowserModal
+              Close={() =>  this.setState({showCopyObjectModal: false})}
+              Select={(selection) => this.CopyObject(selection)}
+              requireObject={false}
+              header="Select a library"
+            /> : null
+        }
       </div>
     );
   }

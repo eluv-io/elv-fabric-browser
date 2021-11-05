@@ -16,9 +16,11 @@ import ToggleSection from "../../components/ToggleSection";
 import JSONField from "../../components/JSONField";
 import ContentLibraryGroupForm from "./ContentLibraryGroupForm";
 import ContentLookup from "../../components/ContentLookup";
+import {ContentBrowserModal} from "../../components/ContentBrowser";
 
 @inject("libraryStore")
 @inject("groupStore")
+@inject("objectStore")
 @observer
 class ContentLibrary extends React.Component {
   constructor(props) {
@@ -307,12 +309,20 @@ class ContentLibrary extends React.Component {
       </Action>
     );
 
-
-    let contributeButton;
+    let createButton;
     if(this.props.libraryStore.library.canContribute) {
-      contributeButton = (
+      createButton = (
         <Action type="link" to={UrlJoin(this.props.match.url, "create")}>
-          {this.props.libraryStore.library.isContentSpaceLibrary ? "New Content Type" : "Contribute"}
+          {this.props.libraryStore.library.isContentSpaceLibrary ? "New Content Type" : "Create"}
+        </Action>
+      );
+    }
+
+    let createFromExistingButton;
+    if(this.props.libraryStore.library.canContribute && !this.props.libraryStore.library.isContentSpaceLibrary) {
+      createFromExistingButton = (
+        <Action type="button" onClick={() => this.setState({showCopyObjectModal: true})}>
+          Create From Existing
         </Action>
       );
     }
@@ -325,7 +335,7 @@ class ContentLibrary extends React.Component {
           </div>
           <div className="actions-container">
             { backButton }
-            { contributeButton }
+            { createButton }
             { refreshButton }
           </div>
         </div>
@@ -345,7 +355,8 @@ class ContentLibrary extends React.Component {
           <Action type="link" to={UrlJoin(this.props.match.url, "types")}>
             Types
           </Action>
-          { contributeButton }
+          { createButton }
+          { createFromExistingButton }
           { refreshButton }
         </div>
       </div>
@@ -360,6 +371,23 @@ class ContentLibrary extends React.Component {
     } else if(this.state.view === "groups") {
       return this.AccessGroupsListing();
     }
+  }
+
+  CopyObject = async (object) => {
+    const originalObject = object.name ? object : this.props.objectStore.object;
+
+    await this.props.objectStore.CopyContentObject({
+      libraryId: object.libraryId,
+      originalVersionHash: originalObject.versionHash || originalObject.hash,
+      options: {
+        meta: {
+          public: {
+            name: `${originalObject.name} (copy)`
+          }
+        }
+      },
+      originalObject: originalObject
+    });
   }
 
   PageContent() {
@@ -388,6 +416,10 @@ class ContentLibrary extends React.Component {
             { this.PageView() }
           </div>
         </div>
+        {
+          this.state.showCopyObjectModal ?
+            <ContentBrowserModal Close={() =>  this.setState({showCopyObjectModal: false})} Select={(selection) => this.CopyObject(selection)}/> : null
+        }
       </div>
     );
   }

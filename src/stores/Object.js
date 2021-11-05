@@ -216,6 +216,17 @@ class ObjectStore {
     return this.writeTokens[objectId];
   });
 
+  @action.bound CopyContentObject = flow(function * ({libraryId, originalVersionHash, options={}, originalObject=null}) {
+    const response = yield Fabric.CopyContentObject({libraryId, originalVersionHash, options, originalObject});
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully copied object",
+      redirect: true
+    });
+
+    return response;
+  });
+
   @action.bound
   FinalizeContentObject = flow(function * ({libraryId, objectId}) {
     const object = this.objects[objectId];
@@ -612,7 +623,7 @@ class ObjectStore {
   });
 
   @action.bound
-  RevewContentObject = flow(function * ({libraryId, objectId, approve, note}) {
+  ReviewContentObject = flow(function * ({libraryId, objectId, approve, note}) {
     yield Fabric.ReviewContentObject({libraryId, objectId, approve, note});
 
     const currentAccountAddress = yield Fabric.CurrentAccountAddress();
