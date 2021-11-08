@@ -216,7 +216,7 @@ class ObjectStore {
     return this.writeTokens[objectId];
   });
 
-  @action.bound CopyContentObject = flow(function * ({libraryId, originalVersionHash, options={}, originalObject=null}) {
+  @action.bound CopyContentObject = flow(function * ({libraryId, originalVersionHash, options={}}) {
     const response = yield Fabric.CopyContentObject({libraryId, originalVersionHash, options, originalObject});
 
     this.rootStore.notificationStore.SetNotificationMessage({

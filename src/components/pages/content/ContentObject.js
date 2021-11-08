@@ -800,8 +800,7 @@ class ContentObject extends React.Component {
             name: `${originalObject.name} (copy)`
           }
         }
-      },
-      originalObject: originalObject
+      }
     });
   }
 

@@ -385,8 +385,7 @@ class ContentLibrary extends React.Component {
             name: `${originalObject.name} (copy)`
           }
         }
-      },
-      originalObject: originalObject
+      }
     });
   }
 

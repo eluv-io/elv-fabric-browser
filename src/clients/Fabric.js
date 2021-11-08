@@ -955,14 +955,12 @@ const Fabric = {
   CopyContentObject: async({
     libraryId,
     originalVersionHash,
-    options={},
-    originalObject=null
+    options={}
   }) => {
     const response = await client.CopyContentObject({
       libraryId,
       originalVersionHash,
-      options,
-      originalObject
+      options
     });
 
     return response;

@@ -13,15 +13,15 @@ const ContentLookup = ({Select}) => {
   };
 
   return (
-    <div className="actions-container content-browse-lookup">
+    <div className="actions-container content-browser-lookup">
       <input
-        className="action-input content-browse-lookup-input"
+        className="action-input content-browser-lookup-input"
         value={value}
         onChange={event => setValue(event.target.value)}
         onKeyDown={onEnterPressed(Lookup)}
         placeholder="Find content by ID, hash, or address"
       />
-      <button className="content-browse-lookup-button" onClick={Lookup}>
+      <button className="content-browser-lookup-button" onClick={Lookup}>
         <ImageIcon
           title="Find Content"
           icon={SearchIcon}
