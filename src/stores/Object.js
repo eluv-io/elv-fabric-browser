@@ -217,7 +217,7 @@ class ObjectStore {
   });
 
   @action.bound CopyContentObject = flow(function * ({libraryId, originalVersionHash, options={}}) {
-    const response = yield Fabric.CopyContentObject({libraryId, originalVersionHash, options, originalObject});
+    const response = yield Fabric.CopyContentObject({libraryId, originalVersionHash, options});
 
     this.rootStore.notificationStore.SetNotificationMessage({
       message: "Successfully copied object",

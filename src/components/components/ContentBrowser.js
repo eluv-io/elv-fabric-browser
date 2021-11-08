@@ -3,7 +3,7 @@ import {contentStore} from "../../stores";
 import {observer} from "mobx-react";
 
 import SearchIcon from "../../static/icons/search.svg";
-import {Modal, onEnterPressed, ImageIcon, AsyncComponent, Action} from "elv-components-js";
+import {Modal, onEnterPressed, ImageIcon, AsyncComponent, Action, LoadingElement} from "elv-components-js";
 
 const ContentLookup = ({Select}) => {
   const [value, setValue] = useState("");
@@ -200,101 +200,106 @@ const ContentBrowser = observer(({header, Select, Close, requireVersion=false, r
   const [objectId, setObjectId] = useState("");
   const [objectName, setObjectName] = useState("");
   const [objectPlayable, setObjectPlayable] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const FinalSelect = args => {
-    Select(args);
+  const FinalSelect = async (args) => {
+    setLoading(true);
+    await Select(args);
+    setLoading(false);
     Close();
   };
   return (
     <div className="content-browser">
-      <div className="content-browser-header-actions">
-        <ContentLookup
-          Select={({name, playable, libraryId, objectId, versionHash, latestVersionHash}) => {
-            if(versionHash) {
-              FinalSelect({name, libraryId, objectId, versionHash});
-            } else if(objectId && !requireVersion) {
-              FinalSelect({name, libraryId, objectId, versionHash: latestVersionHash});
-            } else if(objectId) {
-              setLibraryId(libraryId);
-              setObjectId(objectId);
-            } else if(libraryId) {
-              setLibraryId(libraryId);
-            }
-
-            setObjectName(name);
-            setObjectPlayable(playable);
-          }}
-        />
-        {
-          Close ?
-            <div className="actions-container">
-              <Action type="button" className="secondary" onClick={Close}>Cancel</Action>
-            </div> : null
-        }
-      </div>
-      <div className="content-browser-header">
-        <h1 className="content-header">
-          { header || "Select an Object" }
-        </h1>
-      </div>
-      <div className="content-browser-navigation">
-        {
-          libraryId ?
-            <a className="content-browser-back-button" onClick={() => {
-              if(objectId) {
-                setObjectId(undefined);
-                setObjectName("");
-                setObjectPlayable(false);
-              } else {
-                setLibraryId(undefined);
+      <LoadingElement loading={loading}>
+        <div className="content-browser-header-actions">
+          <ContentLookup
+            Select={({name, playable, libraryId, objectId, versionHash, latestVersionHash}) => {
+              if(versionHash) {
+                FinalSelect({name, libraryId, objectId, versionHash});
+              } else if(objectId && !requireVersion) {
+                FinalSelect({name, libraryId, objectId, versionHash: latestVersionHash});
+              } else if(objectId) {
+                setLibraryId(libraryId);
+                setObjectId(objectId);
+              } else if(libraryId) {
+                setLibraryId(libraryId);
               }
-            }
-            }>
-              Back to {objectId ? "Content Objects" : "Libraries"}
-            </a> : null
-        }
-        <h2 className="content-browser-location">
-          { !libraryId ? "Content Libraries" : (objectName || (contentStore.libraries[libraryId] || {}).name) }
-        </h2>
-      </div>
-      { !libraryId ?
-        <LibraryBrowser
-          Select={libraryId => {
-            setLibraryId(libraryId);
 
-            if(!requireObject) {
-              FinalSelect({libraryId});
-            }
-          }}
-        /> : null
-      }
-      { libraryId && !objectId ?
-        <ObjectBrowser
-          libraryId={libraryId}
-          Select={({name, playable, objectId, versionHash}) => {
-            if(requireVersion) {
               setObjectName(name);
-              setObjectPlayable(name);
-              setObjectId(objectId);
-            } else {
-              FinalSelect({
-                name,
-                playable,
-                libraryId,
-                objectId,
-                versionHash
-              });
-            }
-          }}
-        /> : null
-      }
-      { libraryId && objectId ?
-        <VersionBrowser
-          libraryId={libraryId}
-          objectId={objectId}
-          Select={versionHash => FinalSelect({name: objectName, playable: objectPlayable, libraryId, objectId, versionHash})}
-        /> : null
-      }
+              setObjectPlayable(playable);
+            }}
+          />
+          {
+            Close ?
+              <div className="actions-container">
+                <Action type="button" className="secondary" onClick={Close}>Cancel</Action>
+              </div> : null
+          }
+        </div>
+        <div className="content-browser-header">
+          <h1 className="content-header">
+            { header || "Select an Object" }
+          </h1>
+        </div>
+        <div className="content-browser-navigation">
+          {
+            libraryId ?
+              <a className="content-browser-back-button" onClick={() => {
+                if(objectId) {
+                  setObjectId(undefined);
+                  setObjectName("");
+                  setObjectPlayable(false);
+                } else {
+                  setLibraryId(undefined);
+                }
+              }
+              }>
+                Back to {objectId ? "Content Objects" : "Libraries"}
+              </a> : null
+          }
+          <h2 className="content-browser-location">
+            { !libraryId ? "Content Libraries" : (objectName || (contentStore.libraries[libraryId] || {}).name) }
+          </h2>
+        </div>
+        { !libraryId ?
+          <LibraryBrowser
+            Select={libraryId => {
+              setLibraryId(libraryId);
+
+              if(!requireObject) {
+                FinalSelect({libraryId});
+              }
+            }}
+          /> : null
+        }
+        { libraryId && !objectId ?
+          <ObjectBrowser
+            libraryId={libraryId}
+            Select={({name, playable, objectId, versionHash}) => {
+              if(requireVersion) {
+                setObjectName(name);
+                setObjectPlayable(name);
+                setObjectId(objectId);
+              } else {
+                FinalSelect({
+                  name,
+                  playable,
+                  libraryId,
+                  objectId,
+                  versionHash
+                });
+              }
+            }}
+          /> : null
+        }
+        { libraryId && objectId ?
+          <VersionBrowser
+            libraryId={libraryId}
+            objectId={objectId}
+            Select={versionHash => FinalSelect({name: objectName, playable: objectPlayable, libraryId, objectId, versionHash})}
+          /> : null
+        }
+      </LoadingElement>
     </div>
   );
 });

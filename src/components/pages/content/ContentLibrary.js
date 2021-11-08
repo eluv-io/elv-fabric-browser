@@ -32,7 +32,8 @@ class ContentLibrary extends React.Component {
       version: 0,
       pageVersion: 0,
       showGroupForm: false,
-      listingVersion: 0
+      listingVersion: 0,
+      objectListingVersion: 0
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -179,7 +180,7 @@ class ContentLibrary extends React.Component {
   ObjectListing() {
     return (
       <Listing
-        key="library-objects-view"
+        key={`library-objects-view-${this.state.objectListingVersion}`}
         pageId="ContentObjects"
         paginate={true}
         page={this.props.libraryStore.library.listingParams.page}
@@ -417,7 +418,10 @@ class ContentLibrary extends React.Component {
         </div>
         {
           this.state.showCopyObjectModal ?
-            <ContentBrowserModal Close={() =>  this.setState({showCopyObjectModal: false})} Select={(selection) => this.CopyObject(selection)}/> : null
+            <ContentBrowserModal
+              Close={() =>  this.setState({showCopyObjectModal: false, objectListingVersion: this.state.objectListingVersion + 1})}
+              Select={selection => this.CopyObject(selection)}
+            /> : null
         }
       </div>
     );
