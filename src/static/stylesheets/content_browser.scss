@@ -13,7 +13,7 @@
   width: 100%;
 
   .content-browser {
-    height: 100vh;
+    height: calc(100vh - 100px);
     max-width: 1000px;
     padding: 20px 40px 40px;
     width: MIN(100vw, 100%);
@@ -202,9 +202,12 @@
     }
   }
 
-  .copying-text {
-    display: flex;
+  &.copy-loading {
     justify-content: center;
+    align-items: center;
+  }
+
+  .copying-text {
     margin-top: $elv-spacing-s;
   }
 }

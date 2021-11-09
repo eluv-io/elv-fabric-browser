@@ -209,7 +209,7 @@ const ContentBrowser = observer(({header, Select, Close, requireVersion=false, r
     Close();
   };
   return (
-    <div className="content-browser">
+    <div className={`content-browser ${loading ? "copy-loading" : ""}`}>
       <LoadingElement loading={loading}>
         <div className="content-browser-header-actions">
           <ContentLookup
