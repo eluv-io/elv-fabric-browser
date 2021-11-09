@@ -300,6 +300,10 @@ const ContentBrowser = observer(({header, Select, Close, requireVersion=false, r
           /> : null
         }
       </LoadingElement>
+      {
+        loading ?
+          <div className="copying-text">Copying object</div> : null
+      }
     </div>
   );
 });

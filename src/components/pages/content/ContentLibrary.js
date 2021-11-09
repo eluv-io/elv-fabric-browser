@@ -17,6 +17,7 @@ import JSONField from "../../components/JSONField";
 import ContentLibraryGroupForm from "./ContentLibraryGroupForm";
 import ContentLookup from "../../components/ContentLookup";
 import {ContentBrowserModal} from "../../components/ContentBrowser";
+import {Redirect} from "react-router";
 
 @inject("libraryStore")
 @inject("groupStore")
@@ -33,7 +34,7 @@ class ContentLibrary extends React.Component {
       pageVersion: 0,
       showGroupForm: false,
       listingVersion: 0,
-      objectListingVersion: 0
+      objectId: ""
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -377,7 +378,7 @@ class ContentLibrary extends React.Component {
   CopyObject = async (object) => {
     const originalObject = object.name ? object : this.props.objectStore.object;
 
-    await this.props.objectStore.CopyContentObject({
+    const {id} = await this.props.objectStore.CopyContentObject({
       libraryId: object.libraryId,
       originalVersionHash: originalObject.versionHash || originalObject.hash,
       options: {
@@ -388,6 +389,8 @@ class ContentLibrary extends React.Component {
         }
       }
     });
+
+    this.setState({objectId: id});
   }
 
   PageContent() {
@@ -402,6 +405,12 @@ class ContentLibrary extends React.Component {
         onChange={(value) => this.setState({view: value})}
       />
     );
+
+    if(this.state.objectId) {
+      const redirectPath = UrlJoin(this.props.match.url, this.state.objectId);
+
+      return <Redirect push to={redirectPath} />;
+    }
 
     return (
       <div className="page-container contents-page-container">
@@ -419,7 +428,7 @@ class ContentLibrary extends React.Component {
         {
           this.state.showCopyObjectModal ?
             <ContentBrowserModal
-              Close={() =>  this.setState({showCopyObjectModal: false, objectListingVersion: this.state.objectListingVersion + 1})}
+              Close={() =>  this.setState({showCopyObjectModal: false})}
               Select={selection => this.CopyObject(selection)}
             /> : null
         }

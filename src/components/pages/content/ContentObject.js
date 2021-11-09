@@ -77,10 +77,10 @@ class ContentObject extends React.Component {
       currentVersionToggled: false,
       prevVersionsToggled: false,
       moreOptions: false,
-      showCopyObjectModal: false
+      showCopyObjectModal: false,
+      redirectIds: {}
     };
 
-    this.toggleRef = React.createRef();
     this.PageContent = this.PageContent.bind(this);
     this.SubmitContentObject = this.SubmitContentObject.bind(this);
     this.FinalizeABRMezzanine = this.FinalizeABRMezzanine.bind(this);
@@ -791,7 +791,7 @@ class ContentObject extends React.Component {
   CopyObject = async (object) => {
     const originalObject = object.name ? object : this.props.objectStore.object;
 
-    await this.props.objectStore.CopyContentObject({
+    const {id, qlib_id} = await this.props.objectStore.CopyContentObject({
       libraryId: object.libraryId,
       originalVersionHash: originalObject.versionHash || originalObject.hash,
       options: {
@@ -802,11 +802,22 @@ class ContentObject extends React.Component {
         }
       }
     });
+
+    this.setState({
+      redirectIds: {
+        objectId: id,
+        libraryId: qlib_id
+      }
+    });
   }
 
   PageContent() {
     if(this.state.deleted) {
       return <Redirect push to={Path.dirname(this.props.match.url)} />;
+    }
+
+    if(this.state.redirectIds.objectId && this.state.redirectIds.libraryId) {
+      return <Redirect to={`/content/${this.state.redirectIds.libraryId}/${this.state.redirectIds.objectId}`} />;
     }
 
     let header;
