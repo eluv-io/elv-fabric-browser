@@ -244,6 +244,11 @@ class ObjectStore {
   });
 
   @action.bound
+  DiscardWriteToken({objectId}) {
+    delete this.writeTokens[objectId];
+  }
+
+  @action.bound
   UpdateMetadata = flow(function * ({libraryId, objectId, metadataSubtree="/", metadata}) {
     const writeToken = yield this.EditContentObject({libraryId, objectId, action: "Update metadata"});
 
