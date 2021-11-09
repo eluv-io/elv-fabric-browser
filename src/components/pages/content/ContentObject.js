@@ -890,6 +890,8 @@ class ContentObject extends React.Component {
         key={`object-page-${this.state.pageVersion}`}
         Load={
           async () => {
+            this.props.objectStore.DiscardWriteToken({objectId: this.props.objectStore.objectId});
+
             await Promise.all(
               [
                 this.props.libraryStore.ContentLibrary({
