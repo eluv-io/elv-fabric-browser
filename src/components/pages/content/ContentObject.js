@@ -789,7 +789,7 @@ class ContentObject extends React.Component {
   }
 
   CopyObject = async (object) => {
-    const originalObject = object.name ? object : this.props.objectStore.object;
+    const originalObject = object.versionHash ? object : this.props.objectStore.object;
 
     const {id, qlib_id} = await this.props.objectStore.CopyContentObject({
       libraryId: object.libraryId,

@@ -6,49 +6,14 @@ class ContentStore {
 
   @observable libraries = undefined;
   contentTypesPromise = undefined;
-  tenantObjectId = undefined;
-  tenant = undefined;
 
   @computed get client() {
     return this.rootStore.client;
   }
 
-  @computed get events() {
-    return Object.keys(Utils.SafeTraverse(this.tenant, "sites") || {}).map(eventSlug => {
-      const event = this.tenant.sites[eventSlug];
-
-      if(!event || !event["."]) {
-        return;
-      }
-
-      return {
-        objectId: Utils.DecodeVersionHash(event["."].source).objectId,
-        versionHash: event["."].source,
-        slug: eventSlug,
-        name: event.display_title
-      };
-    }).filter(event => event);
-  }
-
   constructor(rootStore) {
-    // makeAutoObservable(this,
-    //   {
-    //     client: computed,
-    //     events: computed
-    //   }
-    // );
-
     this.rootStore = rootStore;
   }
-
-  Initialize = flow(function * () {
-    // Loading content types takes a while, so start it immediately
-    this.contentTypesPromise = this.client.ContentTypes();
-
-    this.tenantObjectId = yield this.LiveTenantObjectId();
-
-    yield this.LoadTenant();
-  });
 
   LoadLibraries = flow(function * () {
     if(!this.libraries) {

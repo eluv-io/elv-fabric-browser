@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from "react";
-import {contentStore} from "../../stores";
+import {contentStore, objectStore} from "../../stores";
 import {observer} from "mobx-react";
 
 import SearchIcon from "../../static/icons/search.svg";
-import {Modal, onEnterPressed, ImageIcon, AsyncComponent, Action, LoadingElement} from "elv-components-js";
+import {Modal, onEnterPressed, ImageIcon, AsyncComponent, Action, LoadingElement, Confirm} from "elv-components-js";
 
 const ContentLookup = ({Select}) => {
   const [value, setValue] = useState("");
@@ -56,11 +56,13 @@ const Controls = ({filter, setFilter, page, setPage, totalPages}) => {
         value={tempFilter}
         onChange={event => {
           clearTimeout(filterTimeout);
-          setTempFilter(event.target.value);
+          const {value} = event.target;
+
+          setTempFilter(value);
           filterTimeout = setTimeout(() => {
             setPage(1);
-            setTempFilter(event.target.value);
-            setFilter(event.target.value);
+            setTempFilter(value);
+            setFilter(value);
           }, 750);
         }}
         className="action-input content-browser-filter"
@@ -184,7 +186,7 @@ const LibraryBrowser = observer(({Select}) => {
               .sort((a, b) => (a.name || "").toLowerCase() < (b.name || "").toLowerCase() ? -1 : 1)
               .slice((page - 1) * contentStore.OBJECTS_PER_PAGE, page * contentStore.OBJECTS_PER_PAGE)
               .map(({libraryId, name}) =>
-                <button onClick={() => Select(libraryId)} className="list-item content-list-item" key={`library-${libraryId}`}>
+                <button onClick={() => Select({libraryId, libraryName: name})} className="list-item content-list-item" key={`library-${libraryId}`}>
                   { name }
                 </button>
               )
@@ -197,6 +199,7 @@ const LibraryBrowser = observer(({Select}) => {
 
 const ContentBrowser = observer(({header, Select, Close, requireVersion=false, requireObject=true}) => {
   const [libraryId, setLibraryId] = useState("");
+  const [libraryName, setLibraryName] = useState("");
   const [objectId, setObjectId] = useState("");
   const [objectName, setObjectName] = useState("");
   const [objectPlayable, setObjectPlayable] = useState(false);
@@ -204,13 +207,19 @@ const ContentBrowser = observer(({header, Select, Close, requireVersion=false, r
 
   const FinalSelect = async (args) => {
     setLoading(true);
-    await Select(args);
+    await Confirm({
+      message: `Are you sure you want to copy ${args.name} into ${args.libraryName}?`,
+      onConfirm: async () => {
+        await Select(args);
+      }
+    });
     setLoading(false);
     Close();
   };
+
   return (
-    <div className={`content-browser ${loading ? "copy-loading" : ""}`}>
-      <LoadingElement loading={loading}>
+    <div className="content-browser">
+      <LoadingElement loading={loading} noIndicator={true}>
         <div className="content-browser-header-actions">
           <ContentLookup
             Select={({name, playable, libraryId, objectId, versionHash, latestVersionHash}) => {
@@ -263,11 +272,16 @@ const ContentBrowser = observer(({header, Select, Close, requireVersion=false, r
         </div>
         { !libraryId ?
           <LibraryBrowser
-            Select={libraryId => {
+            Select={({libraryId, libraryName}) => {
               setLibraryId(libraryId);
+              setLibraryName(libraryName);
 
               if(!requireObject) {
-                FinalSelect({libraryId});
+                FinalSelect({
+                  libraryId,
+                  libraryName,
+                  name: objectStore.object.name
+                });
               }
             }}
           /> : null
@@ -286,7 +300,8 @@ const ContentBrowser = observer(({header, Select, Close, requireVersion=false, r
                   playable,
                   libraryId,
                   objectId,
-                  versionHash
+                  versionHash,
+                  libraryName
                 });
               }
             }}
@@ -300,10 +315,6 @@ const ContentBrowser = observer(({header, Select, Close, requireVersion=false, r
           /> : null
         }
       </LoadingElement>
-      {
-        loading ?
-          <div className="copying-text">Copying object</div> : null
-      }
     </div>
   );
 });
