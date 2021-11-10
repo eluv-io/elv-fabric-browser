@@ -87,6 +87,20 @@ class ContentObject extends React.Component {
     this.UpdateMetadata = this.UpdateMetadata.bind(this);
   }
 
+  async componentDidMount() {
+    this.mounted = true;
+
+    // Wait a bit to avoid react mount-unmount bounce
+    await new Promise(resolve => setTimeout(resolve, 50));
+    if(!this.mounted) {
+      return;
+    }
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
+  }
+
   async SubmitContentObject(confirmationMessage) {
     await Confirm({
       message: confirmationMessage,
@@ -907,7 +921,11 @@ class ContentObject extends React.Component {
         {
           this.state.showCopyObjectModal ?
             <ContentBrowserModal
-              Close={() =>  this.setState({showCopyObjectModal: false})}
+              Close={() => {
+                if(this.mounted) {
+                  this.setState({showCopyObjectModal: false});
+                }
+              }}
               Select={(selection) => this.CopyObject(selection)}
               requireObject={false}
               header="Select a library"

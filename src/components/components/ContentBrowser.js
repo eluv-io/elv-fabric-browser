@@ -213,7 +213,6 @@ const ContentBrowser = observer(({header, Select, Close, requireVersion=false, r
         await Select(args);
       }
     });
-    setLoading(false);
     Close();
   };
 
