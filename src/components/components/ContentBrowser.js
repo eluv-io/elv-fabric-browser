@@ -211,9 +211,17 @@ const ContentBrowser = observer(({header, Select, Close, requireVersion=false, r
       message: `Are you sure you want to copy ${args.name} into ${args.libraryName}?`,
       onConfirm: async () => {
         await Select(args);
+        Close();
+      },
+      onCancel: () => {
+        setLibraryId(undefined);
+        setLibraryName(undefined);
+        setObjectId(undefined);
+        setObjectName("");
+        setObjectPlayable(false);
+        setLoading(false);
       }
     });
-    Close();
   };
 
   return (
