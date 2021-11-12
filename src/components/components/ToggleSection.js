@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from "react";
 import {LabelledField} from "./LabelledField";
 import {Action} from "elv-components-js";
 
-const ToggleSection = React.forwardRef(({label, children, className="", toggleOpen=false}) => {
+const ToggleSection = ({label, children, className="", toggleOpen=false}) => {
   const [show, setShow] = useState(toggleOpen);
   const ref = useRef(null);
 
@@ -24,6 +24,6 @@ const ToggleSection = React.forwardRef(({label, children, className="", toggleOp
       </div>
     </div>
   );
-});
+};
 
 export default ToggleSection;

@@ -952,6 +952,20 @@ const Fabric = {
     });
   },
 
+  CopyContentObject: async({
+    libraryId,
+    originalVersionHash,
+    options={}
+  }) => {
+    const response = await client.CopyContentObject({
+      libraryId,
+      originalVersionHash,
+      options
+    });
+
+    return response;
+  },
+
   FinalizeContentObject: async ({
     libraryId,
     objectId,

@@ -16,9 +16,12 @@ import ToggleSection from "../../components/ToggleSection";
 import JSONField from "../../components/JSONField";
 import ContentLibraryGroupForm from "./ContentLibraryGroupForm";
 import ContentLookup from "../../components/ContentLookup";
+import {ContentBrowserModal} from "../../components/ContentBrowser";
+import {Redirect} from "react-router";
 
 @inject("libraryStore")
 @inject("groupStore")
+@inject("objectStore")
 @observer
 class ContentLibrary extends React.Component {
   constructor(props) {
@@ -30,7 +33,8 @@ class ContentLibrary extends React.Component {
       version: 0,
       pageVersion: 0,
       showGroupForm: false,
-      listingVersion: 0
+      listingVersion: 0,
+      objectId: ""
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -177,7 +181,7 @@ class ContentLibrary extends React.Component {
   ObjectListing() {
     return (
       <Listing
-        key="library-objects-view"
+        key={`library-objects-view-${this.state.objectListingVersion}`}
         pageId="ContentObjects"
         paginate={true}
         page={this.props.libraryStore.library.listingParams.page}
@@ -307,12 +311,20 @@ class ContentLibrary extends React.Component {
       </Action>
     );
 
-
-    let contributeButton;
+    let createButton;
     if(this.props.libraryStore.library.canContribute) {
-      contributeButton = (
+      createButton = (
         <Action type="link" to={UrlJoin(this.props.match.url, "create")}>
-          {this.props.libraryStore.library.isContentSpaceLibrary ? "New Content Type" : "Contribute"}
+          {this.props.libraryStore.library.isContentSpaceLibrary ? "New Content Type" : "Create"}
+        </Action>
+      );
+    }
+
+    let createFromExistingButton;
+    if(this.props.libraryStore.library.canContribute && !this.props.libraryStore.library.isContentSpaceLibrary) {
+      createFromExistingButton = (
+        <Action type="button" onClick={() => this.setState({showCopyObjectModal: true})}>
+          Create From Existing
         </Action>
       );
     }
@@ -325,7 +337,7 @@ class ContentLibrary extends React.Component {
           </div>
           <div className="actions-container">
             { backButton }
-            { contributeButton }
+            { createButton }
             { refreshButton }
           </div>
         </div>
@@ -345,7 +357,8 @@ class ContentLibrary extends React.Component {
           <Action type="link" to={UrlJoin(this.props.match.url, "types")}>
             Types
           </Action>
-          { contributeButton }
+          { createButton }
+          { createFromExistingButton }
           { refreshButton }
         </div>
       </div>
@@ -362,6 +375,24 @@ class ContentLibrary extends React.Component {
     }
   }
 
+  CopyObject = async (object) => {
+    const originalObject = object.name ? object : this.props.objectStore.object;
+
+    const {id} = await this.props.objectStore.CopyContentObject({
+      libraryId: object.libraryId,
+      originalVersionHash: originalObject.versionHash || originalObject.hash,
+      options: {
+        meta: {
+          public: {
+            name: `${originalObject.name} (copy)`
+          }
+        }
+      }
+    });
+
+    this.setState({objectId: id});
+  }
+
   PageContent() {
     const tabs = (
       <Tabs
@@ -374,6 +405,12 @@ class ContentLibrary extends React.Component {
         onChange={(value) => this.setState({view: value})}
       />
     );
+
+    if(this.state.objectId) {
+      const redirectPath = UrlJoin(this.props.match.url, this.state.objectId);
+
+      return <Redirect push to={redirectPath} />;
+    }
 
     return (
       <div className="page-container contents-page-container">
@@ -388,6 +425,13 @@ class ContentLibrary extends React.Component {
             { this.PageView() }
           </div>
         </div>
+        {
+          this.state.showCopyObjectModal ?
+            <ContentBrowserModal
+              Close={() =>  this.setState({showCopyObjectModal: false})}
+              Select={selection => this.CopyObject(selection)}
+            /> : null
+        }
       </div>
     );
   }
