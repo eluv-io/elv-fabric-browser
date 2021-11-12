@@ -207,7 +207,7 @@ class ContentObjectForm extends React.Component {
   }
 
   PageContent() {
-    const legend = this.state.createForm ? "Contribute content" : `Manage ${this.state.name || "content"}`;
+    const legend = this.state.createForm ? "Create content" : `Manage ${this.state.name || "content"}`;
 
     let redirectPath = Path.dirname(this.props.match.url);
     if(this.state.createForm) {

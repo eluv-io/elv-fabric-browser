@@ -23,6 +23,7 @@ import RefreshIcon from "../../../static/icons/refresh.svg";
 import InfoIcon from "../../../static/icons/help-circle.svg";
 import Diff from "../../components/Diff";
 import ContentLookup from "../../components/ContentLookup";
+import {ContentBrowserModal} from "../../components/ContentBrowser";
 
 const DownloadPart = ({libraryId, objectId, versionHash, partHash, partName, DownloadMethod}) => {
   const [progress, setProgress] = useState(undefined);
@@ -75,14 +76,29 @@ class ContentObject extends React.Component {
       loadingVersions: false,
       currentVersionToggled: false,
       prevVersionsToggled: false,
-      moreOptions: false
+      moreOptions: false,
+      showCopyObjectModal: false,
+      redirectIds: {}
     };
 
-    this.toggleRef = React.createRef();
     this.PageContent = this.PageContent.bind(this);
     this.SubmitContentObject = this.SubmitContentObject.bind(this);
     this.FinalizeABRMezzanine = this.FinalizeABRMezzanine.bind(this);
     this.UpdateMetadata = this.UpdateMetadata.bind(this);
+  }
+
+  async componentDidMount() {
+    this.mounted = true;
+
+    // Wait a bit to avoid react mount-unmount bounce
+    await new Promise(resolve => setTimeout(resolve, 50));
+    if(!this.mounted) {
+      return;
+    }
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
   }
 
   async SubmitContentObject(confirmationMessage) {
@@ -712,6 +728,12 @@ class ContentObject extends React.Component {
       );
     }
 
+    const copyObjectButton = (
+      <Action className="primary" onClick={() => this.setState({showCopyObjectModal: true})}>
+        Copy
+      </Action>
+    );
+
     return (
       <div className="actions-wrapper">
         <div className="actions-container">
@@ -727,6 +749,7 @@ class ContentObject extends React.Component {
           <Action type="link" to={UrlJoin(this.props.match.url, "apps")}>
             Apps
           </Action>
+          { copyObjectButton }
           { deleteObjectButton }
           { saveDraftButton }
           { refreshButton }
@@ -779,9 +802,36 @@ class ContentObject extends React.Component {
     );
   }
 
+  CopyObject = async (object) => {
+    const originalObject = object.versionHash ? object : this.props.objectStore.object;
+
+    const {id, qlib_id} = await this.props.objectStore.CopyContentObject({
+      libraryId: object.libraryId,
+      originalVersionHash: originalObject.versionHash || originalObject.hash,
+      options: {
+        meta: {
+          public: {
+            name: `${originalObject.name} (copy)`
+          }
+        }
+      }
+    });
+
+    this.setState({
+      redirectIds: {
+        objectId: id,
+        libraryId: qlib_id
+      }
+    });
+  }
+
   PageContent() {
     if(this.state.deleted) {
       return <Redirect push to={Path.dirname(this.props.match.url)} />;
+    }
+
+    if(this.state.redirectIds.objectId && this.state.redirectIds.libraryId) {
+      return <Redirect to={`/content/${this.state.redirectIds.libraryId}/${this.state.redirectIds.objectId}`} />;
     }
 
     let header;
@@ -868,6 +918,19 @@ class ContentObject extends React.Component {
             { pageContent }
           </div>
         </div>
+        {
+          this.state.showCopyObjectModal ?
+            <ContentBrowserModal
+              Close={() => {
+                if(this.mounted) {
+                  this.setState({showCopyObjectModal: false});
+                }
+              }}
+              Select={(selection) => this.CopyObject(selection)}
+              requireObject={false}
+              header="Select a library"
+            /> : null
+        }
       </div>
     );
   }
