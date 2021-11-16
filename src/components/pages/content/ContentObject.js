@@ -10,9 +10,9 @@ import {DownloadFromUrl} from "../../../utils/Files";
 import FileBrowser from "../../components/FileBrowser";
 import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
-import {Action, Confirm, IconButton, ImageIcon, LoadingElement, Tabs, ToolTip} from "elv-components-js";
+import {Action, Confirm, Form, IconButton, ImageIcon, LoadingElement, Modal, Tabs, ToolTip} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
-import {AccessChargeDisplay, Percentage} from "../../../utils/Helpers";
+import {AccessChargeDisplay, Percentage, AddressToHash} from "../../../utils/Helpers";
 import {inject, observer} from "mobx-react";
 import ToggleSection from "../../components/ToggleSection";
 import JSONField from "../../components/JSONField";
@@ -78,7 +78,11 @@ class ContentObject extends React.Component {
       prevVersionsToggled: false,
       moreOptions: false,
       showCopyObjectModal: false,
-      redirectIds: {}
+      redirectIds: {},
+      showOwnerCapManagement: false,
+      newOwnerCapPublicKey: "",
+      newOwnerCapPublicAddress: "",
+      capsVersion: false
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -156,6 +160,20 @@ class ContentObject extends React.Component {
         });
 
         this.setState({deleted: true});
+      }
+    });
+  }
+
+  DeleteCap = async (capKey) => {
+    await Confirm({
+      message: "Are you sure you want to delete this CAP?",
+      onConfirm: async () => {
+        await this.props.objectStore.DeleteOwnerCap({
+          libraryId: this.props.objectStore.libraryId,
+          objectId: this.props.objectStore.objectId,
+          metadataSubtree: capKey
+        });
+        this.setState({capsVersion: this.state.capsVersion + 1});
       }
     });
   }
@@ -564,6 +582,86 @@ class ContentObject extends React.Component {
     );
   }
 
+  OwnerCapsSection = () => {
+    if(!this.props.objectStore.object.isOwner) { return null; }
+    const CloseModal = () => this.setState({
+      showOwnerCapManagement: false,
+      newOwnerCapPublicKey: "",
+      newOwnerCapPublicAddress: ""
+    });
+
+    const ownerCapModal = this.state.showOwnerCapManagement ? <Modal closable={true} OnClickOutside={CloseModal}>
+      <Form
+        legend={`Create Owner CAP for ${this.props.objectStore.object.name}`}
+        OnComplete={CloseModal}
+        OnCancel={CloseModal}
+        OnSubmit={async () => {
+          await this.props.objectStore.CreateOwnerCap({
+            libraryId: this.props.objectStore.libraryId,
+            objectId: this.props.objectStore.objectId,
+            publicKey: this.state.newOwnerCapPublicKey,
+            publicAddress: this.state.newOwnerCapPublicAddress
+          });
+        }}
+      >
+        <div className="form-content">
+          <label htmlFor="publicKey">Public Key</label>
+          <textarea
+            name="publicKey"
+            required
+            placeholder="Public Key..."
+            onChange={event => this.setState({newOwnerCapPublicKey: event.target.value})}
+          />
+          <label htmlFor="publicAddress">Public Address</label>
+          <input
+            name="publicAddress"
+            required
+            placeholder="Public Address..."
+            onChange={event => this.setState({newOwnerCapPublicAddress: event.target.value})}
+          />
+        </div>
+      </Form>
+    </Modal> : null;
+
+    const ownerCapKey = `eluv.caps.iusr${AddressToHash(this.props.objectStore.currentAccountAddress)}`;
+
+    return (
+      <div className="owner-caps-container">
+        <ToggleSection label="Advanced" toggleOpen={this.state.showOwnerCapManagement}>
+          {Object.keys(this.props.objectStore.object.meta).filter(key => (key !== ownerCapKey && key.startsWith("eluv.caps.iusr"))).map(userCap => (
+            <div key={`${userCap}-caps-version-${this.state.capsVersion}`} className="owner-keys-container">
+              <LabelledField label="Key">
+                {userCap}
+              </LabelledField>
+              <LabelledField label="Value">
+                {this.props.objectStore.object.meta[userCap]}
+              </LabelledField>
+              <LabelledField>
+                <Action
+                  type="button"
+                  className="danger action-compact action-wide"
+                  onClick={() => this.DeleteCap(userCap)}
+                >
+                  Delete CAP
+                </Action>
+              </LabelledField>
+            </div>
+          ))}
+          <LabelledField>
+            <Action
+              type="button"
+              className="secondary"
+              onClick={() => this.setState({showOwnerCapManagement: true})}
+            >
+              Add Owner CAP
+            </Action>
+          </LabelledField>
+        </ToggleSection>
+        { ownerCapModal }
+      </div>
+    );
+  }
+
   ObjectInfo() {
     const object = this.props.objectStore.object;
 
@@ -646,6 +744,8 @@ class ContentObject extends React.Component {
         <LabelledField label="Owner">
           { ownerText }
         </LabelledField>
+
+        { this.OwnerCapsSection() }
 
         <LabelledField label="Permissions" alignTop={false}>
           { this.Permissions() }
@@ -876,13 +976,15 @@ class ContentObject extends React.Component {
               objectId: this.props.objectStore.objectId,
               filePath
             })}
-            DownloadFile={async ({filePath, callback}) => await this.props.objectStore.DownloadFile({
-              libraryId: this.props.objectStore.libraryId,
-              objectId: this.props.objectStore.objectId,
-              writeToken: this.props.objectStore.writeTokens[this.props.objectStore.objectId],
-              filePath,
-              callback
-            })}
+            DownloadFile={async ({filePath, callback}) => {
+              await this.props.objectStore.DownloadFile({
+                libraryId: this.props.objectStore.libraryId,
+                objectId: this.props.objectStore.objectId,
+                writeToken: this.props.objectStore.writeTokens[this.props.objectStore.objectId],
+                filePath,
+                callback
+              });
+            }}
             DownloadUrl={async ({filePath}) => await this.props.objectStore.DownloadUrl({
               libraryId: this.props.objectStore.libraryId,
               objectId: this.props.objectStore.objectId,

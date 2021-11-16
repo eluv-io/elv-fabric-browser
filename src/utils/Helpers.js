@@ -33,6 +33,10 @@ export const EqualAddress = (address1, address2) => {
   return FormatAddress(address1) === FormatAddress(address2);
 };
 
+export const AddressToHash = (address) => {
+  return Utils.AddressToHash(address);
+};
+
 export const Percentage = (done, total) => {
   return total > 0 ? `${(done * 100 / total).toFixed(1)}%` : "100.0%";
 };

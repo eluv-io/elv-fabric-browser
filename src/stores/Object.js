@@ -27,6 +27,10 @@ class ObjectStore {
     return this.objects[this.objectId].groupPermissions;
   }
 
+  @computed get currentAccountAddress() {
+    return this.rootStore.currentAccountAddress;
+  }
+
   constructor(rootStore) {
     this.rootStore = rootStore;
 
@@ -284,7 +288,7 @@ class ObjectStore {
 
   @action.bound
   DeleteMetadata = flow(function * ({libraryId, objectId, metadataSubtree="/"}) {
-    const writeToken = yield this.EditContentObject({libraryId, objectId, action: "Delete metadata"});
+    const writeToken = yield this.EditContentObject({libraryId, objectId});
 
     yield Fabric.DeleteMetadata({
       libraryId,
@@ -628,29 +632,49 @@ class ObjectStore {
   });
 
   @action.bound
-  ReviewContentObject = flow(function * ({libraryId, objectId, approve, note}) {
-    yield Fabric.ReviewContentObject({libraryId, objectId, approve, note});
-
-    const currentAccountAddress = yield Fabric.CurrentAccountAddress();
-
-    yield Fabric.EditAndFinalizeContentObject({
+  CreateOwnerCap = flow(function * ({libraryId, objectId, publicKey, publicAddress}) {
+    yield Fabric.CreateOwnerCap({
       libraryId,
       objectId,
-      todo: async (writeToken) => {
-        await Fabric.MergeMetadata({
-          libraryId,
-          writeToken,
-          metadata: {
-            "eluv.reviewer": currentAccountAddress,
-            "eluv.reviewNote": note
-          }
-        });
-      }
+      publicKey,
+      publicAddress
+    });
+
+    this.objects[objectId].meta = yield Fabric.GetContentObjectMetadata({
+      libraryId,
+      objectId
     });
 
     this.rootStore.notificationStore.SetNotificationMessage({
-      message: "Successfully updated content object",
-      redirect: true
+      message: "Successfully created owner cap"
+    });
+  });
+
+  @action.bound
+  DeleteOwnerCap = flow(function * ({libraryId, objectId, metadataSubtree}) {
+    const {writeToken} = yield Fabric.EditContentObject({libraryId, objectId});
+
+    yield Fabric.DeleteMetadata({
+      libraryId,
+      objectId,
+      writeToken,
+      metadataSubtree
+    });
+
+    yield Fabric.FinalizeContentObject({
+      libraryId,
+      objectId,
+      writeToken,
+      commitMessage: "Delete owner cap"
+    });
+
+    this.objects[objectId].meta = yield Fabric.GetContentObjectMetadata({
+      libraryId,
+      objectId
+    });
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully deleted owner cap"
     });
   });
 }

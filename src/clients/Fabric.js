@@ -1171,6 +1171,15 @@ const Fabric = {
     };
   },
 
+  CreateOwnerCap: async ({libraryId, objectId, publicKey, publicAddress}) => {
+    return await client.CreateOwnerCap({
+      libraryId,
+      objectId,
+      publicKey,
+      publicAddress: Fabric.utils.FormatAddress(publicAddress)
+    });
+  },
+
   /* Contract calls */
 
   GetContentLibraryPermissions: async ({libraryId}) => {
