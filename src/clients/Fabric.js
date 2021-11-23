@@ -1171,12 +1171,30 @@ const Fabric = {
     };
   },
 
-  CreateOwnerCap: async ({libraryId, objectId, publicKey, publicAddress}) => {
-    return await client.CreateOwnerCap({
+  CreateNonOwnerCap: async ({libraryId, objectId, publicKey, publicAddress, name}) => {
+    const {writeToken} = await Fabric.EditContentObject({libraryId, objectId});
+
+    await client.CreateNonOwnerCap({
       libraryId,
       objectId,
       publicKey,
-      publicAddress: Fabric.utils.FormatAddress(publicAddress)
+      publicAddress: Fabric.utils.FormatAddress(publicAddress),
+      writeToken
+    });
+
+    await client.ReplaceMetadata({
+      libraryId,
+      objectId,
+      writeToken,
+      metadataSubtree: "/owner_caps",
+      metadata: {[publicAddress]: name}
+    });
+
+    return await client.FinalizeContentObject({
+      libraryId,
+      objectId,
+      writeToken,
+      commitMessage: "Create non-owner cap"
     });
   },
 

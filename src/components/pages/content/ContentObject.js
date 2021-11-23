@@ -3,7 +3,7 @@ import {Link} from "react-router-dom";
 import UrlJoin from "url-join";
 import Path from "path";
 import PrettyBytes from "pretty-bytes";
-import { LabelledField } from "../../components/LabelledField";
+import {LabelledField} from "../../components/LabelledField";
 import {Redirect, Prompt} from "react-router";
 import {PageHeader} from "../../components/Page";
 import {DownloadFromUrl} from "../../../utils/Files";
@@ -12,7 +12,7 @@ import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
 import {Action, Confirm, Form, IconButton, ImageIcon, LoadingElement, Modal, Tabs, ToolTip} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
-import {AccessChargeDisplay, Percentage, AddressToHash} from "../../../utils/Helpers";
+import {AccessChargeDisplay, Percentage} from "../../../utils/Helpers";
 import {inject, observer} from "mobx-react";
 import ToggleSection from "../../components/ToggleSection";
 import JSONField from "../../components/JSONField";
@@ -79,9 +79,10 @@ class ContentObject extends React.Component {
       moreOptions: false,
       showCopyObjectModal: false,
       redirectIds: {},
-      showOwnerCapManagement: false,
-      newOwnerCapPublicKey: "",
-      newOwnerCapPublicAddress: "",
+      showNonOwnerCapManagement: false,
+      newNonOwnerCapPublicKey: "",
+      newNonOwnerCapPublicAddress: "",
+      newNonOwnerCapName: "",
       capsVersion: false
     };
 
@@ -164,15 +165,16 @@ class ContentObject extends React.Component {
     });
   }
 
-  DeleteCap = async (capKey) => {
+  DeleteCap = async (address) => {
     await Confirm({
-      message: "Are you sure you want to delete this CAP?",
+      message: "Are you sure you want to delete this encryption key?",
       onConfirm: async () => {
         await this.props.objectStore.DeleteOwnerCap({
           libraryId: this.props.objectStore.libraryId,
           objectId: this.props.objectStore.objectId,
-          metadataSubtree: capKey
+          address
         });
+
         this.setState({capsVersion: this.state.capsVersion + 1});
       }
     });
@@ -583,79 +585,97 @@ class ContentObject extends React.Component {
   }
 
   OwnerCapsSection = () => {
-    if(!this.props.objectStore.object.isOwner) { return null; }
     const CloseModal = () => this.setState({
-      showOwnerCapManagement: false,
-      newOwnerCapPublicKey: "",
-      newOwnerCapPublicAddress: ""
+      showNonOwnerCapManagement: false,
+      newNonOwnerCapPublicKey: "",
+      newNonOwnerCapPublicAddress: "",
+      newNonOwnerCapName: ""
     });
 
-    const ownerCapModal = this.state.showOwnerCapManagement ? <Modal closable={true} OnClickOutside={CloseModal}>
+    const ownerCapModal = this.state.showNonOwnerCapManagement ? <Modal closable={true} OnClickOutside={CloseModal}>
       <Form
-        legend={`Create Owner CAP for ${this.props.objectStore.object.name}`}
+        legend={`Create encryption key for ${this.props.objectStore.object.name}`}
         OnComplete={CloseModal}
         OnCancel={CloseModal}
         OnSubmit={async () => {
-          await this.props.objectStore.CreateOwnerCap({
+          await this.props.objectStore.CreateNonOwnerCap({
             libraryId: this.props.objectStore.libraryId,
             objectId: this.props.objectStore.objectId,
-            publicKey: this.state.newOwnerCapPublicKey,
-            publicAddress: this.state.newOwnerCapPublicAddress
+            publicKey: this.state.newNonOwnerCapPublicKey,
+            publicAddress: this.state.newNonOwnerCapPublicAddress,
+            name: this.state.newNonOwnerCapName
           });
         }}
       >
         <div className="form-content">
-          <label htmlFor="publicKey">Public Key</label>
-          <textarea
-            name="publicKey"
+          <label htmlFor="userName">User Name</label>
+          <input
+            name="userName"
             required
-            placeholder="Public Key..."
-            onChange={event => this.setState({newOwnerCapPublicKey: event.target.value})}
+            placeholder="User name..."
+            onChange={event => this.setState({newNonOwnerCapName: event.target.value})}
           />
           <label htmlFor="publicAddress">Public Address</label>
           <input
             name="publicAddress"
             required
             placeholder="Public Address..."
-            onChange={event => this.setState({newOwnerCapPublicAddress: event.target.value})}
+            onChange={event => this.setState({newNonOwnerCapPublicAddress: event.target.value})}
+          />
+          <label htmlFor="publicKey" className="align-top">Public Key</label>
+          <textarea
+            name="publicKey"
+            required
+            placeholder="Public Key..."
+            onChange={event => this.setState({newNonOwnerCapPublicKey: event.target.value})}
           />
         </div>
       </Form>
     </Modal> : null;
 
-    const ownerCapKey = `eluv.caps.iusr${AddressToHash(this.props.objectStore.currentAccountAddress)}`;
+    let deleteCapButton;
+    let addCapsButton;
+    if(this.props.objectStore.object.isOwner) {
+      deleteCapButton = (
+        <LabelledField>
+          <Action
+            type="button"
+            className="danger action-compact action-wide"
+            onClick={() => this.DeleteCap(capAddress)}
+          >
+            Delete encryption key
+          </Action>
+        </LabelledField>
+      );
+
+      addCapsButton = (
+        <LabelledField>
+          <Action
+            type="button"
+            className="secondary"
+            onClick={() => this.setState({showNonOwnerCapManagement: true})}
+          >
+            Add encryption key
+          </Action>
+        </LabelledField>
+      );
+    }
 
     return (
-      <div className="owner-caps-container">
-        <ToggleSection label="Advanced" toggleOpen={this.state.showOwnerCapManagement}>
-          {Object.keys(this.props.objectStore.object.meta).filter(key => (key !== ownerCapKey && key.startsWith("eluv.caps.iusr"))).map(userCap => (
-            <div key={`${userCap}-caps-version-${this.state.capsVersion}`} className="owner-keys-container">
-              <LabelledField label="Key">
-                {userCap}
+      <div className="non-owner-caps-container">
+        <ToggleSection label="Encryption Keys" toggleOpen={this.state.showNonOwnerCapManagement}>
+          {Object.keys(this.props.objectStore.object.meta.owner_caps).map(capAddress => (
+            <div key={`${capAddress}-caps-version-${this.state.capsVersion}`} className="non-owner-keys-container">
+              <LabelledField label="Name">
+                {this.props.objectStore.object.meta.owner_caps[capAddress]}
               </LabelledField>
-              <LabelledField label="Value">
-                {this.props.objectStore.object.meta[userCap]}
+              <LabelledField label="Address">
+                {capAddress}
               </LabelledField>
-              <LabelledField>
-                <Action
-                  type="button"
-                  className="danger action-compact action-wide"
-                  onClick={() => this.DeleteCap(userCap)}
-                >
-                  Delete CAP
-                </Action>
-              </LabelledField>
+              {deleteCapButton}
             </div>
           ))}
-          <LabelledField>
-            <Action
-              type="button"
-              className="secondary"
-              onClick={() => this.setState({showOwnerCapManagement: true})}
-            >
-              Add Owner CAP
-            </Action>
-          </LabelledField>
+          {addCapsButton}
         </ToggleSection>
         { ownerCapModal }
       </div>
