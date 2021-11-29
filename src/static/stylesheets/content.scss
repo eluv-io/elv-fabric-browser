@@ -227,3 +227,23 @@ pre,
     margin: 0 0 $elv-spacing-s;
   }
 }
+
+.keys-table {
+  padding: 20px;
+
+  .header-rows {
+    padding-bottom: 10px;
+  }
+
+  .header-rows,
+  .body-rows {
+    display: grid;
+    gap: 10px; // sass-lint:disable-line no-misspelled-properties
+    grid-template-columns: 1fr 2fr 50px;
+
+    .delete-button {
+      height: 20px;
+    }
+  }
+}
+
