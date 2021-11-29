@@ -1182,12 +1182,18 @@ const Fabric = {
       writeToken
     });
 
+    const metadata = await Fabric.GetContentObjectMetadata({
+      libraryId,
+      objectId,
+      metadataSubtree: "/owner_caps"
+    });
+
     await client.ReplaceMetadata({
       libraryId,
       objectId,
       writeToken,
       metadataSubtree: "/owner_caps",
-      metadata: {[publicAddress]: name}
+      metadata: Object.assign(metadata, {[publicAddress]: name})
     });
 
     return await client.FinalizeContentObject({

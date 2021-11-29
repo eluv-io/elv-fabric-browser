@@ -649,7 +649,7 @@ class ContentObject extends React.Component {
             className="secondary"
             onClick={() => this.setState({showNonOwnerCapManagement: true})}
           >
-            Add encryption key
+            Add Encryption Key
           </Action>
         </LabelledField>
       );
@@ -661,12 +661,13 @@ class ContentObject extends React.Component {
       <div className="non-owner-caps-container">
         <ToggleSection label="Encryption Keys" toggleOpen={this.state.showNonOwnerCapManagement}>
           {addCapsButton}
+          <br />
           {
-            encryptionObjectKeys.length > 0 ? <div className="keys-table">
+            encryptionObjectKeys.length > 0 ? <div className="keys-table indented">
               <div className="header-rows">
                 <div>Name</div>
                 <div>Address</div>
-                <div>Delete</div>
+                <div></div>
               </div>
               <div className="body-rows">
                 {encryptionObjectKeys.map(capAddress => (
