@@ -660,6 +660,8 @@ class ContentObject extends React.Component {
       return HashToAddress(hash);
     });
 
+    const caps = this.props.objectStore.object.meta.owner_caps || {};
+
     return (
       <div className="non-owner-caps-container">
         <ToggleSection label="Encryption Keys" toggleOpen={this.state.showNonOwnerCapManagement}>
@@ -674,15 +676,15 @@ class ContentObject extends React.Component {
               </div>
               <div className="body-rows">
                 {capKeys.map(capAddress => {
-                  const isOwnerKey = !this.props.objectStore.object.meta.owner_caps[capAddress];
+                  const isOwnerKey = !caps[capAddress];
 
                   return (
                     <React.Fragment key={`${capAddress}-caps-version-${this.state.capsVersion}`}>
-                      <div>{this.props.objectStore.object.meta.owner_caps[capAddress] || "Owner"}</div>
+                      <div>{caps[capAddress] || "Owner"}</div>
                       <div>{capAddress}</div>
                       <div>
                         <IconButton
-                          title={`Delete ${this.props.objectStore.object.meta.owner_caps[capAddress]}`}
+                          title="Delete this key"
                           icon={DeleteIcon}
                           disabled={!this.props.objectStore.object.isOwner || isOwnerKey}
                           onClick={(event) => {
