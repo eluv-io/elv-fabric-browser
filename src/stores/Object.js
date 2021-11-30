@@ -4,6 +4,7 @@ import {DownloadFromUrl, FileInfo} from "../utils/Files";
 import UrlJoin from "url-join";
 import {ParseInputJson} from "elv-components-js";
 import Path from "path";
+import {AddressToHash} from "../utils/Helpers";
 
 const concurrentUploads = 3;
 
@@ -25,6 +26,10 @@ class ObjectStore {
 
   @computed get objectGroupPermissions() {
     return this.objects[this.objectId].groupPermissions;
+  }
+
+  @computed get currentAccountAddress() {
+    return this.rootStore.currentAccountAddress;
   }
 
   constructor(rootStore) {
@@ -284,7 +289,7 @@ class ObjectStore {
 
   @action.bound
   DeleteMetadata = flow(function * ({libraryId, objectId, metadataSubtree="/"}) {
-    const writeToken = yield this.EditContentObject({libraryId, objectId, action: "Delete metadata"});
+    const writeToken = yield this.EditContentObject({libraryId, objectId});
 
     yield Fabric.DeleteMetadata({
       libraryId,
@@ -628,29 +633,57 @@ class ObjectStore {
   });
 
   @action.bound
-  ReviewContentObject = flow(function * ({libraryId, objectId, approve, note}) {
-    yield Fabric.ReviewContentObject({libraryId, objectId, approve, note});
-
-    const currentAccountAddress = yield Fabric.CurrentAccountAddress();
-
-    yield Fabric.EditAndFinalizeContentObject({
+  CreateNonOwnerCap = flow(function * ({libraryId, objectId, publicKey, publicAddress, name}) {
+    yield Fabric.CreateNonOwnerCap({
       libraryId,
       objectId,
-      todo: async (writeToken) => {
-        await Fabric.MergeMetadata({
-          libraryId,
-          writeToken,
-          metadata: {
-            "eluv.reviewer": currentAccountAddress,
-            "eluv.reviewNote": note
-          }
-        });
-      }
+      publicKey,
+      publicAddress,
+      name
+    });
+
+    this.objects[objectId].meta = yield Fabric.GetContentObjectMetadata({
+      libraryId,
+      objectId
     });
 
     this.rootStore.notificationStore.SetNotificationMessage({
-      message: "Successfully updated content object",
-      redirect: true
+      message: "Successfully created non-owner cap"
+    });
+  });
+
+  @action.bound
+  DeleteOwnerCap = flow(function * ({libraryId, objectId, address}) {
+    const {writeToken} = yield Fabric.EditContentObject({libraryId, objectId});
+
+    yield Fabric.DeleteMetadata({
+      libraryId,
+      objectId,
+      writeToken,
+      metadataSubtree: `eluv.caps.iusr${AddressToHash(address)}`
+    });
+
+    yield Fabric.DeleteMetadata({
+      libraryId,
+      objectId,
+      writeToken,
+      metadataSubtree: `/owner_caps/${address}`
+    });
+
+    yield Fabric.FinalizeContentObject({
+      libraryId,
+      objectId,
+      writeToken,
+      commitMessage: "Delete non-owner cap"
+    });
+
+    this.objects[objectId].meta = yield Fabric.GetContentObjectMetadata({
+      libraryId,
+      objectId
+    });
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully deleted non-owner cap"
     });
   });
 }

@@ -227,3 +227,30 @@ pre,
     margin: 0 0 $elv-spacing-s;
   }
 }
+
+.keys-table {
+  max-width: 700px;
+  padding-left: 150px;
+
+  .header-rows {
+    background-color: $elv-color-lightgray;
+    font-weight: 500;
+    padding-bottom: 10px;
+  }
+
+  .header-rows,
+  .body-rows {
+    align-items: center;
+    display: grid;
+    gap: 10px; // sass-lint:disable-line no-misspelled-properties
+    grid-template-columns: 1fr 2fr 50px;
+    padding: 5px 10px;
+
+    .delete-button {
+      display: block;
+      height: 20px;
+      margin: auto;
+    }
+  }
+}
+
