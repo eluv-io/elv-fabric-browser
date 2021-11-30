@@ -37,6 +37,10 @@ export const AddressToHash = (address) => {
   return Utils.AddressToHash(address);
 };
 
+export const HashToAddress = (hash) => {
+  return Utils.HashToAddress(hash);
+};
+
 export const Percentage = (done, total) => {
   return total > 0 ? `${(done * 100 / total).toFixed(1)}%` : "100.0%";
 };

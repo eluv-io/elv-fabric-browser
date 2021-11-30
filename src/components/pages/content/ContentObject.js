@@ -12,7 +12,7 @@ import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
 import {Action, Confirm, Form, IconButton, ImageIcon, LoadingElement, Modal, Tabs, ToolTip} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
-import {AccessChargeDisplay, Percentage} from "../../../utils/Helpers";
+import {AccessChargeDisplay, HashToAddress, Percentage} from "../../../utils/Helpers";
 import {inject, observer} from "mobx-react";
 import ToggleSection from "../../components/ToggleSection";
 import JSONField from "../../components/JSONField";
@@ -655,7 +655,10 @@ class ContentObject extends React.Component {
       );
     }
 
-    const encryptionObjectKeys = Object.keys(this.props.objectStore.object.meta.owner_caps || {});
+    const capKeys = Object.keys(this.props.objectStore.object.meta || {}).filter(key => key.startsWith("eluv.caps.iusr")).map(capKey => {
+      const hash = capKey.split("eluv.caps.")[1];
+      return HashToAddress(hash);
+    });
 
     return (
       <div className="non-owner-caps-container">
@@ -663,31 +666,35 @@ class ContentObject extends React.Component {
           {addCapsButton}
           <br />
           {
-            encryptionObjectKeys.length > 0 ? <div className="keys-table indented">
+            capKeys.length > 0 ? <div className="keys-table">
               <div className="header-rows">
                 <div>Name</div>
                 <div>Address</div>
                 <div></div>
               </div>
               <div className="body-rows">
-                {encryptionObjectKeys.map(capAddress => (
-                  <React.Fragment key={`${capAddress}-caps-version-${this.state.capsVersion}`}>
-                    <div>{this.props.objectStore.object.meta.owner_caps[capAddress]}</div>
-                    <div>{capAddress}</div>
-                    <div>
-                      <IconButton
-                        title={`Delete ${this.props.objectStore.object.meta.owner_caps[capAddress]}`}
-                        icon={DeleteIcon}
-                        disabled={!this.props.objectStore.object.isOwner}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          this.DeleteCap(capAddress);
-                        }}
-                        className="delete-button"
-                      />
-                    </div>
-                  </React.Fragment>
-                ))}
+                {capKeys.map(capAddress => {
+                  const isOwnerKey = !this.props.objectStore.object.meta.owner_caps[capAddress];
+
+                  return (
+                    <React.Fragment key={`${capAddress}-caps-version-${this.state.capsVersion}`}>
+                      <div>{this.props.objectStore.object.meta.owner_caps[capAddress] || "Owner"}</div>
+                      <div>{capAddress}</div>
+                      <div>
+                        <IconButton
+                          title={`Delete ${this.props.objectStore.object.meta.owner_caps[capAddress]}`}
+                          icon={DeleteIcon}
+                          disabled={!this.props.objectStore.object.isOwner || isOwnerKey}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            this.DeleteCap(capAddress);
+                          }}
+                          className="delete-button"
+                        />
+                      </div>
+                    </React.Fragment>
+                  );
+                })}
               </div>
             </div> : null
           }
