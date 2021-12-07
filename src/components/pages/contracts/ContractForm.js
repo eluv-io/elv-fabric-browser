@@ -1,10 +1,11 @@
 import React from "react";
 import {Redirect} from "react-router";
-import {Action, Form} from "elv-components-js";
+import {Form} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
 import Path from "path";
 import UrlJoin from "url-join";
 import {inject, observer} from "mobx-react";
+import ActionsToolbar from "../../components/ActionsToolbar";
 
 @inject("contractStore")
 @observer
@@ -96,14 +97,23 @@ class ContractForm extends React.Component {
 
     return (
       <div className="page-container">
-        <div className="actions-container manage-actions">
-          <Action type="link" to={backPath} className="secondary">Back</Action>
-        </div>
+        <ActionsToolbar
+          showContentLookup={false}
+          actions={[
+            {
+              label: "Back",
+              type: "link",
+              path: backPath,
+              className: "secondary"
+            }
+          ]}
+        />
         <Form
           legend={this.state.createForm ? "Save contract" : "Edit Contract"}
           redirectPath={backPath}
           cancelPath={backPath}
           OnSubmit={this.HandleSubmit}
+          className="form-page"
         >
           <div className="form-content">
             <label htmlFor="name">Name</label>

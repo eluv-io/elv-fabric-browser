@@ -1,8 +1,9 @@
 import React from "react";
 import UrlJoin from "url-join";
 import Path from "path";
-import {Action, Form, JsonInput} from "elv-components-js";
+import {Form, JsonInput} from "elv-components-js";
 import {inject, observer} from "mobx-react";
+import ActionsToolbar from "../../components/ActionsToolbar";
 
 @inject("contractStore")
 @observer
@@ -41,14 +42,23 @@ class WatchContractForm extends React.Component {
 
     return (
       <div className="page-container">
-        <div className="actions-container manage-actions">
-          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
-        </div>
+        <ActionsToolbar
+          showContentLookup={false}
+          actions={[
+            {
+              label: "Back",
+              type: "link",
+              path: Path.dirname(this.props.match.url),
+              className: "secondary"
+            }
+          ]}
+        />
         <Form
           legend={"Watch Deployed Contract"}
           redirectPath={redirectPath}
           cancelPath={Path.dirname(this.props.match.url)}
           OnSubmit={this.HandleSubmit}
+          className="form-page"
         >
           <div className="form-content">
             <label htmlFor="name">Name</label>

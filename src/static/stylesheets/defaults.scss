@@ -30,20 +30,101 @@
   cursor: pointer;
 }
 
-.actions-wrapper {
-  .actions-container {
-    &:not(:last-child) {
-      margin-bottom: $elv-spacing-s;
-    }
-  }
-}
-
 .actions-container {
+  display: flex;
   min-height: 1.7rem;
   position: relative;
 
-  &.manage-actions {
-    margin-bottom: $elv-spacing-m;
+  .left-action-buttons,
+  .right-action-buttons {
+    display: inline-flex;
+    height: 100%;
+  }
+
+  .right-action-buttons {
+    position: absolute;
+    right: 0;
+  }
+
+  .more-options-container {
+    display: inline-block;
+
+    .more-options-text {
+      padding-right: 15px;
+      position: relative;
+
+      &::after {
+        content: "\25BC";
+        position: absolute;
+        right: 0;
+        transform: scale(1, 0.5);
+      }
+    }
+  }
+
+  .more-options-menu {
+    background-color: $elv-color-bg-white;
+    border-radius: 4px;
+    box-shadow: 0 8px 10px 1px $elv-color-shadow-gray, 0 3px 14px 3px $elv-color-shadow-gray, 0 4px 15px 0 $elv-color-shadow-gray;
+    min-width: 133px;
+    opacity: 0;
+    position: absolute;
+    transition: opacity 100ms linear;
+    visibility: hidden;
+    z-index: 999;
+
+    &--open {
+      opacity: 1;
+      visibility: visible;
+
+      .options-list {
+        display: flex;
+        flex-direction: column;
+        list-style-type: none;
+        padding: 8px 0;
+
+        .list-item {
+          align-items: center;
+          cursor: pointer;
+          display: flex;
+          height: 45px;
+          overflow: hidden;
+          padding: 0 17px;
+          position: relative;
+        }
+      }
+    }
+  }
+
+  .options-list {
+    .list-item {
+      &-danger {
+        &:not(:active):hover { // sass-lint:disable-line force-pseudo-nesting
+          background-color: $elv-color-darkergray;
+          border: 1px solid $elv-color-darkergray;
+          color: $elv-color-text-white;
+        }
+      }
+
+      &:hover {
+        background-color: $elv-color-lightergray;
+      }
+
+      &.list-divider {
+        border-top: 1px solid $elv-color-gray;
+        margin-top: 5px;
+      }
+    }
+
+    button {
+      &.list-item {
+        background: none;
+        border: 0;
+        color: $elv-color-darkgray;
+        font: inherit;
+        outline: none;
+      }
+    }
   }
 
   .-elv-button {
@@ -56,8 +137,6 @@
 
   .refresh-button {
     margin-right: $elv-spacing-xs;
-    position: absolute;
-    right: 0;
 
     svg {
       stroke: $elv-color-mediumgray;
@@ -77,6 +156,10 @@
 
 .-elv-tab-container {
   min-height: 2.35rem;
+}
+
+.form-page {
+  margin-top: $elv-spacing-m;
 }
 
 .monospace {

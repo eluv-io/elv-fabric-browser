@@ -6,7 +6,7 @@ import ContentIcon from "../../../static/icons/content.svg";
 import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
 import {PageHeader} from "../../components/Page";
-import {Action, IconButton, Tabs} from "elv-components-js";
+import {Action, Tabs} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
 
 import Listing from "../../components/Listing";
@@ -15,9 +15,9 @@ import RefreshIcon from "../../../static/icons/refresh.svg";
 import ToggleSection from "../../components/ToggleSection";
 import JSONField from "../../components/JSONField";
 import ContentLibraryGroupForm from "./ContentLibraryGroupForm";
-import ContentLookup from "../../components/ContentLookup";
 import {ContentBrowserModal} from "../../components/ContentBrowser";
 import {Redirect} from "react-router";
+import ActionsToolbar from "../../components/ActionsToolbar";
 
 @inject("libraryStore")
 @inject("groupStore")
@@ -293,75 +293,52 @@ class ContentLibrary extends React.Component {
   }
 
   Actions() {
-    const refreshButton = (
-      <IconButton
-        className="refresh-button"
-        icon={RefreshIcon}
-        label="Refresh"
-        onClick={() => {
-          this.props.libraryStore.ClearLibraryCache({libraryId: this.props.libraryStore.libraryId});
-          this.setState({pageVersion: this.state.pageVersion + 1});
-        }}
-      />
-    );
-
-    const backButton = (
-      <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">
-        Back
-      </Action>
-    );
-
-    let createButton;
-    if(this.props.libraryStore.library.canContribute) {
-      createButton = (
-        <Action type="link" to={UrlJoin(this.props.match.url, "create")}>
-          {this.props.libraryStore.library.isContentSpaceLibrary ? "New Content Type" : "Create"}
-        </Action>
-      );
-    }
-
-    let createFromExistingButton;
-    if(this.props.libraryStore.library.canContribute && !this.props.libraryStore.library.isContentSpaceLibrary) {
-      createFromExistingButton = (
-        <Action type="button" onClick={() => this.setState({showCopyObjectModal: true})}>
-          Create From Existing
-        </Action>
-      );
-    }
-
-    if(!this.props.libraryStore.library.isOwner) {
-      return (
-        <div className="actions-wrapper">
-          <div className="actions-container">
-            <ContentLookup />
-          </div>
-          <div className="actions-container">
-            { backButton }
-            { createButton }
-            { refreshButton }
-          </div>
-        </div>
-      );
-    }
-
     return (
-      <div className="actions-wrapper">
-        <div className="actions-container">
-          <ContentLookup />
-        </div>
-        <div className="actions-container">
-          { backButton }
-          <Action type="link" to={UrlJoin(this.props.match.url, "edit")}>
-            Manage
-          </Action>
-          <Action type="link" to={UrlJoin(this.props.match.url, "types")}>
-            Types
-          </Action>
-          { createButton }
-          { createFromExistingButton }
-          { refreshButton }
-        </div>
-      </div>
+      <ActionsToolbar
+        iconActions={[
+          {
+            className: "refresh-button",
+            icon: RefreshIcon,
+            label: "Refresh",
+            onClick: () => {
+              this.props.libraryStore.ClearLibraryCache({libraryId: this.props.libraryStore.libraryId});
+              this.setState({pageVersion: this.state.pageVersion + 1});
+            }
+          }
+        ]}
+        actions={[
+          {
+            label: "Back",
+            type: "link",
+            path: Path.dirname(this.props.match.url),
+            className: "secondary"
+          },
+          {
+            label: "Manage",
+            type: "link",
+            hidden: !this.props.libraryStore.library.isOwner,
+            path: UrlJoin(this.props.match.url, "edit"),
+          },
+          {
+            label: "Types",
+            type: "link",
+            hidden: !this.props.libraryStore.library.isOwner,
+            path: UrlJoin(this.props.match.url, "types")
+          },
+          {
+            label: this.props.libraryStore.library.isContentSpaceLibrary ? "New Content Type" : "Create",
+            type: "link",
+            hidden: !this.props.libraryStore.library.canContribute,
+            path: UrlJoin(this.props.match.url, "create")
+          },
+          {
+            label: "Create From Existing",
+            type: "button",
+            hidden: this.props.libraryStore.library.isContentSpaceLibrary || !(this.props.libraryStore.library.isOwner && this.props.libraryStore.library.canContribute),
+            onClick: () => this.setState({showCopyObjectModal: true})
+          }
+        ]}
+      />
     );
   }
 

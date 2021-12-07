@@ -1,9 +1,10 @@
 import React from "react";
 import UrlJoin from "url-join";
 import Path from "path";
-import {Action, BrowseWidget, Form, JsonInput, Maybe} from "elv-components-js";
+import {BrowseWidget, Form, JsonInput, Maybe} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
 import {inject, observer} from "mobx-react";
+import ActionsToolbar from "../../components/ActionsToolbar";
 
 @inject("typeStore")
 @observer
@@ -79,15 +80,24 @@ class ContentTypeForm extends React.Component {
 
     return (
       <div className="page-container">
-        <div className="actions-container manage-actions">
-          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
-        </div>
+        <ActionsToolbar
+          showContentLookup={false}
+          actions={[
+            {
+              label: "Back",
+              type: "link",
+              path: Path.dirname(this.props.match.url),
+              className: "secondary"
+            }
+          ]}
+        />
         <div className="page-content">
           <Form
             legend={legend}
             redirectPath={redirectPath}
             cancelPath={backPath}
             OnSubmit={this.HandleSubmit}
+            className="form-page"
           >
             <div className="form-content">
               <label htmlFor="name">Name</label>

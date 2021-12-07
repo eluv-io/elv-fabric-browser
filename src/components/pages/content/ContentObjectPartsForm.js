@@ -1,9 +1,10 @@
 import React from "react";
 import Path from "path";
-import {Action, BrowseWidget, Form} from "elv-components-js";
+import {BrowseWidget, Form} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
 import {inject, observer} from "mobx-react";
 import {Percentage} from "../../../utils/Helpers";
+import ActionsToolbar from "../../components/ActionsToolbar";
 
 @inject("objectStore")
 @observer
@@ -51,14 +52,22 @@ class ContentObjectPartsForm extends React.Component {
   PageContent() {
     return (
       <div className="page-container">
-        <div className="actions-container manage-actions">
-          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
-        </div>
+        <ActionsToolbar
+          showContentLookup={false}
+          actions={[
+            {
+              label: "Back",
+              type: "link",
+              path: Path.dirname(this.props.match.url),
+              className: "secondary"
+            }
+          ]}
+        />
         <Form
           legend={`Upload parts to ${this.props.objectStore.object.meta.name || this.props.objectStore.objectId}`}
           redirectPath={Path.dirname(this.props.match.url)}
           cancelPath={Path.dirname(this.props.match.url)}
-          className="small-form"
+          className="small-form form-page"
           OnSubmit={this.HandleSubmit}
         >
           <div className="form-content">

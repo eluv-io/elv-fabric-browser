@@ -2,10 +2,9 @@ import React from "react";
 import UrlJoin from "url-join";
 import LibraryIcon from "../../../static/icons/content.svg";
 import {PageHeader} from "../../components/Page";
-import {Action} from "elv-components-js";
 import Listing from "../../components/Listing";
 import {inject, observer} from "mobx-react";
-import ContentLookup from "../../components/ContentLookup";
+import ActionsToolbar from "../../components/ActionsToolbar";
 
 @inject("libraryStore")
 @observer
@@ -39,10 +38,15 @@ class ContentLibraries extends React.Component {
     // This is the root component, actual path may be "/content" or "/"
     return (
       <div className="page-container contents-page-container">
-        <div className="actions-container content-lookup-actions-container">
-          <Action type="link" to={UrlJoin("/content", "create")}>New Library</Action>
-          <ContentLookup />
-        </div>
+        <ActionsToolbar
+          actions={[
+            {
+              label: "New Library",
+              type: "link",
+              path: UrlJoin("/content", "create")
+            }
+          ]}
+        />
         <PageHeader header="Content Libraries" />
         <div className="page-content-container">
           <div className="page-content">

@@ -1,7 +1,7 @@
 import React from "react";
 import UrlJoin from "url-join";
 import Path from "path";
-import {Action, Form, IconButton} from "elv-components-js";
+import {Form, IconButton} from "elv-components-js";
 import {inject, observer} from "mobx-react";
 import AsyncComponent from "../../components/AsyncComponent";
 import JsonTextArea from "elv-components-js/src/components/JsonInput";
@@ -10,6 +10,7 @@ import Fabric from "../../../clients/Fabric";
 
 import AddIcon from "../../../static/icons/plus-square.svg";
 import RemoveIcon from "../../../static/icons/minus-square.svg";
+import ActionsToolbar from "../../components/ActionsToolbar";
 
 @inject("groupStore")
 @observer
@@ -144,9 +145,17 @@ class AccessGroupForm extends React.Component {
 
     return (
       <div className="page-container">
-        <div className="actions-container manage-actions">
-          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
-        </div>
+        <ActionsToolbar
+          showContentLookup={false}
+          actions={[
+            {
+              label: "Back",
+              type: "link",
+              path: Path.dirname(this.props.match.url),
+              className: "secondary"
+            },
+          ]}
+        />
         <div className="page-content-container">
           <div className="page-content">
             <Form
@@ -154,6 +163,7 @@ class AccessGroupForm extends React.Component {
               redirectPath={redirectPath}
               cancelPath={backPath}
               OnSubmit={this.HandleSubmit}
+              className="form-page"
             >
               <div className="form-content">
                 <label htmlFor="name">Name</label>

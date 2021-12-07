@@ -1,9 +1,10 @@
 import React from "react";
 import Path from "path";
-import {Action, Form} from "elv-components-js";
+import {Form} from "elv-components-js";
 import AsyncComponent from "../../../components/AsyncComponent";
 import {PageHeader} from "../../../components/Page";
 import {inject, observer} from "mobx-react";
+import ActionsToolbar from "../../../components/ActionsToolbar";
 
 @inject("contractStore")
 @observer
@@ -36,16 +37,24 @@ class DeployedContractFundsForm extends React.Component {
   PageContent() {
     return (
       <div className="page-container">
-        <div className="actions-container">
-          <Action type="link" className="secondary" to={Path.dirname(this.props.match.url)}>Back</Action>
-        </div>
+        <ActionsToolbar
+          showContentLookup={false}
+          actions={[
+            {
+              label: "Back",
+              type: "link",
+              path: Path.dirname(this.props.match.url),
+              className: "secondary"
+            }
+          ]}
+        />
         <PageHeader header={this.state.contract.name} subHeader={this.state.contract.description} />
         <Form
           legend="Transfer Contract Funds"
           redirectPath={Path.dirname(this.props.match.url)}
           cancelPath={Path.dirname(this.props.match.url)}
           OnSubmit={this.HandleSubmit}
-          className="small-form"
+          className="small-form form-page"
         >
           <div className="form-content">
             <label>Current Balance</label>
