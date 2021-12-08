@@ -69,7 +69,7 @@ class ContentObjectReviewForm extends React.Component {
               {
                 label: "Cancel",
                 type: "button",
-                onClick: this.FrameCompleted,
+                onClick: () => this.FrameCompleted(),
                 className: "secondary"
               }
             ]}

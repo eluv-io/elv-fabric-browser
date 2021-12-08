@@ -119,7 +119,7 @@ class Contract extends React.Component {
             {
               label: "Delete Contract",
               type: "button",
-              onClick: this.DeleteContract,
+              onClick: () => this.DeleteContract(),
               className: "danger",
               dividerAbove: true
             }

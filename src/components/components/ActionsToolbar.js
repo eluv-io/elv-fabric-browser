@@ -27,33 +27,29 @@ const ActionsToolbar = observer(({actions, iconActions, showContentLookup=true})
 
   const HandleEscapeKey = (event) => {
     if(event.key === "Escape") {
-      this.HandleClickOutside(event);
+      setMoreOptionsToggle(false);
     }
-  };
-
-  const StringToKebabCase = (string) => {
-    return string.toLowerCase().replace(" ", "-");
   };
 
   useEffect(() => {
     document.addEventListener("mousedown", HandleClickOutside);
-    document.addEventListener("keyup", HandleEscapeKey);
+    document.addEventListener("keydown", HandleEscapeKey);
 
     return (() => {
       document.removeEventListener("mousedown", HandleClickOutside);
-      document.removeEventListener("keyup", HandleEscapeKey);
+      document.removeEventListener("keydown", HandleEscapeKey);
     });
   }, []);
 
   const visibleActions = actions.filter(action => !action.hidden);
 
   const primaryActions = (
-    visibleActions.slice(0, 2).map(action => {
+    visibleActions.slice(0, 2).map((action, index) => {
       const {key, type, path, onClick, label, className} = action;
 
       return (
         <Action
-          key={key || StringToKebabCase(label)}
+          key={key || index}
           type={type}
           to={path}
           onClick={onClick}
@@ -78,12 +74,12 @@ const ActionsToolbar = observer(({actions, iconActions, showContentLookup=true})
         <div className={`more-options-menu ${moreOptionsOpen ? "more-options-menu--open" : ""}`}>
           <ul className="options-list" role="menu">
             {
-              visibleActions.slice(2).map(action => {
+              visibleActions.slice(2).map((action, index) => {
                 const {key, type, path, onClick, label, className, dividerAbove} = action;
 
                 return (
                   <Action
-                    key={key || StringToKebabCase(label)}
+                    key={key || index}
                     className={`list-item${dividerAbove ? " list-divider" : ""}${className ? " list-item-" + className : ""}`}
                     type={type}
                     button={false}
@@ -104,7 +100,7 @@ const ActionsToolbar = observer(({actions, iconActions, showContentLookup=true})
     );
   };
 
-  const iconActionElements = iconActions ? iconActions.map(action => {
+  const iconActionElements = iconActions ? iconActions.map((action, index) => {
     const {className, icon, label, onClick, key} = action;
 
     return (
@@ -113,7 +109,7 @@ const ActionsToolbar = observer(({actions, iconActions, showContentLookup=true})
         icon={icon}
         label={label}
         onClick={onClick}
-        key={key || StringToKebabCase(label)}
+        key={key || index}
       />
     );
   }) : null;

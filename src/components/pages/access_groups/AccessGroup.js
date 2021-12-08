@@ -172,14 +172,14 @@ class AccessGroup extends React.Component {
             label: "Leave Group",
             type: "button",
             hidden: this.props.groupStore.accessGroup.isOwner,
-            onClick: this.LeaveAccessGroup,
+            onClick: () => this.LeaveAccessGroup(),
             className: "danger"
           },
           {
             label: "Delete",
             type: "button",
             hidden: (true || !this.props.groupStore.accessGroup.isOwner),
-            onClick: this.DeleteAccessGroup,
+            onClick: () => this.DeleteAccessGroup(),
             className: "danger"
           }
         ]}
