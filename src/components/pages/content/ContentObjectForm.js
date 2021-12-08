@@ -232,7 +232,7 @@ class ContentObjectForm extends React.Component {
             }
           ]}
         />
-        <div className="page-content-container">
+        <div className="page-content-container form-page">
           <div className={`page-content ${this.state.showManageApp ? "no-padding" : ""}`}>
             { this.AppFormSelection() }
             { content }
