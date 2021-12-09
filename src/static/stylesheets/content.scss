@@ -200,16 +200,8 @@ pre,
   }
 }
 
-.content-lookup-actions-container {
-  display: flex;
-  position: relative;
-}
-
 .content-lookup-container {
-  display: flex;
-  height: 100%;
-  position: absolute;
-  right: 0;
+  display: inline-flex;
 
   input {
     font-size: $elv-font-m;

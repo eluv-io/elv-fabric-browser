@@ -2,8 +2,9 @@ import React from "react";
 import Path from "path";
 import {PageHeader} from "../../../components/Page";
 import Events from "../../../components/Events";
-import {Action, AsyncComponent} from "elv-components-js";
+import {AsyncComponent} from "elv-components-js";
 import {inject, observer} from "mobx-react";
+import ActionsToolbar from "../../../components/ActionsToolbar";
 
 @inject("contractStore")
 @inject("eventsStore")
@@ -18,11 +19,17 @@ class DeployedContractEvents extends React.Component {
   PageContent() {
     return (
       <div className="page-container contracts-page-container">
-        <div className="actions-container">
-          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">
-            Back
-          </Action>
-        </div>
+        <ActionsToolbar
+          showContentLookup={false}
+          actions={[
+            {
+              label: "Back",
+              type: "link",
+              path: Path.dirname(this.props.match.url),
+              className: "secondary"
+            }
+          ]}
+        />
         <PageHeader
           header={this.props.contractStore.contract.name}
           subHeader={this.props.contractStore.contract.description}

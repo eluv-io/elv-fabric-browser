@@ -1,9 +1,10 @@
 import React from "react";
 import UrlJoin from "url-join";
 import Path from "path";
-import {Action, BrowseWidget, Form, JsonInput} from "elv-components-js";
+import {BrowseWidget, Form, JsonInput} from "elv-components-js";
 import {inject, observer} from "mobx-react";
 import AsyncComponent from "../../components/AsyncComponent";
+import ActionsToolbar from "../../components/ActionsToolbar";
 
 @inject("libraryStore")
 @observer
@@ -87,9 +88,17 @@ class ContentLibraryForm extends React.Component {
 
     return (
       <div className="page-container">
-        <div className="actions-container manage-actions">
-          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
-        </div>
+        <ActionsToolbar
+          showContentLookup={false}
+          actions={[
+            {
+              label: "Back",
+              type: "link",
+              path: Path.dirname(this.props.match.url),
+              className: "secondary"
+            }
+          ]}
+        />
         <div className="page-content-container">
           <div className="page-content">
             <Form
@@ -97,6 +106,7 @@ class ContentLibraryForm extends React.Component {
               redirectPath={redirectPath}
               cancelPath={Path.dirname(this.props.match.url)}
               OnSubmit={this.HandleSubmit}
+              className="form-page"
             >
               <div className="form-content">
                 <label htmlFor="name">Name</label>

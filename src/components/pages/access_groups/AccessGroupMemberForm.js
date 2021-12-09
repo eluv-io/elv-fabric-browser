@@ -1,8 +1,9 @@
 import React from "react";
 import Path from "path";
-import {Action, Form} from "elv-components-js";
+import {Form} from "elv-components-js";
 import {inject, observer} from "mobx-react";
 import {AsyncComponent} from "elv-components-js";
+import ActionsToolbar from "../../components/ActionsToolbar";
 
 @inject("groupStore")
 @observer
@@ -39,17 +40,23 @@ class AccessGroupMemberForm extends React.Component {
 
     return (
       <div className="page-container">
-        <div className="actions-container manage-actions">
-          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">
-            Back
-          </Action>
-        </div>
+        <ActionsToolbar
+          showContentLookup={false}
+          actions={[
+            {
+              label: "Back",
+              type: "link",
+              path: Path.dirname(this.props.match.url),
+              className: "secondary"
+            }
+          ]}
+        />
         <Form
           legend={`Add member to '${this.props.groupStore.accessGroup.name}'`}
           redirectPath={backPath}
           cancelPath={backPath}
           OnSubmit={this.HandleSubmit}
-          className="small-form"
+          className="small-form form-page"
         >
           <div className="form-content">
             <label htmlFor="memberAddress">Address</label>

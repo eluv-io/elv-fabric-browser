@@ -8,6 +8,7 @@ import {PageHeader} from "../../components/Page";
 import {Action, Confirm} from "elv-components-js";
 import {inject, observer} from "mobx-react";
 import AsyncComponent from "../../components/AsyncComponent";
+import ActionsToolbar from "../../components/ActionsToolbar";
 
 @inject("contractStore")
 @observer
@@ -96,12 +97,34 @@ class Contract extends React.Component {
 
     return (
       <div className="page-container contracts-page-container">
-        <div className="actions-container">
-          <Action type="link" to={"/contracts/saved"} className="secondary">Back</Action>
-          <Action type="link" to={UrlJoin(this.props.match.url, "edit")}>Edit Contract</Action>
-          <Action type="link" to={UrlJoin(this.props.match.url, "deploy")}>Deploy Contract</Action>
-          <Action className="danger" onClick={this.DeleteContract}>Delete Contract</Action>
-        </div>
+        <ActionsToolbar
+          showContentLookup={false}
+          actions={[
+            {
+              label: "Back",
+              type: "link",
+              path: "/contracts/saved",
+              className: "secondary"
+            },
+            {
+              label: "Edit Contract",
+              type: "link",
+              path: UrlJoin(this.props.match.url, "edit")
+            },
+            {
+              label: "Deploy Contract",
+              type: "link",
+              path: UrlJoin(this.props.match.url, "deploy")
+            },
+            {
+              label: "Delete Contract",
+              type: "button",
+              onClick: () => this.DeleteContract(),
+              className: "danger",
+              dividerAbove: true
+            }
+          ]}
+        />
         <PageHeader header={this.props.contractStore.contractName} />
         <div className="page-content-container">
           <div className="page-content">

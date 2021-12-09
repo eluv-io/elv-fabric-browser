@@ -6,7 +6,7 @@ import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
 import {Redirect} from "react-router";
 import {PageHeader} from "../../components/Page";
-import {Action, Confirm, IconButton, Tabs} from "elv-components-js";
+import {Confirm, IconButton, Tabs} from "elv-components-js";
 import Listing from "../../components/Listing";
 import RemoveIcon from "../../../static/icons/close.svg";
 import {inject, observer} from "mobx-react";
@@ -14,7 +14,7 @@ import AsyncComponent from "elv-components-js/src/components/AsyncComponent";
 import JSONField from "../../components/JSONField";
 import ToggleSection from "../../components/ToggleSection";
 import ContentObjectGroups from "../content/ContentObjectGroups";
-import ContentLookup from "../../components/ContentLookup";
+import ActionsToolbar from "../../components/ActionsToolbar";
 
 @inject("groupStore")
 @observer
@@ -148,16 +148,42 @@ class AccessGroup extends React.Component {
 
   Actions() {
     return (
-      <div className="actions-wrapper">
-        <div className="actions-container content-lookup-actions-container">
-          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary" >Back</Action>
-          <Action type="link" to={UrlJoin(this.props.match.url, "edit")} hidden={!this.props.groupStore.accessGroup.isOwner}>Manage</Action>
-          <Action type="link" to={UrlJoin(this.props.match.url, "add-member")} hidden={!this.props.groupStore.accessGroup.isManager}>Add Member</Action>
-          <Action className="danger" onClick={this.LeaveAccessGroup} hidden={this.props.groupStore.accessGroup.isOwner}>Leave Group</Action>
-          <Action className="danger" onClick={this.DeleteAccessGroup} hidden={true || !this.props.groupStore.accessGroup.isOwner}>Delete</Action>
-          <ContentLookup />
-        </div>
-      </div>
+      <ActionsToolbar
+        actions={[
+          {
+            label: "Back",
+            type: "link",
+            path: Path.dirname(this.props.match.url),
+            className: "secondary"
+          },
+          {
+            label: "Manage",
+            type: "link",
+            hidden: !this.props.groupStore.accessGroup.isOwner,
+            path: UrlJoin(this.props.match.url, "edit"),
+          },
+          {
+            label: "Add Member",
+            type: "link",
+            hidden: !this.props.groupStore.accessGroup.isManager,
+            path: UrlJoin(this.props.match.url, "add-member")
+          },
+          {
+            label: "Leave Group",
+            type: "button",
+            hidden: this.props.groupStore.accessGroup.isOwner,
+            onClick: () => this.LeaveAccessGroup(),
+            className: "danger"
+          },
+          {
+            label: "Delete",
+            type: "button",
+            hidden: (true || !this.props.groupStore.accessGroup.isOwner),
+            onClick: () => this.DeleteAccessGroup(),
+            className: "danger"
+          }
+        ]}
+      />
     );
   }
 

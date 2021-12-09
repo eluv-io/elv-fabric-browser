@@ -6,6 +6,7 @@ import {Action, Form, Modal} from "elv-components-js";
 import FileUploadWidget from "../../components/FileUploadWidget";
 import {inject, observer} from "mobx-react";
 import AsyncComponent from "../../components/AsyncComponent";
+import ActionsToolbar from "../../components/ActionsToolbar";
 
 const appNames = {
   "asset-manager": "Asset Manager",
@@ -166,9 +167,17 @@ class ContentApps extends React.Component {
 
     return (
       <div className="page-container contracts-page-container">
-        <div className="actions-container">
-          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
-        </div>
+        <ActionsToolbar
+          showContentLookup={false}
+          actions={[
+            {
+              label: "Back",
+              type: "link",
+              path: Path.dirname(this.props.match.url),
+              className: "secondary"
+            }
+          ]}
+        />
         <PageHeader header={header} />
         <div className="page-content-container">
           <div className="page-content">

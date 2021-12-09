@@ -21,10 +21,11 @@ import ContentObjectGroups from "./ContentObjectGroups";
 
 import RefreshIcon from "../../../static/icons/refresh.svg";
 import InfoIcon from "../../../static/icons/help-circle.svg";
-import Diff from "../../components/Diff";
-import ContentLookup from "../../components/ContentLookup";
-import {ContentBrowserModal} from "../../components/ContentBrowser";
 import DeleteIcon from "../../../static/icons/trash.svg";
+
+import Diff from "../../components/Diff";
+import {ContentBrowserModal} from "../../components/ContentBrowser";
+import ActionsToolbar from "../../components/ActionsToolbar";
 
 const DownloadPart = ({libraryId, objectId, versionHash, partHash, partName, DownloadMethod}) => {
   const [progress, setProgress] = useState(undefined);
@@ -812,94 +813,63 @@ class ContentObject extends React.Component {
   }
 
   Actions() {
-    const object = this.props.objectStore.object;
-
-    const refreshButton = (
-      <IconButton
-        className="refresh-button"
-        icon={RefreshIcon}
-        label="Refresh"
-        onClick={() => this.setState({pageVersion: this.state.pageVersion + 1})}
-      />
-    );
-
-    const backButton = (
-      <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">
-        Back
-      </Action>
-    );
-
-    if(!object.canEdit) {
-      return (
-        <div className="actions-wrapper">
-          <div className="actions-container">
-            <ContentLookup />
-          </div>
-          <div className="actions-container">
-            { backButton }
-            { refreshButton }
-          </div>
-        </div>
-      );
-    }
-
-    let setContractButton;
-    if(
-      !object.customContractAddress &&
-      (object.isNormalObject || object.isContentType)
-    ) {
-      setContractButton = (
-        <Action type="link" to={UrlJoin(this.props.match.url, "deploy")}>
-          Custom Contract
-        </Action>
-      );
-    }
-
-    let deleteObjectButton;
-    if(object.isOwner && !object.isContentLibraryObject) {
-      deleteObjectButton = (
-        <Action className="danger" onClick={() => this.DeleteContentObject()}>
-          Delete
-        </Action>
-      );
-    }
-
-    let saveDraftButton;
-    if(this.props.objectStore.writeTokens[this.props.objectStore.objectId]) {
-      saveDraftButton = (
-        <Action className="important" onClick={() => this.SaveContentObjectDraft()}>
-          Save Draft
-        </Action>
-      );
-    }
-
-    const copyObjectButton = (
-      <Action className="primary" onClick={() => this.setState({showCopyObjectModal: true})}>
-        Copy
-      </Action>
-    );
-
     return (
-      <div className="actions-wrapper">
-        <div className="actions-container">
-          <ContentLookup />
-        </div>
-        <div className="actions-container">
-          { backButton }
-          <Action type="link" to={UrlJoin(this.props.match.url, "edit")}>Manage</Action>
-          { setContractButton }
-          <Action type="link" to={UrlJoin(this.props.match.url, "upload")}>
-            Upload Parts
-          </Action>
-          <Action type="link" to={UrlJoin(this.props.match.url, "apps")}>
-            Apps
-          </Action>
-          { copyObjectButton }
-          { deleteObjectButton }
-          { saveDraftButton }
-          { refreshButton }
-        </div>
-      </div>
+      <ActionsToolbar
+        iconActions={[
+          {
+            className: "refresh-button",
+            icon: RefreshIcon,
+            label: "Refresh",
+            onClick: () => this.setState({pageVersion: this.state.pageVersion + 1})
+          }
+        ]}
+        actions={[
+          {
+            label: "Back",
+            type: "link",
+            path: Path.dirname(this.props.match.url),
+            className: "secondary"
+          },
+          {
+            label: "Manage",
+            type: "link",
+            hidden: !this.props.objectStore.object.canEdit,
+            path: UrlJoin(this.props.match.url, "edit"),
+          },
+          {
+            label: "Custom Contract",
+            type: "link",
+            hidden: !this.props.objectStore.object.canEdit || this.props.objectStore.object.customContractAddress || !(this.props.objectStore.object.isNormalObject || this.props.objectStore.object.isContentType),
+            path: UrlJoin(this.props.match.url, "deploy"),
+          },
+          {
+            label: "Upload Parts",
+            type: "link",
+            hidden: !this.props.objectStore.object.canEdit,
+            path: UrlJoin(this.props.match.url, "upload")
+          },
+          {
+            label: "Apps",
+            type: "link",
+            hidden: !this.props.objectStore.object.canEdit,
+            path: UrlJoin(this.props.match.url, "apps")
+          },
+          {
+            label: "Copy",
+            type: "button",
+            hidden: !this.props.objectStore.object.canEdit,
+            onClick: () => this.setState({showCopyObjectModal: true})
+          },
+          {
+            label: "Delete",
+            type: "button",
+            hidden: this.props.objectStore.object.isContentLibraryObject || !this.props.objectStore.object.canEdit || !this.props.objectStore.object.isOwner,
+            onClick: () => this.DeleteContentObject(),
+            className: "danger",
+            dividerAbove: true
+          }
+        ]}
+      />
     );
   }
 

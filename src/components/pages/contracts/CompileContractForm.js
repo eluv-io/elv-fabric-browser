@@ -1,8 +1,9 @@
 import React from "react";
-import {Action, BrowseWidget, Form, JsonInput, RadioSelect} from "elv-components-js";
+import {BrowseWidget, Form, JsonInput, RadioSelect} from "elv-components-js";
 import UrlJoin from "url-join";
 import Path from "path";
 import {inject, observer} from "mobx-react";
+import ActionsToolbar from "../../components/ActionsToolbar";
 
 @inject("contractStore")
 @observer
@@ -119,16 +120,24 @@ class CompileContractForm extends React.Component {
 
     return (
       <div className="page-container">
-        <div className="actions-container manage-actions">
-          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
-        </div>
+        <ActionsToolbar
+          showContentLookup={false}
+          actions={[
+            {
+              label: "Back",
+              type: "link",
+              path: Path.dirname(this.props.match.url),
+              className: "secondary"
+            }
+          ]}
+        />
         <Form
           legend={"Compile contracts"}
           redirectPath={redirectPath}
           cancelPath={backPath}
           status={status}
           OnSubmit={this.HandleSubmit}
-          className="small-form"
+          className="small-form form-page"
         >
           <div>
             <div className="form-content">
