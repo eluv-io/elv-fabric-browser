@@ -4,6 +4,7 @@ import {Action, Form, IconButton} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
 import DeleteIcon from "../../../static/icons/trash.svg";
 import {inject, observer} from "mobx-react";
+import ActionsToolbar from "../../components/ActionsToolbar";
 
 @inject("libraryStore")
 @inject("typeStore")
@@ -117,15 +118,23 @@ class ContentLibraryTypesForm extends React.Component {
   PageContent() {
     return (
       <div className="page-container">
-        <div className="actions-container manage-actions">
-          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
-        </div>
+        <ActionsToolbar
+          showContentLookup={false}
+          actions={[
+            {
+              label: "Back",
+              type: "link",
+              path: Path.dirname(this.props.match.url),
+              className: "secondary"
+            }
+          ]}
+        />
         <Form
           legend={"Manage Library Types"}
           redirectPath={Path.dirname(this.props.match.url)}
           cancelPath={Path.dirname(this.props.match.url)}
           OnSubmit={this.HandleSubmit}
-          className="small-form"
+          className="small-form form-page"
         >
           <div className="form-content">
             <label htmlFor={"typeId"}>Content Types</label>

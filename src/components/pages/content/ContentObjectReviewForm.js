@@ -1,11 +1,12 @@
 import React from "react";
 import Path from "path";
-import {Action, Form, RadioSelect} from "elv-components-js";
+import {Form, RadioSelect} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
 import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
 import {Redirect} from "react-router";
 import {inject, observer} from "mobx-react";
+import ActionsToolbar from "../../components/ActionsToolbar";
 
 @inject("objectStore")
 @observer
@@ -62,9 +63,17 @@ class ContentObjectReviewForm extends React.Component {
             onComplete={this.FrameCompleted}
             onCancel={this.FrameCompleted}
           />
-          <div className="actions-container">
-            <Action className="secondary" onClick={this.FrameCompleted}>Cancel</Action>
-          </div>
+          <ActionsToolbar
+            showContentLookup={false}
+            actions={[
+              {
+                label: "Cancel",
+                type: "button",
+                onClick: () => this.FrameCompleted(),
+                className: "secondary"
+              }
+            ]}
+          />
         </fieldset>
       </form>
     );
@@ -81,15 +90,24 @@ class ContentObjectReviewForm extends React.Component {
       return this.ReviewAppFrame(legend);
     } else {
       return (
-        <div>
-          <div className="actions-container manage-actions">
-            <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
-          </div>
+        <div className="page-container">
+          <ActionsToolbar
+            showContentLookup={false}
+            actions={[
+              {
+                label: "Back",
+                type: "link",
+                path: Path.dirname(this.props.match.url),
+                className: "secondary"
+              }
+            ]}
+          />
           <Form
             legend={legend}
             redirectPath={Path.dirname(this.props.match.url)}
             cancelPath={Path.dirname(this.props.match.url)}
             OnSubmit={this.HandleSubmit}
+            className="form-page"
           >
             <div className="form-content">
               <label htmlFor="approve">Approval</label>

@@ -2,10 +2,9 @@ import React from "react";
 import UrlJoin from "url-join";
 import AccessGroupIcon from "../../../static/icons/groups.svg";
 import {PageHeader} from "../../components/Page";
-import {Action} from "elv-components-js";
 import Listing from "../../components/Listing";
 import {inject, observer} from "mobx-react";
-import ContentLookup from "../../components/ContentLookup";
+import ActionsToolbar from "../../components/ActionsToolbar";
 
 @inject("groupStore")
 @observer
@@ -57,10 +56,15 @@ class AccessGroups extends React.Component {
   render() {
     return (
       <div className="page-container contents-page-container">
-        <div className="actions-container content-lookup-actions-container">
-          <Action type="link" to="/access-groups/create">New Access Group</Action>
-          <ContentLookup />
-        </div>
+        <ActionsToolbar
+          actions={[
+            {
+              label: "New Access Group",
+              type: "link",
+              path: "/access-groups/create"
+            }
+          ]}
+        />
         <PageHeader header="Access Groups" />
         <div className="page-content">
           { this.AccessGroupsListing() }

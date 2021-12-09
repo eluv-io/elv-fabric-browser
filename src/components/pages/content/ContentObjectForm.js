@@ -1,13 +1,14 @@
 import React from "react";
 import UrlJoin from "url-join";
 import Path from "path";
-import {Action, BrowseWidget, Form, JsonInput, LoadingElement, Tabs} from "elv-components-js";
+import {BrowseWidget, Form, JsonInput, LoadingElement, Tabs} from "elv-components-js";
 import {inject, observer} from "mobx-react";
 import AsyncComponent from "../../components/AsyncComponent";
 import {Redirect} from "react-router";
 import {toJS} from "mobx";
 import Fabric from "../../../clients/Fabric";
 import AppFrame from "../../components/AppFrame";
+import ActionsToolbar from "../../components/ActionsToolbar";
 
 @inject("libraryStore")
 @inject("objectStore")
@@ -128,6 +129,7 @@ class ContentObjectForm extends React.Component {
         redirectPath={redirectPath}
         cancelPath={backPath}
         OnSubmit={this.HandleSubmit}
+        className="form-page"
       >
         <div className="form-content">
           <label htmlFor="name">Name</label>
@@ -171,16 +173,6 @@ class ContentObjectForm extends React.Component {
         onChange={(value) => this.setState({showManageApp: value})}
         options={[["App", true], ["Form", false]]}
       />
-    );
-  }
-
-  BackLink() {
-    if(this.state.fullScreen) { return; }
-
-    return (
-      <div className="actions-container manage-actions">
-        <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">Back</Action>
-      </div>
     );
   }
 
@@ -228,8 +220,19 @@ class ContentObjectForm extends React.Component {
 
     return (
       <div className="page-container">
-        { this.BackLink() }
-        <div className="page-content-container">
+        <ActionsToolbar
+          showContentLookup={false}
+          actions={[
+            {
+              label: "Back",
+              type: "link",
+              hidden: this.state.fullScreen,
+              path: Path.dirname(this.props.match.url),
+              className: "secondary"
+            }
+          ]}
+        />
+        <div className="page-content-container form-page">
           <div className={`page-content ${this.state.showManageApp ? "no-padding" : ""}`}>
             { this.AppFormSelection() }
             { content }

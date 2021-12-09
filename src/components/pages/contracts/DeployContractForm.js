@@ -2,9 +2,10 @@ import React from "react";
 import UrlJoin from "url-join";
 import Path from "path";
 import Fabric from "../../../clients/Fabric";
-import {Action, Form, JsonInput, RadioSelect} from "elv-components-js";
+import {Form, JsonInput, RadioSelect} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
 import {inject, observer} from "mobx-react";
+import ActionsToolbar from "../../components/ActionsToolbar";
 
 @inject("contractStore")
 @observer
@@ -319,16 +320,23 @@ class DeployContractForm extends React.Component {
 
     return (
       <div className="page-container">
-        <div className="actions-container manage-actions">
-          <Action type="link" to={Path.dirname(this.props.match.url)} className="secondary">
-            Back
-          </Action>
-        </div>
+        <ActionsToolbar
+          showContentLookup={false}
+          actions={[
+            {
+              label: "Back",
+              type: "link",
+              path: Path.dirname(this.props.match.url),
+              className: "secondary"
+            }
+          ]}
+        />
         <Form
           legend={legend}
           redirectPath={redirectPath}
           cancelPath={backPath}
           OnSubmit={this.HandleSubmit}
+          className="form-page"
         >
           { this.ContractForm() }
         </Form>

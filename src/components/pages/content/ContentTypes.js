@@ -2,10 +2,9 @@ import React from "react";
 import UrlJoin from "url-join";
 import TypeIcon from "../../../static/icons/content.svg";
 import {PageHeader} from "../../components/Page";
-import {Action} from "elv-components-js";
 import Listing from "../../components/Listing";
 import {inject, observer} from "mobx-react";
-import ContentLookup from "../../components/ContentLookup";
+import ActionsToolbar from "../../components/ActionsToolbar";
 
 @inject("typeStore")
 @observer
@@ -41,10 +40,15 @@ class ContentTypes extends React.Component {
   render() {
     return (
       <div className="page-container contents-page-container">
-        <div className="actions-container content-lookup-actions-container">
-          <Action type="link" to={UrlJoin("/content-types", "create")}>New Content Type</Action>
-          <ContentLookup />
-        </div>
+        <ActionsToolbar
+          actions={[
+            {
+              label: "New Content Type",
+              type: "link",
+              path: UrlJoin("/content-types", "create")
+            }
+          ]}
+        />
         <PageHeader header="Content Types" />
         <div className="page-content-container">
           <div className="page-content">

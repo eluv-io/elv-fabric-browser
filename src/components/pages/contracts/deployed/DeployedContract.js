@@ -11,6 +11,7 @@ import {inject, observer} from "mobx-react";
 import DeployedContractMethodForm from "./DeployedContractMethodForm";
 import JSONField from "../../../components/JSONField";
 import ToggleSection from "../../../components/ToggleSection";
+import ActionsToolbar from "../../../components/ActionsToolbar";
 
 @inject("contractStore")
 @observer
@@ -34,29 +35,47 @@ class DeployedContract extends React.Component {
     });
   }
 
-  // Allow removal (aka stop watching) deployed custom contract
-  DeleteButton() {
-    if(this.props.contractStore.contract.type !== ContractTypes.unknown) { return null; }
+  Actions = (backPath) => {
+    return <ActionsToolbar
+      showContentLookup={false}
+      actions={[
+        {
+          label: "Back",
+          type: "link",
+          path: backPath,
+          className: "secondary"
+        },
+        {
+          label: "Transfer Funds",
+          type: "link",
+          path: UrlJoin(this.props.match.url, "funds")
+        },
+        {
+          label: "Contract Events",
+          type: "link",
+          path: UrlJoin(this.props.match.url, "events")
+        },
+        // Allow removal (aka stop watching) deployed custom contract
+        {
+          label: "Remove Contract",
+          type: "button",
+          onClick: async() => {
+            await Confirm({
+              message: "Are you sure you want to stop watching this contract?",
+              onConfirm: async () => {
+                await this.props.contractStore.RemoveDeployedContract({
+                  address: this.props.contractStore.contractAddress
+                });
 
-    return (
-      <Action
-        className="danger"
-        onClick={async () => {
-          await Confirm({
-            message: "Are you sure you want to stop watching this contract?",
-            onConfirm: async () => {
-              await this.props.contractStore.RemoveDeployedContract({
-                address: this.props.contractStore.contractAddress
-              });
-
-              this.setState({removed: true});
-            }
-          });
-        }}
-      >
-        Remove Contract
-      </Action>
-    );
+                this.setState({removed: true});
+              }
+            });
+          },
+          dividerAbove: true,
+          className: "danger"
+        }
+      ]}
+    />;
   }
 
   ToggleElement(methodName) {
@@ -116,12 +135,7 @@ class DeployedContract extends React.Component {
 
     return (
       <div className="page-container contracts-page-container">
-        <div className="actions-container">
-          <Action type="link" to={backPath} className="secondary" >Back</Action>
-          <Action type="link" to={UrlJoin(this.props.match.url, "funds")}>Transfer Funds</Action>
-          <Action type="link" to={UrlJoin(this.props.match.url, "events")}>Contract Events</Action>
-          { this.DeleteButton() }
-        </div>
+        { this.Actions(backPath) }
         <PageHeader header={this.props.contractStore.contract.name} subHeader={this.props.contractStore.contract.description} />
         <div className="page-content-container">
           <div className="page-content">
