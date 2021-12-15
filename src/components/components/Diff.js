@@ -67,15 +67,17 @@ const Diff = observer(({json, diff}) => {
 
   return (
     <div className="diff-wrapper">
+      {
+        diff ?
+          RenderDiff() :
+          <AsyncComponent
+            Load={
+              async () => await objectStore.ContentObjectVersion({versionHash: previousVersionHash})
+            }
+            render={() => RenderDiff()}
+          />
+      }
       { diffActions }
-      {diff ?
-        RenderDiff() :
-        <AsyncComponent
-          Load={
-            async () => await objectStore.ContentObjectVersion({versionHash: previousVersionHash})
-          }
-          render={() => RenderDiff()}
-        />}
     </div>
   );
 });
