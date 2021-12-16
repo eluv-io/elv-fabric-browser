@@ -36,10 +36,18 @@ const JSONField = ({json, diffJson, DiffComponent}) => {
       break;
     case "diff":
       if(diffJson) {
-        content = <Diff json={json} diff={diffJson} />;
+        content = (
+          <div className="diff-wrapper">
+            <Diff json={json} diff={diffJson} />
+          </div>
+        );
         break;
       } else if(DiffComponent) {
-        content = <DiffComponent />;
+        content = (
+          <div className="diff-wrapper">
+            <DiffComponent />
+          </div>
+        );
         break;
       }
       break;

@@ -21,7 +21,8 @@ const Diff = observer(({json, diff}) => {
 
     let diffIndex = 0;
     const parts = diffArray.map((part, i) => {
-      const isDiff = part.added || part.removed;
+      const consecutiveAddedPart = part.added ? !!(diffArray[i - 1].removed) : false;
+      const isDiff = (part.added || part.removed) && !consecutiveAddedPart;
 
       const element = (
         <p
@@ -66,7 +67,7 @@ const Diff = observer(({json, diff}) => {
   );
 
   return (
-    <div className="diff-wrapper">
+    <div className="diff-container">
       {
         diff ?
           RenderDiff() :

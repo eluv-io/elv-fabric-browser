@@ -80,6 +80,14 @@ $elv-diff-delete-color: rgba($elv-color-red, 0.4);
 }
 
 .diff-wrapper {
+  .-elv-async-component {
+    &.-elv-async-component-loading {
+      min-height: 50vh;
+    }
+  }
+}
+
+.diff-container {
   display: flex;
 
   .actions-container {
