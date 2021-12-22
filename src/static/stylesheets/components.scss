@@ -54,8 +54,11 @@ $elv-diff-delete-color: rgba($elv-color-red, 0.4);
 }
 
 .diff-block {
+  max-height: 90vh;
+
   .part-addition {
     background-color: $elv-diff-add-color;
+    position: relative;
 
     &::before {
       content: "+";
@@ -66,11 +69,31 @@ $elv-diff-delete-color: rgba($elv-color-red, 0.4);
 
   .part-deletion {
     background-color: $elv-diff-delete-color;
+    position: relative;
 
     &::before {
       content: "-";
       padding: 0 3px;
       position: absolute;
     }
+  }
+}
+
+.diff-wrapper {
+  .-elv-async-component {
+    &.-elv-async-component-loading {
+      min-height: 50vh;
+    }
+  }
+}
+
+.diff-container {
+  display: flex;
+
+  .actions-container {
+    display: flex;
+    flex-direction: column;
+    margin-left: $elv-spacing-s;
+    margin-top: $elv-spacing-s;
   }
 }
