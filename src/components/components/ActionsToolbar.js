@@ -4,7 +4,7 @@ import ContentLookup from "./ContentLookup";
 import {objectStore} from "../../stores";
 import {observer} from "mobx-react";
 
-const ActionsToolbar = observer(({actions, iconActions, showContentLookup=true}) => {
+const ActionsToolbar = observer(({actions, iconActions, SaveDraft, showContentLookup=true}) => {
   const [moreOptionsOpen, setMoreOptionsToggle] = useState(false);
   const outsideContainerRef = useRef(null);
 
@@ -13,7 +13,7 @@ const ActionsToolbar = observer(({actions, iconActions, showContentLookup=true})
   let saveDraftButton;
   if(objectStore.writeTokens[objectStore.objectId]) {
     saveDraftButton = (
-      <Action className="important" onClick={() => this.SaveContentObjectDraft()}>
+      <Action className="important" onClick={() => SaveDraft()}>
         Save Draft
       </Action>
     );

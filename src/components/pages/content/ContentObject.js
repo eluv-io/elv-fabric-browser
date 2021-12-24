@@ -823,6 +823,7 @@ class ContentObject extends React.Component {
             onClick: () => this.setState({pageVersion: this.state.pageVersion + 1})
           }
         ]}
+        SaveDraft={() => this.SaveContentObjectDraft()}
         actions={[
           {
             label: "Back",
