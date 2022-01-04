@@ -1188,13 +1188,15 @@ const Fabric = {
       metadataSubtree: "/owner_caps"
     });
 
-    await client.ReplaceMetadata({
-      libraryId,
-      objectId,
-      writeToken,
-      metadataSubtree: "/owner_caps",
-      metadata: Object.assign(metadata, {[publicAddress]: name})
-    });
+    if(metadata) {
+      await client.ReplaceMetadata({
+        libraryId,
+        objectId,
+        writeToken,
+        metadataSubtree: "/owner_caps",
+        metadata: Object.assign(metadata, {[publicAddress]: name})
+      });
+    }
 
     return await client.FinalizeContentObject({
       libraryId,
