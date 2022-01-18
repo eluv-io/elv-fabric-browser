@@ -12,7 +12,7 @@ import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
 import {Action, Confirm, Form, IconButton, ImageIcon, LoadingElement, Modal, Tabs, ToolTip} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
-import {AccessChargeDisplay, HashToAddress, Percentage} from "../../../utils/Helpers";
+import {AccessChargeDisplay, AddressToHash, HashToAddress, Percentage} from "../../../utils/Helpers";
 import {inject, observer} from "mobx-react";
 import ToggleSection from "../../components/ToggleSection";
 import JSONField from "../../components/JSONField";
@@ -813,6 +813,9 @@ class ContentObject extends React.Component {
   }
 
   Actions() {
+    const userCapKey = `eluv.caps.iusr${AddressToHash(this.props.objectStore.currentAccountAddress)}`;
+    const hasUserCap = !!(this.props.objectStore.object.meta && this.props.objectStore.object.meta[userCapKey]);
+
     return (
       <ActionsToolbar
         iconActions={[
@@ -859,7 +862,9 @@ class ContentObject extends React.Component {
             label: "Copy",
             type: "button",
             hidden: !this.props.objectStore.object.canEdit,
-            onClick: () => this.setState({showCopyObjectModal: true})
+            disabled: !(this.props.objectStore.object.isOwner || hasUserCap),
+            onClick: () => this.setState({showCopyObjectModal: true}),
+            title: !(this.props.objectStore.object.isOwner || hasUserCap) ? "You don't have the key" : undefined
           },
           {
             label: "Delete",
