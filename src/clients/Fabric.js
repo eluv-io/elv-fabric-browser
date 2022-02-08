@@ -1180,7 +1180,6 @@ const Fabric = {
       libraryId,
       objectId,
       publicKey,
-      publicAddress,
       writeToken
     });
 
