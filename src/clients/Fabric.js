@@ -1173,7 +1173,11 @@ const Fabric = {
 
   CreateNonOwnerCap: async ({libraryId, objectId, publicKey, label}) => {
     const {writeToken} = await Fabric.EditContentObject({libraryId, objectId});
-    publicKey = client.utils.HashToAddress(publicKey.replace("kupk", ""), true);
+
+    if(publicKey.startsWith("kupk")) {
+      publicKey = client.utils.HashToAddress(publicKey.replace("kupk", ""), true);
+    }
+
     const publicAddress = client.utils.PublicKeyToAddress(publicKey);
 
     await client.CreateNonOwnerCap({
