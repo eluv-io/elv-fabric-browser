@@ -83,8 +83,7 @@ class ContentObject extends React.Component {
       redirectIds: {},
       showNonOwnerCapManagement: false,
       newNonOwnerCapPublicKey: "",
-      newNonOwnerCapPublicAddress: "",
-      newNonOwnerCapName: "",
+      newNonOwnerCapLabel: "",
       capsVersion: false
     };
 
@@ -592,8 +591,7 @@ class ContentObject extends React.Component {
     const CloseModal = () => this.setState({
       showNonOwnerCapManagement: false,
       newNonOwnerCapPublicKey: "",
-      newNonOwnerCapPublicAddress: "",
-      newNonOwnerCapName: ""
+      newNonOwnerCapLabel: ""
     });
 
     return (
@@ -607,25 +605,17 @@ class ContentObject extends React.Component {
               libraryId: this.props.objectStore.libraryId,
               objectId: this.props.objectStore.objectId,
               publicKey: this.state.newNonOwnerCapPublicKey,
-              publicAddress: this.state.newNonOwnerCapPublicAddress,
-              name: this.state.newNonOwnerCapName
+              label: this.state.newNonOwnerCapLabel
             });
           }}
         >
           <div className="form-content">
-            <label htmlFor="userName">User Name</label>
+            <label htmlFor="label">Label</label>
             <input
-              name="userName"
+              name="label"
               required
-              placeholder="User name..."
-              onChange={event => this.setState({newNonOwnerCapName: event.target.value})}
-            />
-            <label htmlFor="publicAddress">Public Address</label>
-            <input
-              name="publicAddress"
-              required
-              placeholder="Public Address..."
-              onChange={event => this.setState({newNonOwnerCapPublicAddress: event.target.value})}
+              placeholder="Label..."
+              onChange={event => this.setState({newNonOwnerCapLabel: event.target.value})}
             />
             <label htmlFor="publicKey" className="align-top">Public Key</label>
             <textarea
@@ -667,39 +657,43 @@ class ContentObject extends React.Component {
       <div className="non-owner-caps-container">
         <ToggleSection label="Encryption Keys" toggleOpen={this.state.showNonOwnerCapManagement}>
           {addCapsButton}
-          <br />
           {
-            capKeys.length > 0 ? <div className="keys-table">
-              <div className="header-rows">
-                <div>Name</div>
-                <div>Address</div>
-                <div></div>
-              </div>
-              <div className="body-rows">
-                {capKeys.map(capAddress => {
-                  const isOwnerKey = !caps[capAddress];
+            capKeys.length > 0 ? <React.Fragment>
+              <div className="table-note">NOTE: Owner keys cannot be deleted from this table</div>
+              <div className="keys-table">
+                <div className="header-rows">
+                  <div className="table-cell">Label</div>
+                  <div className="table-cell">Type</div>
+                  <div className="table-cell">Address</div>
+                  <div className="table-cell"></div>
+                </div>
+                <div className="body-rows">
+                  {capKeys.map(capAddress => {
+                    const isOwnerKey = !caps.hasOwnProperty(capAddress);
 
-                  return (
-                    <React.Fragment key={`${capAddress}-caps-version-${this.state.capsVersion}`}>
-                      <div>{caps[capAddress] || "Owner"}</div>
-                      <div>{capAddress}</div>
-                      <div>
-                        <IconButton
-                          title="Delete this key"
-                          icon={DeleteIcon}
-                          disabled={!this.props.objectStore.object.isOwner || isOwnerKey}
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            this.DeleteCap(capAddress);
-                          }}
-                          className="delete-button"
-                        />
-                      </div>
-                    </React.Fragment>
-                  );
-                })}
+                    return (
+                      <React.Fragment key={`${capAddress}-caps-version-${this.state.capsVersion}`}>
+                        <div className="table-cell">{caps[capAddress] || "Owner"}</div>
+                        <div className="table-cell">{caps[capAddress] ? "Creator" : "Owner"}</div>
+                        <div className="table-cell">{capAddress}</div>
+                        <div className="table-cell">
+                          <IconButton
+                            title="Delete this key"
+                            icon={DeleteIcon}
+                            disabled={!this.props.objectStore.object.isOwner || isOwnerKey}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              this.DeleteCap(capAddress);
+                            }}
+                            className="delete-button"
+                          />
+                        </div>
+                      </React.Fragment>
+                    );
+                  })}
+                </div>
               </div>
-            </div> : null
+            </React.Fragment>: null
           }
 
         </ToggleSection>

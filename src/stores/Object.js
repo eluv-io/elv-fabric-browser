@@ -633,13 +633,12 @@ class ObjectStore {
   });
 
   @action.bound
-  CreateNonOwnerCap = flow(function * ({libraryId, objectId, publicKey, publicAddress, name}) {
+  CreateNonOwnerCap = flow(function * ({libraryId, objectId, publicKey, label}) {
     yield Fabric.CreateNonOwnerCap({
       libraryId,
       objectId,
       publicKey,
-      publicAddress,
-      name
+      label
     });
 
     this.objects[objectId].meta = yield Fabric.GetContentObjectMetadata({
