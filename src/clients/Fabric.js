@@ -1171,14 +1171,19 @@ const Fabric = {
     };
   },
 
-  CreateNonOwnerCap: async ({libraryId, objectId, publicKey, publicAddress, name}) => {
+  CreateNonOwnerCap: async ({libraryId, objectId, publicKey, label}) => {
     const {writeToken} = await Fabric.EditContentObject({libraryId, objectId});
+
+    if(publicKey.startsWith("kupk")) {
+      publicKey = client.utils.HashToAddress(publicKey.replace("kupk", ""), true);
+    }
+
+    const publicAddress = client.utils.PublicKeyToAddress(publicKey);
 
     await client.CreateNonOwnerCap({
       libraryId,
       objectId,
       publicKey,
-      publicAddress: Fabric.utils.FormatAddress(publicAddress),
       writeToken
     });
 
@@ -1194,7 +1199,15 @@ const Fabric = {
         objectId,
         writeToken,
         metadataSubtree: "/owner_caps",
-        metadata: Object.assign(metadata, {[publicAddress]: name})
+        metadata: Object.assign(metadata, {[publicAddress]: label})
+      });
+    } else {
+      await Fabric.MergeMetadata({
+        libraryId,
+        objectId,
+        writeToken,
+        metadataSubtree: "/owner_caps",
+        metadata: {[publicAddress]: label}
       });
     }
 
