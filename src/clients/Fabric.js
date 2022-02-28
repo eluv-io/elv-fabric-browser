@@ -59,6 +59,10 @@ const Fabric = {
     return `ikms${Fabric.utils.AddressToHash(await client.DefaultKMSAddress())}`;
   },
 
+  DefaultTenantId: async () => {
+    return await client.userProfileClient.TenantId();
+  },
+
   /* Access Groups */
 
   CreateAccessGroup: async ({name, description, metadata={}}) => {

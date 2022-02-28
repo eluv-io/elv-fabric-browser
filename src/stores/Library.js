@@ -24,6 +24,10 @@ class LibraryStore {
     return await Fabric.DefaultKMSId();
   }
 
+  async DefaultTenantId() {
+    return await Fabric.DefaultTenantId();
+  }
+
   @action.bound
   ListContentLibraries = flow(function * ({params}) {
     let { libraries, count } = yield Cancelable(
