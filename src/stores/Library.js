@@ -64,7 +64,7 @@ class LibraryStore {
   });
 
   @action.bound
-  CreateContentLibrary = flow(function * ({name, description, publicMetadata, privateMetadata, image, kmsId}) {
+  CreateContentLibrary = flow(function * ({name, description, publicMetadata, privateMetadata, image, kmsId, tenantId}) {
     try {
       privateMetadata = ParseInputJson(privateMetadata);
     } catch(error) {
@@ -85,7 +85,8 @@ class LibraryStore {
       description,
       publicMetadata,
       privateMetadata,
-      kmsId
+      kmsId,
+      tenantId
     });
 
     if(image) {

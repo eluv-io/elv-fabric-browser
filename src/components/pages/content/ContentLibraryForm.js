@@ -55,7 +55,8 @@ class ContentLibraryForm extends React.Component {
       publicMetadata: this.state.publicMetadata,
       privateMetadata: this.state.privateMetadata,
       image: this.state.imageSelection,
-      kmsId: this.state.kmsId
+      kmsId: this.state.kmsId,
+      tenantId: this.state.tenantId
     });
 
     this.setState({
