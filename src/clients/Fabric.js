@@ -59,6 +59,10 @@ const Fabric = {
     return `ikms${Fabric.utils.AddressToHash(await client.DefaultKMSAddress())}`;
   },
 
+  DefaultTenantId: async () => {
+    return await client.userProfileClient.TenantId();
+  },
+
   /* Access Groups */
 
   CreateAccessGroup: async ({name, description, metadata={}}) => {
@@ -357,7 +361,7 @@ const Fabric = {
     return FormatAddress(await client.ContentLibraryOwner({libraryId}));
   },
 
-  CreateContentLibrary: async ({name, description, publicMetadata={}, privateMetadata={}, kmsId}) => {
+  CreateContentLibrary: async ({name, description, publicMetadata={}, privateMetadata={}, kmsId, tenantId}) => {
     return await client.CreateContentLibrary({
       name,
       description,
@@ -365,7 +369,8 @@ const Fabric = {
         ...privateMetadata,
         public: publicMetadata
       },
-      kmsId
+      kmsId,
+      tenantId
     });
   },
 

@@ -20,6 +20,7 @@ class ContentLibraryForm extends React.Component {
       privateMetadata: "{}",
       kmsId: "",
       imageSelection: "",
+      tenantId: ""
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -54,7 +55,8 @@ class ContentLibraryForm extends React.Component {
       publicMetadata: this.state.publicMetadata,
       privateMetadata: this.state.privateMetadata,
       image: this.state.imageSelection,
-      kmsId: this.state.kmsId
+      kmsId: this.state.kmsId,
+      tenantId: this.state.tenantId
     });
 
     this.setState({
@@ -114,6 +116,9 @@ class ContentLibraryForm extends React.Component {
 
                 { this.Image() }
 
+                <label htmlFor="tenantId">Tenant ID</label>
+                <input name="tenantId" type="text" value={this.state.tenantId} required={true} onChange={this.HandleInputChange} />
+
                 <label className="align-top" htmlFor="description">Description</label>
                 <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
 
@@ -150,7 +155,8 @@ class ContentLibraryForm extends React.Component {
           async () => {
             if(this.state.createForm) {
               this.setState({
-                kmsId: await this.props.libraryStore.DefaultKMSId() || ""
+                kmsId: await this.props.libraryStore.DefaultKMSId() || "",
+                tenantId: await this.props.libraryStore.DefaultTenantId() || ""
               });
             } else {
               await this.props.libraryStore.ContentLibrary({
