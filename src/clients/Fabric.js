@@ -1214,6 +1214,14 @@ const Fabric = {
         metadataSubtree: "/owner_caps",
         metadata: {[publicAddress]: label}
       });
+    } else {
+      await Fabric.MergeMetadata({
+        libraryId,
+        objectId,
+        writeToken,
+        metadataSubtree: "/owner_caps",
+        metadata: {[publicAddress]: name}
+      });
     }
 
     return await client.FinalizeContentObject({

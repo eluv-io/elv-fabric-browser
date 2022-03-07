@@ -97,6 +97,10 @@
   }
 
   .options-list {
+    .action-container {
+      display: flex;
+    }
+
     .list-item {
       &-danger {
         &:not(:active):hover { // sass-lint:disable-line force-pseudo-nesting
@@ -109,6 +113,16 @@
       &:hover,
       &:focus-visible {
         background-color: $elv-color-lightergray;
+      }
+
+      &:disabled {
+        color: $elv-color-mediumgray;
+        cursor: not-allowed;
+        font-weight: normal;
+
+        &:hover {
+          background: none;
+        }
       }
 
       &.list-divider {
