@@ -45,7 +45,7 @@ const ActionsToolbar = observer(({actions, iconActions, SaveDraft, showContentLo
 
   const primaryActions = (
     visibleActions.slice(0, 2).map((action, index) => {
-      const {key, type, path, onClick, label, className} = action;
+      const {key, type, path, onClick, label, className, disabled, title} = action;
 
       return (
         <Action
@@ -54,6 +54,8 @@ const ActionsToolbar = observer(({actions, iconActions, SaveDraft, showContentLo
           to={path}
           onClick={onClick}
           className={`list-item${className ? " " + className : ""}`}
+          disabled={disabled}
+          title={title}
         >
           {label}
         </Action>
@@ -75,12 +77,13 @@ const ActionsToolbar = observer(({actions, iconActions, SaveDraft, showContentLo
           <ul className="options-list" role="menu">
             {
               visibleActions.slice(2).map((action, index) => {
-                const {key, type, path, onClick, label, className, dividerAbove} = action;
+                const {key, type, path, onClick, label, className, dividerAbove, disabled, title} = action;
 
                 return (
                   <Action
                     key={key || index}
                     className={`list-item${dividerAbove ? " list-divider" : ""}${className ? " list-item-" + className : ""}`}
+                    title={title}
                     type={type}
                     button={false}
                     to={path}
@@ -88,6 +91,7 @@ const ActionsToolbar = observer(({actions, iconActions, SaveDraft, showContentLo
                       setMoreOptionsToggle(false);
                       onClick();
                     }}
+                    disabled={disabled}
                   >
                     {label}
                   </Action>
