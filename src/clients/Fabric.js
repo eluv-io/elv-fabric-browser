@@ -4,7 +4,7 @@ import {EqualAddress, FormatAddress} from "../utils/Helpers";
 
 let client = new FrameClient({
   target: window.parent,
-  timeout: 60
+  timeout: 240
 });
 
 let objectCache = {};
@@ -241,6 +241,21 @@ const Fabric = {
 
   GetContentLibrary: async ({libraryId}) => {
     const objectId = client.utils.AddressToObjectId(client.utils.HashToAddress(libraryId));
+
+    if(Fabric.client.utils.EqualHash(objectId, Fabric.contentSpaceId)) {
+      // This is the content space, which may not be initialized
+      return {
+        libraryId,
+        types: {},
+        name: "Content Space",
+        contractAddress: FormatAddress(client.utils.HashToAddress(libraryId)),
+        libraryObjectId: objectId,
+        privateMeta: {},
+        publicMeta: {},
+        isContentSpaceLibrary: true
+      };
+    }
+
     const latestVersionHash = await client.LatestVersionHash({objectId});
 
     /* Library object and private metadata */
