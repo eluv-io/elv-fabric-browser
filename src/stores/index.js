@@ -38,7 +38,7 @@ class RootStore {
   InitializeClient = flow(function * () {
     this.client = new FrameClient({
       target: window.parent,
-      timeout: 30
+      timeout: 240
     });
 
     this.currentAccountAddress = yield this.client.CurrentAccountAddress();
