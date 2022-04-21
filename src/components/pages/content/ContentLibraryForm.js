@@ -169,6 +169,7 @@ class ContentLibraryForm extends React.Component {
                 publicMetadata: JSON.stringify(this.props.libraryStore.library.publicMeta, null, 2) || "",
                 privateMetadata: JSON.stringify(this.props.libraryStore.library.privateMeta, null, 2) || "",
                 kmsId: this.props.libraryStore.library.kmsId || "",
+                tenantId: await this.props.libraryStore.DefaultTenantId() || ""
               });
             }
           }
