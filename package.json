@@ -48,7 +48,7 @@
     "react-dom": "^16.8.5",
     "react-router": "^5.1.2",
     "react-router-dom": "^5.1.2",
-    "urijs": "^1.19.7",
+    "urijs": "^1.19.11",
     "url-join": "^4.0.0"
   },
   "devDependencies": {
