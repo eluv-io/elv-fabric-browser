@@ -39,6 +39,7 @@ import DeployedContractEventsPage from "../components/pages/contracts/deployed/D
 
 import EventsPage from "../components/pages/events/Events";
 import { Redirect, withRouter } from "react-router";
+import Ingest from "../components/pages/ingest/Ingest";
 
 @inject("notificationStore")
 @inject("routeStore")
@@ -139,6 +140,8 @@ class Router extends React.Component {
           <WatchedRoute exact path="/content/:libraryId/edit" component={ContentLibraryFormPage}/>
 
           <WatchedRoute exact path="/content/:libraryId/types" component={ContentLibraryTypesFormPage}/>
+
+          <WatchedRoute exact path="/content/:libraryId/ingest" component={Ingest} />
 
           <WatchedRoute exact path="/content/:libraryId/create" component={ContentObjectFormPage}/>
           <WatchedRoute exact path="/content-types/create" component={ContentTypeFormPage} />
