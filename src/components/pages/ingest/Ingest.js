@@ -10,6 +10,10 @@ class Ingest extends React.Component {
       libraryId: this.props.match.params.libraryId
     };
 
+    if(this.props.match.params.objectId) {
+      queryParams.objectId = this.props.match.params.objectId;
+    }
+
     return (
       <div className="page-container">
         <ActionsToolbar

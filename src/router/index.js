@@ -149,6 +149,8 @@ class Router extends React.Component {
           <WatchedRoute exact path="/content/:libraryId/:objectId" component={ContentObjectPage}/>
           <WatchedRoute exact path="/content-types/:objectId" component={ContentObjectPage}/>
 
+          <WatchedRoute exact path="/content/:libraryId/:objectId/ingest" component={Ingest} />
+
           <WatchedRoute exact path="/content/:libraryId/:objectId/edit" component={ContentObjectFormPage}/>
           <WatchedRoute exact path="/content-types/:objectId/edit" component={ContentTypeFormPage} />
 
