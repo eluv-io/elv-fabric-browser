@@ -3,18 +3,12 @@
 ##### Note: The fabric browser should be run as a contained application of [Eluvio Core JS](https://github.com/eluv-io/elv-core-js)
 
 #### Quick start:
-- Clone ```elv-fabric-browser```, ```elv-core-js```, and ```elv-client-js``` projects from github
-- In ```elv-client-js```, initialize a new content space using the initialization script:
-  ```
-  cd elv-client-js
-  npm install
-  node InitContentSpace.js <path-to-qfab-config> <path-to-content-fabric-dir> <private-key>
-  ```
-- Copy the generated TestConfiguration.json from ```elv-client-js``` to configuration.json in ```elv-core-js``` and ```elv-fabric-browser```
-
-  ```
-  cp TestConfiguration.json ../elv-core-js/configuration.json && cp TestConfiguration.json ../elv-fabric-browser/configuration.json
-  ```
+- Clone this repo along with ```elv-core-js```, and ```elv-client-js``` projects from github
+- Now set up a ```configuration.js``` file in the root directory using ```configuration-example.js``` as a guide. This can be done with 
+```
+cp configuration-example.js configuration.js
+```
+- Open the newly created ```configuration.js``` file and comment out all the config-url’s except for the one you wish to use (main, demo or test). Note that the config-url in elv-fabric-browser must match the config-url being used in elv-core-js otherwise the fabric-browser will not function.
 
 - Run ```npm install && npm run serve``` in ```elv-core-js``` and ```elv-fabric-browser``` in separate terminal tabs
 - Open [http://localhost:8082](http://localhost:8082) in your browser
@@ -63,3 +57,4 @@ If you are running Geth, ensure you have the rpccorsdomain flag set:
 ```geth --rpccorsdomain "*" ...```
 
 Ganache should allow CORS requests by default
+
