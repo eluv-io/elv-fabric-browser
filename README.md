@@ -8,8 +8,11 @@
 ```
 cp configuration-example.js configuration.js
 ```
-- Open the newly created ```configuration.js``` file and comment out all instances of ```config-url``` except for the one you wish to use (main, demo or test). Note that the config-url in elv-fabric-browser must match the config-url being used in elv-core-js otherwise the fabric-browser will not function.
 - Ensure that ```coreUrl``` points to "http://localhost:8082" as this is the (local ```elv-core-js``` url)
+- In the ```elv-core-js``` directory, ensure that the ```apps``` section in ```configuration.js``` points the fabric browser app to the local instance you are about to run. Thus, it should contain the below line. Insert this line into ```apps``` if it is not already there. 
+```
+"Eluvio Fabric Browser": "http://localhost:8080",
+```
 - Run ```npm install && npm run serve``` in ```elv-core-js``` and ```elv-fabric-browser``` in separate terminal tabs
 - Open [http://localhost:8082](http://localhost:8082) in your browser
 
