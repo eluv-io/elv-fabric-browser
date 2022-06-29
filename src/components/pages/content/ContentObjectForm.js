@@ -9,6 +9,7 @@ import {toJS} from "mobx";
 import Fabric from "../../../clients/Fabric";
 import AppFrame from "../../components/AppFrame";
 import ActionsToolbar from "../../components/ActionsToolbar";
+import IndexConfiguration from "./IndexConfiguration";
 
 @inject("libraryStore")
 @inject("objectStore")
@@ -30,7 +31,7 @@ class ContentObjectForm extends React.Component {
       imageSelection: "",
       objectId: "",
       commitMessage: "",
-      showManageApp: false
+      manageView: "app"
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -169,9 +170,11 @@ class ContentObjectForm extends React.Component {
     return (
       <Tabs
         className="object-form-tabs"
-        selected={this.state.showManageApp}
-        onChange={(value) => this.setState({showManageApp: value})}
-        options={[["App", true], ["Form", false]]}
+        selected={this.state.manageView}
+        onChange={(value) => {
+          this.setState({manageView: value});
+        }}
+        options={[["App", "app"], ["Form", "form"], ["Indexer Configuration", "index"]]}
       />
     );
   }
@@ -212,8 +215,10 @@ class ContentObjectForm extends React.Component {
     }
 
     let content;
-    if(this.state.manageAppUrl && this.state.showManageApp) {
+    if(this.state.manageAppUrl && this.state.manageView === "app") {
       content = this.AppFrame(legend);
+    } else if(this.state.manageView === "index") {
+      content = <IndexConfiguration />;
     } else {
       content = this.FormContent(legend, redirectPath, cancelPath);
     }
@@ -233,7 +238,7 @@ class ContentObjectForm extends React.Component {
           ]}
         />
         <div className="page-content-container form-page">
-          <div className={`page-content ${this.state.showManageApp ? "no-padding" : ""}`}>
+          <div className={`page-content ${this.state.manageView === "app" ? "no-padding" : ""}`}>
             { this.AppFormSelection() }
             { content }
           </div>
@@ -316,7 +321,7 @@ class ContentObjectForm extends React.Component {
                 publicMetadata,
                 privateMetadata,
                 manageAppUrl,
-                showManageApp: !!manageAppUrl
+                manageView: manageAppUrl ? "app" : "form"
               });
             }
           }
