@@ -288,6 +288,39 @@ class ObjectStore {
   });
 
   @action.bound
+  EditAndFinalizeMetadata = flow(function * ({
+    libraryId,
+    objectId,
+    metadataSubtree="/",
+    metadata,
+    commitMessage,
+    awaitCommitConfirmation
+  }) {
+    const {writeToken} = yield Fabric.EditContentObject({
+      libraryId,
+      objectId
+    });
+
+    yield Fabric.ReplaceMetadata({
+      libraryId,
+      objectId,
+      writeToken,
+      metadataSubtree,
+      metadata
+    });
+
+    yield Fabric.FinalizeContentObject({
+      libraryId,
+      objectId,
+      writeToken,
+      commitMessage,
+      awaitCommitConfirmation
+    });
+
+    return objectId;
+  });
+
+  @action.bound
   DeleteMetadata = flow(function * ({libraryId, objectId, metadataSubtree="/"}) {
     const writeToken = yield this.EditContentObject({libraryId, objectId});
 
@@ -618,6 +651,52 @@ class ObjectStore {
 
     this.rootStore.notificationStore.SetNotificationMessage({
       message: "Successfully updated apps",
+      redirect: true
+    });
+  });
+
+  @action.bound
+  UpdateIndex = flow(function * ({libraryId, objectId, method, constant}) {
+    const {writeToken} = yield Fabric.EditContentObject({
+      libraryId,
+      objectId
+    });
+
+    const {lro_handle} = yield Fabric.CallBitcodeMethod({
+      libraryId,
+      objectId,
+      writeToken,
+      method,
+      constant
+    });
+
+    let done;
+    while(!done) {
+      let results = yield Fabric.CallBitcodeMethod({
+        libraryId,
+        objectId,
+        writeToken,
+        method: "crawl_status",
+        body: {"lro_handle": lro_handle},
+        constant: false
+      });
+
+      if(results) {
+        if(results.custom.run_state === "finished") done = true;
+      }
+
+      yield new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
+    yield Fabric.FinalizeContentObject({
+      libraryId,
+      objectId,
+      writeToken,
+      commitMessage: "Search update"
+    });
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully updated search index",
       redirect: true
     });
   });
