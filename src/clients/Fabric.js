@@ -1876,6 +1876,24 @@ const Fabric = {
     await client.UnlinkAccessGroupFromOauth({groupAddress: address});
   },
 
+  async CallBitcodeMethod({
+    objectId,
+    libraryId,
+    writeToken,
+    method,
+    body,
+    constant=true
+  }) {
+    return await client.CallBitcodeMethod({
+      objectId,
+      libraryId,
+      writeToken,
+      method,
+      body,
+      constant
+    });
+  },
+
   async ListAccessGroupMembers({contractAddress, showManagers=false, params}) {
     const memberAddresses = showManagers ?
       await client.AccessGroupManagers({contractAddress}) :
