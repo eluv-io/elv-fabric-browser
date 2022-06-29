@@ -3,63 +3,21 @@
 ##### Note: The fabric browser should be run as a contained application of [Eluvio Core JS](https://github.com/eluv-io/elv-core-js)
 
 #### Quick start:
-- Clone ```elv-fabric-browser```, ```elv-core-js```, and ```elv-client-js``` projects from github
-- In ```elv-client-js```, initialize a new content space using the initialization script:
-  ```
-  cd elv-client-js
-  npm install
-  node InitContentSpace.js <path-to-qfab-config> <path-to-content-fabric-dir> <private-key>
-  ```
-- Copy the generated TestConfiguration.json from ```elv-client-js``` to configuration.json in ```elv-core-js``` and ```elv-fabric-browser```
-
-  ```
-  cp TestConfiguration.json ../elv-core-js/configuration.json && cp TestConfiguration.json ../elv-fabric-browser/configuration.json
-  ```
-
+- Clone this repo along with the ```elv-core-js``` project from github
+- Now set up a ```configuration.js``` file in the root directory using ```configuration-example.js``` as a guide. This can be done with 
+```
+cp configuration-example.js configuration.js
+```
+- Ensure that ```coreUrl``` points to "http://localhost:8082" as this is the (local ```elv-core-js``` url)
+- In the ```elv-core-js``` directory, ensure that the ```apps``` section in ```configuration.js``` points the fabric browser app to the local instance you are about to run. Thus, it should contain the below line. Insert this line into ```apps``` if it is not already there. 
+```
+"Eluvio Fabric Browser": "http://localhost:8080",
+```
 - Run ```npm install && npm run serve``` in ```elv-core-js``` and ```elv-fabric-browser``` in separate terminal tabs
 - Open [http://localhost:8082](http://localhost:8082) in your browser
 
-
-#### Running with NPM
-
-```
-  npm install
-  npm run serve
-```
-
-Then open http://localhost:8080 in your browser
-
-##### Configuration
-Edit ```./configuration.json``` to point to your fabric and ethereum nodes
-
-
-#### IMPORTANT: CORS Configuration
-
-##### Fabric
-
-Ensure your qfab daemon configuration has the following options set
-in the "api#cors" section
-
-```json
-"allowed_origins": [
-  "*"
-],
-"allowed_methods": [
-  "GET",
-  "PUT",
-  "POST",
-  "OPTIONS",
-  "DELETE"
-],
- "allowed_headers": [
-  "*"
- ]
-```
-
-##### Ethereum
-
-If you are running Geth, ensure you have the rpccorsdomain flag set:
-
-```geth --rpccorsdomain "*" ...```
-
-Ganache should allow CORS requests by default
+### Other Configuration Options:
+The following configuration options can also be set in ```configuration.js``` and default options are provided in ```configuration-example.js```
+- ```displayUrl``` indicates the app to be used to display content objects. (e.g elv-stream-sample is the default display appfor playable objects)
+- ```manageAppUrl``` indicates the app to be used for content object data and metadata management (defaults to asset-manager for most types)
+-  ```fabricBrowserApps``` provides a list of available apps which can be used for either content data management (```manageAppUrl```) or content display (```displayAppUrl```)
