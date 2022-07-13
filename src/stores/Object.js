@@ -656,7 +656,13 @@ class ObjectStore {
   });
 
   @action.bound
-  UpdateIndex = flow(function * ({libraryId, objectId, method, constant}) {
+  UpdateIndex = flow(function * ({
+    libraryId,
+    objectId,
+    method,
+    constant,
+    latestHash
+  }) {
     const {writeToken} = yield Fabric.EditContentObject({
       libraryId,
       objectId
@@ -671,6 +677,7 @@ class ObjectStore {
     });
 
     let done;
+    let lastRunTime;
     while(!done) {
       let results = yield Fabric.CallBitcodeMethod({
         libraryId,
@@ -682,11 +689,28 @@ class ObjectStore {
       });
 
       if(results) {
+        lastRunTime = results.custom.duration;
         if(results.custom.run_state === "finished") done = true;
       }
 
       yield new Promise(resolve => setTimeout(resolve, 1000));
     }
+
+    yield Fabric.ReplaceMetadata({
+      objectId,
+      libraryId,
+      writeToken,
+      metadataSubtree: "indexer/last_run",
+      metadata: latestHash
+    });
+
+    yield Fabric.ReplaceMetadata({
+      objectId,
+      libraryId,
+      writeToken,
+      metadataSubtree: "indexer/last_run_time",
+      metadata: lastRunTime
+    });
 
     yield Fabric.FinalizeContentObject({
       libraryId,
@@ -762,6 +786,33 @@ class ObjectStore {
 
     this.rootStore.notificationStore.SetNotificationMessage({
       message: "Successfully deleted non-owner cap"
+    });
+  });
+
+  @action.bound
+  GetContentObjectMetadata = flow(function * ({
+    libraryId,
+    objectId,
+    versionHash,
+    writeToken,
+    metadataSubtree="/"
+  }) {
+    return yield Fabric.GetContentObjectMetadata({
+      libraryId,
+      objectId,
+      versionHash,
+      writeToken,
+      metadataSubtree
+    });
+  });
+
+  @action.bound
+  LatestVersionHash = flow(function * ({objectId, versionHash}) {
+    if(!objectId) objectId = Fabric.utils.DecodeVersionHash(versionHash).objectId;
+
+    return yield Fabric.LatestVersionHash({
+      objectId,
+      versionHash
     });
   });
 }

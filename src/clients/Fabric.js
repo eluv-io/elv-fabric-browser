@@ -429,6 +429,13 @@ const Fabric = {
 
   /* Objects */
 
+  LatestVersionHash: async ({objectId, versionHash}) => {
+    return await client.LatestVersionHash({
+      objectId,
+      versionHash
+    });
+  },
+
   LookupContent: async (contentId) => {
     contentId = contentId.replace(/ /g, "");
 
