@@ -815,18 +815,6 @@ class ObjectStore {
       versionHash
     });
   });
-
-  @action.bound
-  GetIndexerSetting = flow(function * ({typeId}) {
-    const libraryId = (yield Fabric.client.ContentSpaceId()).replace("ispc", "ilib");
-    let typeMetadata = (yield Fabric.GetContentObjectMetadata({
-      libraryId,
-      objectId: typeId,
-      metadataSubtree: "public/title_configuration"
-    })) || {};
-
-    return typeMetadata;
-  });
 }
 
 export default ObjectStore;

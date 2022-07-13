@@ -312,10 +312,9 @@ class ContentObjectForm extends React.Component {
 
             await Promise.all(loadTasks.map(async task => await task()));
 
-            const indexerSetting = await objectStore.GetIndexerSetting({
-              typeId: objectStore.object.typeInfo.id
+            this.setState({
+              showIndexerTab: objectStore.object.typeInfo.latestType.meta.public.title_configuration
             });
-            this.setState({showIndexerTab: indexerSetting.show_indexer_settings});
 
             if(this.props.objectStore.objectId) {
               const object = this.props.objectStore.object;
