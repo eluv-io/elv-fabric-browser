@@ -8,12 +8,13 @@ import Path from "path";
 
 import AddIcon from "../../../static/icons/plus-square.svg";
 import DeleteIcon from "../../../static/icons/trash.svg";
-import {Action, AsyncComponent, Confirm, IconButton} from "elv-components-js";
+import {Action, AsyncComponent, Confirm, IconButton, Modal} from "elv-components-js";
 import {objectStore} from "../../../stores";
 
 const IndexConfiguration = observer((props) => {
   const [objectId, setObjectId] = useState("");
   const [indexerFields, setIndexerFields] = useState({});
+  const [showNoUpdateModal, setShowNoUpdateModal] = useState(false);
 
   const SaveForm = async () => {
     let message;
@@ -52,17 +53,70 @@ const IndexConfiguration = observer((props) => {
   };
 
   const UpdateIndex = async () => {
-    await Confirm({
-      message: "Are you sure you want to update search index?",
-      onConfirm: async () => {
-        await objectStore.UpdateIndex({
-          libraryId: objectStore.libraryId,
-          objectId: objectStore.objectId,
-          method: "search_update",
-          constant: false
-        });
-      }
+    const {libraryId, objectId} = objectStore;
+    const rootObjectId = (
+      objectStore.object.meta &&
+      objectStore.object.meta.indexer &&
+      objectStore.object.meta.indexer.config &&
+      objectStore.object.meta.indexer.config.fabric &&
+      objectStore.object.meta.indexer.config.fabric.root &&
+      objectStore.object.meta.indexer.config.fabric.root.content
+    );
+
+    const lastRunTime = await objectStore.GetContentObjectMetadata({
+      libraryId,
+      objectId,
+      metadataSubtree: "indexer/last_run_time"
     });
+
+    const lastRunHash = await objectStore.GetContentObjectMetadata({
+      libraryId,
+      objectId,
+      metadataSubtree: "indexer/last_run"
+    });
+
+    const latestVersionHash = await objectStore.LatestVersionHash({
+      objectId: rootObjectId,
+      versionHash: lastRunHash
+    });
+
+    if(!lastRunHash || lastRunHash !== latestVersionHash) {
+      await Confirm({
+        message: `Are you sure you want to update search index?${lastRunTime ? `\nLast run time: ${lastRunTime}` : ""}`,
+        onConfirm: async () => {
+          await objectStore.UpdateIndex({
+            libraryId,
+            objectId,
+            method: "search_update",
+            constant: false,
+            latestHash: latestVersionHash
+          });
+        }
+      });
+    } else {
+      setShowNoUpdateModal(true);
+    }
+  };
+
+  const NoUpdateModal = () => {
+    if(!showNoUpdateModal) return null;
+
+    return (
+      <Modal
+        className={"no-update-modal"}
+        closable={false}
+      >
+        <div className="update-status-message">
+          No updates required.
+          <Action
+            className="secondary"
+            onClick={() => setShowNoUpdateModal(false)}
+          >
+            Close
+          </Action>
+        </div>
+      </Modal>
+    );
   };
 
   const UpdateFormValue = ({field, key, value}) => {
@@ -127,7 +181,7 @@ const IndexConfiguration = observer((props) => {
                 }}
               />
             </div>
-            
+
             <div className="-elv-input list-field-input">
               <label htmlFor={field}>Paths</label>
               <input
@@ -217,6 +271,7 @@ const IndexConfiguration = observer((props) => {
           </Action>
         </div>
 
+        { NoUpdateModal() }
         <div className="indexer-fields-page">
           <div className="indexer-info-container">
             <div className="-elv-input list-field-container">
