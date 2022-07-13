@@ -10,6 +10,7 @@ import Fabric from "../../../clients/Fabric";
 import AppFrame from "../../components/AppFrame";
 import ActionsToolbar from "../../components/ActionsToolbar";
 import IndexConfiguration from "./IndexConfiguration";
+import {objectStore} from "../../../stores";
 
 @inject("libraryStore")
 @inject("objectStore")
@@ -31,7 +32,8 @@ class ContentObjectForm extends React.Component {
       imageSelection: "",
       objectId: "",
       commitMessage: "",
-      manageView: "app"
+      manageView: "app",
+      showIndexerTab: false
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -166,6 +168,10 @@ class ContentObjectForm extends React.Component {
 
   AppFormSelection() {
     if(this.state.createForm || !this.state.manageAppUrl || this.state.fullScreen) { return null; }
+    const options = [["App", "app"], ["Form", "form"]];
+    if(this.state.showIndexerTab) {
+      options.push(["Indexer Configuration", "index"]);
+    }
 
     return (
       <Tabs
@@ -174,7 +180,7 @@ class ContentObjectForm extends React.Component {
         onChange={(value) => {
           this.setState({manageView: value});
         }}
-        options={[["App", "app"], ["Form", "form"], ["Indexer Configuration", "index"]]}
+        options={options}
       />
     );
   }
@@ -305,6 +311,11 @@ class ContentObjectForm extends React.Component {
             }
 
             await Promise.all(loadTasks.map(async task => await task()));
+
+            const indexerSetting = await objectStore.GetIndexerSetting({
+              typeId: objectStore.object.typeInfo.id
+            });
+            this.setState({showIndexerTab: indexerSetting.show_indexer_settings});
 
             if(this.props.objectStore.objectId) {
               const object = this.props.objectStore.object;
