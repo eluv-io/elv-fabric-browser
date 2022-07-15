@@ -39,7 +39,7 @@ class ContentStore {
     return this.libraries;
   });
 
-  LoadObjects = flow(function * ({libraryId, page=1, filter, sortKey="/public/name", sortAsc=true}) {
+  LoadObjects = flow(function * ({libraryId, page=1, filter, sortKey="/public/name", sortAsc=true, SetDisabled, disableTitle}) {
     const { contents, paging } = yield this.client.ContentObjects({
       libraryId,
       filterOptions: {
@@ -62,19 +62,22 @@ class ContentStore {
       }
     });
 
-    const objects = contents.map(({id, versions}) => {
+    const promises = contents.map(async ({id, versions}) => {
       const versionHash = versions[0].hash;
       const metadata = (versions[0].meta || {});
       const assetMetadata = ((metadata || {}).public || {}).asset_metadata || {};
+      const disabled = SetDisabled && await SetDisabled({objectId: id, libraryId});
 
       return {
         objectId: id,
         versionHash,
         name: (metadata.public || {}).name || id,
         playable: !!assetMetadata.sources,
-        title: assetMetadata.display_title || assetMetadata.title
+        title: disabled ? disableTitle : assetMetadata.display_title || assetMetadata.title,
+        disabled
       };
     });
+    const objects = yield Promise.all(promises);
 
     return { objects, paging };
   });
