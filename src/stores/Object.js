@@ -223,11 +223,6 @@ class ObjectStore {
 
   @action.bound
   CopyObjectPermission = flow(function * ({libraryId, objectId}) {
-    const meta = yield Fabric.GetContentObjectMetadata({
-      libraryId,
-      objectId
-    });
-
     // Determine if owner
     const owner = Fabric.utils.FormatAddress(
       yield Fabric.client.CallContractMethod({
@@ -237,11 +232,22 @@ class ObjectStore {
     );
     const isOwner = EqualAddress(owner, yield Fabric.CurrentAccountAddress());
 
-    // Determine presence of user cap
-    const userCapKey = `eluv.caps.iusr${AddressToHash(this.currentAccountAddress)}`;
-    const hasUserCap = !!(meta[userCapKey]);
+    if(isOwner) return true;
 
-    return isOwner || hasUserCap;
+    // Determine presence of user cap
+    try {
+      const userCapKey = `eluv.caps.iusr${AddressToHash(this.currentAccountAddress)}`;
+
+      const hasUserCap = !!(yield Fabric.GetContentObjectMetadata({
+        libraryId,
+        objectId,
+        metadataSubtree: userCapKey
+      }));
+
+      return hasUserCap;
+    } catch(error) {
+      return false;
+    }
   });
 
   @action.bound CopyContentObject = flow(function * ({libraryId, originalVersionHash, options={}}) {
