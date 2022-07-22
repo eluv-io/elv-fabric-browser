@@ -232,7 +232,7 @@ class ObjectStore {
     );
     const isOwner = EqualAddress(owner, yield Fabric.CurrentAccountAddress());
 
-    if(isOwner) return true;
+    if(isOwner) { return true; }
 
     // Determine presence of user cap
     try {
