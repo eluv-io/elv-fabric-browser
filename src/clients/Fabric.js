@@ -429,6 +429,13 @@ const Fabric = {
 
   /* Objects */
 
+  LatestVersionHash: async ({objectId, versionHash}) => {
+    return await client.LatestVersionHash({
+      objectId,
+      versionHash
+    });
+  },
+
   LookupContent: async (contentId) => {
     contentId = contentId.replace(/ /g, "");
 
@@ -1874,6 +1881,24 @@ const Fabric = {
 
   async UnlinkOAuthGroup({address}) {
     await client.UnlinkAccessGroupFromOauth({groupAddress: address});
+  },
+
+  async CallBitcodeMethod({
+    objectId,
+    libraryId,
+    writeToken,
+    method,
+    body,
+    constant=true
+  }) {
+    return await client.CallBitcodeMethod({
+      objectId,
+      libraryId,
+      writeToken,
+      method,
+      body,
+      constant
+    });
   },
 
   async ListAccessGroupMembers({contractAddress, showManagers=false, params}) {

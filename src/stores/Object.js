@@ -288,6 +288,39 @@ class ObjectStore {
   });
 
   @action.bound
+  EditAndFinalizeMetadata = flow(function * ({
+    libraryId,
+    objectId,
+    metadataSubtree="/",
+    metadata,
+    commitMessage,
+    awaitCommitConfirmation
+  }) {
+    const {writeToken} = yield Fabric.EditContentObject({
+      libraryId,
+      objectId
+    });
+
+    yield Fabric.ReplaceMetadata({
+      libraryId,
+      objectId,
+      writeToken,
+      metadataSubtree,
+      metadata
+    });
+
+    yield Fabric.FinalizeContentObject({
+      libraryId,
+      objectId,
+      writeToken,
+      commitMessage,
+      awaitCommitConfirmation
+    });
+
+    return objectId;
+  });
+
+  @action.bound
   DeleteMetadata = flow(function * ({libraryId, objectId, metadataSubtree="/"}) {
     const writeToken = yield this.EditContentObject({libraryId, objectId});
 
@@ -623,6 +656,76 @@ class ObjectStore {
   });
 
   @action.bound
+  UpdateIndex = flow(function * ({
+    libraryId,
+    objectId,
+    method,
+    constant,
+    latestHash
+  }) {
+    const {writeToken} = yield Fabric.EditContentObject({
+      libraryId,
+      objectId
+    });
+
+    const {lro_handle} = yield Fabric.CallBitcodeMethod({
+      libraryId,
+      objectId,
+      writeToken,
+      method,
+      constant
+    });
+
+    let done;
+    let lastRunTime;
+    while(!done) {
+      let results = yield Fabric.CallBitcodeMethod({
+        libraryId,
+        objectId,
+        writeToken,
+        method: "crawl_status",
+        body: {"lro_handle": lro_handle},
+        constant: false
+      });
+
+      if(results) {
+        lastRunTime = results.custom.duration;
+        if(results.custom.run_state === "finished") done = true;
+      }
+
+      yield new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
+    yield Fabric.ReplaceMetadata({
+      objectId,
+      libraryId,
+      writeToken,
+      metadataSubtree: "indexer/last_run",
+      metadata: latestHash
+    });
+
+    yield Fabric.ReplaceMetadata({
+      objectId,
+      libraryId,
+      writeToken,
+      metadataSubtree: "indexer/last_run_time",
+      metadata: lastRunTime
+    });
+
+    yield Fabric.FinalizeContentObject({
+      libraryId,
+      objectId,
+      writeToken,
+      commitMessage: "Search update"
+    });
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully updated search index",
+      redirect: true
+    });
+  });
+
+  @action.bound
   PublishContentObject = flow(function * ({objectId}) {
     yield Fabric.PublishContentObject({objectId});
 
@@ -683,6 +786,33 @@ class ObjectStore {
 
     this.rootStore.notificationStore.SetNotificationMessage({
       message: "Successfully deleted non-owner cap"
+    });
+  });
+
+  @action.bound
+  GetContentObjectMetadata = flow(function * ({
+    libraryId,
+    objectId,
+    versionHash,
+    writeToken,
+    metadataSubtree="/"
+  }) {
+    return yield Fabric.GetContentObjectMetadata({
+      libraryId,
+      objectId,
+      versionHash,
+      writeToken,
+      metadataSubtree
+    });
+  });
+
+  @action.bound
+  LatestVersionHash = flow(function * ({objectId, versionHash}) {
+    if(!objectId) objectId = Fabric.utils.DecodeVersionHash(versionHash).objectId;
+
+    return yield Fabric.LatestVersionHash({
+      objectId,
+      versionHash
     });
   });
 }

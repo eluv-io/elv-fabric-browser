@@ -1,0 +1,133 @@
+.indexer-configuration-container {
+  padding-bottom: 4rem;
+  position: relative;
+  width: 100%;
+
+  .app-header {
+    align-items: center;
+    background: $elv-color-white;
+    border-bottom: 1px solid $elv-color-lightgray;
+    display: flex;
+    height: 4rem;
+    justify-content: space-around;
+    left: 0;
+    margin-bottom: 2rem;
+    position: sticky;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 400;
+      text-align: center;
+    }
+  }
+
+  .indexer-fields-page {
+    width: 100%;
+
+    .indexer-info-container {
+      width: 100%;
+    }
+
+    .-elv-input {
+      align-items: center;
+      display: grid;
+      grid-gap: 1rem;
+      margin-bottom: 0;
+
+      &.list-field-input {
+        margin-bottom: 0.25rem;
+        width: 800px;
+      }
+
+      &.-elv-input {
+        font-size: 0.9rem;
+        grid-template-columns: 8rem 1fr;
+      }
+
+      &.checkbox-container {
+        align-items: center;
+        display: flex;
+        height: 2.5rem;
+
+        &.-elv-checkbox-input {
+          margin-bottom: 0.5rem;
+
+          input {
+            cursor: pointer;
+            height: 1.2rem;
+            margin: 0;
+            width: 1.2rem;
+          }
+        }
+      }
+    }
+
+    .list-field-container {
+      width: max-content;
+
+      .info-list-icon {
+        height: 1.4rem;
+      }
+
+      .info-list-add-icon {
+        margin-top: 0.5rem;
+      }
+    }
+  }
+
+  .list-field-entry {
+    min-height: 100%;
+    padding: 0.75rem 4rem 0.75rem 1.5rem;
+    position: relative;
+
+    &.even {
+      box-shadow: inset 0 0 0 1px $elv-color-lightgray;
+    }
+
+    &.odd {
+      background-color: $elv-color-lightestgray;
+    }
+
+    .actions {
+      align-items: center;
+      display: flex;
+      justify-content: center;
+      padding: 0.35rem;
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+  }
+
+  .no-update-modal {
+    .-elv-modal-content {
+      &.-elv-modal-content {
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        max-width: 70%;
+        min-height: 12rem;
+        min-width: 70%;
+        padding: $elv-spacing-m 0;
+      }
+    }
+
+    .update-status-message {
+      align-items: center;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      justify-content: space-between;
+      text-align: center;
+    }
+  }
+}
+
+.-elv-modal-content {
+  .-elv-form {
+    white-space: pre-wrap;
+  }
+}

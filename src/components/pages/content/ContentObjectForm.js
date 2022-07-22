@@ -9,6 +9,8 @@ import {toJS} from "mobx";
 import Fabric from "../../../clients/Fabric";
 import AppFrame from "../../components/AppFrame";
 import ActionsToolbar from "../../components/ActionsToolbar";
+import IndexConfiguration from "./IndexConfiguration";
+import {objectStore} from "../../../stores";
 
 @inject("libraryStore")
 @inject("objectStore")
@@ -30,7 +32,8 @@ class ContentObjectForm extends React.Component {
       imageSelection: "",
       objectId: "",
       commitMessage: "",
-      showManageApp: false
+      manageView: "app",
+      showIndexerTab: false
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -165,13 +168,19 @@ class ContentObjectForm extends React.Component {
 
   AppFormSelection() {
     if(this.state.createForm || !this.state.manageAppUrl || this.state.fullScreen) { return null; }
+    const options = [["App", "app"], ["Form", "form"]];
+    if(this.state.showIndexerTab) {
+      options.push(["Indexer Configuration", "index"]);
+    }
 
     return (
       <Tabs
         className="object-form-tabs"
-        selected={this.state.showManageApp}
-        onChange={(value) => this.setState({showManageApp: value})}
-        options={[["App", true], ["Form", false]]}
+        selected={this.state.manageView}
+        onChange={(value) => {
+          this.setState({manageView: value});
+        }}
+        options={options}
       />
     );
   }
@@ -212,8 +221,10 @@ class ContentObjectForm extends React.Component {
     }
 
     let content;
-    if(this.state.manageAppUrl && this.state.showManageApp) {
+    if(this.state.manageAppUrl && this.state.manageView === "app") {
       content = this.AppFrame(legend);
+    } else if(this.state.manageView === "index") {
+      content = <IndexConfiguration />;
     } else {
       content = this.FormContent(legend, redirectPath, cancelPath);
     }
@@ -233,7 +244,7 @@ class ContentObjectForm extends React.Component {
           ]}
         />
         <div className="page-content-container form-page">
-          <div className={`page-content ${this.state.showManageApp ? "no-padding" : ""}`}>
+          <div className={`page-content ${this.state.manageView === "app" ? "no-padding" : ""}`}>
             { this.AppFormSelection() }
             { content }
           </div>
@@ -301,6 +312,10 @@ class ContentObjectForm extends React.Component {
 
             await Promise.all(loadTasks.map(async task => await task()));
 
+            this.setState({
+              showIndexerTab: objectStore.object.typeInfo.latestType.meta.public.title_configuration
+            });
+
             if(this.props.objectStore.objectId) {
               const object = this.props.objectStore.object;
               const meta = {...toJS(object.meta)};
@@ -316,7 +331,7 @@ class ContentObjectForm extends React.Component {
                 publicMetadata,
                 privateMetadata,
                 manageAppUrl,
-                showManageApp: !!manageAppUrl
+                manageView: manageAppUrl ? "app" : "form"
               });
             }
           }
