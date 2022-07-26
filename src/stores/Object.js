@@ -4,7 +4,7 @@ import {DownloadFromUrl, FileInfo} from "../utils/Files";
 import UrlJoin from "url-join";
 import {ParseInputJson} from "elv-components-js";
 import Path from "path";
-import {AddressToHash} from "../utils/Helpers";
+import {AddressToHash, EqualAddress} from "../utils/Helpers";
 
 const concurrentUploads = 3;
 
@@ -219,6 +219,35 @@ class ObjectStore {
     }
 
     return this.writeTokens[objectId];
+  });
+
+  @action.bound
+  CopyObjectPermission = flow(function * ({libraryId, objectId}) {
+    // Determine if owner
+    const owner = Fabric.utils.FormatAddress(
+      yield Fabric.client.CallContractMethod({
+        contractAddress: Fabric.client.utils.HashToAddress(objectId),
+        methodName: "owner"
+      })
+    );
+    const isOwner = EqualAddress(owner, yield Fabric.CurrentAccountAddress());
+
+    if(isOwner) { return true; }
+
+    // Determine presence of user cap
+    try {
+      const userCapKey = `eluv.caps.iusr${AddressToHash(this.currentAccountAddress)}`;
+
+      const hasUserCap = !!(yield Fabric.GetContentObjectMetadata({
+        libraryId,
+        objectId,
+        metadataSubtree: userCapKey
+      }));
+
+      return hasUserCap;
+    } catch(error) {
+      return false;
+    }
   });
 
   @action.bound CopyContentObject = flow(function * ({libraryId, originalVersionHash, options={}}) {

@@ -60,6 +60,12 @@
         transform: scale(1, 0.5);
       }
     }
+
+    .-elv-button {
+      &:focus {
+        overflow: hidden;
+      }
+    }
   }
 
   .more-options-menu {
