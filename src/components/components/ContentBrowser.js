@@ -128,7 +128,7 @@ const VersionBrowser = observer(({libraryId, objectId, Select}) => {
   );
 });
 
-const ObjectBrowser = observer(({libraryId, Select}) => {
+const ObjectBrowser = observer(({libraryId, Select, DisableCallback, disableTitle}) => {
   const [filter, setFilter] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -142,7 +142,13 @@ const ObjectBrowser = observer(({libraryId, Select}) => {
         key={`object-browser-${libraryId}-${page}-${filter}`}
         Load={async () => {
           await contentStore.LoadLibraries();
-          const { objects, paging } = await contentStore.LoadObjects({libraryId, filter, page});
+          const { objects, paging } = await contentStore.LoadObjects({
+            libraryId,
+            filter,
+            page,
+            SetDisabled: DisableCallback,
+            disableTitle
+          });
 
           setPage(page);
           setTotalPages(paging.pages);
@@ -150,13 +156,18 @@ const ObjectBrowser = observer(({libraryId, Select}) => {
         }}
       >
         <div className="list content-list content-list-objects">
-          {
-            (objects || [])
-              .map(({objectId, versionHash, name, playable, title}) =>
-                <button title={title} onClick={() => Select({name, playable, objectId, versionHash})} className="list-item content-list-item" key={`object-${objectId}`}>
-                  { name }
-                </button>
-              )
+          {(objects || [])
+            .map(({objectId, versionHash, name, playable, title, disabled}) =>
+              <button
+                title={title}
+                onClick={() => Select({name, playable, objectId, versionHash})}
+                className="list-item content-list-item"
+                key={`object-${objectId}`}
+                disabled={disabled}
+              >
+                {name}
+              </button>
+            )
           }
         </div>
       </AsyncComponent>
@@ -197,7 +208,7 @@ const LibraryBrowser = observer(({Select}) => {
   );
 });
 
-const ContentBrowser = observer(({header, Select, Close, requireVersion=false, requireObject=true}) => {
+const ContentBrowser = observer(({header, Select, Close, requireVersion=false, requireObject=true, DisableObjectCallback, disableObjectTitle}) => {
   const [libraryId, setLibraryId] = useState("");
   const [libraryName, setLibraryName] = useState("");
   const [objectId, setObjectId] = useState("");
@@ -296,6 +307,8 @@ const ContentBrowser = observer(({header, Select, Close, requireVersion=false, r
         { libraryId && !objectId ?
           <ObjectBrowser
             libraryId={libraryId}
+            DisableCallback={DisableObjectCallback}
+            disableTitle={disableObjectTitle}
             Select={({name, playable, objectId, versionHash}) => {
               if(requireVersion) {
                 setObjectName(name);
