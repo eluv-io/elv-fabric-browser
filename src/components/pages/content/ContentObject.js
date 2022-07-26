@@ -861,6 +861,12 @@ class ContentObject extends React.Component {
             title: !(this.props.objectStore.object.isOwner || hasUserCap) ? "You don't have the key" : undefined
           },
           {
+            label: "Convert to Media Object",
+            type: "link",
+            path: UrlJoin(this.props.match.url, "ingest"),
+            hidden: (this.props.libraryStore.library.privateMeta && !this.props.libraryStore.library.privateMeta.abr) || (this.props.objectStore.object.meta && this.props.objectStore.object.meta.abr_mezzanine)
+          },
+          {
             label: "Delete",
             type: "button",
             hidden: this.props.objectStore.object.isContentLibraryObject || !this.props.objectStore.object.canEdit || !this.props.objectStore.object.isOwner,
