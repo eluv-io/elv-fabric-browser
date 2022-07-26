@@ -407,6 +407,15 @@ class ContentLibrary extends React.Component {
             <ContentBrowserModal
               Close={() =>  this.setState({showCopyObjectModal: false})}
               Select={selection => this.CopyObject(selection)}
+              DisableObjectCallback={async ({objectId, libraryId}) => {
+                const hasPermission = await this.props.objectStore.CopyObjectPermission({
+                  libraryId,
+                  objectId
+                });
+
+                return !hasPermission;
+              }}
+              disableObjectTitle="Ownership or a user cap required"
             /> : null
         }
       </div>

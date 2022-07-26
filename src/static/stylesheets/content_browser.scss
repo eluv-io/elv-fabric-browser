@@ -72,6 +72,10 @@
       &:not(.list-header):not(:disabled):hover { // sass-lint:disable-line force-pseudo-nesting
         border-left: 3px solid $elv-color-mediumblue;
       }
+
+      &:disabled {
+        cursor: not-allowed;
+      }
     }
 
     &-item {
