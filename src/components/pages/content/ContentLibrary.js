@@ -336,6 +336,12 @@ class ContentLibrary extends React.Component {
             type: "button",
             hidden: this.props.libraryStore.library.isContentSpaceLibrary || !(this.props.libraryStore.library.isOwner && this.props.libraryStore.library.canContribute),
             onClick: () => this.setState({showCopyObjectModal: true})
+          },
+          {
+            label: "Create Media Object",
+            type: "link",
+            path: UrlJoin(this.props.match.url, "ingest"),
+            hidden: this.props.libraryStore.library.privateMeta && !this.props.libraryStore.library.privateMeta.abr
           }
         ]}
       />
