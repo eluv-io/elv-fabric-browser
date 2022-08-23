@@ -10,7 +10,6 @@ import Fabric from "../../../clients/Fabric";
 import AppFrame from "../../components/AppFrame";
 import ActionsToolbar from "../../components/ActionsToolbar";
 import IndexConfiguration from "./IndexConfiguration";
-import {objectStore} from "../../../stores";
 
 @inject("libraryStore")
 @inject("objectStore")
@@ -312,16 +311,21 @@ class ContentObjectForm extends React.Component {
 
             await Promise.all(loadTasks.map(async task => await task()));
 
-            this.setState({
-              showIndexerTab: objectStore.object.typeInfo.latestType.meta.public.title_configuration
-            });
-
             if(this.props.objectStore.objectId) {
               const object = this.props.objectStore.object;
               const meta = {...toJS(object.meta)};
               const publicMetadata = JSON.stringify(meta.public || {}, null, 2);
               delete meta.public;
               const privateMetadata = JSON.stringify(meta, null, 2);
+
+              this.setState({
+                showIndexerTab: object &&
+                  object.typeInfo &&
+                  object.typeInfo.latestType &&
+                  object.typeInfo.latestType.meta &&
+                  object.typeInfo.latestType.meta.public &&
+                  object.typeInfo.latestType.meta.public.title_configuration
+              });
 
               const manageAppUrl = object.manageAppUrl || (object.typeInfo || {}).manageAppUrl;
               this.setState({
