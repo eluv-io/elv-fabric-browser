@@ -102,6 +102,12 @@
     }
   }
 
+  .list-item-disabled-link,
+  .disabled-link {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
   .options-list {
     .action-container {
       display: flex;
