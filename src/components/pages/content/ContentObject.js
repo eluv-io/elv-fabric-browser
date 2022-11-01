@@ -911,7 +911,12 @@ class ContentObject extends React.Component {
       ["Files", "files"]
     ];
 
-    if(!this.props.objectStore.object.isContentType && this.state.displayAppUrl) {
+    if(
+      !this.props.objectStore.object.isContentType &&
+      this.state.displayAppUrl &&
+      this.props.objectStore.object.meta &&
+      this.props.objectStore.object.meta.hasOwnProperty("offerings")
+    ) {
       tabOptions.unshift(["Display", "display"]);
     }
 
