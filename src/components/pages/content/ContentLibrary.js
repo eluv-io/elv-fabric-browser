@@ -340,6 +340,7 @@ class ContentLibrary extends React.Component {
           {
             label: "Create Media Object",
             type: "link",
+            className: "disabled-link",
             path: UrlJoin(this.props.match.url, "ingest"),
             hidden: this.props.libraryStore.library.privateMeta && !this.props.libraryStore.library.privateMeta.abr
           }

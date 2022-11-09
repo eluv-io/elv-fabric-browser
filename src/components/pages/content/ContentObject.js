@@ -862,6 +862,7 @@ class ContentObject extends React.Component {
           },
           {
             label: "Convert to Media Object",
+            className: "disabled-link",
             type: "link",
             path: UrlJoin(this.props.match.url, "ingest"),
             hidden: (this.props.libraryStore.library.privateMeta && !this.props.libraryStore.library.privateMeta.abr) || (this.props.objectStore.object.meta && this.props.objectStore.object.meta.abr_mezzanine)
@@ -910,7 +911,12 @@ class ContentObject extends React.Component {
       ["Files", "files"]
     ];
 
-    if(!this.props.objectStore.object.isContentType && this.state.displayAppUrl) {
+    if(
+      !this.props.objectStore.object.isContentType &&
+      this.state.displayAppUrl &&
+      this.props.objectStore.object.meta &&
+      this.props.objectStore.object.meta.hasOwnProperty("offerings")
+    ) {
       tabOptions.unshift(["Display", "display"]);
     }
 

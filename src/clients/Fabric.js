@@ -674,7 +674,7 @@ const Fabric = {
       // Only normal objects have status and access charge
       tasks = tasks.concat([
         Fabric.GetAccessInfo({objectId}), // accessInfo
-        client.Permission({objectId}), // permission
+        client.Permission({objectId, clearCache: true}), // permission
         client.CallContractMethod({ // kmsAddress
           contractAddress: client.utils.HashToAddress(objectId),
           methodName: "addressKMS"
