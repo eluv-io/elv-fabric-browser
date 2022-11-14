@@ -316,37 +316,42 @@ class ObjectStore {
     });
   });
 
-  @action.bound
-  EditAndFinalizeMetadata = flow(function * ({
+@action.bound
+ReplaceMetadata = flow(function * ({
+  libraryId,
+  objectId,
+  writeToken,
+  metadataSubtree,
+  metadata
+}) {
+  yield Fabric.ReplaceMetadata({
     libraryId,
     objectId,
-    metadataSubtree="/",
-    metadata,
-    commitMessage,
-    awaitCommitConfirmation
+    writeToken,
+    metadataSubtree,
+    metadata
+  });
+});
+
+  @action.bound
+  EditAndFinalizeContentObject = flow(function * ({
+    libraryId,
+    objectId,
+    callback,
+    options={},
+    commitMessage="",
+    publish=true,
+    awaitCommitConfirmation=true
   }) {
-    const {writeToken} = yield Fabric.EditContentObject({
-      libraryId,
-      objectId
-    });
-
-    yield Fabric.ReplaceMetadata({
+    yield Fabric.client.EditAndFinalizeContentObject({
       libraryId,
       objectId,
-      writeToken,
-      metadataSubtree,
-      metadata
-    });
-
-    yield Fabric.FinalizeContentObject({
-      libraryId,
-      objectId,
-      writeToken,
+      callback,
+      options,
       commitMessage,
+      publish,
       awaitCommitConfirmation
     });
-
-    return objectId;
   });
 
   @action.bound
