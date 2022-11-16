@@ -658,6 +658,9 @@ class ContentObject extends React.Component {
         <ToggleSection label="Encryption Keys" toggleOpen={this.state.showNonOwnerCapManagement}>
           {addCapsButton}
           {
+            capKeys.length === 0 && <div className="table-note">No encryption keys to display</div>
+          }
+          {
             capKeys.length > 0 ? <React.Fragment>
               <div className="table-note">NOTE: Owner keys cannot be deleted from this table</div>
               <div className="keys-table">
@@ -674,7 +677,7 @@ class ContentObject extends React.Component {
                     return (
                       <React.Fragment key={`${capAddress}-caps-version-${this.state.capsVersion}`}>
                         <div className="table-cell">{caps[capAddress] || "Owner"}</div>
-                        <div className="table-cell">{caps[capAddress] ? "Creator" : "Owner"}</div>
+                        <div className="table-cell">{caps.hasOwnProperty(capAddress) ? "Creator" : "Owner"}</div>
                         <div className="table-cell">{capAddress}</div>
                         <div className="table-cell">
                           <IconButton
