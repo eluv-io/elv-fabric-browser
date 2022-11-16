@@ -1234,7 +1234,7 @@ const Fabric = {
         objectId,
         writeToken,
         metadataSubtree: "/owner_caps",
-        metadata: {[publicAddress]: name}
+        metadata: {[publicAddress]: label}
       });
     }
 
