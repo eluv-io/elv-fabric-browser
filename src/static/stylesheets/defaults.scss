@@ -192,3 +192,15 @@
 .monospace {
   font-family: $elv-font-monospace;
 }
+
+.hint-tooltip {
+  &.-elv-tooltip {
+    font-size: $elv-font-s;
+    max-width: 100rem;
+    padding: 14px 10px;
+  }
+}
+
+select {
+  background-color: $elv-color-white;
+}

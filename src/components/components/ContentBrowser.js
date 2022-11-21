@@ -208,7 +208,16 @@ const LibraryBrowser = observer(({Select}) => {
   );
 });
 
-const ContentBrowser = observer(({header, Select, Close, requireVersion=false, requireObject=true, DisableObjectCallback, disableObjectTitle}) => {
+const ContentBrowser = observer(({
+  header,
+  Select,
+  Close,
+  requireVersion=false,
+  requireObject=true,
+  DisableObjectCallback,
+  disableObjectTitle,
+  confirmMessageCallback
+}) => {
   const [libraryId, setLibraryId] = useState("");
   const [libraryName, setLibraryName] = useState("");
   const [objectId, setObjectId] = useState("");
@@ -218,21 +227,26 @@ const ContentBrowser = observer(({header, Select, Close, requireVersion=false, r
 
   const FinalSelect = async (args) => {
     setLoading(true);
-    await Confirm({
-      message: `Are you sure you want to copy ${args.name} into ${args.libraryName}?`,
-      onConfirm: async () => {
-        await Select(args);
-        Close();
-      },
-      onCancel: () => {
-        setLibraryId(undefined);
-        setLibraryName(undefined);
-        setObjectId(undefined);
-        setObjectName("");
-        setObjectPlayable(false);
-        setLoading(false);
-      }
-    });
+    if(confirmMessageCallback) {
+      await Confirm({
+        message: confirmMessageCallback({name: args.name, libraryName: args.libraryName}),
+        onConfirm: async () => {
+          await Select(args);
+          Close();
+        },
+        onCancel: () => {
+          setLibraryId(undefined);
+          setLibraryName(undefined);
+          setObjectId(undefined);
+          setObjectName("");
+          setObjectPlayable(false);
+          setLoading(false);
+        }
+      });
+    } else {
+      await Select(args);
+      Close();
+    }
   };
 
   return (

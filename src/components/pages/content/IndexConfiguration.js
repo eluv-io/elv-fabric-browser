@@ -8,13 +8,23 @@ import Path from "path";
 
 import AddIcon from "../../../static/icons/plus-square.svg";
 import DeleteIcon from "../../../static/icons/trash.svg";
-import {Action, AsyncComponent, Confirm, IconButton, Modal} from "elv-components-js";
+import QuestionMarkIcon from "../../../static/icons/help-circle.svg";
+import LinkIcon from "../../../static/icons/external-link.svg";
+
+import {Action, AsyncComponent, Confirm, IconButton, IconLink, ImageIcon, Modal, ToolTip} from "elv-components-js";
 import {objectStore} from "../../../stores";
+import {ContentBrowserModal} from "../../components/ContentBrowser";
 
 const IndexConfiguration = observer((props) => {
   const [objectId, setObjectId] = useState("");
   const [indexerFields, setIndexerFields] = useState({});
   const [showNoUpdateModal, setShowNoUpdateModal] = useState(false);
+  const [docPrefix, setDocPrefix] = useState("/");
+  const [querySuffix, setQuerySuffix] = useState("");
+  const [showContentBrowser, setShowContentBrowser] = useState(false);
+  const [rootObject, setRootObject] = useState();
+  const [rootLibrary, setRootLibrary] = useState();
+  const [rootName, setRootName] = useState();
 
   const SaveForm = async () => {
     let message;
@@ -27,27 +37,65 @@ const IndexConfiguration = observer((props) => {
         onChange: commitMessage => message = (commitMessage)
       }],
       onConfirm: async () => {
-        const metadata = {};
+        const fieldsMetadata = {};
 
         Object.keys(indexerFields).forEach(fieldIndex => {
           const {label, paths, options, type} = indexerFields[fieldIndex];
 
-          metadata[label] = {
+          fieldsMetadata[label] = {
             paths,
             options,
             type
           };
         });
 
-        const objectId = await objectStore.EditAndFinalizeMetadata({
+
+        const callback = async ({writeToken}) => {
+          const replaceMetaPayload = {
+            libraryId: objectStore.libraryId,
+            objectId: objectStore.objectId,
+            writeToken
+          };
+
+          await objectStore.ReplaceMetadata({
+            ...replaceMetaPayload,
+            metadataSubtree: "indexer/config/fabric/root/content",
+            metadata: rootObject
+          });
+
+          await objectStore.ReplaceMetadata({
+            ...replaceMetaPayload,
+            metadataSubtree: "indexer/config/fabric/root/library",
+            metadata: rootLibrary
+          });
+
+          await objectStore.ReplaceMetadata({
+            ...replaceMetaPayload,
+            metadataSubtree: "indexer/config/indexer/arguments/document/prefix",
+            metadata: docPrefix
+          });
+
+          await objectStore.ReplaceMetadata({
+            ...replaceMetaPayload,
+            metadataSubtree: "indexer/config/indexer/arguments/query/suffix",
+            metadata: querySuffix
+          });
+
+          await objectStore.ReplaceMetadata({
+            ...replaceMetaPayload,
+            metadataSubtree: "indexer/config/indexer/arguments/field",
+            metadata: fieldsMetadata
+          });
+        };
+
+        await objectStore.EditAndFinalizeContentObject({
           libraryId: objectStore.libraryId,
           objectId: objectStore.objectId,
-          metadataSubtree: "indexer/config/indexer/arguments/fields",
-          metadata,
+          callback,
           commitMessage: message || "Update index configuration"
         });
 
-        setObjectId(objectId);
+        setObjectId(objectStore.objectId);
       }
     });
   };
@@ -119,10 +167,14 @@ const IndexConfiguration = observer((props) => {
     );
   };
 
-  const UpdateFormValue = ({field, key, value}) => {
+  const UpdateFormValue = ({field, key, arrayIndex, value}) => {
     const fieldsData = Object.assign({}, indexerFields);
 
-    fieldsData[field][key] = value;
+    if(arrayIndex !== undefined) {
+      fieldsData[field][key][arrayIndex] = value;
+    } else {
+      fieldsData[field][key] = value;
+    }
     setIndexerFields(fieldsData);
   };
 
@@ -147,7 +199,55 @@ const IndexConfiguration = observer((props) => {
     setIndexerFields(fieldsData);
   };
 
-  const form = (
+  const InputFormField = ({labelText, labelHint, onChange, value, placeholder}) => {
+    let label;
+
+    if(labelHint) {
+      label = (
+        <label className="hint-label">
+          { labelText }
+          <ToolTip
+            className="hint-tooltip"
+            content={labelHint}
+          >
+            <ImageIcon className="-elv-icon hint-icon" icon={QuestionMarkIcon} />
+          </ToolTip>
+        </label>
+      );
+    } else {
+      label = <label>{ labelText }</label>;
+    }
+
+    return (
+      <div className="-elv-input">
+        { label }
+        <input
+          type="text"
+          value={value}
+          placeholder={placeholder}
+          onChange={onChange}
+        />
+      </div>
+    );
+  };
+
+  const ShowContentBrowser = () => {
+    if(!showContentBrowser) { return null; }
+
+    return (
+      <ContentBrowserModal
+        Close={() => setShowContentBrowser(false)}
+        Select={selection => {
+          setRootObject(selection.objectId);
+          setRootLibrary(selection.libraryId);
+          setRootName(selection.name);
+        }}
+        requireObject={true}
+      />
+    );
+  };
+
+  const fieldsForm = (
     Object.keys(indexerFields).map((field, index) => {
       const {options, paths, type, label} = indexerFields[field];
 
@@ -182,21 +282,53 @@ const IndexConfiguration = observer((props) => {
               />
             </div>
 
-            <div className="-elv-input list-field-input">
+            <div className="-elv-input multi-input">
               <label htmlFor={field}>Paths</label>
-              <input
-                type="text"
-                name={field}
-                placeholder="public.movies.*.title"
-                value={paths ? paths[0] : ""}
-                onChange={event => {
-                  UpdateFormValue({
-                    field,
-                    key: "paths",
-                    value: [event.target.value]
-                  });
-                }}
-              />
+              <div>
+                {
+                  paths.map((path, index) => (
+                    <div className="multi-input-item" key={`${index}-${path}`}>
+                      <input
+                        type="text"
+                        name={field}
+                        placeholder="public.movies.*.title"
+                        value={path}
+                        onChange={event => {
+                          UpdateFormValue({
+                            field,
+                            arrayIndex: index,
+                            key: "paths",
+                            value: [event.target.value]
+                          });
+                        }}
+                      />
+                      <IconButton
+                        className="info-list-icon"
+                        title="Remove Item"
+                        icon={DeleteIcon}
+                        onClick={async () => await Confirm({
+                          message: "Are you sure you want to remove this item?",
+                          onConfirm: () => {
+                            const fieldsData = Object.assign({}, indexerFields);
+                            fieldsData[field]["paths"].splice(index, 1);
+                            setIndexerFields(fieldsData);
+                          }
+                        })}
+                      />
+                    </div>
+                  ))
+                }
+                <IconButton
+                  icon={AddIcon}
+                  title="Add Path"
+                  onClick={() => {
+                    const fieldsData = Object.assign({}, indexerFields);
+                    fieldsData[field]["paths"].push("");
+                    setIndexerFields(fieldsData);
+                  }}
+                  className="info-list-icon info-list-add-icon secondary"
+                />
+              </div>
             </div>
 
             <div className="-elv-input -elv-checkbox-input list-field-input">
@@ -274,10 +406,79 @@ const IndexConfiguration = observer((props) => {
         { NoUpdateModal() }
         <div className="indexer-fields-page">
           <div className="indexer-info-container">
+            <div className="object-selection-field">
+              <div className="-elv-input object-selection-container">
+                <label className="hint-label">
+                  Site Object
+                  <ToolTip
+                    className="hint-tooltip"
+                    content="This object will be stored in the root metadata"
+                  >
+                    <ImageIcon className="-elv-icon hint-icon" icon={QuestionMarkIcon} />
+                  </ToolTip>
+                </label>
+                <div>
+                  {
+                    rootName &&
+                    <div className="selected-item">
+                      { rootName }
+                      <div className="object-selection-actions">
+                        <IconLink
+                          className="open-object-link"
+                          icon={LinkIcon}
+                          label="Open object in new tab"
+                          to={`/content/${rootLibrary}/${rootObject}`}
+                        />
+                        <IconButton
+                          title="Remove Item"
+                          icon={DeleteIcon}
+                          onClick={async () => await Confirm({
+                            message: "Are you sure you want to remove this item?",
+                            onConfirm: () => {
+                              setRootLibrary("");
+                              setRootName("");
+                              setRootObject("");
+                            }
+                          })}
+                        />
+                      </div>
+                    </div>
+                  }
+                  <Action type="button" onClick={() => setShowContentBrowser(true)}>Select Object</Action>
+                </div>
+              </div>
+            </div>
+            {
+              InputFormField({
+                labelText: "Document Prefix",
+                labelHint: "This will be stored in /indexer/config/indexer/arguments/document/prefix in the metadata",
+                onChange: event => setDocPrefix(event.target.value),
+                value: docPrefix
+              })
+            }
+            {
+              InputFormField({
+                labelText: "Query Suffix",
+                labelHint: "A term that is appended to all queries. This will be stored in /indexer/config/indexer/arguments/query/suffix in the metadata",
+                onChange: event => setQuerySuffix(event.target.value),
+                value: querySuffix
+              })
+            }
+
+            <div className="form-separator" />
+
             <div className="-elv-input list-field-container">
-              <label>Indexer Configuration Fields</label>
+              <label className="hint-label">
+                Configuration Fields
+                <ToolTip
+                  className="hint-tooltip"
+                  content="These fields will be stored in /indexer/config/indexer/arguments/fields in the metadata"
+                >
+                  <ImageIcon className="-elv-icon hint-icon" icon={QuestionMarkIcon} />
+                </ToolTip>
+              </label>
               <div>
-                { form }
+                { fieldsForm }
                 <IconButton
                   icon={AddIcon}
                   title="Add Configuration Field"
@@ -288,6 +489,7 @@ const IndexConfiguration = observer((props) => {
             </div>
           </div>
         </div>
+        { ShowContentBrowser() }
       </div>
     );
   };
@@ -297,22 +499,66 @@ const IndexConfiguration = observer((props) => {
       Load={() => {
         if(
           objectStore.object.meta.indexer &&
-          objectStore.object.meta.indexer.config &&
-          objectStore.object.meta.indexer.config.indexer &&
-          objectStore.object.meta.indexer.config.indexer.arguments &&
-          objectStore.object.meta.indexer.config.indexer.arguments.fields
+          objectStore.object.meta.indexer.config
         ) {
-          const fieldsObject = Object.assign({}, objectStore.object.meta.indexer.config.indexer.arguments.fields);
-          const newObject = {};
+          if(
+            objectStore.object.meta.indexer.config.indexer &&
+            objectStore.object.meta.indexer.config.indexer.arguments &&
+            objectStore.object.meta.indexer.config.indexer.arguments.fields
+          ) {
+            const fieldsObject = Object.assign({}, objectStore.object.meta.indexer.config.indexer.arguments.fields);
+            const newObject = {};
 
-          Object.keys(fieldsObject).forEach((fieldName, index) => {
-            newObject[index] = {
-              ...fieldsObject[fieldName],
-              label: fieldName
-            };
-          });
+            Object.keys(fieldsObject).forEach((fieldName, index) => {
+              newObject[index] = {
+                ...fieldsObject[fieldName],
+                label: fieldName
+              };
+            });
 
-          setIndexerFields(newObject);
+            setIndexerFields(newObject);
+          }
+
+          const documentPrefix = (
+            objectStore.object.meta.indexer.config.indexer &&
+            objectStore.object.meta.indexer.config.indexer.arguments &&
+            objectStore.object.meta.indexer.config.indexer.arguments.document &&
+            objectStore.object.meta.indexer.config.indexer.arguments.document.prefix
+          );
+          if(documentPrefix) {
+            setDocPrefix(documentPrefix);
+          }
+
+          const querySuffix = (
+            objectStore.object.meta.indexer.config.indexer &&
+            objectStore.object.meta.indexer.config.indexer.arguments &&
+            objectStore.object.meta.indexer.config.indexer.arguments.query &&
+            objectStore.object.meta.indexer.config.indexer.arguments.query.suffix
+          );
+
+          if(querySuffix) {
+            setQuerySuffix(querySuffix);
+          }
+
+          const rootObject = (
+            objectStore.object.meta.indexer.config.fabric &&
+            objectStore.object.meta.indexer.config.fabric.root
+          );
+
+          const ObjectMeta = async () => {
+            if(rootObject) {
+              const name = await objectStore.GetContentObjectMetadata({
+                libraryId: rootObject.library,
+                objectId: rootObject.content,
+                metadataSubtree: "/name"
+              });
+              setRootName(name);
+              setRootObject(rootObject.content);
+              setRootLibrary(rootObject.library);
+            }
+          };
+
+          ObjectMeta();
         }
       }}
       render={PageContent}

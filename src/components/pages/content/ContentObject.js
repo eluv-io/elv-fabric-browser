@@ -1061,6 +1061,7 @@ class ContentObject extends React.Component {
               Select={(selection) => this.CopyObject(selection)}
               requireObject={false}
               header="Select a library"
+              confirmMessageCallback={({name, libraryName}) => `Are you sure you want to copy ${name} into ${libraryName}?`}
             /> : null
         }
       </div>
