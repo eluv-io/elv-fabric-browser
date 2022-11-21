@@ -423,6 +423,7 @@ class ContentLibrary extends React.Component {
                 return !hasPermission;
               }}
               disableObjectTitle="Ownership or a user cap required"
+              confirmMessageCallback={({name, libraryName}) => `Are you sure you want to copy ${name} into ${libraryName}?`}
             /> : null
         }
       </div>

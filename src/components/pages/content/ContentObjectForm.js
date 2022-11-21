@@ -319,12 +319,15 @@ class ContentObjectForm extends React.Component {
               const privateMetadata = JSON.stringify(meta, null, 2);
 
               this.setState({
-                showIndexerTab: object &&
+                showIndexerTab: !!(
+                  object &&
                   object.typeInfo &&
                   object.typeInfo.latestType &&
                   object.typeInfo.latestType.meta &&
                   object.typeInfo.latestType.meta.public &&
-                  object.typeInfo.latestType.meta.public.title_configuration
+                  object.typeInfo.latestType.meta.public.title_configuration &&
+                  object.typeInfo.latestType.meta.public.title_configuration.show_indexer_settings
+                )
               });
 
               const manageAppUrl = object.manageAppUrl || (object.typeInfo || {}).manageAppUrl;
