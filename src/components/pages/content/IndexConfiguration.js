@@ -31,11 +31,6 @@ const IndexConfiguration = observer((props) => {
 
     await Confirm({
       message: "Are you sure you want to save your changes?",
-      additionalInputs: [{
-        label: "Commit Message (optional)",
-        name: "commitMessage",
-        onChange: commitMessage => message = (commitMessage)
-      }],
       onConfirm: async () => {
         const fieldsMetadata = {};
 
@@ -49,7 +44,6 @@ const IndexConfiguration = observer((props) => {
           };
         });
 
-
         const callback = async ({writeToken}) => {
           const replaceMetaPayload = {
             libraryId: objectStore.libraryId,
@@ -57,35 +51,33 @@ const IndexConfiguration = observer((props) => {
             writeToken
           };
 
-          await objectStore.ReplaceMetadata({
-            ...replaceMetaPayload,
-            metadataSubtree: "indexer/config/fabric/root/content",
-            metadata: rootObject
-          });
-
-          await objectStore.ReplaceMetadata({
-            ...replaceMetaPayload,
-            metadataSubtree: "indexer/config/fabric/root/library",
-            metadata: rootLibrary
-          });
-
-          await objectStore.ReplaceMetadata({
-            ...replaceMetaPayload,
-            metadataSubtree: "indexer/config/indexer/arguments/document/prefix",
-            metadata: docPrefix
-          });
-
-          await objectStore.ReplaceMetadata({
-            ...replaceMetaPayload,
-            metadataSubtree: "indexer/config/indexer/arguments/query/suffix",
-            metadata: querySuffix
-          });
-
-          await objectStore.ReplaceMetadata({
-            ...replaceMetaPayload,
-            metadataSubtree: "indexer/config/indexer/arguments/field",
-            metadata: fieldsMetadata
-          });
+          await Promise.all([
+            objectStore.ReplaceMetadata({
+              ...replaceMetaPayload,
+              metadataSubtree: "indexer/config/indexer/arguments/fields",
+              metadata: fieldsMetadata
+            }),
+            objectStore.ReplaceMetadata({
+              ...replaceMetaPayload,
+              metadataSubtree: "indexer/config/fabric/root/content",
+              metadata: rootObject
+            }),
+            objectStore.ReplaceMetadata({
+              ...replaceMetaPayload,
+              metadataSubtree: "indexer/config/fabric/root/library",
+              metadata: rootLibrary
+            }),
+            objectStore.ReplaceMetadata({
+              ...replaceMetaPayload,
+              metadataSubtree: "indexer/config/indexer/arguments/document/prefix",
+              metadata: docPrefix
+            }),
+            objectStore.ReplaceMetadata({
+              ...replaceMetaPayload,
+              metadataSubtree: "indexer/config/indexer/arguments/query/suffix",
+              metadata: querySuffix
+            })
+          ]);
         };
 
         await objectStore.EditAndFinalizeContentObject({
@@ -183,7 +175,7 @@ const IndexConfiguration = observer((props) => {
     const fieldCount = Object.keys(fieldsData).length;
 
     fieldsData[fieldCount] = {
-      paths: undefined,
+      paths: [],
       options: {},
       type: "text",
       label: ""
@@ -287,7 +279,7 @@ const IndexConfiguration = observer((props) => {
               <div>
                 {
                   paths.map((path, index) => (
-                    <div className="multi-input-item" key={`${index}-${path}`}>
+                    <div className="multi-input-item" key={`${field}-path-${index}`}>
                       <input
                         type="text"
                         name={field}
@@ -298,7 +290,7 @@ const IndexConfiguration = observer((props) => {
                             field,
                             arrayIndex: index,
                             key: "paths",
-                            value: [event.target.value]
+                            value: event.target.value
                           });
                         }}
                       />
@@ -323,7 +315,7 @@ const IndexConfiguration = observer((props) => {
                   title="Add Path"
                   onClick={() => {
                     const fieldsData = Object.assign({}, indexerFields);
-                    fieldsData[field]["paths"].push("");
+                    paths.push("");
                     setIndexerFields(fieldsData);
                   }}
                   className="info-list-icon info-list-add-icon secondary"
@@ -338,6 +330,7 @@ const IndexConfiguration = observer((props) => {
                   type="checkbox"
                   name={field}
                   checked={(!!options && options.stats) ? options.stats.histogram : false}
+                  disabled={!type || type === "text"}
                   value={(!!options && options.stats) ? options.stats.histogram : false}
                   onChange={event => {
                     UpdateFormValue({
@@ -393,7 +386,7 @@ const IndexConfiguration = observer((props) => {
           >
             Update Index
           </Action>
-          <h1>{`Indexer Configuration for "${objectStore.object.name || ""}"`}</h1>
+          <h1>{`Search Configuration for "${objectStore.object.name || ""}"`}</h1>
           <Action
             type="button"
             className="indexer-save-button -elv-button"

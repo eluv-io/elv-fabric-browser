@@ -169,7 +169,7 @@ class ContentObjectForm extends React.Component {
     if(this.state.createForm || !this.state.manageAppUrl || this.state.fullScreen) { return null; }
     const options = [["App", "app"], ["Form", "form"]];
     if(this.state.showIndexerTab) {
-      options.push(["Indexer Configuration", "index"]);
+      options.push(["Search", "index"]);
     }
 
     return (
