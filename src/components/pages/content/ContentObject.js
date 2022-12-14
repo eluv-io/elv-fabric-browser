@@ -677,7 +677,7 @@ class ContentObject extends React.Component {
                     return (
                       <React.Fragment key={`${capAddress}-caps-version-${this.state.capsVersion}`}>
                         <div className="table-cell">{caps[capAddress] || "Owner"}</div>
-                        <div className="table-cell">{caps.hasOwnProperty(capAddress) ? "Creator" : "Owner"}</div>
+                        <div className="table-cell">{caps.hasOwnProperty(capAddress) ? "User" : "Owner"}</div>
                         <div className="table-cell">{capAddress}</div>
                         <div className="table-cell">
                           <IconButton
