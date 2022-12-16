@@ -746,16 +746,15 @@ ReplaceMetadata = flow(function * ({
       metadata: lastRunTime
     });
 
-    yield Fabric.FinalizeContentObject({
+
+    this.objects[objectId].meta = yield Fabric.GetContentObjectMetadata({
       libraryId,
       objectId,
-      writeToken,
-      commitMessage: "Search update"
+      writeToken
     });
 
     this.rootStore.notificationStore.SetNotificationMessage({
-      message: "Successfully updated search index",
-      redirect: true
+      message: "Successfully finished crawl"
     });
   });
 

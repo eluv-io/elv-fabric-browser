@@ -14,6 +14,9 @@ import LinkIcon from "../../../static/icons/external-link.svg";
 import {Action, AsyncComponent, Confirm, IconButton, IconLink, ImageIcon, Modal, ToolTip} from "elv-components-js";
 import {objectStore} from "../../../stores";
 import {ContentBrowserModal} from "../../components/ContentBrowser";
+import JSONField from "../../components/JSONField";
+import ToggleSection from "../../components/ToggleSection";
+import {LabelledField} from "../../components/LabelledField";
 
 const IndexConfiguration = observer((props) => {
   const [objectId, setObjectId] = useState("");
@@ -25,6 +28,7 @@ const IndexConfiguration = observer((props) => {
   const [rootObject, setRootObject] = useState();
   const [rootLibrary, setRootLibrary] = useState();
   const [rootName, setRootName] = useState();
+  const [pageVersion, setPageVersion] = useState(0);
 
   const SaveForm = async () => {
     let message;
@@ -103,12 +107,6 @@ const IndexConfiguration = observer((props) => {
       objectStore.object.meta.indexer.config.fabric.root.content
     );
 
-    const lastRunTime = await objectStore.GetContentObjectMetadata({
-      libraryId,
-      objectId,
-      metadataSubtree: "indexer/last_run_time"
-    });
-
     const lastRunHash = await objectStore.GetContentObjectMetadata({
       libraryId,
       objectId,
@@ -122,7 +120,7 @@ const IndexConfiguration = observer((props) => {
 
     if(!lastRunHash || lastRunHash !== latestVersionHash) {
       await Confirm({
-        message: `Are you sure you want to update search index?${lastRunTime ? `\nLast run time: ${lastRunTime}` : ""}`,
+        message: "Are you sure you want to update search index?",
         onConfirm: async () => {
           await objectStore.UpdateIndex({
             libraryId,
@@ -131,6 +129,7 @@ const IndexConfiguration = observer((props) => {
             constant: false,
             latestHash: latestVersionHash
           });
+          setPageVersion(prev => prev + 1);
         }
       });
     } else {
@@ -370,6 +369,177 @@ const IndexConfiguration = observer((props) => {
     })
   );
 
+  const FieldsForm = () => {
+    return (
+      <div className="indexer-fields-page">
+        <h3>Settings</h3>
+        <div className="indexer-info-container">
+          <div className="object-selection-field">
+            <div className="-elv-input object-selection-container">
+              <label className="hint-label">
+                Site Object
+                <ToolTip
+                  className="hint-tooltip"
+                  content="This object will be stored in the root metadata"
+                >
+                  <ImageIcon className="-elv-icon hint-icon" icon={QuestionMarkIcon} />
+                </ToolTip>
+              </label>
+              <div>
+                {
+                  rootName &&
+                  <div className="selected-item">
+                    { rootName }
+                    <div className="object-selection-actions">
+                      <IconLink
+                        className="open-object-link"
+                        icon={LinkIcon}
+                        label="Open object in new tab"
+                        to={`/content/${rootLibrary}/${rootObject}`}
+                      />
+                      <IconButton
+                        title="Remove Item"
+                        icon={DeleteIcon}
+                        onClick={async () => await Confirm({
+                          message: "Are you sure you want to remove this item?",
+                          onConfirm: () => {
+                            setRootLibrary("");
+                            setRootName("");
+                            setRootObject("");
+                          }
+                        })}
+                      />
+                    </div>
+                  </div>
+                }
+                <Action type="button" onClick={() => setShowContentBrowser(true)}>Select Object</Action>
+              </div>
+            </div>
+          </div>
+          {
+            InputFormField({
+              labelText: "Document Prefix",
+              labelHint: "This will be stored in /indexer/config/indexer/arguments/document/prefix in the metadata",
+              onChange: event => setDocPrefix(event.target.value),
+              value: docPrefix
+            })
+          }
+          {
+            InputFormField({
+              labelText: "Query Suffix",
+              labelHint: "A term that is appended to all queries. This will be stored in /indexer/config/indexer/arguments/query/suffix in the metadata",
+              onChange: event => setQuerySuffix(event.target.value),
+              value: querySuffix
+            })
+          }
+
+          <div className="form-separator" />
+
+          <div className="-elv-input list-field-container">
+            <label className="hint-label">
+              Configuration Fields
+              <ToolTip
+                className="hint-tooltip"
+                content="These fields will be stored in /indexer/config/indexer/arguments/fields in the metadata"
+              >
+                <ImageIcon className="-elv-icon hint-icon" icon={QuestionMarkIcon} />
+              </ToolTip>
+            </label>
+            <div>
+              { fieldsForm }
+              <IconButton
+                icon={AddIcon}
+                title="Add Configuration Field"
+                onClick={AddField}
+                className="info-list-icon info-list-add-icon secondary"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const LastRunInfo = () => {
+    const lastRunTime = (
+      objectStore.object.meta &&
+      objectStore.object.meta.indexer &&
+      objectStore.object.meta.indexer.last_run_time
+    );
+    const lastRunHash = (
+      objectStore.object.meta &&
+      objectStore.object.meta.indexer &&
+      objectStore.object.meta.indexer.last_run
+    );
+
+    const LastRun = () => {
+      if(!lastRunHash && !lastRunTime) { return null; }
+
+      return (
+        <>
+          <LabelledField
+            label="Last Run Hash"
+            hidden={!lastRunHash}
+            copyValue={lastRunHash}
+          >
+            { lastRunHash }
+          </LabelledField>
+          <LabelledField label="Last Run Time" hidden={!lastRunTime}>
+            { lastRunTime }
+          </LabelledField>
+        </>
+      );
+    };
+
+    const Stats = () => {
+      if(
+        !objectStore.object.meta &&
+        !objectStore.object.meta.indexer &&
+        !objectStore.object.meta.indexer.stats
+      ) { return null; }
+
+      return (
+        <ToggleSection label="Stats Metadata">
+          <div className="indented">
+            <JSONField
+              json={objectStore.object.meta.indexer.stats}
+            />
+          </div>
+        </ToggleSection>
+      );
+    };
+
+    const Errors = () => {
+      if(
+        !objectStore.object.meta &&
+        !objectStore.object.meta.indexer &&
+        !objectStore.object.meta.indexer.exceptions ||
+        objectStore.object.meta.indexer.exceptions.length === 0
+      ) { return null; }
+
+      return (
+        <ToggleSection label="Errors Metadata">
+          <div className="indented">
+            <JSONField
+              json={objectStore.object.meta.indexer.exceptions}
+            />
+          </div>
+        </ToggleSection>
+      );
+    };
+
+    return (
+      <>
+        <h3>Last Run Info</h3>
+        <div className="label-box">
+          { LastRun() }
+          { Stats() }
+          { Errors() }
+        </div>
+      </>
+    );
+  };
+
   const PageContent = () => {
     if(objectId) {
       const redirectPath = UrlJoin(Path.dirname(props.match.url));
@@ -397,98 +567,16 @@ const IndexConfiguration = observer((props) => {
         </div>
 
         { NoUpdateModal() }
-        <div className="indexer-fields-page">
-          <div className="indexer-info-container">
-            <div className="object-selection-field">
-              <div className="-elv-input object-selection-container">
-                <label className="hint-label">
-                  Site Object
-                  <ToolTip
-                    className="hint-tooltip"
-                    content="This object will be stored in the root metadata"
-                  >
-                    <ImageIcon className="-elv-icon hint-icon" icon={QuestionMarkIcon} />
-                  </ToolTip>
-                </label>
-                <div>
-                  {
-                    rootName &&
-                    <div className="selected-item">
-                      { rootName }
-                      <div className="object-selection-actions">
-                        <IconLink
-                          className="open-object-link"
-                          icon={LinkIcon}
-                          label="Open object in new tab"
-                          to={`/content/${rootLibrary}/${rootObject}`}
-                        />
-                        <IconButton
-                          title="Remove Item"
-                          icon={DeleteIcon}
-                          onClick={async () => await Confirm({
-                            message: "Are you sure you want to remove this item?",
-                            onConfirm: () => {
-                              setRootLibrary("");
-                              setRootName("");
-                              setRootObject("");
-                            }
-                          })}
-                        />
-                      </div>
-                    </div>
-                  }
-                  <Action type="button" onClick={() => setShowContentBrowser(true)}>Select Object</Action>
-                </div>
-              </div>
-            </div>
-            {
-              InputFormField({
-                labelText: "Document Prefix",
-                labelHint: "This will be stored in /indexer/config/indexer/arguments/document/prefix in the metadata",
-                onChange: event => setDocPrefix(event.target.value),
-                value: docPrefix
-              })
-            }
-            {
-              InputFormField({
-                labelText: "Query Suffix",
-                labelHint: "A term that is appended to all queries. This will be stored in /indexer/config/indexer/arguments/query/suffix in the metadata",
-                onChange: event => setQuerySuffix(event.target.value),
-                value: querySuffix
-              })
-            }
-
-            <div className="form-separator" />
-
-            <div className="-elv-input list-field-container">
-              <label className="hint-label">
-                Configuration Fields
-                <ToolTip
-                  className="hint-tooltip"
-                  content="These fields will be stored in /indexer/config/indexer/arguments/fields in the metadata"
-                >
-                  <ImageIcon className="-elv-icon hint-icon" icon={QuestionMarkIcon} />
-                </ToolTip>
-              </label>
-              <div>
-                { fieldsForm }
-                <IconButton
-                  icon={AddIcon}
-                  title="Add Configuration Field"
-                  onClick={AddField}
-                  className="info-list-icon info-list-add-icon secondary"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+        { FieldsForm() }
         { ShowContentBrowser() }
+        { LastRunInfo() }
       </div>
     );
   };
 
   return (
     <AsyncComponent
+      key={`search-page-${pageVersion}`}
       Load={() => {
         if(
           objectStore.object.meta.indexer &&
