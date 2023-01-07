@@ -703,15 +703,11 @@ ReplaceMetadata = flow(function * ({
       throw Error("No search nodes found.");
     }
 
-    const defaultSearchUri = searchURIs[0];
-
     const {writeToken} = yield Fabric.EditContentObject({
       libraryId,
       objectId,
-      options: {nodeUrl: defaultSearchUri}
+      options: {nodeUrl: searchURIs[0]}
     });
-
-    Fabric.client.httpClient.RecordWriteToken(writeToken, defaultSearchUri);
 
     const {lro_handle} = yield Fabric.CallBitcodeMethod({
       libraryId,
