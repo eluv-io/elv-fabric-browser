@@ -473,7 +473,7 @@ const IndexConfiguration = observer((props) => {
     );
 
     const LastRun = () => {
-      if(!lastRunHash && !lastRunTime) { return null; }
+      if(!lastRunHash && !lastRunTime) { return "No index updates found."; }
 
       return (
         <>
@@ -493,8 +493,8 @@ const IndexConfiguration = observer((props) => {
 
     const Stats = () => {
       if(
-        !objectStore.object.meta &&
-        !objectStore.object.meta.indexer &&
+        !objectStore.object.meta ||
+        !objectStore.object.meta.indexer ||
         !objectStore.object.meta.indexer.stats
       ) { return null; }
 
@@ -511,10 +511,9 @@ const IndexConfiguration = observer((props) => {
 
     const Errors = () => {
       if(
-        !objectStore.object.meta &&
-        !objectStore.object.meta.indexer &&
-        !objectStore.object.meta.indexer.exceptions ||
-        objectStore.object.meta.indexer.exceptions.length === 0
+        !objectStore.object.meta ||
+        !objectStore.object.meta.indexer ||
+        !objectStore.object.meta.indexer.exceptions
       ) { return null; }
 
       return (
