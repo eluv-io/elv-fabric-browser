@@ -706,7 +706,7 @@ ReplaceMetadata = flow(function * ({
     const {writeToken} = yield Fabric.EditContentObject({
       libraryId,
       objectId,
-      options: {nodeUrl: searchURIs[0]}
+      clientMode: "search"
     });
 
     const {lro_handle} = yield Fabric.CallBitcodeMethod({
@@ -714,7 +714,8 @@ ReplaceMetadata = flow(function * ({
       objectId,
       writeToken,
       method,
-      constant
+      constant,
+      clientMode: "search"
     });
 
     let done;
@@ -726,7 +727,8 @@ ReplaceMetadata = flow(function * ({
         writeToken,
         method: "crawl_status",
         body: {"lro_handle": lro_handle},
-        constant: false
+        constant: false,
+        clientMode: "search"
       });
 
       if(results) {
@@ -742,7 +744,8 @@ ReplaceMetadata = flow(function * ({
       libraryId,
       writeToken,
       metadataSubtree: "indexer/last_run",
-      metadata: latestHash
+      metadata: latestHash,
+      clientMode: "search"
     });
 
     yield Fabric.ReplaceMetadata({
@@ -750,14 +753,16 @@ ReplaceMetadata = flow(function * ({
       libraryId,
       writeToken,
       metadataSubtree: "indexer/last_run_time",
-      metadata: lastRunTime
+      metadata: lastRunTime,
+      clientMode: "search"
     });
 
 
     this.objects[objectId].meta = yield Fabric.GetContentObjectMetadata({
       libraryId,
       objectId,
-      writeToken
+      writeToken,
+      clientMode: "search"
     });
 
     this.rootStore.notificationStore.SetNotificationMessage({
