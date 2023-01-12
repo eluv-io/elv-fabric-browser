@@ -785,7 +785,7 @@ const Fabric = {
     versionHash,
     writeToken,
     metadataSubtree="/",
-    clientMode="default"
+    service="default"
   }) => {
     return await client.ContentObjectMetadata({
       libraryId,
@@ -793,7 +793,7 @@ const Fabric = {
       versionHash,
       writeToken,
       metadataSubtree,
-      clientMode
+      service
     });
   },
 
@@ -939,13 +939,13 @@ const Fabric = {
     libraryId,
     objectId,
     options={},
-    clientMode="default"
+    service="default"
   }) => {
     return await client.EditContentObject({
       libraryId,
       objectId,
       options,
-      clientMode
+      service
     });
   },
 
@@ -971,7 +971,7 @@ const Fabric = {
     writeToken,
     metadataSubtree="/",
     metadata,
-    clientMode="default"
+    service="default"
   }) => {
     await client.ReplaceMetadata({
       libraryId,
@@ -979,7 +979,7 @@ const Fabric = {
       writeToken,
       metadataSubtree,
       metadata,
-      clientMode
+      service
     });
   },
 
@@ -1908,7 +1908,7 @@ const Fabric = {
     method,
     body,
     constant=true,
-    clientMode="default"
+    service="default"
   }) {
     return await client.CallBitcodeMethod({
       objectId,
@@ -1917,7 +1917,7 @@ const Fabric = {
       method,
       body,
       constant,
-      clientMode
+      service
     });
   },
 

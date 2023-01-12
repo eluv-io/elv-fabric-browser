@@ -473,7 +473,9 @@ const IndexConfiguration = observer((props) => {
     );
 
     const LastRun = () => {
-      if(!lastRunHash && !lastRunTime) { return "No index updates found."; }
+      if(!lastRunHash && !lastRunTime) {
+        return <div className="last-run-message">No last run data found</div>;
+      }
 
       return (
         <>
