@@ -697,9 +697,16 @@ ReplaceMetadata = flow(function * ({
     constant,
     latestHash
   }) {
+    const {searchURIs} = yield Fabric.client.Nodes();
+
+    if(!searchURIs || !Array.isArray(searchURIs) || searchURIs.length === 0) {
+      throw Error("No search nodes found.");
+    }
+
     const {writeToken} = yield Fabric.EditContentObject({
       libraryId,
-      objectId
+      objectId,
+      service: "search"
     });
 
     const {lro_handle} = yield Fabric.CallBitcodeMethod({
@@ -707,7 +714,8 @@ ReplaceMetadata = flow(function * ({
       objectId,
       writeToken,
       method,
-      constant
+      constant,
+      service: "search"
     });
 
     let done;
@@ -719,7 +727,8 @@ ReplaceMetadata = flow(function * ({
         writeToken,
         method: "crawl_status",
         body: {"lro_handle": lro_handle},
-        constant: false
+        constant: false,
+        service: "search"
       });
 
       if(results) {
@@ -735,7 +744,8 @@ ReplaceMetadata = flow(function * ({
       libraryId,
       writeToken,
       metadataSubtree: "indexer/last_run",
-      metadata: latestHash
+      metadata: latestHash,
+      service: "search"
     });
 
     yield Fabric.ReplaceMetadata({
@@ -743,19 +753,20 @@ ReplaceMetadata = flow(function * ({
       libraryId,
       writeToken,
       metadataSubtree: "indexer/last_run_time",
-      metadata: lastRunTime
+      metadata: lastRunTime,
+      service: "search"
     });
 
-    yield Fabric.FinalizeContentObject({
+
+    this.objects[objectId].meta = yield Fabric.GetContentObjectMetadata({
       libraryId,
       objectId,
       writeToken,
-      commitMessage: "Search update"
+      service: "search"
     });
 
     this.rootStore.notificationStore.SetNotificationMessage({
-      message: "Successfully updated search index",
-      redirect: true
+      message: "Successfully finished crawl"
     });
   });
 

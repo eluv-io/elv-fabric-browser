@@ -779,8 +779,22 @@ const Fabric = {
     };
   },
 
-  GetContentObjectMetadata: async ({libraryId, objectId, versionHash, writeToken, metadataSubtree="/"}) => {
-    return await client.ContentObjectMetadata({libraryId, objectId, versionHash, writeToken, metadataSubtree});
+  GetContentObjectMetadata: async ({
+    libraryId,
+    objectId,
+    versionHash,
+    writeToken,
+    metadataSubtree="/",
+    service="default"
+  }) => {
+    return await client.ContentObjectMetadata({
+      libraryId,
+      objectId,
+      versionHash,
+      writeToken,
+      metadataSubtree,
+      service
+    });
   },
 
   // Get all versions of the specified content object, along with metadata,
@@ -924,12 +938,14 @@ const Fabric = {
   EditContentObject: async ({
     libraryId,
     objectId,
-    options={}
+    options={},
+    service="default"
   }) => {
     return await client.EditContentObject({
       libraryId,
       objectId,
-      options
+      options,
+      service
     });
   },
 
@@ -954,14 +970,16 @@ const Fabric = {
     objectId,
     writeToken,
     metadataSubtree="/",
-    metadata
+    metadata,
+    service="default"
   }) => {
     await client.ReplaceMetadata({
       libraryId,
       objectId,
       writeToken,
       metadataSubtree,
-      metadata
+      metadata,
+      service
     });
   },
 
@@ -1889,7 +1907,8 @@ const Fabric = {
     writeToken,
     method,
     body,
-    constant=true
+    constant=true,
+    service="default"
   }) {
     return await client.CallBitcodeMethod({
       objectId,
@@ -1897,7 +1916,8 @@ const Fabric = {
       writeToken,
       method,
       body,
-      constant
+      constant,
+      service
     });
   },
 
