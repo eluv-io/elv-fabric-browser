@@ -41,6 +41,49 @@ export const HashToAddress = (hash) => {
   return Utils.HashToAddress(hash);
 };
 
+export const LROStatus = async ({client, libraryId, objectId, metadata}) => {
+  // New convention "/lro_draft" - check first
+  try {
+    if(metadata.lro_draft) {
+      const offeringKey = metadata.lro_draft.offering;
+      const status = await client.LROStatus({libraryId, objectId});
+      return [{
+        offeringKey,
+        status
+      }];
+    }
+  } catch(error) {
+    // eslint-disable-next-line no-console
+    console.error("Failed to load LRO status from /lro_draft:");
+    // eslint-disable-next-line no-console
+    console.error(error);
+  }
+
+  const oldKeys = Object.keys(metadata)
+    .filter(key => key.startsWith("lro_draft_"));
+
+  // Old convention "/lro_draft_*"
+  return (await Promise.all(
+    oldKeys.map(
+      async lroKey => {
+        const offeringKey = lroKey.replace(/^lro_draft_/, "");
+        try {
+          const status = await client.LROStatus({libraryId, objectId, offeringKey});
+          return {
+            offeringKey,
+            status
+          };
+        } catch(error) {
+          // eslint-disable-next-line no-console
+          console.error(`Failed to load LRO status from /lro_draft_${offeringKey}:`);
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
+      }
+    )
+  )).filter(status => status); // remove failed responses
+};
+
 export const Percentage = (done, total) => {
   return total > 0 ? `${(done * 100 / total).toFixed(1)}%` : "100.0%";
 };
