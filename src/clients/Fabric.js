@@ -700,27 +700,46 @@ const Fabric = {
 
     const kmsId = kmsAddress ? `ikms${client.utils.AddressToHash(kmsAddress)}` : undefined;
 
-    // Non-cachable (contract / LRO status)
-    const lroStatus = (await Promise.all(
-      Object.keys(object.meta)
-        .filter(key => key.startsWith("lro_draft_"))
-        .map(async lroKey => {
-          try {
-            const offeringKey = lroKey.replace(/^lro_draft_/, "");
+    // Non-cacheable (contract / LRO status)
+    const lroStatus = await (async () => {
+      // New convention "/lro_draft" - check first
+      try {
+        if(object.meta.lro_draft) {
+          const offeringKey = object.meta.lro_draft.offering;
+          const status = await client.LROStatus({libraryId, objectId});
+          return [{
+            offeringKey,
+            status
+          }];
+        }
+      } catch(error) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to load LRO status:");
+        // eslint-disable-next-line no-console
+        console.error(error);
+      }
 
-            const status = await client.LROStatus({libraryId, objectId, offeringKey});
-            return {
-              offeringKey,
-              status
-            };
-          } catch(error) {
-            // eslint-disable-next-line no-console
-            console.error("Failed to load LRO status:");
-            // eslint-disable-next-line no-console
-            console.error(error);
-          }
-        })
-    )).filter(status => status);
+      // Old convention "/lro_draft_*"
+      return (await Promise.all(
+        Object.keys(object.meta)
+          .filter(key => key.startsWith("lro_draft_"))
+          .map(async lroKey => {
+            try {
+              const offeringKey = lroKey.replace(/^lro_draft_/, "");
+              const status = await client.LROStatus({libraryId, objectId, offeringKey});
+              return {
+                offeringKey,
+                status
+              };
+            } catch(error) {
+              // eslint-disable-next-line no-console
+              console.error("Failed to load LRO status:");
+              // eslint-disable-next-line no-console
+              console.error(error);
+            }
+          })
+      )).filter(status => status);
+    });
 
 
     // Not able to get owner name
