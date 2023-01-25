@@ -709,14 +709,22 @@ ReplaceMetadata = flow(function * ({
       service: "search"
     });
 
-    const {lro_handle} = yield Fabric.CallBitcodeMethod({
-      libraryId,
-      objectId,
-      writeToken,
-      method,
-      constant,
-      service: "search"
-    });
+    let lroHandle;
+    try {
+      const response = yield Fabric.CallBitcodeMethod({
+        libraryId,
+        objectId,
+        writeToken,
+        method,
+        constant,
+        service: "search"
+      });
+
+      lroHandle = response.lro_handle;
+    } catch(error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
 
     let done;
     let lastRunTime;
@@ -726,17 +734,18 @@ ReplaceMetadata = flow(function * ({
         objectId,
         writeToken,
         method: "crawl_status",
-        body: {"lro_handle": lro_handle},
+        body: {"lro_handle": lroHandle},
         constant: false,
         service: "search"
       });
 
       if(results) {
         lastRunTime = results.custom.duration;
-        if(results.custom.run_state === "finished") done = true;
+
+        if(results.custom.run_state === "finished" || results.custom.run_state === "failed") done = true;
       }
 
-      yield new Promise(resolve => setTimeout(resolve, 1000));
+      yield new Promise(resolve => setTimeout(resolve, 5000));
     }
 
     yield Fabric.ReplaceMetadata({
@@ -757,6 +766,13 @@ ReplaceMetadata = flow(function * ({
       service: "search"
     });
 
+    yield Fabric.FinalizeContentObject({
+      objectId,
+      libraryId,
+      writeToken,
+      commitMessage: "Update index",
+      service: "search"
+    });
 
     this.objects[objectId].meta = yield Fabric.GetContentObjectMetadata({
       libraryId,

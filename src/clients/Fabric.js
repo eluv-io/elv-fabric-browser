@@ -1001,7 +1001,8 @@ const Fabric = {
     objectId,
     writeToken,
     commitMessage,
-    awaitCommitConfirmation=true
+    awaitCommitConfirmation=true,
+    service="default"
   }) => {
     delete Fabric.cachedImages[objectId];
 
@@ -1010,7 +1011,8 @@ const Fabric = {
       objectId,
       writeToken,
       commitMessage,
-      awaitCommitConfirmation
+      awaitCommitConfirmation,
+      service
     });
   },
 

@@ -18,7 +18,7 @@ import JSONField from "../../components/JSONField";
 import ToggleSection from "../../components/ToggleSection";
 import {LabelledField} from "../../components/LabelledField";
 
-const IndexConfiguration = observer((props) => {
+const SearchConfiguration = observer((props) => {
   const [objectId, setObjectId] = useState("");
   const [indexerFields, setIndexerFields] = useState({});
   const [showNoUpdateModal, setShowNoUpdateModal] = useState(false);
@@ -238,7 +238,7 @@ const IndexConfiguration = observer((props) => {
     );
   };
 
-  const fieldsForm = (
+  const configFieldForm = (
     Object.keys(indexerFields).map((field, index) => {
       const {options, paths, type, label} = indexerFields[field];
 
@@ -446,7 +446,7 @@ const IndexConfiguration = observer((props) => {
               </ToolTip>
             </label>
             <div>
-              { fieldsForm }
+              { configFieldForm }
               <IconButton
                 icon={AddIcon}
                 title="Add Configuration Field"
@@ -578,7 +578,7 @@ const IndexConfiguration = observer((props) => {
   return (
     <AsyncComponent
       key={`search-page-${pageVersion}`}
-      Load={() => {
+      Load={async () => {
         if(
           objectStore.object.meta.indexer &&
           objectStore.object.meta.indexer.config
@@ -627,20 +627,16 @@ const IndexConfiguration = observer((props) => {
             objectStore.object.meta.indexer.config.fabric.root
           );
 
-          const ObjectMeta = async () => {
-            if(rootObject) {
-              const name = await objectStore.GetContentObjectMetadata({
-                libraryId: rootObject.library,
-                objectId: rootObject.content,
-                metadataSubtree: "/name"
-              });
-              setRootName(name);
-              setRootObject(rootObject.content);
-              setRootLibrary(rootObject.library);
-            }
-          };
-
-          ObjectMeta();
+          if(rootObject) {
+            const name = await objectStore.GetContentObjectMetadata({
+              libraryId: rootObject.library,
+              objectId: rootObject.content,
+              metadataSubtree: "/public/name"
+            });
+            setRootName(name);
+            setRootObject(rootObject.content);
+            setRootLibrary(rootObject.library);
+          }
         }
       }}
       render={PageContent}
@@ -648,4 +644,4 @@ const IndexConfiguration = observer((props) => {
   );
 });
 
-export default withRouter(IndexConfiguration);
+export default withRouter(SearchConfiguration);
