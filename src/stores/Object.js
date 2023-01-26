@@ -726,6 +726,8 @@ ReplaceMetadata = flow(function * ({
       console.error(error);
     }
 
+    yield new Promise(resolve => setTimeout(resolve, 60000));
+
     let done;
     let lastRunTime;
     while(!done) {
@@ -745,7 +747,7 @@ ReplaceMetadata = flow(function * ({
         if(results.custom.run_state === "finished" || results.custom.run_state === "failed") done = true;
       }
 
-      yield new Promise(resolve => setTimeout(resolve, 5000));
+      yield new Promise(resolve => setTimeout(resolve, 30000));
     }
 
     yield Fabric.ReplaceMetadata({
