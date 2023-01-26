@@ -28,7 +28,6 @@ const SearchConfiguration = observer((props) => {
   const [rootObject, setRootObject] = useState();
   const [rootLibrary, setRootLibrary] = useState();
   const [rootName, setRootName] = useState();
-  const [pageVersion, setPageVersion] = useState(0);
 
   const SaveForm = async () => {
     let message;
@@ -129,7 +128,7 @@ const SearchConfiguration = observer((props) => {
             constant: false,
             latestHash: latestVersionHash
           });
-          setPageVersion(prev => prev + 1);
+          setObjectId(objectId);
         }
       });
     } else {
@@ -577,7 +576,6 @@ const SearchConfiguration = observer((props) => {
 
   return (
     <AsyncComponent
-      key={`search-page-${pageVersion}`}
       Load={async () => {
         if(
           objectStore.object.meta.indexer &&
