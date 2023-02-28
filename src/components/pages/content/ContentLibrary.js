@@ -181,7 +181,7 @@ class ContentLibrary extends React.Component {
   ObjectListing() {
     return (
       <Listing
-        key={`library-objects-view-${this.state.objectListingVersion}`}
+        key={`library-objects-view-${this.state.listingVersion}`}
         pageId="ContentObjects"
         paginate={true}
         page={this.props.libraryStore.library.listingParams.page}
