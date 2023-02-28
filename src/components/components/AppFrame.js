@@ -204,8 +204,11 @@ class AppFrame extends React.Component {
             libraryId = await Fabric.ContentObjectLibraryId({objectId});
           }
 
+          const corePath = `#/apps/${encodeURIComponent("Eluvio Fabric Browser")}`;
+          const fabricBrowserPath = `#/content/${libraryId}/${objectId}`;
+
           const uri = URI(window.location.toString());
-          uri.hash(`#/content/${libraryId}/${objectId}`);
+          uri.hash(`${corePath}/${fabricBrowserPath}`);
 
           window.open(uri.toString(), "_blank");
 
