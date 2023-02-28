@@ -194,23 +194,12 @@ class AppFrame extends React.Component {
 
       switch(event.data.operation) {
         case "OpenLink":
-          let { libraryId, objectId, versionHash } = event.data;
-
-          if(!objectId && versionHash) {
-            objectId = Fabric.utils.DecodeVersionHash(versionHash).objectId;
-          }
-
-          if(!libraryId) {
-            libraryId = await Fabric.ContentObjectLibraryId({objectId});
-          }
-
-          const corePath = `#/apps/${encodeURIComponent("Eluvio Fabric Browser")}`;
-          const fabricBrowserPath = `#/content/${libraryId}/${objectId}`;
-
-          const uri = URI(window.location.toString());
-          uri.hash(`${corePath}/${fabricBrowserPath}`);
-
-          window.open(uri.toString(), "_blank");
+          Fabric.client.SendMessage({
+            options: {
+              ...(event.data || {})
+            },
+            noResponse: true
+          });
 
           break;
 
