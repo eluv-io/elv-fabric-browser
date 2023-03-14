@@ -23,8 +23,7 @@ export const FileInfo = async (path, fileList, noData=false, trimDirectory) => {
 
   return await Promise.all(
     Array.from(fileList).map(async file => {
-      const isFileType = file instanceof File;
-      const data = noData ? undefined : isFileType ? file : await new Response(file).arrayBuffer();
+      const data = noData ? undefined : await new Response(file).arrayBuffer();
       let filePath = file.overrideName || file.webkitRelativePath || file.name;
       if(trimDirectory) {
         filePath = filePath.split("/")[1];
