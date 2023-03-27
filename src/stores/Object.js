@@ -731,20 +731,34 @@ ReplaceMetadata = flow(function * ({
     let done;
     let lastRunTime;
     while(!done) {
-      let results = yield Fabric.CallBitcodeMethod({
-        libraryId,
-        objectId,
-        writeToken,
-        method: "crawl_status",
-        body: {"lro_handle": lroHandle},
-        constant: false,
-        service: "search"
-      });
+      let results;
+
+      try {
+        results = yield Fabric.CallBitcodeMethod({
+          libraryId,
+          objectId,
+          writeToken,
+          method: "crawl_status",
+          body: {"lro_handle": lroHandle},
+          constant: false,
+          service: "search"
+        });
+      } catch(error) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to retrieve crawl status", error);
+        done = true;
+      }
 
       if(results) {
         lastRunTime = results.custom.duration;
 
-        if(results.custom.run_state === "finished" || results.custom.run_state === "failed") done = true;
+        if(
+          results.custom.run_state === "finished" ||
+          results.custom.run_state === "failed" ||
+          results.state === "terminated"
+        ) {
+          done = true;
+        }
       }
 
       yield new Promise(resolve => setTimeout(resolve, 30000));
