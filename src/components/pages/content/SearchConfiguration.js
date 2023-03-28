@@ -248,139 +248,137 @@ const SearchConfiguration = observer((props) => {
     );
   };
 
-  const ConfigFieldForm = () => {
-    return (
-      Object.keys(indexerFields).map((field, index) => {
-        const {options, paths, type, label} = indexerFields[field];
+  const configFieldForm = (
+    Object.keys(indexerFields).map((field, index) => {
+      const {options, paths, type, label} = indexerFields[field];
 
-        return (
-          <div className="list-fields" key={field}>
-            <div className={`list-field-entry${index % 2 === 0 ? " even" : " odd"}`}>
-              <div className="actions">
-                <IconButton
-                  icon={DeleteIcon}
-                  title="Remove item"
-                  onClick={async () => await Confirm({
-                    message: "Are you sure you want to remove this item?",
-                    onConfirm: () => RemoveField(index)
-                  })}
-                  className="info-list-icon info-list-remove-icon"
-                />
-              </div>
-
-              <div className="-elv-input list-field-input">
-                <label htmlFor={field}>Label</label>
-                <input
-                  type="text"
-                  value={label}
-                  placeholder="config_field"
-                  onChange={event => {
-                    UpdateFormValue({
-                      field,
-                      key: "label",
-                      value: event.target.value
-                    });
-                  }}
-                />
-              </div>
-
-              <div className="-elv-input multi-input">
-                <label htmlFor={field}>Paths</label>
-                <div>
-                  {
-                    paths.map((path, index) => (
-                      <div className="multi-input-item" key={`${field}-path-${index}`}>
-                        <input
-                          type="text"
-                          name={field}
-                          placeholder="site_map.searchables.*.title"
-                          value={path}
-                          onChange={event => {
-                            UpdateFormValue({
-                              field,
-                              arrayIndex: index,
-                              key: "paths",
-                              value: event.target.value
-                            });
-                          }}
-                        />
-                        <IconButton
-                          className="info-list-icon"
-                          title="Remove Item"
-                          icon={DeleteIcon}
-                          onClick={async () => await Confirm({
-                            message: "Are you sure you want to remove this item?",
-                            onConfirm: () => {
-                              const fieldsData = Object.assign({}, indexerFields);
-                              fieldsData[field]["paths"].splice(index, 1);
-                              setIndexerFields(fieldsData);
-                            }
-                          })}
-                        />
-                      </div>
-                    ))
-                  }
-                  <IconButton
-                    icon={AddIcon}
-                    title="Add Path"
-                    onClick={() => {
-                      const fieldsData = Object.assign({}, indexerFields);
-                      paths.push("");
-                      setIndexerFields(fieldsData);
-                    }}
-                    className="info-list-icon info-list-add-icon secondary"
-                  />
-                </div>
-              </div>
-
-              <div className="-elv-input -elv-select list-field-input">
-                <label htmlFor={field}>Type</label>
-                <select
-                  value={type}
-                  name={field}
-                  onChange={event => {
-                    UpdateFormValue({
-                      field,
-                      key: "type",
-                      value: event.target.value
-                    });
-                  }}
-                >
-                  <option value="text">Text</option>
-                  <option value="string">String</option>
-                </select>
-              </div>
-
-              <div className="-elv-input -elv-checkbox-input list-field-input">
-                <label htmlFor={field}>Histogram</label>
-                <div className="checkbox-container">
-                  <input
-                    type="checkbox"
-                    name={field}
-                    checked={(!!options && options.stats) ? options.stats.histogram : false}
-                    disabled={!type || type === "text"}
-                    value={(!!options && options.stats) ? options.stats.histogram : false}
-                    onChange={event => {
-                      UpdateFormValue({
-                        field,
-                        key: "options",
-                        value: event.target.checked ? {
-                          stats: {
-                            histogram: event.target.checked
-                          }
-                        } : {}
-                      });
-                    }}
-                  />
-                </div>
-              </div>
-
+      return (
+        <div className="list-fields" key={field}>
+          <div className={`list-field-entry${index % 2 === 0 ? " even" : " odd"}`}>
+            <div className="actions">
+              <IconButton
+                icon={DeleteIcon}
+                title="Remove item"
+                onClick={async () => await Confirm({
+                  message: "Are you sure you want to remove this item?",
+                  onConfirm: () => RemoveField(index)
+                })}
+                className="info-list-icon info-list-remove-icon"
+              />
             </div>
+
+            <div className="-elv-input list-field-input">
+              <label htmlFor={field}>Label</label>
+              <input
+                type="text"
+                value={label}
+                placeholder="config_field"
+                onChange={event => {
+                  UpdateFormValue({
+                    field,
+                    key: "label",
+                    value: event.target.value
+                  });
+                }}
+              />
+            </div>
+
+            <div className="-elv-input multi-input">
+              <label htmlFor={field}>Paths</label>
+              <div>
+                {
+                  paths.map((path, index) => (
+                    <div className="multi-input-item" key={`${field}-path-${index}`}>
+                      <input
+                        type="text"
+                        name={field}
+                        placeholder="site_map.searchables.*.title"
+                        value={path}
+                        onChange={event => {
+                          UpdateFormValue({
+                            field,
+                            arrayIndex: index,
+                            key: "paths",
+                            value: event.target.value
+                          });
+                        }}
+                      />
+                      <IconButton
+                        className="info-list-icon"
+                        title="Remove Item"
+                        icon={DeleteIcon}
+                        onClick={async () => await Confirm({
+                          message: "Are you sure you want to remove this item?",
+                          onConfirm: () => {
+                            const fieldsData = Object.assign({}, indexerFields);
+                            fieldsData[field]["paths"].splice(index, 1);
+                            setIndexerFields(fieldsData);
+                          }
+                        })}
+                      />
+                    </div>
+                  ))
+                }
+                <IconButton
+                  icon={AddIcon}
+                  title="Add Path"
+                  onClick={() => {
+                    const fieldsData = Object.assign({}, indexerFields);
+                    paths.push("");
+                    setIndexerFields(fieldsData);
+                  }}
+                  className="info-list-icon info-list-add-icon secondary"
+                />
+              </div>
+            </div>
+
+            <div className="-elv-input -elv-select list-field-input">
+              <label htmlFor={field}>Type</label>
+              <select
+                value={type}
+                name={field}
+                onChange={event => {
+                  UpdateFormValue({
+                    field,
+                    key: "type",
+                    value: event.target.value
+                  });
+                }}
+              >
+                <option value="text">Text</option>
+                <option value="string">String</option>
+              </select>
+            </div>
+
+            <div className="-elv-input -elv-checkbox-input list-field-input">
+              <label htmlFor={field}>Histogram</label>
+              <div className="checkbox-container">
+                <input
+                  type="checkbox"
+                  name={field}
+                  checked={(!!options && options.stats) ? options.stats.histogram : false}
+                  disabled={!type || type === "text"}
+                  value={(!!options && options.stats) ? options.stats.histogram : false}
+                  onChange={event => {
+                    UpdateFormValue({
+                      field,
+                      key: "options",
+                      value: event.target.checked ? {
+                        stats: {
+                          histogram: event.target.checked
+                        }
+                      } : {}
+                    });
+                  }}
+                />
+              </div>
+            </div>
+
           </div>
-        );
-      })
-    );
-  };
+        </div>
+      );
+    })
+  );
 
   const FieldsForm = () => {
     return (
@@ -459,7 +457,7 @@ const SearchConfiguration = observer((props) => {
               </ToolTip>
             </label>
             <div>
-              <ConfigFieldForm />
+              { configFieldForm }
               <IconButton
                 icon={AddIcon}
                 title="Add Configuration Field"
