@@ -333,6 +333,23 @@ ReplaceMetadata = flow(function * ({
   });
 });
 
+@action.bound
+MergeMetadata = flow(function * ({
+  libraryId,
+  objectId,
+  writeToken,
+  metadataSubtree="/",
+  metadata
+}) {
+  yield Fabric.MergeMetadata({
+    libraryId,
+    objectId,
+    writeToken,
+    metadataSubtree,
+    metadata
+  });
+})
+
   @action.bound
   EditAndFinalizeContentObject = flow(function * ({
     libraryId,

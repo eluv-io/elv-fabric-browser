@@ -72,13 +72,20 @@ const SearchConfiguration = observer((props) => {
             }),
             objectStore.ReplaceMetadata({
               ...replaceMetaPayload,
-              metadataSubtree: "indexer/config/indexer/arguments/document/prefix",
-              metadata: docPrefix
+              metadataSubtree: "indexer/config/indexer/type",
+              metadata: "metadata-text"
             }),
             objectStore.ReplaceMetadata({
               ...replaceMetaPayload,
-              metadataSubtree: "indexer/config/indexer/arguments/query/suffix",
-              metadata: querySuffix
+              metadataSubtree: "indexer/config/indexer/arguments/document/prefix",
+              metadata: docPrefix
+            }),
+            objectStore.MergeMetadata({
+              ...replaceMetaPayload,
+              metadataSubtree: "indexer/config/indexer/arguments",
+              metadata: {
+                query: querySuffix.length > 0 ? {suffix: querySuffix} : ""
+              }
             })
           ]);
         };
