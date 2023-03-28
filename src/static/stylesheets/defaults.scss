@@ -205,6 +205,8 @@ select {
   background-color: $elv-color-white;
 }
 
-input:disabled {
-  pointer-events: none;
+input {
+  &:disabled {
+    pointer-events: none;
+  }
 }
