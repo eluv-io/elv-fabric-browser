@@ -288,7 +288,7 @@ const SearchConfiguration = observer((props) => {
                       <input
                         type="text"
                         name={field}
-                        placeholder="public.movies.*.title"
+                        placeholder="site_map.searchables.*.title"
                         value={path}
                         onChange={event => {
                           UpdateFormValue({
@@ -328,6 +328,24 @@ const SearchConfiguration = observer((props) => {
               </div>
             </div>
 
+            <div className="-elv-input -elv-select list-field-input">
+              <label htmlFor={field}>Type</label>
+              <select
+                value={type}
+                name={field}
+                onChange={event => {
+                  UpdateFormValue({
+                    field,
+                    key: "type",
+                    value: event.target.value
+                  });
+                }}
+              >
+                <option value="text">Text</option>
+                <option value="string">String</option>
+              </select>
+            </div>
+
             <div className="-elv-input -elv-checkbox-input list-field-input">
               <label htmlFor={field}>Histogram</label>
               <div className="checkbox-container">
@@ -352,23 +370,6 @@ const SearchConfiguration = observer((props) => {
               </div>
             </div>
 
-            <div className="-elv-input -elv-select list-field-input">
-              <label htmlFor={field}>Type</label>
-              <select
-                value={type}
-                name={field}
-                onChange={event => {
-                  UpdateFormValue({
-                    field,
-                    key: "type",
-                    value: event.target.value
-                  });
-                }}
-              >
-                <option value="text">Text</option>
-                <option value="string">String</option>
-              </select>
-            </div>
           </div>
         </div>
       );

@@ -114,10 +114,13 @@
           margin-bottom: 0.5rem;
 
           input {
-            cursor: pointer;
             height: 1.2rem;
             margin: 0;
             width: 1.2rem;
+
+            &:not(:disabled) {
+              cursor: pointer;
+            }
           }
         }
       }
