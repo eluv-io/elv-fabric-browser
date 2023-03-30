@@ -233,6 +233,13 @@
   }
 }
 
+.hint-tooltip.search-hint {
+  max-width: 35rem;
+  opacity: 100%;
+  white-space: pre-wrap;
+  text-align: left;
+}
+
 .-elv-modal-content {
   .-elv-form {
     white-space: pre-wrap;

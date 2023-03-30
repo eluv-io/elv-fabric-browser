@@ -710,7 +710,6 @@ MergeMetadata = flow(function * ({
   UpdateIndex = flow(function * ({
     libraryId,
     objectId,
-    method,
     constant,
     latestHash
   }) {
@@ -732,7 +731,7 @@ MergeMetadata = flow(function * ({
         libraryId,
         objectId,
         writeToken,
-        method,
+        method: "search_update",
         constant,
         service: "search"
       });
@@ -741,6 +740,7 @@ MergeMetadata = flow(function * ({
     } catch(error) {
       // eslint-disable-next-line no-console
       console.error(error);
+      throw error;
     }
 
     yield new Promise(resolve => setTimeout(resolve, 60000));

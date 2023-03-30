@@ -80,12 +80,10 @@ const SearchConfiguration = observer((props) => {
               metadataSubtree: "indexer/config/indexer/arguments/document/prefix",
               metadata: docPrefix
             }),
-            objectStore.MergeMetadata({
+            objectStore.ReplaceMetadata({
               ...replaceMetaPayload,
-              metadataSubtree: "indexer/config/indexer/arguments",
-              metadata: {
-                query: querySuffix.length > 0 ? {suffix: querySuffix} : ""
-              }
+              metadataSubtree: "indexer/config/indexer/arguments/query",
+              metadata: querySuffix.length > 0 ? {suffix: querySuffix} : {}
             })
           ]);
         };
@@ -131,7 +129,6 @@ const SearchConfiguration = observer((props) => {
           await objectStore.UpdateIndex({
             libraryId,
             objectId,
-            method: "search_update",
             constant: false,
             latestHash: latestVersionHash
           });
@@ -208,7 +205,7 @@ const SearchConfiguration = observer((props) => {
         <label className="hint-label">
           { labelText }
           <ToolTip
-            className="hint-tooltip"
+            className="hint-tooltip search-hint"
             content={labelHint}
           >
             <ImageIcon className="-elv-icon hint-icon" icon={QuestionMarkIcon} />
@@ -268,7 +265,15 @@ const SearchConfiguration = observer((props) => {
             </div>
 
             <div className="-elv-input list-field-input">
-              <label htmlFor={field}>Label</label>
+              <label htmlFor={field} className="hint-label">
+                Label
+                <ToolTip
+                  className="hint-tooltip search-hint"
+                  content={"The label of this searchable field (e.g., \"title\", \"synopsis\", \"release_date\"). This table can be used in search queries prefixed with \"f_\" (e.g., \"f_title\", \"f_synopsis\", \"f_release_date\")."}
+                >
+                  <ImageIcon className="-elv-icon hint-icon" icon={QuestionMarkIcon} />
+                </ToolTip>
+              </label>
               <input
                 type="text"
                 value={label}
@@ -284,7 +289,25 @@ const SearchConfiguration = observer((props) => {
             </div>
 
             <div className="-elv-input multi-input">
-              <label htmlFor={field}>Paths</label>
+              <label htmlFor={field} className="hint-label">
+                Paths
+                <ToolTip
+                  className="hint-tooltip search-hint"
+                  content={"One or multiple metadata paths pointing to the metadata fields that contain the values for this field.\n" +
+                  "Common examples:\n\n" +
+                  "    public.asset_metadata.titles.*.*.title\n" +
+                  "    public.asset_metadata.series.*.*.episodes.*.*.title\n\n" +
+
+                  "    public.asset_metadata.titles.*.*.info.synopsis\n" +
+                  "    public.asset_metadata.series.*.*.episodes.*.*.info.synopsis\n\n" +
+
+                  "When using the site \"searchables\" feature:\n" +
+                  "    site_map.searchables.*.asset_metadata.title\n" +
+                  "    site_map.searchables.*.assets.*.title"}
+                >
+                  <ImageIcon className="-elv-icon hint-icon" icon={QuestionMarkIcon} />
+                </ToolTip>
+              </label>
               <div>
                 {
                   paths.map((path, index) => (
@@ -333,7 +356,16 @@ const SearchConfiguration = observer((props) => {
             </div>
 
             <div className="-elv-input -elv-select list-field-input">
-              <label htmlFor={field}>Type</label>
+              <label htmlFor={field} className="hint-label">
+                Type
+                <ToolTip
+                  className="hint-tooltip search-hint"
+                  content={"string - the field is matched in its entirety (suitable for tags and titles)\n" +
+                    "text - the field is matched by individual words (suitable for synopsis and descriptions)"}
+                >
+                  <ImageIcon className="-elv-icon hint-icon" icon={QuestionMarkIcon} />
+                </ToolTip>
+              </label>
               <select
                 value={type}
                 name={field}
@@ -351,7 +383,15 @@ const SearchConfiguration = observer((props) => {
             </div>
 
             <div className="-elv-input -elv-checkbox-input list-field-input">
-              <label htmlFor={field}>Histogram</label>
+              <label htmlFor={field} className="hint-label">
+                Histogram
+                <ToolTip
+                  className="hint-tooltip search-hint"
+                  content={"Return a histogram of all matched values. Only available for type \"string\"."}
+                >
+                  <ImageIcon className="-elv-icon hint-icon" icon={QuestionMarkIcon} />
+                </ToolTip>
+              </label>
               <div className="checkbox-container">
                 <input
                   type="checkbox"
@@ -390,8 +430,8 @@ const SearchConfiguration = observer((props) => {
               <label className="hint-label">
                 Site Object
                 <ToolTip
-                  className="hint-tooltip"
-                  content="This object will be stored in the root metadata"
+                  className="hint-tooltip search-hint"
+                  content={"Select the \"site\" object containing the list(s) of titles or other media and searchable objects."}
                 >
                   <ImageIcon className="-elv-icon hint-icon" icon={QuestionMarkIcon} />
                 </ToolTip>
@@ -430,7 +470,9 @@ const SearchConfiguration = observer((props) => {
           {
             InputFormField({
               labelText: "Document Prefix",
-              labelHint: "This will be stored in /indexer/config/indexer/arguments/document/prefix in the metadata",
+              labelHint: "The object metadata path at which the searchable document is defined. Typically \"/\" to use the entire object.\n" +
+                "Other common examples:\n" +
+                "     /assets/* (for individual assets within a title object)",
               onChange: event => setDocPrefix(event.target.value),
               value: docPrefix
             })
@@ -438,7 +480,7 @@ const SearchConfiguration = observer((props) => {
           {
             InputFormField({
               labelText: "Query Suffix",
-              labelHint: "A term that is appended to all queries. This will be stored in /indexer/config/indexer/arguments/query/suffix in the metadata",
+              labelHint: "A term that is automatically appended to all queries.",
               onChange: event => setQuerySuffix(event.target.value),
               value: querySuffix
             })
@@ -450,8 +492,8 @@ const SearchConfiguration = observer((props) => {
             <label className="hint-label">
               Configuration Fields
               <ToolTip
-                className="hint-tooltip"
-                content="These fields will be stored in /indexer/config/indexer/arguments/fields in the metadata"
+                className="hint-tooltip search-hint"
+                content={"The list of metadata fields to be indexed and available as search terms. Each field has a label (e.g., \"title\", \"synopsis\", \"release_date\") and one or multiple metadata paths pointing to the metadata fields that contain the values for this field."}
               >
                 <ImageIcon className="-elv-icon hint-icon" icon={QuestionMarkIcon} />
               </ToolTip>
