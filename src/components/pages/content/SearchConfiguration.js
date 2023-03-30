@@ -118,8 +118,7 @@ const SearchConfiguration = observer((props) => {
     });
 
     const latestVersionHash = await objectStore.LatestVersionHash({
-      objectId: rootObjectId,
-      versionHash: lastRunHash
+      objectId: rootObjectId
     });
 
     if(!lastRunHash || lastRunHash !== latestVersionHash) {
@@ -277,7 +276,7 @@ const SearchConfiguration = observer((props) => {
               <input
                 type="text"
                 value={label}
-                placeholder="config_field"
+                placeholder="title"
                 onChange={event => {
                   UpdateFormValue({
                     field,
@@ -315,7 +314,7 @@ const SearchConfiguration = observer((props) => {
                       <input
                         type="text"
                         name={field}
-                        placeholder="site_map.searchables.*.title"
+                        placeholder="public.asset_metadata.titles.*.title"
                         value={path}
                         onChange={event => {
                           UpdateFormValue({
@@ -605,8 +604,9 @@ const SearchConfiguration = observer((props) => {
         <div className="app-header">
           <Action
             type="button"
-            className="secondary"
+            className="secondary index-button"
             onClick={UpdateIndex}
+            disabled={!rootObject}
           >
             Update Index
           </Action>

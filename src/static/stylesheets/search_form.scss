@@ -231,6 +231,13 @@
       text-align: center;
     }
   }
+
+  .index-button {
+    &:disabled {
+      opacity: 40%;
+      pointer-events: none;
+    }
+  }
 }
 
 .hint-tooltip {
