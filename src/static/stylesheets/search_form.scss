@@ -233,11 +233,13 @@
   }
 }
 
-.hint-tooltip.search-hint {
-  max-width: 35rem;
-  opacity: 100%;
-  white-space: pre-wrap;
-  text-align: left;
+.hint-tooltip {
+  &.search-hint {
+    max-width: 35rem;
+    opacity: 100%;
+    text-align: left;
+    white-space: pre-wrap;
+  }
 }
 
 .-elv-modal-content {
