@@ -40,11 +40,13 @@ const SearchConfiguration = observer((props) => {
         Object.keys(indexerFields).forEach(fieldIndex => {
           const {label, paths, options, type} = indexerFields[fieldIndex];
 
-          fieldsMetadata[label] = {
-            paths,
-            options,
-            type
-          };
+          if(label) {
+            fieldsMetadata[label] = {
+              paths,
+              options,
+              type
+            };
+          }
         });
 
         const callback = async ({writeToken}) => {

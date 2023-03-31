@@ -242,6 +242,9 @@
 
 .hint-tooltip {
   &.search-hint {
+    background-color: $elv-color-darkergray;
+    color: $elv-color-text-white;
+    font-size: $elv-font-m;
     max-width: 35rem;
     opacity: 100%;
     text-align: left;
