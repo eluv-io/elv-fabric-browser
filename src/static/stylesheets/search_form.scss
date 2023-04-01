@@ -238,6 +238,36 @@
       pointer-events: none;
     }
   }
+
+  .last-run-section {
+    width: 80%;
+  }
+
+  .search-flex {
+    display: flex;
+    margin-bottom: 1.5rem;
+  }
+
+  .search-box {
+    margin-bottom: 2rem;
+  }
+
+  .search-box-label {
+    align-items: center;
+    color: $elv-color-darkgray;
+    display: flex;
+    gap: 0.5rem; // sass-lint:disable-line no-misspelled-properties
+    margin-bottom: 0.5rem;
+
+    .hint-icon {
+      max-height: 1rem;
+      max-width: 1rem;
+    }
+  }
+
+  .search-input {
+    flex: 1;
+  }
 }
 
 .hint-tooltip {
@@ -245,7 +275,7 @@
     background-color: $elv-color-darkergray;
     color: $elv-color-text-white;
     font-size: $elv-font-m;
-    max-width: 35rem;
+    max-width: 45rem;
     opacity: 100%;
     text-align: left;
     white-space: pre-wrap;

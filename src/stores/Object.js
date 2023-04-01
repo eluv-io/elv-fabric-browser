@@ -5,6 +5,7 @@ import UrlJoin from "url-join";
 import {ParseInputJson} from "elv-components-js";
 import Path from "path";
 import {AddressToHash, EqualAddress} from "../utils/Helpers";
+const Fetch = typeof fetch !== "undefined" ? fetch : require("node-fetch").default;
 
 const concurrentUploads = 3;
 
@@ -704,6 +705,29 @@ MergeMetadata = flow(function * ({
       message: "Successfully updated apps",
       redirect: true
     });
+  });
+
+  @action.bound
+  PerformSearch = flow(function * ({
+    libraryId,
+    objectId,
+    terms=""
+  }) {
+    const url = yield Fabric.client.Rep({
+      libraryId,
+      objectId,
+      rep: "search",
+      service: "search",
+      makeAccessRequest: true,
+      queryParams: {
+        terms,
+        select: "...,text,/public/asset_metadata/title",
+        start: 0,
+        limit: 15
+      }
+    });
+
+    return yield client.utils.ResponseToJson(yield Fetch(url));
   });
 
   @action.bound

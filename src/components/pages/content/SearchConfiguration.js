@@ -18,6 +18,83 @@ import JSONField from "../../components/JSONField";
 import ToggleSection from "../../components/ToggleSection";
 import {LabelledField} from "../../components/LabelledField";
 
+const SearchBox = observer(() => {
+  const [currentSearchQuery, setCurrentSearchQuery] = useState("");
+  const [queryResults, setQueryResults] = useState();
+
+  if(
+    !objectStore.object.meta ||
+    !objectStore.object.meta.indexer ||
+    !objectStore.object.meta.indexer.stats ||
+    !objectStore.object.meta.indexer.stats.fields
+  ) { return null; }
+
+  const QueryResults = () => {
+    if(!queryResults) { return null; }
+
+    return (
+      <ToggleSection label="Search Results">
+        <div className="indented">
+          <JSONField
+            json={queryResults}
+          />
+        </div>
+      </ToggleSection>
+    );
+  };
+
+  return (
+    <div className="search-box">
+      <label className="search-box-label">
+        Query the index
+        <ToolTip
+          className="hint-tooltip search-hint"
+          content={"Search the following ways:\n" +
+          "1. Default query: Hello World\n" +
+            "    a.  matches all docs containing either “hello” or “world”, sorted by relevance\n" +
+            "    b.  equivalent to Hello OR World\n" +
+            "    c.  all queries are case insensitive and remove punctuation\n" +
+            "2. Phrase query: \"Hello World\"\n" +
+            "    a.  matches \"hello\" followed immediately by \"world\"\n" +
+            "3. Field phrase query: f_speech_to_text:\"hello world\"\n" +
+            "    a.  Phrase query, limited to a certain field\n" +
+            "4. Field OR query: f_speech_to_text:hello OR f_speech_to_text:world\n" +
+            "    a.  Similar to \"default query\" but limited to a particular field. Useful when you want to limit to a field, but also want some \"fuzziness\"\n" +
+            "5. Boolean query: f_speech_to_text:\"show me the money\" AND display_title:\"Jerry Maguire\"\n" +
+            "    a.  Can combine queries with AND/OR.\n" +
+            "6. Range query: f_release_date:[1965-09-17 TO 1975-09-17}\n" +
+          "    a.  Returns docs with field entries between a lexical range,  most useful for single term fields such as dates.\n" +
+        "    b.  use [] for inclusion and {} for exclusion."}
+        >
+          <ImageIcon className="-elv-icon hint-icon" icon={QuestionMarkIcon} />
+        </ToolTip>
+      </label>
+      <div className="search-flex">
+        <input
+          type="text"
+          className="search-input"
+          value={currentSearchQuery}
+          onChange={event => setCurrentSearchQuery(event.target.value)}
+        />
+        <Action
+          onClick={async () => {
+            const results = await objectStore.PerformSearch({
+              libraryId: objectStore.libraryId,
+              objectId: objectStore.objectId,
+              terms: currentSearchQuery
+            });
+
+            setQueryResults(results);
+          }}
+        >
+          Search
+        </Action>
+      </div>
+      <QueryResults />
+    </div>
+  );
+});
+
 const SearchConfiguration = observer((props) => {
   const [objectId, setObjectId] = useState("");
   const [indexerFields, setIndexerFields] = useState({});
@@ -584,14 +661,15 @@ const SearchConfiguration = observer((props) => {
     };
 
     return (
-      <>
+      <div className="last-run-section">
         <h3>Last Run Info</h3>
         <div className="label-box">
+          <SearchBox />
           { LastRun() }
           { Stats() }
           { Errors() }
         </div>
-      </>
+      </div>
     );
   };
 
