@@ -628,11 +628,26 @@ const Fabric = {
     if(isNormalObject) {
       permission = await client.Permission({objectId, clearCache: true});
     }
+
+    const owner = await Fabric.GetContentObjectOwner({objectId: objectId});
     const isOwner = EqualAddress(owner, await Fabric.CurrentAccountAddress());
+
+    let canEdit = isOwner;
+    if(!canEdit && isNormalObject) {
+      canEdit = await client.CallContractMethod({
+        contractAddress: client.utils.HashToAddress(objectId),
+        methodName: "canEdit"
+      });
+    } else if(!canEdit && isContentType) {
+      canEdit = await client.CallContractMethod({
+        contractAddress: client.utils.HashToAddress(objectId),
+        methodName: "canCommit"
+      });
+    }
 
     let typeInfo;
     if(object.type) {
-      typeInfo = await Fabric.GetContentType({versionHash: object.type, publicOnly: (!isOwner && permission === "public")});
+      typeInfo = await Fabric.GetContentType({versionHash: object.type, publicOnly: (!canEdit && permission === "public")});
       typeInfo.latestTypeHash = typeInfo.latestType ? typeInfo.latestType.hash : "";
     }
 
@@ -664,7 +679,6 @@ const Fabric = {
         filePath: "/"
       }),
       client.Visibility({id: objectId}), // visibility
-      Fabric.GetContentObjectOwner({objectId: objectId}), // owner
       Fabric.GetCustomContentContractAddress({ // customContractAddress
         libraryId,
         objectId,
@@ -693,7 +707,6 @@ const Fabric = {
       appUrls,
       baseFileUrl,
       visibility,
-      owner,
       customContractAddress,
       versionCount,
       accessInfo,
@@ -724,19 +737,6 @@ const Fabric = {
     } catch(error) {}
 
      */
-
-    let canEdit = isOwner;
-    if(!canEdit && isNormalObject) {
-      canEdit = await client.CallContractMethod({
-        contractAddress: client.utils.HashToAddress(objectId),
-        methodName: "canEdit"
-      });
-    } else if(!canEdit && isContentType) {
-      canEdit = await client.CallContractMethod({
-        contractAddress: client.utils.HashToAddress(objectId),
-        methodName: "canCommit"
-      });
-    }
 
     return {
       ...object,
