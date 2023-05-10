@@ -1098,6 +1098,9 @@ class ContentObject extends React.Component {
             } catch(error) {
               // eslint-disable-next-line no-console
               console.error(error);
+              if(error.status && error.status === 403) {
+                throw error;
+              }
             }
 
             this.CheckUrlVersionHash();
