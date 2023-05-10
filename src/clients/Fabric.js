@@ -624,9 +624,15 @@ const Fabric = {
     // Derived from cachable
     const object = objectCache[latestVersionHash];
 
+    let permission;
+    if(isNormalObject) {
+      permission = await client.Permission({objectId, clearCache: true});
+    }
+    const isOwner = EqualAddress(owner, await Fabric.CurrentAccountAddress());
+
     let typeInfo;
     if(object.type) {
-      typeInfo = await Fabric.GetContentType({versionHash: object.type});
+      typeInfo = await Fabric.GetContentType({versionHash: object.type, publicOnly: (!isOwner && permission === "public")});
       typeInfo.latestTypeHash = typeInfo.latestType ? typeInfo.latestType.hash : "";
     }
 
@@ -674,7 +680,6 @@ const Fabric = {
       // Only normal objects have status and access charge
       tasks = tasks.concat([
         Fabric.GetAccessInfo({objectId}), // accessInfo
-        client.Permission({objectId, clearCache: true}), // permission
         client.CallContractMethod({ // kmsAddress
           contractAddress: client.utils.HashToAddress(objectId),
           methodName: "addressKMS"
@@ -692,7 +697,6 @@ const Fabric = {
       customContractAddress,
       versionCount,
       accessInfo,
-      permission,
       kmsAddress,
     ] = await Promise.all(tasks);
 
@@ -721,7 +725,6 @@ const Fabric = {
 
      */
 
-    const isOwner = EqualAddress(owner, await Fabric.CurrentAccountAddress());
     let canEdit = isOwner;
     if(!canEdit && isNormalObject) {
       canEdit = await client.CallContractMethod({
@@ -1170,14 +1173,14 @@ const Fabric = {
     };
   },
 
-  GetContentType: async ({versionHash}) => {
+  GetContentType: async ({versionHash, publicOnly=false}) => {
     if(!versionHash) { return; }
 
     const latestVersionHash = await client.LatestVersionHash({versionHash});
 
     const GetType = async ({versionHash}) => {
       if(!objectCache[versionHash]) {
-        objectCache[versionHash] = await client.ContentType({versionHash});
+        objectCache[versionHash] = await client.ContentType({versionHash, publicOnly});
       }
 
       return objectCache[versionHash];
