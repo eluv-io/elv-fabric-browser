@@ -963,7 +963,7 @@ class ContentObject extends React.Component {
     } else if(this.props.objectStore.object.isContentType) {
       header = "Content Types > " + this.props.objectStore.object.name;
     } else {
-      header = this.props.libraryStore.library.name + " > " + this.props.objectStore.object.name;
+      header = (this.props.libraryStore.library ? this.props.libraryStore.library.name : this.props.objectStore.libraryId) + " > " + this.props.objectStore.object.name;
     }
 
     let pageContent;
@@ -1081,17 +1081,25 @@ class ContentObject extends React.Component {
           async () => {
             this.props.objectStore.DiscardWriteToken({objectId: this.props.objectStore.objectId});
 
-            await Promise.all(
-              [
-                this.props.libraryStore.ContentLibrary({
-                  libraryId: this.props.objectStore.libraryId
-                }),
-                this.props.objectStore.ContentObject({
-                  libraryId: this.props.objectStore.libraryId,
-                  objectId: this.props.objectStore.objectId
-                })
-              ]
-            );
+            try {
+              await this.props.libraryStore.ContentLibrary({
+                libraryId: this.props.objectStore.libraryId
+              });
+            } catch(error) {
+              // eslint-disable-next-line no-console
+              console.error(error);
+            }
+
+            try {
+              await this.props.objectStore.ContentObject({
+                libraryId: this.props.objectStore.libraryId,
+                objectId: this.props.objectStore.objectId
+              });
+            } catch(error) {
+              // eslint-disable-next-line no-console
+              console.error(error);
+              throw error;
+            }
 
             this.CheckUrlVersionHash();
 
