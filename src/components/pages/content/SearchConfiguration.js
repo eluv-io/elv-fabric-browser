@@ -11,7 +11,17 @@ import DeleteIcon from "../../../static/icons/trash.svg";
 import QuestionMarkIcon from "../../../static/icons/help-circle.svg";
 import LinkIcon from "../../../static/icons/external-link.svg";
 
-import {Action, AsyncComponent, Confirm, IconButton, IconLink, ImageIcon, Modal, ToolTip} from "elv-components-js";
+import {
+  Action,
+  AsyncComponent,
+  BallSpin,
+  Confirm,
+  IconButton,
+  IconLink,
+  ImageIcon,
+  Modal,
+  ToolTip
+} from "elv-components-js";
 import {objectStore} from "../../../stores";
 import {ContentBrowserModal} from "../../components/ContentBrowser";
 import JSONField from "../../components/JSONField";
@@ -21,6 +31,7 @@ import {LabelledField} from "../../components/LabelledField";
 const SearchBox = observer(() => {
   const [currentSearchQuery, setCurrentSearchQuery] = useState("");
   const [queryResults, setQueryResults] = useState();
+  const [searching, setSearching] = useState(false);
 
   if(
     !objectStore.object.meta ||
@@ -78,6 +89,7 @@ const SearchBox = observer(() => {
         />
         <Action
           onClick={async () => {
+            setSearching(true);
             const results = await objectStore.PerformSearch({
               libraryId: objectStore.libraryId,
               objectId: objectStore.objectId,
@@ -85,12 +97,19 @@ const SearchBox = observer(() => {
             });
 
             setQueryResults(results);
+            setSearching(false);
           }}
         >
           Search
         </Action>
       </div>
-      <QueryResults />
+      {
+        searching ?
+          <div className="-elv-async-component -elv-async-component-loading">
+            <BallSpin />
+          </div> :
+          <QueryResults />
+      }
     </div>
   );
 });
