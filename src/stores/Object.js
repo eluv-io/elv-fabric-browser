@@ -713,7 +713,7 @@ MergeMetadata = flow(function * ({
     objectId,
     terms=""
   }) {
-    const url = yield Fabric.client.Rep({
+    let url = yield Fabric.client.Rep({
       libraryId,
       objectId,
       rep: "search",
@@ -727,15 +727,24 @@ MergeMetadata = flow(function * ({
       }
     });
 
+    const version = yield Fabric.GetContentObjectMetadata({
+      libraryId,
+      objectId,
+      metadataSubtree: "indexer/version"
+    });
+
+    if(version === "2.0") {
+      const v2Node = yield Fabric.SearchV2();
+      const urlEnd = url.split("contentfabric.io");
+      const v2Host = v2Node[0].split("contentfabric");
+      url = `${v2Host[0]}contentfabric.io${urlEnd[1]}`;
+    }
+
     return yield client.utils.ResponseToJson(yield Fetch(url));
   });
 
   @action.bound
-  UpdateIndex = flow(function * ({
-    libraryId,
-    objectId,
-    latestHash
-  }) {
+  SetSearchNodes = flow(function * ({libraryId, objectId}) {
     const version = yield Fabric.GetContentObjectMetadata({
       libraryId,
       objectId,
@@ -757,6 +766,15 @@ MergeMetadata = flow(function * ({
         service: "search"
       });
     }
+  })
+
+  @action.bound
+  UpdateIndex = flow(function * ({
+    libraryId,
+    objectId,
+    latestHash
+  }) {
+    yield this.SetSearchNodes({libraryId, objectId});
 
     let {searchURIs} = yield Fabric.client.Nodes({service: "search"});
 
