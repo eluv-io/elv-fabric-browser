@@ -226,7 +226,6 @@ const SearchConfiguration = observer((props) => {
           await objectStore.UpdateIndex({
             libraryId,
             objectId,
-            constant: false,
             latestHash: latestVersionHash
           });
           setObjectId(objectId);

@@ -734,10 +734,31 @@ MergeMetadata = flow(function * ({
   UpdateIndex = flow(function * ({
     libraryId,
     objectId,
-    constant,
     latestHash
   }) {
-    const {searchURIs} = yield Fabric.client.Nodes();
+    const version = yield Fabric.GetContentObjectMetadata({
+      libraryId,
+      objectId,
+      metadataSubtree: "indexer/version"
+    });
+
+    if(version === "2.0") {
+      const v2Node = yield Fabric.SearchV2();
+
+      yield Fabric.client.SetNodes({
+        fabricURIs: v2Node,
+        service: "search"
+      });
+    } else {
+      const v1Nodes = yield Fabric.SearchV1();
+
+      yield Fabric.client.SetNodes({
+        fabricURIs: v1Nodes,
+        service: "search"
+      });
+    }
+
+    let {searchURIs} = yield Fabric.client.Nodes({service: "search"});
 
     if(!searchURIs || !Array.isArray(searchURIs) || searchURIs.length === 0) {
       throw Error("No search nodes found.");
@@ -756,7 +777,7 @@ MergeMetadata = flow(function * ({
         objectId,
         writeToken,
         method: "search_update",
-        constant,
+        constant: false,
         service: "search"
       });
 
