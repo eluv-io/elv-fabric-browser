@@ -806,12 +806,12 @@ MergeMetadata = flow(function * ({
       throw error;
     }
 
-    yield new Promise(resolve => setTimeout(resolve, 60000));
-
     let done;
     let lastRunTime;
     while(!done) {
       let results;
+
+      yield new Promise(resolve => setTimeout(resolve, 30000));
 
       try {
         results = yield Fabric.CallBitcodeMethod({
@@ -840,8 +840,6 @@ MergeMetadata = flow(function * ({
           done = true;
         }
       }
-
-      yield new Promise(resolve => setTimeout(resolve, 30000));
     }
 
     yield Fabric.ReplaceMetadata({
