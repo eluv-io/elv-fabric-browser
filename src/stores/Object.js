@@ -5,6 +5,7 @@ import UrlJoin from "url-join";
 import {ParseInputJson} from "elv-components-js";
 import Path from "path";
 import {AddressToHash, EqualAddress} from "../utils/Helpers";
+const Fetch = typeof fetch !== "undefined" ? fetch : require("node-fetch").default;
 
 const concurrentUploads = 3;
 
@@ -332,6 +333,23 @@ ReplaceMetadata = flow(function * ({
     metadata
   });
 });
+
+@action.bound
+MergeMetadata = flow(function * ({
+  libraryId,
+  objectId,
+  writeToken,
+  metadataSubtree="/",
+  metadata
+}) {
+  yield Fabric.MergeMetadata({
+    libraryId,
+    objectId,
+    writeToken,
+    metadataSubtree,
+    metadata
+  });
+})
 
   @action.bound
   EditAndFinalizeContentObject = flow(function * ({
@@ -690,14 +708,75 @@ ReplaceMetadata = flow(function * ({
   });
 
   @action.bound
+  PerformSearch = flow(function * ({
+    libraryId,
+    objectId,
+    terms=""
+  }) {
+    let url = yield Fabric.client.Rep({
+      libraryId,
+      objectId,
+      rep: "search",
+      service: "search",
+      makeAccessRequest: true,
+      queryParams: {
+        terms,
+        select: "...,text,/public/asset_metadata/title",
+        start: 0,
+        limit: 15
+      }
+    });
+
+    const version = yield Fabric.GetContentObjectMetadata({
+      libraryId,
+      objectId,
+      metadataSubtree: "indexer/version"
+    });
+
+    if(version === "2.0") {
+      const v2Node = yield Fabric.SearchV2();
+      const urlEnd = url.split("contentfabric.io");
+      const v2Host = v2Node[0].split("contentfabric");
+      url = `${v2Host[0]}contentfabric.io${urlEnd[1]}`;
+    }
+
+    return yield client.utils.ResponseToJson(yield Fetch(url));
+  });
+
+  @action.bound
+  SetSearchNodes = flow(function * ({libraryId, objectId}) {
+    const version = yield Fabric.GetContentObjectMetadata({
+      libraryId,
+      objectId,
+      metadataSubtree: "indexer/version"
+    });
+
+    if(version === "2.0") {
+      const v2Node = yield Fabric.SearchV2();
+
+      yield Fabric.client.SetNodes({
+        fabricURIs: v2Node,
+        service: "search"
+      });
+    } else {
+      const v1Nodes = yield Fabric.SearchV1();
+
+      yield Fabric.client.SetNodes({
+        fabricURIs: v1Nodes,
+        service: "search"
+      });
+    }
+  })
+
+  @action.bound
   UpdateIndex = flow(function * ({
     libraryId,
     objectId,
-    method,
-    constant,
     latestHash
   }) {
-    const {searchURIs} = yield Fabric.client.Nodes();
+    yield this.SetSearchNodes({libraryId, objectId});
+
+    let {searchURIs} = yield Fabric.client.Nodes({service: "search"});
 
     if(!searchURIs || !Array.isArray(searchURIs) || searchURIs.length === 0) {
       throw Error("No search nodes found.");
@@ -709,34 +788,58 @@ ReplaceMetadata = flow(function * ({
       service: "search"
     });
 
-    const {lro_handle} = yield Fabric.CallBitcodeMethod({
-      libraryId,
-      objectId,
-      writeToken,
-      method,
-      constant,
-      service: "search"
-    });
-
-    let done;
-    let lastRunTime;
-    while(!done) {
-      let results = yield Fabric.CallBitcodeMethod({
+    let lroHandle;
+    try {
+      const response = yield Fabric.CallBitcodeMethod({
         libraryId,
         objectId,
         writeToken,
-        method: "crawl_status",
-        body: {"lro_handle": lro_handle},
+        method: "search_update",
         constant: false,
         service: "search"
       });
 
-      if(results) {
-        lastRunTime = results.custom.duration;
-        if(results.custom.run_state === "finished") done = true;
+      lroHandle = response.lro_handle;
+    } catch(error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+      throw error;
+    }
+
+    let done;
+    let lastRunTime;
+    while(!done) {
+      let results;
+
+      yield new Promise(resolve => setTimeout(resolve, 30000));
+
+      try {
+        results = yield Fabric.CallBitcodeMethod({
+          libraryId,
+          objectId,
+          writeToken,
+          method: "crawl_status",
+          body: {"lro_handle": lroHandle},
+          constant: false,
+          service: "search"
+        });
+      } catch(error) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to retrieve crawl status", error);
+        done = true;
       }
 
-      yield new Promise(resolve => setTimeout(resolve, 1000));
+      if(results) {
+        lastRunTime = results.custom.duration;
+
+        if(
+          results.custom.run_state === "finished" ||
+          results.custom.run_state === "failed" ||
+          results.state === "terminated"
+        ) {
+          done = true;
+        }
+      }
     }
 
     yield Fabric.ReplaceMetadata({
@@ -757,6 +860,13 @@ ReplaceMetadata = flow(function * ({
       service: "search"
     });
 
+    yield Fabric.FinalizeContentObject({
+      objectId,
+      libraryId,
+      writeToken,
+      commitMessage: "Update index",
+      service: "search"
+    });
 
     this.objects[objectId].meta = yield Fabric.GetContentObjectMetadata({
       libraryId,

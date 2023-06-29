@@ -1,6 +1,7 @@
 import { FrameClient } from "@eluvio/elv-client-js/src/FrameClient";
 import UrlJoin from "url-join";
 import {EqualAddress, FormatAddress, LROStatus} from "../utils/Helpers";
+const Fetch = typeof fetch !== "undefined" ? fetch : require("node-fetch").default;
 
 let client = new FrameClient({
   target: window.parent,
@@ -1004,7 +1005,8 @@ const Fabric = {
     objectId,
     writeToken,
     commitMessage,
-    awaitCommitConfirmation=true
+    awaitCommitConfirmation=true,
+    service="default"
   }) => {
     delete Fabric.cachedImages[objectId];
 
@@ -1013,7 +1015,8 @@ const Fabric = {
       objectId,
       writeToken,
       commitMessage,
-      awaitCommitConfirmation
+      awaitCommitConfirmation,
+      service
     });
   },
 
@@ -1314,6 +1317,38 @@ const Fabric = {
     if(accessChargeWei.isEqualTo(currentAccessCharge)) { return; }
 
     await client.SetAccessCharge({objectId, accessCharge});
+  },
+
+  SearchV1: async() => {
+    const configUrl = await client.ConfigUrl();
+    const response = await client.utils.ResponseToJson(await Fetch(configUrl));
+
+    if(
+      response &&
+      response.network &&
+      response.network.services &&
+      response.network.services.search
+    ) {
+      return response.network.services.search;
+    } else {
+      return [];
+    }
+  },
+
+  SearchV2: async () => {
+    const configUrl = await client.ConfigUrl();
+    const response = await client.utils.ResponseToJson(await Fetch(configUrl));
+
+    if(
+      response &&
+      response.network &&
+      response.network.services &&
+      response.network.services.search_v2
+    ) {
+      return response.network.services.search_v2;
+    } else {
+      return [];
+    }
   },
 
   /* Files */

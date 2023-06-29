@@ -9,7 +9,7 @@ import {toJS} from "mobx";
 import Fabric from "../../../clients/Fabric";
 import AppFrame from "../../components/AppFrame";
 import ActionsToolbar from "../../components/ActionsToolbar";
-import IndexConfiguration from "./IndexConfiguration";
+import SearchConfiguration from "./SearchConfiguration";
 
 @inject("libraryStore")
 @inject("objectStore")
@@ -223,7 +223,7 @@ class ContentObjectForm extends React.Component {
     if(this.state.manageAppUrl && this.state.manageView === "app") {
       content = this.AppFrame(legend);
     } else if(this.state.manageView === "index") {
-      content = <IndexConfiguration />;
+      content = <SearchConfiguration />;
     } else {
       content = this.FormContent(legend, redirectPath, cancelPath);
     }

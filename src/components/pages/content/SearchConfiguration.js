@@ -11,14 +11,110 @@ import DeleteIcon from "../../../static/icons/trash.svg";
 import QuestionMarkIcon from "../../../static/icons/help-circle.svg";
 import LinkIcon from "../../../static/icons/external-link.svg";
 
-import {Action, AsyncComponent, Confirm, IconButton, IconLink, ImageIcon, Modal, ToolTip} from "elv-components-js";
+import {
+  Action,
+  AsyncComponent,
+  BallSpin,
+  Confirm,
+  IconButton,
+  IconLink,
+  ImageIcon,
+  Modal,
+  ToolTip
+} from "elv-components-js";
 import {objectStore} from "../../../stores";
 import {ContentBrowserModal} from "../../components/ContentBrowser";
 import JSONField from "../../components/JSONField";
 import ToggleSection from "../../components/ToggleSection";
 import {LabelledField} from "../../components/LabelledField";
 
-const IndexConfiguration = observer((props) => {
+const SearchBox = observer(() => {
+  const [currentSearchQuery, setCurrentSearchQuery] = useState("");
+  const [queryResults, setQueryResults] = useState();
+  const [searching, setSearching] = useState(false);
+
+  if(
+    !objectStore.object.meta ||
+    !objectStore.object.meta.indexer ||
+    !objectStore.object.meta.indexer.stats ||
+    !objectStore.object.meta.indexer.stats.fields
+  ) { return null; }
+
+  const QueryResults = () => {
+    if(!queryResults) { return null; }
+
+    return (
+      <ToggleSection label="Search Results">
+        <div className="indented">
+          <JSONField
+            json={queryResults}
+          />
+        </div>
+      </ToggleSection>
+    );
+  };
+
+  return (
+    <div className="search-box">
+      <label className="search-box-label">
+        Query the index
+        <ToolTip
+          className="hint-tooltip search-hint"
+          content={"Search the following ways:\n" +
+          "1. Default query: Hello World\n" +
+            "    a.  matches all docs containing either “hello” or “world”, sorted by relevance\n" +
+            "    b.  equivalent to Hello OR World\n" +
+            "    c.  all queries are case insensitive and remove punctuation\n" +
+            "2. Phrase query: \"Hello World\"\n" +
+            "    a.  matches \"hello\" followed immediately by \"world\"\n" +
+            "3. Field phrase query: f_speech_to_text:\"hello world\"\n" +
+            "    a.  Phrase query, limited to a certain field\n" +
+            "4. Field OR query: f_speech_to_text:hello OR f_speech_to_text:world\n" +
+            "    a.  Similar to \"default query\" but limited to a particular field. Useful when you want to limit to a field, but also want some \"fuzziness\"\n" +
+            "5. Boolean query: f_speech_to_text:\"show me the money\" AND display_title:\"Jerry Maguire\"\n" +
+            "    a.  Can combine queries with AND/OR.\n" +
+            "6. Range query: f_release_date:[1965-09-17 TO 1975-09-17}\n" +
+          "    a.  Returns docs with field entries between a lexical range,  most useful for single term fields such as dates.\n" +
+        "    b.  use [] for inclusion and {} for exclusion."}
+        >
+          <ImageIcon className="-elv-icon hint-icon" icon={QuestionMarkIcon} />
+        </ToolTip>
+      </label>
+      <div className="search-flex">
+        <input
+          type="text"
+          className="search-input"
+          value={currentSearchQuery}
+          onChange={event => setCurrentSearchQuery(event.target.value)}
+        />
+        <Action
+          onClick={async () => {
+            setSearching(true);
+            const results = await objectStore.PerformSearch({
+              libraryId: objectStore.libraryId,
+              objectId: objectStore.objectId,
+              terms: currentSearchQuery
+            });
+
+            setQueryResults(results);
+            setSearching(false);
+          }}
+        >
+          Search
+        </Action>
+      </div>
+      {
+        searching ?
+          <div className="-elv-async-component -elv-async-component-loading">
+            <BallSpin />
+          </div> :
+          <QueryResults />
+      }
+    </div>
+  );
+});
+
+const SearchConfiguration = observer((props) => {
   const [objectId, setObjectId] = useState("");
   const [indexerFields, setIndexerFields] = useState({});
   const [showNoUpdateModal, setShowNoUpdateModal] = useState(false);
@@ -28,7 +124,6 @@ const IndexConfiguration = observer((props) => {
   const [rootObject, setRootObject] = useState();
   const [rootLibrary, setRootLibrary] = useState();
   const [rootName, setRootName] = useState();
-  const [pageVersion, setPageVersion] = useState(0);
 
   const SaveForm = async () => {
     let message;
@@ -41,11 +136,13 @@ const IndexConfiguration = observer((props) => {
         Object.keys(indexerFields).forEach(fieldIndex => {
           const {label, paths, options, type} = indexerFields[fieldIndex];
 
-          fieldsMetadata[label] = {
-            paths,
-            options,
-            type
-          };
+          if(label) {
+            fieldsMetadata[label] = {
+              paths,
+              options,
+              type
+            };
+          }
         });
 
         const callback = async ({writeToken}) => {
@@ -73,13 +170,18 @@ const IndexConfiguration = observer((props) => {
             }),
             objectStore.ReplaceMetadata({
               ...replaceMetaPayload,
+              metadataSubtree: "indexer/config/indexer/type",
+              metadata: "metadata-text"
+            }),
+            objectStore.ReplaceMetadata({
+              ...replaceMetaPayload,
               metadataSubtree: "indexer/config/indexer/arguments/document/prefix",
               metadata: docPrefix
             }),
             objectStore.ReplaceMetadata({
               ...replaceMetaPayload,
-              metadataSubtree: "indexer/config/indexer/arguments/query/suffix",
-              metadata: querySuffix
+              metadataSubtree: "indexer/config/indexer/arguments/query",
+              metadata: querySuffix.length > 0 ? {suffix: querySuffix} : {}
             })
           ]);
         };
@@ -114,8 +216,7 @@ const IndexConfiguration = observer((props) => {
     });
 
     const latestVersionHash = await objectStore.LatestVersionHash({
-      objectId: rootObjectId,
-      versionHash: lastRunHash
+      objectId: rootObjectId
     });
 
     if(!lastRunHash || lastRunHash !== latestVersionHash) {
@@ -125,11 +226,9 @@ const IndexConfiguration = observer((props) => {
           await objectStore.UpdateIndex({
             libraryId,
             objectId,
-            method: "search_update",
-            constant: false,
             latestHash: latestVersionHash
           });
-          setPageVersion(prev => prev + 1);
+          setObjectId(objectId);
         }
       });
     } else {
@@ -184,10 +283,14 @@ const IndexConfiguration = observer((props) => {
   };
 
   const RemoveField = (index) => {
-    const fieldsData = Object.assign({}, indexerFields);
+    const newData = {};
+    const fieldsData = Object.assign({}, indexerFields || {});
 
     delete fieldsData[index];
-    setIndexerFields(fieldsData);
+    Object.values(fieldsData).forEach((object, i) => {
+      newData[i] = object;
+    });
+    setIndexerFields(newData);
   };
 
   const InputFormField = ({labelText, labelHint, onChange, value, placeholder}) => {
@@ -198,7 +301,7 @@ const IndexConfiguration = observer((props) => {
         <label className="hint-label">
           { labelText }
           <ToolTip
-            className="hint-tooltip"
+            className="hint-tooltip search-hint"
             content={labelHint}
           >
             <ImageIcon className="-elv-icon hint-icon" icon={QuestionMarkIcon} />
@@ -238,7 +341,7 @@ const IndexConfiguration = observer((props) => {
     );
   };
 
-  const fieldsForm = (
+  const configFieldForm = (
     Object.keys(indexerFields).map((field, index) => {
       const {options, paths, type, label} = indexerFields[field];
 
@@ -258,11 +361,19 @@ const IndexConfiguration = observer((props) => {
             </div>
 
             <div className="-elv-input list-field-input">
-              <label htmlFor={field}>Label</label>
+              <label htmlFor={field} className="hint-label">
+                Label
+                <ToolTip
+                  className="hint-tooltip search-hint"
+                  content={"The label of this searchable field (e.g., \"title\", \"synopsis\", \"release_date\"). This table can be used in search queries prefixed with \"f_\" (e.g., \"f_title\", \"f_synopsis\", \"f_release_date\")."}
+                >
+                  <ImageIcon className="-elv-icon hint-icon" icon={QuestionMarkIcon} />
+                </ToolTip>
+              </label>
               <input
                 type="text"
                 value={label}
-                placeholder="config_field"
+                placeholder="title"
                 onChange={event => {
                   UpdateFormValue({
                     field,
@@ -274,7 +385,25 @@ const IndexConfiguration = observer((props) => {
             </div>
 
             <div className="-elv-input multi-input">
-              <label htmlFor={field}>Paths</label>
+              <label htmlFor={field} className="hint-label">
+                Paths
+                <ToolTip
+                  className="hint-tooltip search-hint"
+                  content={"One or multiple metadata paths pointing to the metadata fields that contain the values for this field.\n" +
+                  "Common examples:\n\n" +
+                  "    public.asset_metadata.titles.*.*.title\n" +
+                  "    public.asset_metadata.series.*.*.episodes.*.*.title\n\n" +
+
+                  "    public.asset_metadata.titles.*.*.info.synopsis\n" +
+                  "    public.asset_metadata.series.*.*.episodes.*.*.info.synopsis\n\n" +
+
+                  "When using the site \"searchables\" feature:\n" +
+                  "    site_map.searchables.*.asset_metadata.title\n" +
+                  "    site_map.searchables.*.assets.*.title"}
+                >
+                  <ImageIcon className="-elv-icon hint-icon" icon={QuestionMarkIcon} />
+                </ToolTip>
+              </label>
               <div>
                 {
                   paths.map((path, index) => (
@@ -282,7 +411,7 @@ const IndexConfiguration = observer((props) => {
                       <input
                         type="text"
                         name={field}
-                        placeholder="public.movies.*.title"
+                        placeholder="public.asset_metadata.titles.*.title"
                         value={path}
                         onChange={event => {
                           UpdateFormValue({
@@ -322,8 +451,43 @@ const IndexConfiguration = observer((props) => {
               </div>
             </div>
 
+            <div className="-elv-input -elv-select list-field-input">
+              <label htmlFor={field} className="hint-label">
+                Type
+                <ToolTip
+                  className="hint-tooltip search-hint"
+                  content={"string - the field is matched in its entirety (suitable for tags and titles)\n" +
+                    "text - the field is matched by individual words (suitable for synopsis and descriptions)"}
+                >
+                  <ImageIcon className="-elv-icon hint-icon" icon={QuestionMarkIcon} />
+                </ToolTip>
+              </label>
+              <select
+                value={type}
+                name={field}
+                onChange={event => {
+                  UpdateFormValue({
+                    field,
+                    key: "type",
+                    value: event.target.value
+                  });
+                }}
+              >
+                <option value="text">Text</option>
+                <option value="string">String</option>
+              </select>
+            </div>
+
             <div className="-elv-input -elv-checkbox-input list-field-input">
-              <label htmlFor={field}>Histogram</label>
+              <label htmlFor={field} className="hint-label">
+                Histogram
+                <ToolTip
+                  className="hint-tooltip search-hint"
+                  content={"Return a histogram of all matched values. Only available for type \"string\"."}
+                >
+                  <ImageIcon className="-elv-icon hint-icon" icon={QuestionMarkIcon} />
+                </ToolTip>
+              </label>
               <div className="checkbox-container">
                 <input
                   type="checkbox"
@@ -346,23 +510,6 @@ const IndexConfiguration = observer((props) => {
               </div>
             </div>
 
-            <div className="-elv-input -elv-select list-field-input">
-              <label htmlFor={field}>Type</label>
-              <select
-                value={type}
-                name={field}
-                onChange={event => {
-                  UpdateFormValue({
-                    field,
-                    key: "type",
-                    value: event.target.value
-                  });
-                }}
-              >
-                <option value="text">Text</option>
-                <option value="string">String</option>
-              </select>
-            </div>
           </div>
         </div>
       );
@@ -379,8 +526,8 @@ const IndexConfiguration = observer((props) => {
               <label className="hint-label">
                 Site Object
                 <ToolTip
-                  className="hint-tooltip"
-                  content="This object will be stored in the root metadata"
+                  className="hint-tooltip search-hint"
+                  content={"Select the \"site\" object containing the list(s) of titles or other media and searchable objects."}
                 >
                   <ImageIcon className="-elv-icon hint-icon" icon={QuestionMarkIcon} />
                 </ToolTip>
@@ -419,7 +566,9 @@ const IndexConfiguration = observer((props) => {
           {
             InputFormField({
               labelText: "Document Prefix",
-              labelHint: "This will be stored in /indexer/config/indexer/arguments/document/prefix in the metadata",
+              labelHint: "The object metadata path at which the searchable document is defined. Typically \"/\" to use the entire object.\n" +
+                "Other common examples:\n" +
+                "     /assets/* (for individual assets within a title object)",
               onChange: event => setDocPrefix(event.target.value),
               value: docPrefix
             })
@@ -427,7 +576,7 @@ const IndexConfiguration = observer((props) => {
           {
             InputFormField({
               labelText: "Query Suffix",
-              labelHint: "A term that is appended to all queries. This will be stored in /indexer/config/indexer/arguments/query/suffix in the metadata",
+              labelHint: "A term that is automatically appended to all queries.",
               onChange: event => setQuerySuffix(event.target.value),
               value: querySuffix
             })
@@ -439,14 +588,14 @@ const IndexConfiguration = observer((props) => {
             <label className="hint-label">
               Configuration Fields
               <ToolTip
-                className="hint-tooltip"
-                content="These fields will be stored in /indexer/config/indexer/arguments/fields in the metadata"
+                className="hint-tooltip search-hint"
+                content={"The list of metadata fields to be indexed and available as search terms. Each field has a label (e.g., \"title\", \"synopsis\", \"release_date\") and one or multiple metadata paths pointing to the metadata fields that contain the values for this field."}
               >
                 <ImageIcon className="-elv-icon hint-icon" icon={QuestionMarkIcon} />
               </ToolTip>
             </label>
             <div>
-              { fieldsForm }
+              { configFieldForm }
               <IconButton
                 icon={AddIcon}
                 title="Add Configuration Field"
@@ -530,14 +679,15 @@ const IndexConfiguration = observer((props) => {
     };
 
     return (
-      <>
+      <div className="last-run-section">
         <h3>Last Run Info</h3>
         <div className="label-box">
+          <SearchBox />
           { LastRun() }
           { Stats() }
           { Errors() }
         </div>
-      </>
+      </div>
     );
   };
 
@@ -552,8 +702,9 @@ const IndexConfiguration = observer((props) => {
         <div className="app-header">
           <Action
             type="button"
-            className="secondary"
+            className="secondary index-button"
             onClick={UpdateIndex}
+            disabled={!rootObject}
           >
             Update Index
           </Action>
@@ -577,8 +728,7 @@ const IndexConfiguration = observer((props) => {
 
   return (
     <AsyncComponent
-      key={`search-page-${pageVersion}`}
-      Load={() => {
+      Load={async () => {
         if(
           objectStore.object.meta.indexer &&
           objectStore.object.meta.indexer.config
@@ -627,20 +777,16 @@ const IndexConfiguration = observer((props) => {
             objectStore.object.meta.indexer.config.fabric.root
           );
 
-          const ObjectMeta = async () => {
-            if(rootObject) {
-              const name = await objectStore.GetContentObjectMetadata({
-                libraryId: rootObject.library,
-                objectId: rootObject.content,
-                metadataSubtree: "/name"
-              });
-              setRootName(name);
-              setRootObject(rootObject.content);
-              setRootLibrary(rootObject.library);
-            }
-          };
-
-          ObjectMeta();
+          if(rootObject) {
+            const name = await objectStore.GetContentObjectMetadata({
+              libraryId: rootObject.library,
+              objectId: rootObject.content,
+              metadataSubtree: "/public/name"
+            });
+            setRootName(name);
+            setRootObject(rootObject.content);
+            setRootLibrary(rootObject.library);
+          }
         }
       }}
       render={PageContent}
@@ -648,4 +794,4 @@ const IndexConfiguration = observer((props) => {
   );
 });
 
-export default withRouter(IndexConfiguration);
+export default withRouter(SearchConfiguration);
