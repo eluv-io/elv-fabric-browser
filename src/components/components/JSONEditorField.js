@@ -39,6 +39,8 @@ const JSONEditorField = ({json, OnChange}) => {
     jsonEditor = new JSONEditor(ref.current, options);
     jsonEditor.set(json);
     jsonEditor.aceEditor.setTheme("ace/theme/eluvio");
+    jsonEditor.aceEditor.session.foldAll();
+    jsonEditor.aceEditor.session.unfold([1]);
 
     return () => {
       if(jsonEditor) {
