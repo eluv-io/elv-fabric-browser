@@ -136,3 +136,18 @@ button {
     }
   }
 }
+
+.json-editor-container {
+  height: 50rem;
+  width: 100%;
+
+  .jsoneditor {
+    border-color: $elv-color-gray;
+  }
+}
+
+.json-editor-error-message {
+  background-color: $elv-diff-delete-color;
+  margin: 1rem 0;
+  padding: 1rem;
+}

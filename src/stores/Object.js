@@ -2,7 +2,6 @@ import Fabric from "../clients/Fabric";
 import {action, computed, flow, observable} from "mobx";
 import {DownloadFromUrl, FileInfo} from "../utils/Files";
 import UrlJoin from "url-join";
-import {ParseInputJson} from "elv-components-js";
 import Path from "path";
 import {AddressToHash, EqualAddress} from "../utils/Helpers";
 const Fetch = typeof fetch !== "undefined" ? fetch : require("node-fetch").default;
@@ -93,13 +92,6 @@ class ObjectStore {
     image,
     commitMessage
   }) {
-    try {
-      privateMetadata = ParseInputJson(privateMetadata);
-      publicMetadata = ParseInputJson(publicMetadata);
-    } catch(error) {
-      throw `Invalid Metadata: ${error.message}`;
-    }
-
     const create = !objectId;
 
     let editResponse;

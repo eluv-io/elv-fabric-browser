@@ -1,7 +1,7 @@
 import React from "react";
 import UrlJoin from "url-join";
 import Path from "path";
-import {BrowseWidget, Form, JsonInput, LoadingElement, Tabs} from "elv-components-js";
+import {BrowseWidget, Form, LoadingElement, Tabs} from "elv-components-js";
 import {inject, observer} from "mobx-react";
 import AsyncComponent from "../../components/AsyncComponent";
 import {Redirect} from "react-router";
@@ -9,6 +9,7 @@ import {toJS} from "mobx";
 import Fabric from "../../../clients/Fabric";
 import AppFrame from "../../components/AppFrame";
 import ActionsToolbar from "../../components/ActionsToolbar";
+import JSONEditorField from "../../components/JSONEditorField";
 import SearchConfiguration from "./SearchConfiguration";
 
 @inject("libraryStore")
@@ -24,8 +25,8 @@ class ContentObjectForm extends React.Component {
       createForm: !props.objectStore.objectId,
       name: "",
       description: "",
-      publicMetadata: "{}",
-      privateMetadata: "{}",
+      publicMetadata: {},
+      privateMetadata: {},
       type: "",
       types: {},
       imageSelection: "",
@@ -61,7 +62,7 @@ class ContentObjectForm extends React.Component {
       objectId: this.props.objectStore.objectId,
       type: this.state.type,
       name: this.state.name,
-      description: this.state.description,
+      description: this.state.description || this.state.publicMetadata.description,
       publicMetadata: this.state.publicMetadata,
       privateMetadata: this.state.privateMetadata,
       image: this.state.imageSelection,
@@ -145,17 +146,17 @@ class ContentObjectForm extends React.Component {
           <textarea name="description" value={this.state.description} onChange={this.HandleInputChange} />
 
           <label className="align-top" htmlFor="publicMetadata">Public Metadata</label>
-          <JsonInput
+          <JSONEditorField
             name="publicMetadata"
-            value={this.state.publicMetadata}
-            onChange={this.HandleInputChange}
+            json={this.state.publicMetadata}
+            OnChange={value => this.setState({publicMetadata: value})}
           />
 
           <label className="align-top" htmlFor="privateMetadata">Private Metadata</label>
-          <JsonInput
+          <JSONEditorField
+            json={this.state.privateMetadata}
             name="privateMetadata"
-            value={this.state.privateMetadata}
-            onChange={this.HandleInputChange}
+            OnChange={value => this.setState({privateMetadata: value})}
           />
 
           <label htmlFor="commitMessage">Commit Message</label>
@@ -314,9 +315,9 @@ class ContentObjectForm extends React.Component {
             if(this.props.objectStore.objectId) {
               const object = this.props.objectStore.object;
               const meta = {...toJS(object.meta)};
-              const publicMetadata = JSON.stringify(meta.public || {}, null, 2);
+              const publicMetadata = meta.public || {};
               delete meta.public;
-              const privateMetadata = JSON.stringify(meta, null, 2);
+              const privateMetadata = meta;
 
               this.setState({
                 showIndexerTab: !!(
