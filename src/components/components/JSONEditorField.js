@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from "react";
 import JSONEditor from "jsoneditor";
-import "jsoneditor/dist/jsoneditor.css";
+import "jsoneditor/dist/jsoneditor.min.css";
 import "../../static/ace-themes/eluvio-theme";
 
 const JSONEditorField = ({json, OnChange}) => {
@@ -11,6 +11,8 @@ const JSONEditorField = ({json, OnChange}) => {
   useEffect(() => {
     const options = {
       mode: "code",
+      minLines: 5,
+      maxLines: 100,
       onChangeText: () => {
         try {
           jsonEditor.get();
@@ -41,6 +43,14 @@ const JSONEditorField = ({json, OnChange}) => {
     jsonEditor.aceEditor.setTheme("ace/theme/eluvio");
     jsonEditor.aceEditor.session.foldAll();
     jsonEditor.aceEditor.session.unfold([1]);
+
+    const lineHeight = jsonEditor.aceEditor.renderer.lineHeight;
+    const containerHeight =
+      jsonEditor.aceEditor.session.getScreenLength()
+      * lineHeight
+      + 100;
+    ref.current.style.height = `${containerHeight}px`;
+    jsonEditor.aceEditor.resize();
 
     return () => {
       if(jsonEditor) {

@@ -138,7 +138,7 @@ button {
 }
 
 .json-editor-container {
-  height: 50rem;
+  min-height: 20rem;
   width: 100%;
 
   .jsoneditor {
