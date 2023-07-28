@@ -15,7 +15,7 @@ const GetDiffParts = ({json, diff}) => {
 
   const parts = diffArray.map((part, i) => {
     const consecutiveAddedPart = part.added ? !!(diffArray[i - 1].removed) : false;
-    const containerPattern = /^.+\"container\":.\"hq__[a-zA-Z0-9_]*\"\n/;
+    const containerPattern = /^.+\"container\":.\"hq__[a-zA-Z0-9_]*\"/;
     const isDiff = (part.added || part.removed) && !consecutiveAddedPart && !containerPattern.test(part.value);
 
     if((part.added || part.removed) && containerPattern.test(part.value)) {
