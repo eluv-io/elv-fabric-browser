@@ -970,6 +970,27 @@ MergeMetadata = flow(function * ({
       versionHash
     });
   });
+
+  @action.bound
+  GenerateEmbedUrl = flow(function * () {
+    const networkInfo = yield Fabric.client.NetworkInfo();
+    let embedUrl = new URL("https://embed.v3.contentfabric.io");
+    const networkName = networkInfo.name === "demov3" ? "demo" : (networkInfo.name === "test" && networkInfo.id === 955205) ? "testv4" : networkInfo.name;
+
+    const token = yield Fabric.client.CreateSignedToken({
+      objectId: this.object.id,
+      duration: 100 * 24 * 60 * 60 * 1000 // milliseconds
+    });
+
+    embedUrl.searchParams.set("p", "");
+    embedUrl.searchParams.set("ap", "");
+    embedUrl.searchParams.set("net", networkName);
+    embedUrl.searchParams.set("ct", "s");
+    embedUrl.searchParams.set("oid", this.object.id);
+    embedUrl.searchParams.set("ath", token);
+
+    return embedUrl.toString();
+  });
 }
 
 export default ObjectStore;

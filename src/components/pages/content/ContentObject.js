@@ -84,7 +84,8 @@ class ContentObject extends React.Component {
       showNonOwnerCapManagement: false,
       newNonOwnerCapPublicKey: "",
       newNonOwnerCapLabel: "",
-      capsVersion: false
+      capsVersion: false,
+      embedUrl: ""
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -705,6 +706,38 @@ class ContentObject extends React.Component {
     );
   }
 
+  EmbedUrlSection = () => {
+    if(
+      this.props.objectStore.object.isContentType ||
+      !(this.props.objectStore.object.meta &&
+      this.props.objectStore.object.meta.hasOwnProperty("offerings"))
+    ) {
+      return null;
+    }
+
+    return (
+      <>
+        <LabelledField label="Embed URL" copyValue={this.state.embedUrl || ""}>
+          {
+            this.state.embedUrl ?
+              this.state.embedUrl :
+              <Action
+                type="button"
+                className="secondary"
+                onClick={async () => {
+                  const embedUrl = await this.props.objectStore.GenerateEmbedUrl();
+                  this.setState({embedUrl});
+                }}
+              >
+                Generate Embed URL
+              </Action>
+          }
+        </LabelledField>
+        <br />
+      </>
+    );
+  };
+
   ObjectInfo() {
     const object = this.props.objectStore.object;
 
@@ -799,6 +832,8 @@ class ContentObject extends React.Component {
         <br />
 
         { this.OwnerCapsSection() }
+
+        { this.EmbedUrlSection() }
 
         { this.ObjectVersion({versionHash: object.hash, latestVersion: true}) }
 
