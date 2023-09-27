@@ -5,6 +5,7 @@ import {Redirect} from "react-router";
 import {Link} from "react-router-dom";
 import {observer} from "mobx-react";
 import Fabric from "../../clients/Fabric";
+import {HoverCopyable} from "./Copyable";
 
 const IMAGE_HEIGHT = 300;
 
@@ -30,9 +31,15 @@ class ListingItem extends React.Component {
           {this.props.title}
         </div>
       </div>,
-      <div key={`listing-description-${this.props.id}`} title={this.props.description}>
-        <div className="description cropped-text" tabIndex={-1}>
-          {this.props.description}
+      <div key={`listing-description-${this.props.id}`} title={this.props.descriptionCopyable ? "" : this.props.description}>
+        <div className={`description cropped-text ${this.props.descriptionCopyable ? "description-copyable" : ""}`} tabIndex={-1}>
+          {
+            this.props.descriptionCopyable ?
+              <HoverCopyable copy={this.props.description}>
+                {this.props.description}
+              </HoverCopyable> :
+              this.props.description
+          }
         </div>
       </div>
     ];
@@ -146,6 +153,7 @@ ListingItem.propTypes = {
   id: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   description: PropTypes.string,
+  descriptionCopyable: PropTypes.bool,
   status: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.node
@@ -169,7 +177,7 @@ class Listing extends React.Component {
 
     if(this.props.display === "list") {
       return (
-        <div className="table-listing">
+        <div className={`table-listing ${this.props.noLink ? "auto-cursor" : ""}`}>
           { content.map(item =>
             <ListingItem
               key={item.id}
@@ -203,7 +211,8 @@ Listing.propTypes = {
   display: PropTypes.string.isRequired,
   RenderContent: PropTypes.func.isRequired,
   noIcon: PropTypes.bool,
-  noStatus: PropTypes.bool
+  noStatus: PropTypes.bool,
+  noLink: PropTypes.bool
 };
 
 export default Listing;
