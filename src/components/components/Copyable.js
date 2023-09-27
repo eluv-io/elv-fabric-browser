@@ -14,17 +14,6 @@ export const Copyable = ({copy, children, className}) => {
   );
 };
 
-export const HoverCopyable = ({copy, children, className}) => {
-  return (
-    <span className={`copyable-hover ${className || ""}`}>
-      { children }
-      <Copy copy={copy || children}>
-        <ImageIcon className="copy-icon" icon={CopyIcon} />
-      </Copy>
-    </span>
-  );
-};
-
 Copyable.propTypes = {
   copy: PropTypes.string.isRequired,
   children: PropTypes.oneOfType([

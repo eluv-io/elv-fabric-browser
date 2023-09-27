@@ -45,25 +45,11 @@ $elv-diff-delete-color: rgba($elv-color-red, 0.4);
   }
 }
 
-.copyable,
-.copyable-hover {
+.copyable {
   .copy-icon {
     height: 1.2em;
     margin-left: $elv-spacing-xs;
     width: 1.2em;
-  }
-}
-
-.copyable-hover {
-  align-items: center;
-  display: flex;
-  flex-direction: row;
-
-  .-elv-copyable {
-    align-items: center;
-    cursor: pointer;
-    display: flex;
-    flex-direction: row;
   }
 }
 

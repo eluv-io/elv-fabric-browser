@@ -96,7 +96,6 @@ class AccessGroup extends React.Component {
         key: `${this.state.view}-${member.address}`,
         title: member.name,
         description: member.address,
-        descriptionCopyable: true,
         status: (
           <div className="listing-action-icon">
             <IconButton

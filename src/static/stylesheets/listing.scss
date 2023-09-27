@@ -251,18 +251,6 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
         font-size: $elv-font-m;
       }
 
-      .description-copyable {
-        .copy-icon {
-          visibility: hidden;
-        }
-
-        &:hover {
-          .copy-icon {
-            visibility: visible;
-          }
-        }
-      }
-
       .status {
         justify-content: center;
       }
