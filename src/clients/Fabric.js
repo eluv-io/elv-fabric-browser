@@ -1761,7 +1761,7 @@ const Fabric = {
       .map(address => Fabric.utils.FormatAddress(address));
   },
 
-  async ListAccessGroups({params}) {
+  async ListAccessGroups({params, publicOnly=true}) {
     let accessGroupAddresses;
     if(params.libraryId) {
       accessGroupAddresses = await Fabric.LibraryGroupAddresses({libraryId: params.libraryId, type: params.type});
@@ -1772,7 +1772,7 @@ const Fabric = {
 
     let filteredAccessGroups = await accessGroupAddresses.limitedMap(
       Fabric.concurrencyLimit,
-      async contractAddress => await Fabric.GetAccessGroup({contractAddress, publicOnly: true})
+      async contractAddress => await Fabric.GetAccessGroup({contractAddress, publicOnly})
     );
 
     // Filter

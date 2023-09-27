@@ -21,10 +21,10 @@ class GroupStore {
   }
 
   @action.bound
-  ListAccessGroups = flow(function * ({params}) {
+  ListAccessGroups = flow(function * ({params, publicOnly=true}) {
     const {accessGroups, count} = yield Cancelable(
       params.cancelable,
-      async () => await Fabric.ListAccessGroups({params})
+      async () => await Fabric.ListAccessGroups({params, publicOnly})
     );
 
     this.accessGroups = accessGroups;
