@@ -200,6 +200,11 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
     cursor: pointer;
     width: 100%;
 
+    &.auto-cursor {
+      cursor: auto;
+      user-select: auto;
+    }
+
     .listing-row {
       display: grid;
       grid-template-columns: $listing-icon-width 3fr 3fr 1fr;

@@ -169,7 +169,7 @@ class Listing extends React.Component {
 
     if(this.props.display === "list") {
       return (
-        <div className="table-listing">
+        <div className={`table-listing ${this.props.noLink ? "auto-cursor" : ""}`}>
           { content.map(item =>
             <ListingItem
               key={item.id}
@@ -203,7 +203,8 @@ Listing.propTypes = {
   display: PropTypes.string.isRequired,
   RenderContent: PropTypes.func.isRequired,
   noIcon: PropTypes.bool,
-  noStatus: PropTypes.bool
+  noStatus: PropTypes.bool,
+  noLink: PropTypes.bool
 };
 
 export default Listing;

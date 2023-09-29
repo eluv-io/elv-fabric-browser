@@ -142,6 +142,7 @@ class AccessGroup extends React.Component {
         }}
         RenderContent={this.AccessGroupMembers}
         noIcon={true}
+        noLink={true}
       />
     );
   }

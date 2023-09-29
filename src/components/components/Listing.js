@@ -341,6 +341,7 @@ class Listing extends React.Component {
             display={this.state.display}
             noIcon={this.props.noIcon}
             noStatus={this.props.noStatus}
+            noLink={this.props.noLink}
             RenderContent={this.props.RenderContent}
           />
         </LoadingElement>
@@ -354,6 +355,7 @@ Listing.propTypes = {
   className: PropTypes.string,
   noIcon: PropTypes.bool,
   noStatus: PropTypes.bool,
+  noLink: PropTypes.bool,
   paginate: PropTypes.bool,
   page: PropTypes.number,
   filter: PropTypes.string,
