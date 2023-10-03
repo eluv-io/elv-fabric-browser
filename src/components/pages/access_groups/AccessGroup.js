@@ -286,9 +286,15 @@ class AccessGroup extends React.Component {
     return (
       <AsyncComponent
         Load={
-          async () => this.props.groupStore.AccessGroup({
-            contractAddress: this.props.groupStore.contractAddress
-          })
+          async () => {
+            const hasAccess = await this.props.groupStore.HasGroupAccess();
+
+            if(!hasAccess) { throw Error("Forbidden"); }
+
+            await this.props.groupStore.AccessGroup({
+              contractAddress: this.props.groupStore.contractAddress
+            });
+          }
         }
         render={this.PageContent}
       />

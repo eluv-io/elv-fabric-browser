@@ -120,6 +120,14 @@ const Fabric = {
     });
   },
 
+  async HasGroupAccess({contractAddress, memberAddress}) {
+    return await client.CallContractMethod({
+      contractAddress,
+      methodArgs: [memberAddress],
+      methodName: "hasAccess"
+    });
+  },
+
   /* Libraries */
 
   FilterContentLibraries(libraries, field, value, negate=false) {

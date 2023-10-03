@@ -189,6 +189,13 @@ class GroupStore {
       redirect: true
     });
   });
+
+  HasGroupAccess = flow(function * () {
+    return yield Fabric.HasGroupAccess({
+      contractAddress: this.contractAddress,
+      memberAddress: this.rootStore.currentAccountAddress
+    });
+  });
 }
 
 export default GroupStore;
