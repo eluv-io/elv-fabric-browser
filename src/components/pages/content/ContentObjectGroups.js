@@ -82,11 +82,13 @@ class ContentObjectGroups extends React.Component {
     return (
       <AsyncComponent
         Load={async () => {
-          await this.props.groupStore.ListAccessGroups({
-            params: {},
-            publicOnly: this.props.currentPage !== "accessGroup"
-          });
-          await this.props.LoadGroupPermissions();
+          if(this.props.currentPage !== "accessGroup") {
+            await this.props.groupStore.ListAccessGroups({
+              params: {},
+              publicOnly: true
+            });
+            await this.props.LoadGroupPermissions();
+          }
         }}
         render={() => (
           <React.Fragment>

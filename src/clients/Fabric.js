@@ -120,11 +120,29 @@ const Fabric = {
     });
   },
 
-  async HasGroupAccess({contractAddress, memberAddress}) {
+  async IsGroupMember({contractAddress, memberAddress}) {
+    const walletAddress = await client.CallContractMethod({
+      contractAddress: client.utils.HashToAddress(this.contentSpaceId),
+      methodName: "userWallets",
+      methodArgs: [memberAddress]
+    });
+
     return await client.CallContractMethod({
+      contractAddress: walletAddress,
+      methodName: "checkRights",
+      methodArgs: [
+        2, // CATEGORY_GROUP = 2
+        contractAddress,
+        0 // TYPE_SEE = 0; TYPE_ACCESS = 1; TYPE_EDIT = 2
+      ]
+    });
+  },
+
+  async SetGroupVisibility({contractAddress, visibility}) {
+    return await this.CallContractMethodAndWait({
       contractAddress,
-      methodArgs: [memberAddress],
-      methodName: "hasAccess"
+      methodName: "setVisibility",
+      methodArgs: [visibility],
     });
   },
 
@@ -1828,8 +1846,14 @@ const Fabric = {
     let owner, ownerName, oauthInfo, metadata = {};
     let isManager = false;
     let isOwner = false;
+    let isMember = false;
+    let visibility;
 
     try {
+      visibility = await client.Visibility({
+        id: client.utils.AddressToObjectId(contractAddress)
+      });
+
       if(publicOnly) {
         metadata = {
           public: await client.ContentObjectMetadata({
@@ -1865,13 +1889,18 @@ const Fabric = {
           methodArgs: [client.utils.FormatAddress(currentAccountAddress)]
         });
 
-        metadata = await client.ContentObjectMetadata({
-          libraryId: Fabric.contentSpaceLibraryId,
-          objectId: client.utils.AddressToObjectId(contractAddress)
-        }) || {};
+        isMember = await this.IsGroupMember({
+          contractAddress,
+          memberAddress: this.currentAccountAddress
+        });
 
         try {
           if(isOwner) {
+            metadata = await client.ContentObjectMetadata({
+              libraryId: Fabric.contentSpaceLibraryId,
+              objectId: client.utils.AddressToObjectId(contractAddress)
+            }) || {};
+
             const key = `eluv.jwtv.iusr${Fabric.utils.AddressToHash(currentAccountAddress)}`;
             if(metadata[key]) {
               oauthInfo = await client.DecryptECIES(metadata[key]);
@@ -1885,6 +1914,16 @@ const Fabric = {
             oauthInfo.oauthEnabled = await client.CallContractMethod({
               contractAddress,
               methodName: "oauthEnabled"
+            });
+          } else {
+            metadata = await client.ContentObjectMetadata({
+              libraryId: Fabric.contentSpaceLibraryId,
+              objectId: client.utils.AddressToObjectId(contractAddress),
+              metadataSubtree: "public",
+              select: [
+                "name",
+                "description"
+              ]
             });
           }
         } catch(error) {
@@ -1908,9 +1947,11 @@ const Fabric = {
       metadata,
       owner,
       ownerName,
+      isMember,
       isManager,
       isOwner,
-      oauthInfo
+      oauthInfo,
+      visibility
     };
   },
 

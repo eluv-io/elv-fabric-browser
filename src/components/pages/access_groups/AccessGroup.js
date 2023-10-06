@@ -6,7 +6,7 @@ import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
 import {Redirect} from "react-router";
 import {PageHeader} from "../../components/Page";
-import {Confirm, IconButton, Tabs} from "elv-components-js";
+import {Confirm, IconButton, LoadingElement, Tabs} from "elv-components-js";
 import Listing from "../../components/Listing";
 import RemoveIcon from "../../../static/icons/close.svg";
 import {inject, observer} from "mobx-react";
@@ -24,7 +24,8 @@ class AccessGroup extends React.Component {
     this.state = {
       visibleElements: {},
       view: "members",
-      listingVersion: 0
+      listingVersion: 0,
+      permissionChanging: false
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -160,19 +161,24 @@ class AccessGroup extends React.Component {
           {
             label: "Manage",
             type: "link",
-            hidden: !this.props.groupStore.accessGroup.isOwner,
+            hidden: !this.props.groupStore.accessGroup.isOwner || !this.props.groupStore.accessGroup.isManager,
             path: UrlJoin(this.props.match.url, "edit"),
           },
           {
             label: "Add Member",
             type: "link",
-            hidden: !this.props.groupStore.accessGroup.isManager,
+            hidden: !this.props.groupStore.accessGroup.isManager || !this.props.groupStore.accessGroup.isOwner,
             path: UrlJoin(this.props.match.url, "add-member")
           },
           {
             label: "Leave Group",
             type: "button",
-            hidden: this.props.groupStore.accessGroup.isOwner,
+            hidden: this.props.groupStore.accessGroup.isOwner ||
+              this.props.groupStore.accessGroup.visibility === 0 ||
+              (
+                !this.props.groupStore.accessGroup.isMember ||
+                !this.props.groupStore.accessGroup.isManager
+              ),
             onClick: () => this.LeaveAccessGroup(),
             className: "danger"
           },
@@ -199,9 +205,7 @@ class AccessGroup extends React.Component {
       <span>{group.ownerName}<span className="help-text">({group.owner})</span></span> :
       group.owner;
 
-    const description = <ClippedText className="object-description" text={group.description} />;
-
-    let oauthIssuer, oauthGroups, metadata;
+    let oauthIssuer, oauthGroups, metadata, permissions, description;
     if(group.oauthInfo) {
       oauthIssuer = (
         <LabelledField label="OAuth Issuer">
@@ -218,7 +222,15 @@ class AccessGroup extends React.Component {
       }
     }
 
-    if(group.isOwner) {
+    if(group.isOwner || group.isManager || group.isMember || group.hasAccess) {
+      description = (
+        <LabelledField label="Description">
+          <ClippedText className="object-description" text={group.description} />
+        </LabelledField>
+      );
+    }
+
+    if(group.isOwner || group.isManager || group.isMember) {
       metadata = (
         <ToggleSection label="Metadata">
           <div className="indented">
@@ -228,13 +240,43 @@ class AccessGroup extends React.Component {
       );
     }
 
+    if(group.hasAccess) {
+      permissions = (
+        <LabelledField label="Permissions">
+          <LoadingElement loading={this.state.permissionChanging} loadingClassname="visibility-info-loading">
+            <select
+              value={this.props.groupStore.accessGroup.visibility}
+              disabled={!this.props.groupStore.accessGroup.isManager || !this.props.groupStore.accessGroup.isOwner}
+              onChange={
+                async event => {
+                  this.setState({permissionChanging: true});
+                  try {
+                    await this.props.groupStore.SetGroupVisibility({
+                      visibility: event.target.value
+                    });
+
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                  } finally {
+                    this.setState({permissionChanging: false});
+                  }
+                }
+              }
+            >
+              <option value={1}>Publicly Listable</option>
+              <option value={0}>Members Only</option>
+            </select>
+          </LoadingElement>
+        </LabelledField>
+      );
+    }
+
     let pageContent;
     if(this.state.view === "groups") {
       pageContent = (
         <ContentObjectGroups
           currentPage="accessGroup"
-          showGroupPermissionsButton={this.props.groupStore.accessGroup.isManager}
-          LoadGroupPermissions={() => this.props.groupStore.AccessGroupGroupPermissions({contractAddress: this.props.groupStore.contractAddress})}
+          showGroupPermissionsButton={this.props.groupStore.accessGroup.isManager || this.props.groupStore.accessGroup.isOwner}
+          LoadGroupPermissions={() => {}}
         />
       );
     } else {
@@ -248,9 +290,7 @@ class AccessGroup extends React.Component {
         <div className="page-content-container">
           <div className="page-content">
             <div className="label-box">
-              <LabelledField label="Description">
-                { description }
-              </LabelledField>
+              { description }
 
               <LabelledField label="Owner">
                 { ownerText }
@@ -262,20 +302,31 @@ class AccessGroup extends React.Component {
                 </Link>
               </LabelledField>
 
+              { permissions }
               { oauthIssuer }
               { oauthGroups }
               { metadata }
             </div>
-            <Tabs
-              options={[
-                ["Members", "members"],
-                ["Managers", "managers"],
-                ["Groups", "groups"]
-              ]}
-              selected={this.state.view}
-              onChange={(value) => this.setState({view: value})}
-            />
-            { pageContent }
+            {
+              (
+                this.props.groupStore.accessGroup.isOwner ||
+                this.props.groupStore.accessGroup.isManager ||
+                this.props.groupStore.accessGroup.isMember ||
+                this.props.groupStore.accessGroup.hasAccess
+              ) &&
+              <>
+                <Tabs
+                  options={[
+                    ["Members", "members"],
+                    ["Managers", "managers"],
+                    ["Groups", "groups"]
+                  ]}
+                  selected={this.state.view}
+                  onChange={(value) => this.setState({view: value})}
+                />
+                { pageContent }
+              </>
+            }
           </div>
         </div>
       </div>
@@ -287,13 +338,22 @@ class AccessGroup extends React.Component {
       <AsyncComponent
         Load={
           async () => {
-            const hasAccess = await this.props.groupStore.HasGroupAccess();
-
-            if(!hasAccess) { throw Error("Forbidden"); }
-
             await this.props.groupStore.AccessGroup({
               contractAddress: this.props.groupStore.contractAddress
             });
+
+            await this.props.groupStore.AccessGroupGroupPermissions({contractAddress: this.props.groupStore.contractAddress});
+            await this.props.groupStore.SetInheritedGroupAccess();
+
+            if(
+              this.props.groupStore.accessGroup.visibility === 0 &&
+              !this.props.groupStore.accessGroup.hasAccess &&
+              !this.props.groupStore.accessGroup.isMember &&
+              !this.props.groupStore.accessGroup.isOwner &&
+              !this.props.groupStore.accessGroup.isManager
+            ) {
+              throw Error("Forbidden");
+            }
           }
         }
         render={this.PageContent}
