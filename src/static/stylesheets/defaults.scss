@@ -203,6 +203,7 @@
 
 select {
   background-color: $elv-color-white;
+
   &:disabled {
     pointer-events: none;
   }
