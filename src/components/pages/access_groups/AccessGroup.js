@@ -240,7 +240,7 @@ class AccessGroup extends React.Component {
       );
     }
 
-    if(group.hasAccess) {
+    if(group.isOwner || group.isManager || group.isMember || group.hasAccess) {
       permissions = (
         <LabelledField label="Permissions">
           <LoadingElement loading={this.state.permissionChanging} loadingClassname="visibility-info-loading">
