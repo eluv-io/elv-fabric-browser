@@ -205,7 +205,7 @@ class AccessGroup extends React.Component {
       <span>{group.ownerName}<span className="help-text">({group.owner})</span></span> :
       group.owner;
 
-    let oauthIssuer, oauthGroups, metadata, permissions, description;
+    let oauthIssuer, oauthGroups, metadata, permissions, description, tenantId;
     if(group.oauthInfo) {
       oauthIssuer = (
         <LabelledField label="OAuth Issuer">
@@ -237,6 +237,14 @@ class AccessGroup extends React.Component {
             <JSONField json={group.metadata} />
           </div>
         </ToggleSection>
+      );
+    }
+
+    if(group.isOwner || group.isManager || group.isMember || group.hasAccess) {
+      tenantId = (
+        <LabelledField label="Tenant ID">
+          { group.tenantId || "" }
+        </LabelledField>
       );
     }
 
@@ -302,6 +310,7 @@ class AccessGroup extends React.Component {
                 </Link>
               </LabelledField>
 
+              { tenantId }
               { permissions }
               { oauthIssuer }
               { oauthGroups }

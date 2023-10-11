@@ -1847,7 +1847,7 @@ const Fabric = {
     let isManager = false;
     let isOwner = false;
     let isMember = false;
-    let visibility;
+    let visibility, tenantId;
 
     try {
       visibility = await client.Visibility({
@@ -1882,6 +1882,17 @@ const Fabric = {
         } catch(error) {}
 
          */
+
+        const tenantIdMeta = await client.CallContractMethod({
+          contractAddress,
+          methodName: "getMeta",
+          methodArgs: ["_tenantId"]
+        });
+
+        if(tenantIdMeta) {
+          const tenantIdJson = client.utils.FromHex(tenantIdMeta);
+          tenantId = tenantIdJson ? JSON.parse(tenantIdJson) : "";
+        }
 
         isManager = await client.CallContractMethod({
           contractAddress,
@@ -1951,7 +1962,8 @@ const Fabric = {
       isManager,
       isOwner,
       oauthInfo,
-      visibility
+      visibility,
+      tenantId
     };
   },
 
