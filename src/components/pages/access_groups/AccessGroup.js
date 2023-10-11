@@ -254,7 +254,7 @@ class AccessGroup extends React.Component {
           <LoadingElement loading={this.state.permissionChanging} loadingClassname="visibility-info-loading">
             <select
               value={this.props.groupStore.accessGroup.visibility}
-              disabled={!this.props.groupStore.accessGroup.isManager || !this.props.groupStore.accessGroup.isOwner}
+              disabled={!this.props.groupStore.accessGroup.isManager && !this.props.groupStore.accessGroup.isOwner}
               onChange={
                 async event => {
                   this.setState({permissionChanging: true});
