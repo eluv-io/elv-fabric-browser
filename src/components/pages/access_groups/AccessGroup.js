@@ -161,13 +161,13 @@ class AccessGroup extends React.Component {
           {
             label: "Manage",
             type: "link",
-            hidden: !this.props.groupStore.accessGroup.isOwner || !this.props.groupStore.accessGroup.isManager,
+            hidden: !(this.props.groupStore.accessGroup.isOwner || this.props.groupStore.accessGroup.isManager),
             path: UrlJoin(this.props.match.url, "edit"),
           },
           {
             label: "Add Member",
             type: "link",
-            hidden: !this.props.groupStore.accessGroup.isManager || !this.props.groupStore.accessGroup.isOwner,
+            hidden: !(this.props.groupStore.accessGroup.isManager || this.props.groupStore.accessGroup.isOwner),
             path: UrlJoin(this.props.match.url, "add-member")
           },
           {
@@ -175,9 +175,9 @@ class AccessGroup extends React.Component {
             type: "button",
             hidden: this.props.groupStore.accessGroup.isOwner ||
               this.props.groupStore.accessGroup.visibility === 0 ||
-              (
-                !this.props.groupStore.accessGroup.isMember ||
-                !this.props.groupStore.accessGroup.isManager
+              !(
+                this.props.groupStore.accessGroup.isMember ||
+                this.props.groupStore.accessGroup.isManager
               ),
             onClick: () => this.LeaveAccessGroup(),
             className: "danger"
