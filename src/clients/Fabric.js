@@ -1906,12 +1906,12 @@ const Fabric = {
         });
 
         try {
-          if(isOwner) {
-            metadata = await client.ContentObjectMetadata({
-              libraryId: Fabric.contentSpaceLibraryId,
-              objectId: client.utils.AddressToObjectId(contractAddress)
-            }) || {};
+          metadata = await client.ContentObjectMetadata({
+            libraryId: Fabric.contentSpaceLibraryId,
+            objectId: client.utils.AddressToObjectId(contractAddress)
+          }) || {};
 
+          if(isOwner) {
             const key = `eluv.jwtv.iusr${Fabric.utils.AddressToHash(currentAccountAddress)}`;
             if(metadata[key]) {
               oauthInfo = await client.DecryptECIES(metadata[key]);
@@ -1925,16 +1925,6 @@ const Fabric = {
             oauthInfo.oauthEnabled = await client.CallContractMethod({
               contractAddress,
               methodName: "oauthEnabled"
-            });
-          } else {
-            metadata = await client.ContentObjectMetadata({
-              libraryId: Fabric.contentSpaceLibraryId,
-              objectId: client.utils.AddressToObjectId(contractAddress),
-              metadataSubtree: "public",
-              select: [
-                "name",
-                "description"
-              ]
             });
           }
         } catch(error) {
