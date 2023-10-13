@@ -174,7 +174,6 @@ class AccessGroup extends React.Component {
             label: "Leave Group",
             type: "button",
             hidden: this.props.groupStore.accessGroup.isOwner ||
-              this.props.groupStore.accessGroup.visibility === 0 ||
               !(
                 this.props.groupStore.accessGroup.isMember ||
                 this.props.groupStore.accessGroup.isManager
