@@ -139,6 +139,7 @@ const Fabric = {
   },
 
   async SetGroupVisibility({contractAddress, visibility}) {
+    visibility = parseInt(visibility);
     return await this.CallContractMethodAndWait({
       contractAddress,
       methodName: "setVisibility",
@@ -1906,10 +1907,22 @@ const Fabric = {
         });
 
         try {
-          metadata = await client.ContentObjectMetadata({
-            libraryId: Fabric.contentSpaceLibraryId,
-            objectId: client.utils.AddressToObjectId(contractAddress)
-          }) || {};
+          if(isMember) {
+            metadata = await client.ContentObjectMetadata({
+              libraryId: Fabric.contentSpaceLibraryId,
+              objectId: client.utils.AddressToObjectId(contractAddress)
+            }) || {};
+          } else {
+            metadata = await client.ContentObjectMetadata({
+              libraryId: Fabric.contentSpaceLibraryId,
+              objectId: client.utils.AddressToObjectId(contractAddress),
+              metadataSubtree: "public",
+              select: [
+                "name",
+                "description"
+              ]
+            }) || {};
+          }
 
           if(isOwner) {
             const key = `eluv.jwtv.iusr${Fabric.utils.AddressToHash(currentAccountAddress)}`;

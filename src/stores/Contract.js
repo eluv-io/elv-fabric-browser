@@ -158,8 +158,8 @@ class ContractStore {
       case ContractTypes.accessGroup:
         yield this.rootStore.groupStore.ListAccessGroups({params: {paginate: false}});
 
-        const accessGroup = this.rootStore.groupStore.accessGroup.name || "Access Group";
-        abi = yield Fabric.ContractAbi({contractAddress: this.rootStore.groupStore.accessGroup.address});
+        const accessGroup = this.rootStore.groupStore.accessGroup && this.rootStore.groupStore.accessGroup.name || "Access Group";
+        abi = this.rootStore.groupStore.accessGroup ? yield Fabric.ContractAbi({contractAddress: this.rootStore.groupStore.accessGroup.address}) : null;
         name = `${accessGroup} - Access Group Contract`;
 
         break;
