@@ -112,7 +112,7 @@ class ContentObjectGroupForm extends React.Component {
                   onChange={() => this.setState({see: !this.state.see})}
                 />
 
-                <label htmlFor="contributor">Access</label>
+                <label htmlFor="contributor">View</label>
                 <input
                   type="checkbox"
                   checked={this.state.access}

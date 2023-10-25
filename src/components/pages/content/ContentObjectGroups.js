@@ -96,7 +96,7 @@ class ContentObjectGroups extends React.Component {
             <Tabs
               options={[
                 ["See", "see"],
-                ["Access", "access"],
+                ["View", "access"],
                 ["Manage", "manage"]
               ]}
               className="secondary"

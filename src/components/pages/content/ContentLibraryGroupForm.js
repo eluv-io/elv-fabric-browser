@@ -103,7 +103,7 @@ class ContentLibraryGroupForm extends React.Component {
               <div className="form-content">
                 { this.Groups() }
 
-                <label htmlFor="accessor">Accessor</label>
+                <label htmlFor="accessor">Viewer</label>
                 <input
                   type="checkbox"
                   checked={this.state.accessor}
