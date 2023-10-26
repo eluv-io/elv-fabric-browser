@@ -161,7 +161,7 @@ class AccessGroup extends React.Component {
           {
             label: "Manage",
             type: "link",
-            hidden: !(this.props.groupStore.accessGroup.isOwner || this.props.groupStore.accessGroup.isManager),
+            hidden: !this.props.groupStore.accessGroup.isOwner,
             path: UrlJoin(this.props.match.url, "edit"),
           },
           {
