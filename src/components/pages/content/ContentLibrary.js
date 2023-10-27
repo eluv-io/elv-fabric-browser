@@ -109,7 +109,7 @@ class ContentLibrary extends React.Component {
             </div>
             <Tabs
               options={[
-                ["Accessors", "accessor"],
+                ["Viewers", "accessor"],
                 ["Contributors", "contributor"],
                 ["Reviewers", "reviewer"]
               ]}

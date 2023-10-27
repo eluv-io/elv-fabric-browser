@@ -105,14 +105,19 @@ class ContentObjectGroupForm extends React.Component {
               <div className="form-content">
                 { this.Groups() }
 
-                <label htmlFor="accessor">See</label>
-                <input
-                  type="checkbox"
-                  checked={this.state.see}
-                  onChange={() => this.setState({see: !this.state.see})}
-                />
+                {
+                  this.props.currentPage !== "accessGroup" &&
+                  <>
+                    <label htmlFor="accessor">See</label>
+                    <input
+                      type="checkbox"
+                      checked={this.state.see}
+                      onChange={() => this.setState({see: !this.state.see})}
+                    />
+                  </>
+                }
 
-                <label htmlFor="contributor">Access</label>
+                <label htmlFor="contributor">View</label>
                 <input
                   type="checkbox"
                   checked={this.state.access}

@@ -62,8 +62,18 @@ class AccessGroupMemberForm extends React.Component {
             <label htmlFor="memberAddress">Address</label>
             <input name="memberAddress" value={this.state.memberAddress} onChange={this.HandleInputChange} />
 
-            <label htmlFor="manager">Manager</label>
-            <input type="checkbox" name="manager" value={this.state.manager} onChange={() => this.setState({manager: !this.state.manager})} />
+            {
+              this.props.groupStore.accessGroup.isOwner &&
+              <>
+                <label htmlFor="manager">Manager</label>
+                <input
+                  type="checkbox"
+                  name="manager"
+                  value={this.state.manager}
+                  onChange={() => this.setState({manager: !this.state.manager})}
+                />
+              </>
+            }
           </div>
         </Form>
       </div>

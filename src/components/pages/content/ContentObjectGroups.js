@@ -79,24 +79,33 @@ class ContentObjectGroups extends React.Component {
       );
     }
 
+    const options = [
+      ["View", "access"],
+      ["Manage", "manage"]
+    ];
+
+    if(this.props.currentPage !== "accessGroup") {
+      options.unshift(
+        ["See", "see"]
+      );
+    }
+
     return (
       <AsyncComponent
         Load={async () => {
-          await this.props.groupStore.ListAccessGroups({
-            params: {},
-            publicOnly: this.props.currentPage !== "accessGroup"
-          });
-          await this.props.LoadGroupPermissions();
+          if(this.props.currentPage !== "accessGroup") {
+            await this.props.groupStore.ListAccessGroups({
+              params: {},
+              publicOnly: true
+            });
+            await this.props.LoadGroupPermissions();
+          }
         }}
         render={() => (
           <React.Fragment>
             { groupPermissionsButton }
             <Tabs
-              options={[
-                ["See", "see"],
-                ["Access", "access"],
-                ["Manage", "manage"]
-              ]}
+              options={options}
               className="secondary"
               selected={this.state.view}
               onChange={(value) => this.setState({view: value})}

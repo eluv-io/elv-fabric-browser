@@ -189,6 +189,35 @@ class GroupStore {
       redirect: true
     });
   });
+
+  @action.bound
+  SetInheritedGroupAccess = flow(function * () {
+    let groupPermission = false;
+    for(let i = 0; i < Object.keys(this.accessGroup.groupPermissions || {}).length; i++) {
+      let address = Object.keys(this.accessGroup.groupPermissions)[i];
+
+      groupPermission = yield Fabric.IsGroupMember({
+        contractAddress: address,
+        memberAddress: this.rootStore.currentAccountAddress
+      });
+
+      if(groupPermission) {
+        break;
+      }
+    }
+
+    this.accessGroups[this.contractAddress].hasAccess = groupPermission;
+  });
+
+  @action.bound
+  SetGroupVisibility = flow(function * ({visibility}) {
+    yield Fabric.SetGroupVisibility({
+      contractAddress: this.contractAddress,
+      visibility
+    });
+
+    this.accessGroups[this.contractAddress].visibility = visibility;
+  });
 }
 
 export default GroupStore;
