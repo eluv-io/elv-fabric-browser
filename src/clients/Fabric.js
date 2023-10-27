@@ -1884,11 +1884,17 @@ const Fabric = {
 
          */
 
-        const tenantIdMeta = await client.CallContractMethod({
-          contractAddress,
-          methodName: "getMeta",
-          methodArgs: ["_tenantId"]
-        });
+        let tenantIdMeta;
+        try {
+          tenantIdMeta = await client.CallContractMethod({
+            contractAddress,
+            methodName: "getMeta",
+            methodArgs: ["_tenantId"]
+          });
+        } catch(error) {
+        // eslint-disable-next-line no-console
+          console.error("Failed to get tenant ID.", error);
+        }
 
         if(tenantIdMeta) {
           const tenantIdJson = client.utils.FromHex(tenantIdMeta);
