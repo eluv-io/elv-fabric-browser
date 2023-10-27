@@ -31,7 +31,7 @@
     "last 2 versions"
   ],
   "dependencies": {
-    "@eluvio/elv-client-js": "git+https://github.com/eluv-io/elv-client-js.git#group-members-list",
+    "@eluvio/elv-client-js": "^4.0.63",
     "bignumber.js": "^8.1.1",
     "browser-cancelable-events": "^1.0.1",
     "browser-solc": "^1.0.0",
