@@ -109,9 +109,9 @@ class ContentLibrary extends React.Component {
             </div>
             <Tabs
               options={[
-                ["Viewers", "accessor"],
-                ["Contributors", "contributor"],
-                ["Reviewers", "reviewer"]
+                ["View", "accessor"],
+                ["Contribute", "contributor"],
+                ["Manage", "reviewer"]
               ]}
               className="secondary"
               selected={this.state.groupsView}
