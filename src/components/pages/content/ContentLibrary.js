@@ -6,7 +6,7 @@ import ContentIcon from "../../../static/icons/content.svg";
 import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
 import {PageHeader} from "../../components/Page";
-import {Action, Tabs} from "elv-components-js";
+import {Action, Confirm, IconButton, Tabs} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
 
 import Listing from "../../components/Listing";
@@ -18,6 +18,7 @@ import ContentLibraryGroupForm from "./ContentLibraryGroupForm";
 import {ContentBrowserModal} from "../../components/ContentBrowser";
 import {Redirect} from "react-router";
 import ActionsToolbar from "../../components/ActionsToolbar";
+import RemoveIcon from "../../../static/icons/close.svg";
 
 @inject("libraryStore")
 @inject("groupStore")
@@ -73,6 +74,23 @@ class ContentLibrary extends React.Component {
     );
   }
 
+  async RemoveAccessGroupMember({groupAddress}) {
+    await Confirm({
+      message: "Are you sure you want to remove this group from the library?",
+      onConfirm: async () => {
+        await this.props.libraryStore.RemoveContentLibraryGroup({
+          libraryId: this.props.libraryStore.libraryId,
+          groupAddress,
+          type: this.state.groupsView
+        });
+      }
+    });
+
+    if(this.state.listingRef) {
+      this.state.listingRef.Load();
+    }
+  }
+
   AccessGroups() {
     const groups = this.props.libraryStore.library[`${this.state.groupsView}Groups`];
 
@@ -86,7 +104,17 @@ class ContentLibrary extends React.Component {
         sortKey: (group.name || "zz").toLowerCase(),
         title: group.name || address,
         description: group.description,
-        link: UrlJoin("/access-groups", address)
+        status: (
+          <div className="listing-action-icon">
+            <IconButton
+              icon={RemoveIcon}
+              label="Remove Access Group"
+              onClick={async () => this.RemoveAccessGroupMember({groupAddress: address})}
+            >
+              Remove
+            </IconButton>
+          </div>
+        )
       };
     });
 
@@ -118,11 +146,16 @@ class ContentLibrary extends React.Component {
               onChange={(value) => this.setState({groupsView: value})}
             />
             <Listing
+              ref={ref => {
+                if(!this.state.listingRef) {
+                  this.setState({listingRef: ref});
+                }
+              }}
               key={`library-access-group-listing-${this.state.groupsView}`}
               className="compact"
               pageId="LibraryAccessGroups"
               noIcon={true}
-              noStatus={true}
+              noLink={true}
               paginate={true}
               count={this.props.libraryStore.library[`${type}GroupsCount`] || 0}
               LoadContent={async ({params}) => {

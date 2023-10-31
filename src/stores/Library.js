@@ -242,6 +242,20 @@ class LibraryStore {
   });
 
   @action.bound
+  RemoveContentLibraryGroup = flow(function * ({libraryId, groupAddress, type}) {
+    yield Fabric.RemoveContentLibraryGroup({
+      libraryId,
+      address: groupAddress,
+      groupType: type
+    });
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully removed library group permissions",
+      redirect: true
+    });
+  });
+
+  @action.bound
   UpdateContentLibraryGroup = flow(function * ({libraryId, groupAddress, accessor, contributor, reviewer}) {
     const options = { accessor, contributor, reviewer};
 
