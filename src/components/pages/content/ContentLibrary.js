@@ -74,11 +74,11 @@ class ContentLibrary extends React.Component {
     );
   }
 
-  async RemoveAccessGroupMember({groupAddress}) {
+  async RemoveAccessGroupPermission({groupAddress}) {
     await Confirm({
-      message: "Are you sure you want to remove this group from the library?",
+      message: "Are you sure you want to remove this group's permissions on this library?",
       onConfirm: async () => {
-        await this.props.libraryStore.RemoveContentLibraryGroup({
+        await this.props.libraryStore.RemoveContentLibraryGroupPermission({
           libraryId: this.props.libraryStore.libraryId,
           groupAddress,
           type: this.state.groupsView
@@ -109,7 +109,7 @@ class ContentLibrary extends React.Component {
             <IconButton
               icon={RemoveIcon}
               label="Remove Access Group"
-              onClick={async () => this.RemoveAccessGroupMember({groupAddress: address})}
+              onClick={async () => this.RemoveAccessGroupPermission({groupAddress: address})}
             >
               Remove
             </IconButton>

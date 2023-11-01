@@ -1,11 +1,11 @@
 import React from "react";
-import UrlJoin from "url-join";
-import {Action, AsyncComponent, Tabs} from "elv-components-js";
+import {Action, AsyncComponent, Confirm, IconButton, Tabs} from "elv-components-js";
 import Listing from "../../components/Listing";
 import {inject, observer} from "mobx-react";
 import PropTypes from "prop-types";
 
 import ContentObjectGroupForm from "./ContentObjectGroupForm";
+import RemoveIcon from "../../../static/icons/close.svg";
 
 @inject("objectStore")
 @inject("groupStore")
@@ -32,8 +32,9 @@ class ContentObjectGroups extends React.Component {
     const page = filterOptions.params.page;
     const perPage = filterOptions.params.perPage;
 
+    const groupsObject = (this.props.currentPage === "contentObject" ? (this.props.objectStore.objectGroupPermissions || {}) : this.props.groupStore.accessGroup.groupPermissions || {});
     let groups = Object
-      .values(this.props.currentPage === "contentObject" ? (this.props.objectStore.objectGroupPermissions || {}) : this.props.groupStore.accessGroup.groupPermissions || {})
+      .values(groupsObject)
       .filter(group => group.permissions.includes(this.state.view))
       .sort((a, b) => (a.name || "zz").toLowerCase() > (b.name || "zz").toLowerCase() ? 1 : -1)
       .slice((page - 1) * perPage, page * perPage);
@@ -46,6 +47,32 @@ class ContentObjectGroups extends React.Component {
     return groups;
   }
 
+  async RemoveAccessGroupPermission({groupAddress}) {
+    let itemText;
+    if(this.props.currentPage === "accessGroup") {
+      itemText = "group";
+    } else if(this.props.objectStore.object.isContentType) {
+      itemText = "content type";
+    } else {
+      itemText = "object";
+    }
+
+    await Confirm({
+      message: `Are you sure you want to remove this group's permissions on this ${itemText}?`,
+      onConfirm: async () => {
+        await this.props.objectStore.RemoveContentObjectGroupPermission({
+          objectId: this.props.objectStore.objectId,
+          groupAddress,
+          permission: this.state.view
+        });
+      }
+    });
+
+    if(this.state.listingRef) {
+      this.state.listingRef.Load();
+    }
+  }
+
   AccessGroups() {
     const groupsInfo = this.FilterGroups(this.state.filterOptions).map(group => {
       return {
@@ -53,7 +80,17 @@ class ContentObjectGroups extends React.Component {
         sortKey: (group.name || "zz").toLowerCase(),
         title: group.name || group.address,
         description: group.description,
-        link: UrlJoin("/access-groups", group.address)
+        status: (
+          <div className="listing-action-icon">
+            <IconButton
+              icon={RemoveIcon}
+              label="Remove Access Group"
+              onClick={async () => this.RemoveAccessGroupPermission({groupAddress: group.address})}
+            >
+              Remove
+            </IconButton>
+          </div>
+        )
       };
     });
 
@@ -98,7 +135,6 @@ class ContentObjectGroups extends React.Component {
               params: {},
               publicOnly: true
             });
-            await this.props.LoadGroupPermissions();
           }
         }}
         render={() => (
@@ -111,14 +147,22 @@ class ContentObjectGroups extends React.Component {
               onChange={(value) => this.setState({view: value})}
             />
             <Listing
+              ref={ref => {
+                if(!this.state.listingRef) {
+                  this.setState({listingRef: ref});
+                }
+              }}
               key={`object-access-group-listing-${this.state.view}-${this.state.pageVersion}`}
               className="compact"
               pageId="ObjectAccessGroups"
               noIcon={true}
-              noStatus={true}
+              noLink={true}
               paginate={true}
               count={GroupCount()}
-              LoadContent={(filterOptions => this.setState(filterOptions))}
+              LoadContent={async (filterOptions) => {
+                await this.props.LoadGroupPermissions();
+                this.setState(filterOptions);
+              }}
               RenderContent={() => this.AccessGroups()}
             />
             {

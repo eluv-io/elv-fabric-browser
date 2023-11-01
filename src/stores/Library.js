@@ -242,7 +242,7 @@ class LibraryStore {
   });
 
   @action.bound
-  RemoveContentLibraryGroup = flow(function * ({libraryId, groupAddress, type}) {
+  RemoveContentLibraryGroupPermission = flow(function * ({libraryId, groupAddress, type}) {
     yield Fabric.RemoveContentLibraryGroup({
       libraryId,
       address: groupAddress,
