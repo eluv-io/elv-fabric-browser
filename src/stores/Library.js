@@ -60,6 +60,7 @@ class LibraryStore {
       this.libraries[libraryId].canContribute =
         this.libraries[libraryId].isOwner ||
         (contributorGroups.filter(address => userGroups.includes(address))).length > 0;
+
     }
   });
 
@@ -222,7 +223,7 @@ class LibraryStore {
     let permissions = {};
 
     yield Promise.all(
-      ["accessor", "contributor", "reviewer"].map(async type => {
+      ["accessor", "contributor"].map(async type => {
         const {accessGroups} = await Fabric.ListContentLibraryGroups({
           libraryId,
           type,
@@ -243,11 +244,15 @@ class LibraryStore {
 
   @action.bound
   RemoveContentLibraryGroupPermission = flow(function * ({libraryId, groupAddress, type}) {
-    yield Fabric.RemoveContentLibraryGroup({
-      libraryId,
-      address: groupAddress,
-      groupType: type
-    });
+    if(type === "manage") {
+      yield Fabric.RemoveContentLibraryManagerGroup({libraryId, address: groupAddress});
+    } else {
+      yield Fabric.RemoveContentLibraryGroup({
+        libraryId,
+        address: groupAddress,
+        groupType: type
+      });
+    }
 
     this.rootStore.notificationStore.SetNotificationMessage({
       message: "Successfully removed library group permissions",
@@ -256,13 +261,19 @@ class LibraryStore {
   });
 
   @action.bound
-  UpdateContentLibraryGroup = flow(function * ({libraryId, groupAddress, accessor, contributor, reviewer}) {
-    const options = { accessor, contributor, reviewer};
+  UpdateContentLibraryGroup = flow(function * ({
+    libraryId,
+    groupAddress,
+    accessor,
+    contributor,
+    manage
+  }) {
+    const options = { accessor, contributor };
 
     const permissions = this.libraries[libraryId].groupPermissions[groupAddress] || {};
 
     yield Promise.all(
-      ["accessor", "contributor", "reviewer"].map(async type => {
+      ["accessor", "contributor"].map(async type => {
         if(!permissions[type] && options[type]) {
           // Add group
           await Fabric.AddContentLibraryGroup({libraryId, address: groupAddress, groupType: type});
@@ -272,6 +283,10 @@ class LibraryStore {
         }
       })
     );
+
+    if(manage) {
+      yield Fabric.AddContentLibraryManagerGroup({libraryId, address: groupAddress});
+    }
 
     this.rootStore.notificationStore.SetNotificationMessage({
       message: "Successfully modified library group permissions",

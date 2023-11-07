@@ -130,16 +130,19 @@ class ContentLibrary extends React.Component {
         }}
         render={() => (
           <React.Fragment>
-            <div>
-              <Action onClick={() => this.setState({showGroupForm: true})}>
-                Manage Group Permissions
-              </Action>
-            </div>
+            {
+              this.props.libraryStore.library.isManager &&
+              <div>
+                <Action onClick={() => this.setState({showGroupForm: true})}>
+                  Manage Group Permissions
+                </Action>
+              </div>
+            }
             <Tabs
               options={[
                 ["View", "accessor"],
                 ["Contribute", "contributor"],
-                ["Manage", "reviewer"]
+                ["Manage", "manage"]
               ]}
               className="secondary"
               selected={this.state.groupsView}

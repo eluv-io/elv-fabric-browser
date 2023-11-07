@@ -27,7 +27,7 @@ class ContentLibraryGroupForm extends React.Component {
     this.setState({
       groupAddress: event.target.value,
       selectedPermission: (
-        permissions.reviewer ? "MANAGE" : permissions.contributor ? "CONTRIBUTE" : permissions.accessor ? "VIEW" : ""
+        permissions.manage ? "MANAGE" : permissions.contributor ? "CONTRIBUTE" : permissions.accessor ? "VIEW" : ""
       )
     });
   }
@@ -37,7 +37,7 @@ class ContentLibraryGroupForm extends React.Component {
       libraryId: this.props.libraryStore.libraryId,
       groupAddress: this.state.groupAddress,
       accessor: this.state.selectedPermission === "VIEW",
-      reviewer: this.state.selectedPermission === "MANAGE",
+      manage: this.state.selectedPermission === "MANAGE",
       contributor: this.state.selectedPermission === "CONTRIBUTE"
     });
 
