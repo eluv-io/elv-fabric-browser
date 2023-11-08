@@ -714,6 +714,7 @@ const Fabric = {
     const isContentLibraryObject = client.utils.EqualHash(libraryId, objectId);
     const isContentType = libraryId === Fabric.contentSpaceLibraryId && !isContentLibraryObject;
     const isNormalObject = !isContentLibraryObject && !isContentType;
+    const {isV3} = await client.ContractInfo({id: objectId});
 
     const latestVersionHash = await client.LatestVersionHash({objectId});
 
@@ -875,7 +876,8 @@ const Fabric = {
       isContentLibraryObject,
       isContentType,
       isNormalObject,
-      accessType
+      accessType,
+      isV3
     };
   },
 
