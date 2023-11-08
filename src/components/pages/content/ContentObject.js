@@ -866,7 +866,14 @@ class ContentObject extends React.Component {
           {
             label: "Delete",
             type: "button",
-            hidden: this.props.objectStore.object.isContentLibraryObject || !this.props.objectStore.object.canEdit || !this.props.objectStore.object.isOwner,
+            hidden: (
+              this.props.objectStore.object.isContentLibraryObject ||
+              !(
+                this.props.objectStore.object.canEdit ||
+                this.props.objectStore.object.isOwner ||
+                this.props.libraryStore.library.isManager
+              )
+            ),
             onClick: () => this.DeleteContentObject(),
             className: "danger",
             dividerAbove: true
