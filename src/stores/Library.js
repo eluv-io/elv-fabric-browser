@@ -222,6 +222,13 @@ class LibraryStore {
   ContentLibraryGroupPermissions = flow(function * ({libraryId}) {
     let permissions = {};
 
+    const SetPermission = ({address, type}) => {
+      permissions[address] = {
+        [type]: true,
+        ...(permissions[address] || {})
+      };
+    };
+
     yield Promise.all(
       ["accessor", "contributor"].map(async type => {
         const {accessGroups} = await Fabric.ListContentLibraryGroups({
@@ -231,13 +238,15 @@ class LibraryStore {
         });
 
         Object.keys(accessGroups).forEach(address => {
-          permissions[address] = {
-            [type]: true,
-            ...(permissions[address] || {})
-          };
+          SetPermission({address, type});
         });
       })
     );
+
+    const managerGroups = yield Fabric.ListContentLibraryManagerGroups({libraryId});
+    managerGroups.forEach(address => {
+      SetPermission({address, type: "manage"});
+    });
 
     this.libraries[libraryId].groupPermissions = permissions;
   });
@@ -268,25 +277,29 @@ class LibraryStore {
     contributor,
     manage
   }) {
-    const options = { accessor, contributor };
+    const options = { accessor, contributor, manage };
 
     const permissions = this.libraries[libraryId].groupPermissions[groupAddress] || {};
 
     yield Promise.all(
-      ["accessor", "contributor"].map(async type => {
+      ["accessor", "contributor", "manage"].map(async type => {
         if(!permissions[type] && options[type]) {
           // Add group
-          await Fabric.AddContentLibraryGroup({libraryId, address: groupAddress, groupType: type});
+          if(type === "manage") {
+            await Fabric.AddContentLibraryManagerGroup({libraryId, address: groupAddress});
+          } else {
+            await Fabric.AddContentLibraryGroup({libraryId, address: groupAddress, groupType: type});
+          }
         } else if(permissions[type] && !options[type]) {
           // Remove group
-          await Fabric.RemoveContentLibraryGroup({libraryId, address: groupAddress, groupType: type});
+          if(type === "manage") {
+            await Fabric.RemoveContentLibraryManagerGroup({libraryId, address: groupAddress});
+          } else {
+            await Fabric.RemoveContentLibraryGroup({libraryId, address: groupAddress, groupType: type});
+          }
         }
       })
     );
-
-    if(manage) {
-      yield Fabric.AddContentLibraryManagerGroup({libraryId, address: groupAddress});
-    }
 
     this.rootStore.notificationStore.SetNotificationMessage({
       message: "Successfully modified library group permissions",

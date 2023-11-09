@@ -483,7 +483,7 @@ const Fabric = {
       methodArgs: [
         FormatAddress(address),
         2, // TYPE_SEE = 0; TYPE_ACCESS = 1; TYPE_EDIT = 2
-        1 // CATEGORY_GROUP = 2
+        1 // adding
       ]
     });
 
@@ -511,8 +511,8 @@ const Fabric = {
       methodName: "setRights",
       methodArgs: [
         FormatAddress(address),
-        0, // TYPE_SEE = 0; TYPE_ACCESS = 1; TYPE_EDIT = 2
-        1 // CATEGORY_GROUP = 2
+        2, // TYPE_SEE = 0; TYPE_ACCESS = 1; TYPE_EDIT = 2
+        0 // revoking
       ]
     });
 
