@@ -527,6 +527,26 @@ const Fabric = {
     });
   },
 
+  SetContentLibraryRights: async ({libraryId, address, type="SEE", access}) => {
+    // access - 1 add | 0 revoke
+    const typeMap = {
+      "SEE": 0,
+      "ACCESS": 1,
+      "EDIT": 2
+    };
+    const accessType = typeMap[type];
+
+    await client.CallContractMethodAndWait({
+      contractAddress: client.utils.HashToAddress(libraryId),
+      methodName: "setRights",
+      methodArgs: [
+        FormatAddress(address),
+        accessType,
+        access
+      ]
+    });
+  },
+
   RemoveContentLibraryGroup: async ({libraryId, address, groupType}) => {
     const event = await client.CallContractMethodAndWait({
       contractAddress: client.utils.HashToAddress(libraryId),

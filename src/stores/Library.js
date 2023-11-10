@@ -290,12 +290,30 @@ class LibraryStore {
           } else {
             await Fabric.AddContentLibraryGroup({libraryId, address: groupAddress, groupType: type});
           }
+
+          if(type === "contributor") {
+            await Fabric.SetContentLibraryRights({
+              libraryId,
+              address: groupAddress,
+              type: "ACCESS",
+              access: 1
+            });
+          }
         } else if(permissions[type] && !options[type]) {
           // Remove group
           if(type === "manage") {
             await Fabric.RemoveContentLibraryManagerGroup({libraryId, address: groupAddress});
           } else {
             await Fabric.RemoveContentLibraryGroup({libraryId, address: groupAddress, groupType: type});
+          }
+
+          if(type === "contributor") {
+            await Fabric.SetContentLibraryRights({
+              libraryId,
+              address: groupAddress,
+              type: "ACCESS",
+              access: 0
+            });
           }
         }
       })
