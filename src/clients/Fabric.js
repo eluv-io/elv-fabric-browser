@@ -504,6 +504,17 @@ const Fabric = {
     }
   },
 
+  CheckLibraryCanContribute: async ({libraryId}) => {
+    const contractAddress = client.utils.HashToAddress(libraryId);
+    return client.CallContractMethod({
+      contractAddress,
+      methodName: "canContribute",
+      methodArgs: [
+        FormatAddress(Fabric.currentAccountAddress)
+      ]
+    });
+  },
+
   RemoveContentLibraryManagerGroup: async ({libraryId, address}) => {
     const contractAddress = client.utils.HashToAddress(libraryId);
     await client.CallContractMethodAndWait({

@@ -57,10 +57,11 @@ class LibraryStore {
         Fabric.AccessGroupAddresses()
       ]);
 
+      const canContribute = yield Fabric.CheckLibraryCanContribute({libraryId});
+
       this.libraries[libraryId].canContribute =
         this.libraries[libraryId].isOwner ||
-        (contributorGroups.filter(address => userGroups.includes(address))).length > 0;
-
+        (contributorGroups.filter(address => userGroups.includes(address))).length > 0 || canContribute;
     }
   });
 
