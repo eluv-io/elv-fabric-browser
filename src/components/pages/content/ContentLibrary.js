@@ -352,7 +352,7 @@ class ContentLibrary extends React.Component {
           {
             label: "Manage",
             type: "link",
-            hidden: !this.props.libraryStore.library.isOwner,
+            hidden: !(this.props.libraryStore.library.isOwner || this.props.libraryStore.library.isManager),
             path: UrlJoin(this.props.match.url, "edit"),
           },
           {
@@ -370,7 +370,7 @@ class ContentLibrary extends React.Component {
           {
             label: "Create From Existing",
             type: "button",
-            hidden: this.props.libraryStore.library.isContentSpaceLibrary || !(this.props.libraryStore.library.isOwner && this.props.libraryStore.library.canContribute),
+            hidden: this.props.libraryStore.library.isContentSpaceLibrary || !(this.props.libraryStore.library.isManager && this.props.libraryStore.library.canContribute),
             onClick: () => this.setState({showCopyObjectModal: true})
           }
         ]}
