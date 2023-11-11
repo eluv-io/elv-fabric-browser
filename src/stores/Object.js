@@ -11,7 +11,6 @@ const concurrentUploads = 3;
 
 class ObjectStore {
   @observable writeTokens = {};
-  @observable forceUpdate = 0;
 
   @computed get libraryId() {
     return this.rootStore.routerStore.libraryId;
@@ -29,7 +28,6 @@ class ObjectStore {
   @computed get objectGroupPermissions() {
     const object = this.objects[this.objectId];
     // eslint-disable-next-line no-unused-vars
-    const _ = this.forceUpdate;
 
     return object ? object.groupPermissions : undefined;
   }
@@ -44,10 +42,6 @@ class ObjectStore {
     // Don't store objects in observable, it's very slow for large amounts of meta
     this.objects = {};
     this.versions = {};
-  }
-
-  forceComputedUpdate() {
-    this.forceUpdate += 1;
   }
 
   @action.bound
@@ -88,7 +82,6 @@ class ObjectStore {
   @action.bound
   ContentObjectGroupPermissions = flow(function * ({objectId}) {
     this.objects[objectId].groupPermissions = yield Fabric.GetContentObjectGroupPermissions({objectId});
-    this.forceComputedUpdate();
   });
 
   @action.bound

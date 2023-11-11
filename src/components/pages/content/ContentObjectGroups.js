@@ -71,6 +71,8 @@ class ContentObjectGroups extends React.Component {
     if(this.state.listingRef) {
       this.state.listingRef.Load();
     }
+
+    this.setState({pageVersion: this.state.pageVersion + 1});
   }
 
   AccessGroups() {
