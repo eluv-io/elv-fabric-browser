@@ -26,7 +26,10 @@ class ObjectStore {
   }
 
   @computed get objectGroupPermissions() {
-    return this.objects[this.objectId].groupPermissions;
+    const object = this.objects[this.objectId];
+    // eslint-disable-next-line no-unused-vars
+
+    return object ? object.groupPermissions : undefined;
   }
 
   @computed get currentAccountAddress() {
@@ -592,6 +595,20 @@ MergeMetadata = flow(function * ({
 
     this.rootStore.notificationStore.SetNotificationMessage({
       message: "Successfully finalized ABR Mezzanine"
+    });
+  });
+
+  @action.bound
+  RemoveContentObjectGroupPermission = flow(function * ({objectId, groupAddress, permission}) {
+    yield Fabric.RemoveContentObjectGroupPermission({
+      objectId,
+      groupAddress,
+      permission
+    });
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully removed object group permissions",
+      redirect: false
     });
   });
 

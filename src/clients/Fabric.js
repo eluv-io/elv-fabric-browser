@@ -311,7 +311,8 @@ const Fabric = {
       currentAccountAddress,
       imageUrl,
       kmsAddress,
-      tenantId
+      tenantId,
+      isManager
     ] = await Promise.all([
       client.ContentLibrary({libraryId}), // libraryInfo
       Fabric.ListLibraryContentTypes({libraryId}), // types
@@ -333,6 +334,10 @@ const Fabric = {
         methodArgs: [
           "_tenantId"
         ]
+      }),
+      client.CallContractMethod({
+        contractAddress: client.utils.HashToAddress(libraryId),
+        methodName: "canEdit",
       })
     ]);
 
@@ -354,7 +359,6 @@ const Fabric = {
 
      */
 
-
     return {
       ...libraryInfo,
       libraryId,
@@ -371,7 +375,8 @@ const Fabric = {
       owner,
       ownerName,
       isOwner: EqualAddress(owner, currentAccountAddress),
-      isContentSpaceLibrary: libraryId === Fabric.contentSpaceLibraryId
+      isContentSpaceLibrary: libraryId === Fabric.contentSpaceLibraryId,
+      isManager
     };
   },
 
@@ -428,7 +433,34 @@ const Fabric = {
   /* Library Groups */
 
   ListContentLibraryGroups: async ({libraryId, type, params={}}) => {
-    return await Fabric.ListAccessGroups({params: {libraryId, type, ...params}});
+    if(["accessor", "contributor"].includes(type)) {
+      return await Fabric.ListAccessGroups({params: {libraryId, type, ...params}});
+    } else if(type === "manage") {
+      const accessGroups = {};
+      const accessGroupList = await Fabric.ListContentLibraryManagerGroups({libraryId});
+
+      for(let i = 0; i < accessGroupList.length; i++) {
+        const address = accessGroupList[i];
+        accessGroups[address] = await Fabric.GetAccessGroup({contractAddress: address, publicOnly: false});
+      }
+
+      return {
+        accessGroups,
+        count: accessGroupList.length
+      };
+    }
+  },
+
+  ListContentLibraryManagerGroups: async ({libraryId}) => {
+    const response = client.utils.FromHex(
+      await client.CallContractMethod({
+        contractAddress: Fabric.utils.HashToAddress(libraryId),
+        methodName: "getMeta",
+        methodArgs: ["managerGroups"]
+      })
+    );
+
+    return response && JSON.parse(response) ? JSON.parse(response) : [];
   },
 
   AddContentLibraryGroup: async ({libraryId, address, groupType}) => {
@@ -441,6 +473,89 @@ const Fabric = {
     if(!event.logs || event.logs.length === 0) {
       throw Error("Failed to add " + groupType + "group " + address);
     }
+  },
+
+  AddContentLibraryManagerGroup: async ({libraryId, address}) => {
+    const contractAddress = client.utils.HashToAddress(libraryId);
+    const event = await client.CallContractMethodAndWait({
+      contractAddress,
+      methodName: "setRights",
+      methodArgs: [
+        FormatAddress(address),
+        2, // TYPE_SEE = 0; TYPE_ACCESS = 1; TYPE_EDIT = 2
+        1 // adding
+      ]
+    });
+
+    const managerGroupsList = await Fabric.ListContentLibraryManagerGroups({libraryId});
+
+    if(!managerGroupsList.includes(address)) {
+      managerGroupsList.push(address);
+    }
+
+    await client.ReplaceContractMetadata({
+      contractAddress,
+      metadataKey: "managerGroups",
+      metadata: managerGroupsList
+    });
+
+    if(!event.logs || event.logs.length === 0) {
+      throw Error(`Failed to add manage group ${address}`);
+    }
+  },
+
+  CheckLibraryCanContribute: async ({libraryId}) => {
+    const contractAddress = client.utils.HashToAddress(libraryId);
+    return client.CallContractMethod({
+      contractAddress,
+      methodName: "canContribute",
+      methodArgs: [
+        FormatAddress(Fabric.currentAccountAddress)
+      ]
+    });
+  },
+
+  RemoveContentLibraryManagerGroup: async ({libraryId, address}) => {
+    const contractAddress = client.utils.HashToAddress(libraryId);
+    await client.CallContractMethodAndWait({
+      contractAddress,
+      methodName: "setRights",
+      methodArgs: [
+        FormatAddress(address),
+        2, // TYPE_SEE = 0; TYPE_ACCESS = 1; TYPE_EDIT = 2
+        0 // revoking
+      ]
+    });
+
+    let managerGroupList = await Fabric.ListContentLibraryManagerGroups({libraryId});
+
+    managerGroupList = managerGroupList.filter(groupAddress => groupAddress !== address);
+
+    await client.ReplaceContractMetadata({
+      contractAddress,
+      metadataKey: "managerGroups",
+      metadata: managerGroupList
+    });
+  },
+
+  SetContentLibraryRights: async ({libraryId, address, type="SEE", access}) => {
+    // access - 1 add | 0 revoke
+    const typeMap = {
+      "SEE": 0,
+      "ACCESS": 1,
+      "EDIT": 2
+    };
+    const accessType = typeMap[type];
+
+    await client.CallContractMethodAndWait({
+      contractAddress: client.utils.HashToAddress(libraryId),
+      methodName: "setRights",
+      methodArgs: [
+        FormatAddress(address),
+        accessType,
+        access
+      ]
+    });
   },
 
   RemoveContentLibraryGroup: async ({libraryId, address, groupType}) => {
@@ -630,6 +745,7 @@ const Fabric = {
     const isContentLibraryObject = client.utils.EqualHash(libraryId, objectId);
     const isContentType = libraryId === Fabric.contentSpaceLibraryId && !isContentLibraryObject;
     const isNormalObject = !isContentLibraryObject && !isContentType;
+    const {isV3} = await client.ContractInfo({id: objectId});
 
     const latestVersionHash = await client.LatestVersionHash({objectId});
 
@@ -791,7 +907,8 @@ const Fabric = {
       isContentLibraryObject,
       isContentType,
       isNormalObject,
-      accessType
+      accessType,
+      isV3
     };
   },
 

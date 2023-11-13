@@ -108,6 +108,32 @@ form {
   }
 }
 
+.-elv-form {
+  input {
+    &[type="radio"] {
+      cursor: pointer;
+      height: 100%;
+      margin: 3px 0 0;
+      width: 1rem;
+    }
+  }
+}
+
+.radio-item {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: row;
+  gap: 2rem; // sass-lint:disable-line no-misspelled-properties
+  margin-bottom: 1rem;
+
+  .radio-helper-text {
+    color: $elv-color-text-lighter;
+    font-size: $elv-font-m;
+    margin-top: $elv-spacing-xxs;
+  }
+}
+
+
 fieldset {
   display: flex;
   flex-direction: column;

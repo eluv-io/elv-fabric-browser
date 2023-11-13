@@ -283,7 +283,10 @@ class AccessGroup extends React.Component {
         <ContentObjectGroups
           currentPage="accessGroup"
           showGroupPermissionsButton={this.props.groupStore.accessGroup.isManager || this.props.groupStore.accessGroup.isOwner}
-          LoadGroupPermissions={() => {}}
+          LoadGroupPermissions={async () => {
+            await this.props.groupStore.AccessGroupGroupPermissions({contractAddress: this.props.groupStore.contractAddress});
+            await this.props.groupStore.SetInheritedGroupAccess();
+          }}
         />
       );
     } else {

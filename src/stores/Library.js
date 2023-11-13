@@ -57,9 +57,11 @@ class LibraryStore {
         Fabric.AccessGroupAddresses()
       ]);
 
+      const canContribute = yield Fabric.CheckLibraryCanContribute({libraryId});
+
       this.libraries[libraryId].canContribute =
         this.libraries[libraryId].isOwner ||
-        (contributorGroups.filter(address => userGroups.includes(address))).length > 0;
+        (contributorGroups.filter(address => userGroups.includes(address))).length > 0 || canContribute;
     }
   });
 
@@ -221,8 +223,15 @@ class LibraryStore {
   ContentLibraryGroupPermissions = flow(function * ({libraryId}) {
     let permissions = {};
 
+    const SetPermission = ({address, type}) => {
+      permissions[address] = {
+        [type]: true,
+        ...(permissions[address] || {})
+      };
+    };
+
     yield Promise.all(
-      ["accessor", "contributor", "reviewer"].map(async type => {
+      ["accessor", "contributor"].map(async type => {
         const {accessGroups} = await Fabric.ListContentLibraryGroups({
           libraryId,
           type,
@@ -230,31 +239,83 @@ class LibraryStore {
         });
 
         Object.keys(accessGroups).forEach(address => {
-          permissions[address] = {
-            [type]: true,
-            ...(permissions[address] || {})
-          };
+          SetPermission({address, type});
         });
       })
     );
+
+    const managerGroups = yield Fabric.ListContentLibraryManagerGroups({libraryId});
+    managerGroups.forEach(address => {
+      SetPermission({address, type: "manage"});
+    });
 
     this.libraries[libraryId].groupPermissions = permissions;
   });
 
   @action.bound
-  UpdateContentLibraryGroup = flow(function * ({libraryId, groupAddress, accessor, contributor, reviewer}) {
-    const options = { accessor, contributor, reviewer};
+  RemoveContentLibraryGroupPermission = flow(function * ({libraryId, groupAddress, type}) {
+    if(type === "manage") {
+      yield Fabric.RemoveContentLibraryManagerGroup({libraryId, address: groupAddress});
+    } else {
+      yield Fabric.RemoveContentLibraryGroup({
+        libraryId,
+        address: groupAddress,
+        groupType: type
+      });
+    }
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully removed library group permissions",
+      redirect: true
+    });
+  });
+
+  @action.bound
+  UpdateContentLibraryGroup = flow(function * ({
+    libraryId,
+    groupAddress,
+    accessor,
+    contributor,
+    manage
+  }) {
+    const options = { accessor, contributor, manage };
 
     const permissions = this.libraries[libraryId].groupPermissions[groupAddress] || {};
 
     yield Promise.all(
-      ["accessor", "contributor", "reviewer"].map(async type => {
+      ["accessor", "contributor", "manage"].map(async type => {
         if(!permissions[type] && options[type]) {
           // Add group
-          await Fabric.AddContentLibraryGroup({libraryId, address: groupAddress, groupType: type});
+          if(type === "manage") {
+            await Fabric.AddContentLibraryManagerGroup({libraryId, address: groupAddress});
+          } else {
+            await Fabric.AddContentLibraryGroup({libraryId, address: groupAddress, groupType: type});
+          }
+
+          if(type === "contributor") {
+            await Fabric.SetContentLibraryRights({
+              libraryId,
+              address: groupAddress,
+              type: "ACCESS",
+              access: 1
+            });
+          }
         } else if(permissions[type] && !options[type]) {
           // Remove group
-          await Fabric.RemoveContentLibraryGroup({libraryId, address: groupAddress, groupType: type});
+          if(type === "manage") {
+            await Fabric.RemoveContentLibraryManagerGroup({libraryId, address: groupAddress});
+          } else {
+            await Fabric.RemoveContentLibraryGroup({libraryId, address: groupAddress, groupType: type});
+          }
+
+          if(type === "contributor") {
+            await Fabric.SetContentLibraryRights({
+              libraryId,
+              address: groupAddress,
+              type: "ACCESS",
+              access: 0
+            });
+          }
         }
       })
     );

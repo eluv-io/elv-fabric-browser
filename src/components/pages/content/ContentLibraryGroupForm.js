@@ -13,9 +13,7 @@ class ContentLibraryGroupForm extends React.Component {
 
     this.state = {
       groupAddress: "",
-      accessor: false,
-      reviewer: false,
-      contributor: false
+      selectedPermission: ""
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -28,9 +26,9 @@ class ContentLibraryGroupForm extends React.Component {
 
     this.setState({
       groupAddress: event.target.value,
-      accessor: !!permissions.accessor,
-      contributor: !!permissions.contributor,
-      reviewer: !!permissions.reviewer
+      selectedPermission: (
+        permissions.manage ? "MANAGE" : permissions.contributor ? "CONTRIBUTE" : permissions.accessor ? "VIEW" : ""
+      )
     });
   }
 
@@ -38,9 +36,9 @@ class ContentLibraryGroupForm extends React.Component {
     await this.props.libraryStore.UpdateContentLibraryGroup({
       libraryId: this.props.libraryStore.libraryId,
       groupAddress: this.state.groupAddress,
-      accessor: this.state.accessor,
-      reviewer: this.state.reviewer,
-      contributor: this.state.contributor
+      accessor: this.state.selectedPermission === "VIEW",
+      manage: this.state.selectedPermission === "MANAGE",
+      contributor: this.state.selectedPermission === "CONTRIBUTE"
     });
 
     await this.props.LoadGroups();
@@ -102,27 +100,54 @@ class ContentLibraryGroupForm extends React.Component {
             >
               <div className="form-content">
                 { this.Groups() }
+              </div>
 
-                <label htmlFor="accessor">Viewer</label>
+              <div className="radio-item">
                 <input
-                  type="checkbox"
-                  checked={this.state.accessor}
-                  onChange={() => this.setState({accessor: !this.state.accessor})}
+                  type="radio"
+                  id="view"
+                  checked={this.state.selectedPermission === "VIEW"}
+                  value={this.state.selectedPermission === "VIEW"}
+                  onChange={() => this.setState({selectedPermission: "VIEW"})}
                 />
+                <div className="radio-label">
+                  <label htmlFor="view">View</label>
+                  <div className="radio-helper-text">
+                    List content objects in the library. View library metadata.
+                  </div>
+                </div>
+              </div>
 
-                <label htmlFor="contributor">Contributor</label>
+              <div className="radio-item">
                 <input
-                  type="checkbox"
-                  checked={this.state.contributor}
-                  onChange={() => this.setState({contributor: !this.state.contributor})}
+                  type="radio"
+                  id="contribute"
+                  checked={this.state.selectedPermission === "CONTRIBUTE"}
+                  value={this.state.selectedPermission === "CONTRIBUTE"}
+                  onChange={() => this.setState({selectedPermission: "CONTRIBUTE"})}
                 />
+                <div className="radio-label">
+                  <label htmlFor="contribute">Contribute</label>
+                  <div className="radio-helper-text">
+                    List and create new content objects in the library. View library metadata.
+                  </div>
+                </div>
+              </div>
 
-                <label htmlFor="reviewer">Reviewer</label>
+              <div className="radio-item">
                 <input
-                  type="checkbox"
-                  checked={this.state.reviewer}
-                  onChange={() => this.setState({reviewer: !this.state.reviewer})}
+                  type="radio"
+                  id="manage"
+                  checked={this.state.selectedPermission === "MANAGE"}
+                  value={this.state.selectedPermission === "MANAGE"}
+                  onChange={() => this.setState({selectedPermission: "MANAGE"})}
                 />
+                <div className="radio-label">
+                  <label htmlFor="manage">Manage</label>
+                  <div className="radio-helper-text">
+                    List, create and delete content objects in the library. Edit library metadata.
+                  </div>
+                </div>
               </div>
             </Form>
           )}
