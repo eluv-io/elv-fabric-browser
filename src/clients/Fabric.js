@@ -311,8 +311,7 @@ const Fabric = {
       currentAccountAddress,
       imageUrl,
       kmsAddress,
-      tenantId,
-      isManager
+      tenantId
     ] = await Promise.all([
       client.ContentLibrary({libraryId}), // libraryInfo
       Fabric.ListLibraryContentTypes({libraryId}), // types
@@ -334,12 +333,19 @@ const Fabric = {
         methodArgs: [
           "_tenantId"
         ]
-      }),
-      client.CallContractMethod({
-        contractAddress: client.utils.HashToAddress(libraryId),
-        methodName: "canEdit",
       })
     ]);
+
+    let isManager = false;
+    try {
+      isManager = await client.CallContractMethod({
+        contractAddress: client.utils.HashToAddress(libraryId),
+        methodName: "canEdit",
+      });
+    } catch(error) {
+      // eslint-disable-next-line no-console
+      console.error(`Unable to call canEdit on ${libraryId}`);
+    }
 
     const kmsId = kmsAddress ? `ikms${client.utils.AddressToHash(kmsAddress)}` : "";
 
@@ -777,16 +783,21 @@ const Fabric = {
     const isOwner = EqualAddress(owner, await Fabric.CurrentAccountAddress());
 
     let canEdit = isOwner;
-    if(!canEdit && isNormalObject) {
-      canEdit = await client.CallContractMethod({
-        contractAddress: client.utils.HashToAddress(objectId),
-        methodName: "canEdit"
-      });
-    } else if(!canEdit && isContentType) {
-      canEdit = await client.CallContractMethod({
-        contractAddress: client.utils.HashToAddress(objectId),
-        methodName: "canCommit"
-      });
+    try {
+      if(!canEdit && isNormalObject) {
+        canEdit = await client.CallContractMethod({
+          contractAddress: client.utils.HashToAddress(objectId),
+          methodName: "canEdit"
+        });
+      } else if(!canEdit && isContentType) {
+        canEdit = await client.CallContractMethod({
+          contractAddress: client.utils.HashToAddress(objectId),
+          methodName: "canCommit"
+        });
+      }
+    } catch(error) {
+      // eslint-disable-next-line no-console
+      console.error(`Unable to call canEdit/canCommit on ${objectId}`);
     }
 
     let typeInfo;
