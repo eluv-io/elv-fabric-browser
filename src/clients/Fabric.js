@@ -806,15 +806,19 @@ const Fabric = {
       methodArgs: [Fabric.currentAccountAddress]
     });
 
-    const hasContentTypeAccess = await client.CallContractMethod({
-      contractAddress: walletAddress,
-      methodName: "checkRights",
-      methodArgs: [
-        4, // CATEGORY_CONTENT_TYPE = 4
-        client.utils.HashToAddress(Fabric.utils.DecodeVersionHash(object.type).objectId),
-        1 // TYPE_SEE = 0; TYPE_ACCESS = 1; TYPE_EDIT = 2
-      ]
-    });
+
+    let hasContentTypeAccess = false;
+    if(object.type) {
+      hasContentTypeAccess = await client.CallContractMethod({
+        contractAddress: walletAddress,
+        methodName: "checkRights",
+        methodArgs: [
+          4, // CATEGORY_CONTENT_TYPE = 4
+          client.utils.HashToAddress(Fabric.utils.DecodeVersionHash(object.type).objectId),
+          1 // TYPE_SEE = 0; TYPE_ACCESS = 1; TYPE_EDIT = 2
+        ]
+      });
+    }
 
     let typeInfo;
     if(object.type) {
