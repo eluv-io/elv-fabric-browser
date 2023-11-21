@@ -98,13 +98,8 @@ class ContentLibrary extends React.Component {
 
     const groupsInfo = Object.keys(groups).map(address => {
       const group = groups[address];
-
-      return {
-        id: address,
-        sortKey: (group.name || "zz").toLowerCase(),
-        title: group.name || address,
-        description: group.description,
-        status: (
+      const status = this.props.libraryStore.library.isManager ?
+        (
           <div className="listing-action-icon">
             <IconButton
               icon={RemoveIcon}
@@ -114,7 +109,14 @@ class ContentLibrary extends React.Component {
               Remove
             </IconButton>
           </div>
-        )
+        ) : "";
+
+      return {
+        id: address,
+        sortKey: (group.name || "zz").toLowerCase(),
+        title: group.name || address,
+        description: group.description,
+        status
       };
     });
 
