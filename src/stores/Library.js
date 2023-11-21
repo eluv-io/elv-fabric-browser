@@ -254,6 +254,16 @@ class LibraryStore {
 
   @action.bound
   RemoveContentLibraryGroupPermission = flow(function * ({libraryId, groupAddress, type}) {
+    if(type === "contributor") {
+      // Remove access before deleting since this is manually added
+      yield Fabric.SetContentLibraryRights({
+        libraryId,
+        address: groupAddress,
+        type: "ACCESS",
+        access: 0
+      });
+    }
+
     if(type === "manage") {
       yield Fabric.RemoveContentLibraryManagerGroup({libraryId, address: groupAddress});
     } else {
