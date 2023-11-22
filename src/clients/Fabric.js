@@ -440,7 +440,7 @@ const Fabric = {
 
   ListContentLibraryGroups: async ({libraryId, type, params={}}) => {
     if(["accessor", "contributor"].includes(type)) {
-      return await Fabric.ListAccessGroups({params: {libraryId, type, ...params}});
+      return Fabric.ListAccessGroups({params: {libraryId, type, ...params}});
     } else if(type === "manage") {
       const accessGroups = {};
       const accessGroupList = await Fabric.ListContentLibraryManagerGroups({libraryId});
@@ -458,15 +458,19 @@ const Fabric = {
   },
 
   ListContentLibraryManagerGroups: async ({libraryId}) => {
-    const response = client.utils.FromHex(
-      await client.CallContractMethod({
-        contractAddress: Fabric.utils.HashToAddress(libraryId),
-        methodName: "getMeta",
-        methodArgs: ["managerGroups"]
-      })
-    );
+    const groups = await client.ContentObjectGroupPermissions({objectId: libraryId.replace("ilib", "iq__")});
+    const filteredGroups = [];
 
-    return response && JSON.parse(response) ? JSON.parse(response) : [];
+    for(let i = 0; i < Object.keys(groups).length; i++) {
+      const address = Object.keys(groups)[i];
+      const group = groups[address] || [];
+
+      if(group.includes("manage")) {
+        filteredGroups.push(address);
+      }
+    }
+
+    return filteredGroups;
   },
 
   AddContentLibraryGroup: async ({libraryId, address, groupType}) => {
@@ -482,32 +486,11 @@ const Fabric = {
   },
 
   AddContentLibraryManagerGroup: async ({libraryId, address}) => {
-    const contractAddress = client.utils.HashToAddress(libraryId);
-    const event = await client.CallContractMethodAndWait({
-      contractAddress,
-      methodName: "setRights",
-      methodArgs: [
-        FormatAddress(address),
-        2, // TYPE_SEE = 0; TYPE_ACCESS = 1; TYPE_EDIT = 2
-        1 // adding
-      ]
+    await client.AddContentObjectGroupPermission({
+      objectId: libraryId.replace("ilib", "iq__"),
+      groupAddress: address,
+      permission: "manage"
     });
-
-    const managerGroupsList = await Fabric.ListContentLibraryManagerGroups({libraryId});
-
-    if(!managerGroupsList.includes(address)) {
-      managerGroupsList.push(address);
-    }
-
-    await client.ReplaceContractMetadata({
-      contractAddress,
-      metadataKey: "managerGroups",
-      metadata: managerGroupsList
-    });
-
-    if(!event.logs || event.logs.length === 0) {
-      throw Error(`Failed to add manage group ${address}`);
-    }
   },
 
   CheckLibraryCanContribute: async ({libraryId}) => {
@@ -522,25 +505,10 @@ const Fabric = {
   },
 
   RemoveContentLibraryManagerGroup: async ({libraryId, address}) => {
-    const contractAddress = client.utils.HashToAddress(libraryId);
-    await client.CallContractMethodAndWait({
-      contractAddress,
-      methodName: "setRights",
-      methodArgs: [
-        FormatAddress(address),
-        2, // TYPE_SEE = 0; TYPE_ACCESS = 1; TYPE_EDIT = 2
-        0 // revoking
-      ]
-    });
-
-    let managerGroupList = await Fabric.ListContentLibraryManagerGroups({libraryId});
-
-    managerGroupList = managerGroupList.filter(groupAddress => groupAddress !== address);
-
-    await client.ReplaceContractMetadata({
-      contractAddress,
-      metadataKey: "managerGroups",
-      metadata: managerGroupList
+    await client.RemoveContentObjectGroupPermission({
+      objectId: libraryId.replace("ilib", "iq__"),
+      groupAddress: address,
+      permission: "manage"
     });
   },
 
