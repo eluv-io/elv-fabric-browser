@@ -307,16 +307,12 @@ const Fabric = {
     let [
       libraryInfo,
       types,
-      owner,
-      currentAccountAddress,
       imageUrl,
       kmsAddress,
       tenantId
     ] = await Promise.all([
       client.ContentLibrary({libraryId}), // libraryInfo
       Fabric.ListLibraryContentTypes({libraryId}), // types
-      Fabric.GetContentLibraryOwner({libraryId}), // owner
-      Fabric.CurrentAccountAddress(), // currentAccountAddress
       Fabric.GetContentObjectImageUrl({ // imageUrl
         libraryId,
         objectId,
@@ -335,17 +331,6 @@ const Fabric = {
         ]
       })
     ]);
-
-    let isManager = false;
-    try {
-      isManager = await client.CallContractMethod({
-        contractAddress: client.utils.HashToAddress(libraryId),
-        methodName: "canEdit",
-      });
-    } catch(error) {
-      // eslint-disable-next-line no-console
-      console.error(`Unable to call canEdit on ${libraryId}`);
-    }
 
     const kmsId = kmsAddress ? `ikms${client.utils.AddressToHash(kmsAddress)}` : "";
 
@@ -378,11 +363,56 @@ const Fabric = {
       imageUrl,
       kmsId,
       tenantId,
-      owner,
       ownerName,
-      isOwner: EqualAddress(owner, currentAccountAddress),
-      isContentSpaceLibrary: libraryId === Fabric.contentSpaceLibraryId,
-      isManager
+      isContentSpaceLibrary: libraryId === Fabric.contentSpaceLibraryId
+    };
+  },
+
+  ContentLibraryUserPermissions: async ({libraryId, isContentSpaceLibrary}) => {
+    let canContribute = false, isManager = false;
+    const currentAccountAddress = await Fabric.CurrentAccountAddress();
+    const owner = await Fabric.GetContentLibraryOwner({libraryId});
+    const isOwner = EqualAddress(owner, currentAccountAddress);
+
+    if(!isContentSpaceLibrary) {
+      // Determine if current user can contribute to the library
+
+      const [contributorGroups, userGroups] = await Promise.all([
+        Fabric.LibraryGroupAddresses({libraryId, type: "contributor"}),
+        Fabric.AccessGroupAddresses()
+      ]);
+
+      const contractAddress = client.utils.HashToAddress(libraryId);
+      const canContributeResponse = await client.CallContractMethod({
+        contractAddress,
+        methodName: "canContribute",
+        methodArgs: [
+          FormatAddress(currentAccountAddress)
+        ]
+      });
+
+      canContribute = (
+        isOwner ||
+        (contributorGroups.filter(address => userGroups.includes(address))).length > 0 ||
+        canContributeResponse
+      );
+    }
+
+    try {
+      isManager = await client.CallContractMethod({
+        contractAddress: client.utils.HashToAddress(libraryId),
+        methodName: "canEdit",
+      });
+    } catch(error) {
+      // eslint-disable-next-line no-console
+      console.error(`Unable to call canEdit on ${libraryId}`);
+    }
+
+    return {
+      canContribute,
+      owner,
+      isOwner,
+      isManager,
     };
   },
 
@@ -490,17 +520,6 @@ const Fabric = {
       objectId: libraryId.replace("ilib", "iq__"),
       groupAddress: address,
       permission: "manage"
-    });
-  },
-
-  CheckLibraryCanContribute: async ({libraryId}) => {
-    const contractAddress = client.utils.HashToAddress(libraryId);
-    return client.CallContractMethod({
-      contractAddress,
-      methodName: "canContribute",
-      methodArgs: [
-        FormatAddress(Fabric.currentAccountAddress)
-      ]
     });
   },
 

@@ -169,6 +169,7 @@ class ContentLibrary extends React.Component {
                   type: this.state.groupsView,
                   params
                 });
+                await this.props.libraryStore.ContentLibraryUserPermissions({libraryId: this.props.libraryStore.libraryId});
                 await this.props.libraryStore.ContentLibraryGroupPermissions({libraryId:this.props.libraryStore.libraryId});
 
                 this.setState({listingVersion: this.state.listingVersion + 1});
