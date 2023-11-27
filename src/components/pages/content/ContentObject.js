@@ -978,9 +978,9 @@ class ContentObject extends React.Component {
         <ContentObjectGroups
           currentPage="contentObject"
           showGroupPermissionsButton={this.props.objectStore.object.isOwner || (this.props.objectStore.object.isNormalObject && this.props.objectStore.object.permission !== "owner" && this.props.objectStore.object.canEdit)}
-          LoadGroupPermissions={() => {
-            this.props.objectStore.ContentObjectGroupPermissions({objectId: this.props.objectStore.objectId});
-            this.props.objectStore.ContentObjectUserPermissions({
+          LoadGroupPermissions={async () => {
+            await this.props.objectStore.ContentObjectGroupPermissions({objectId: this.props.objectStore.objectId});
+            await this.props.objectStore.ContentObjectUserPermissions({
               objectId: this.props.objectStore.objectId,
               libraryId: this.props.objectStore.libraryId
             });
