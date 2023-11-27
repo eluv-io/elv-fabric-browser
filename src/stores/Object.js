@@ -85,6 +85,17 @@ class ObjectStore {
   });
 
   @action.bound
+  ContentObjectUserPermissions = flow(function * ({libraryId, objectId}) {
+    const isContentLibraryObject = client.utils.EqualHash(libraryId, objectId);
+    const isContentType = libraryId === Fabric.contentSpaceLibraryId && !isContentLibraryObject;
+    const isNormalObject = !isContentLibraryObject && !isContentType;
+
+    const response = yield Fabric.GetContentObjectUserPermissions({objectId, isContentType, isNormalObject});
+
+    Object.keys(response).forEach(permission => this.objects[objectId][permission] = response[permission]);
+  });
+
+  @action.bound
   UpdateContentObject = flow(function * ({
     libraryId,
     objectId,

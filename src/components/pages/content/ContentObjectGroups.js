@@ -82,7 +82,7 @@ class ContentObjectGroups extends React.Component {
         sortKey: (group.name || "zz").toLowerCase(),
         title: group.name || group.address,
         description: group.description,
-        status: (
+        status: this.props.objectStore.object.canEdit ? (
           <div className="listing-action-icon">
             <IconButton
               icon={RemoveIcon}
@@ -92,7 +92,7 @@ class ContentObjectGroups extends React.Component {
               Remove
             </IconButton>
           </div>
-        )
+        ) : ""
       };
     });
 

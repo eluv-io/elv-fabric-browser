@@ -766,26 +766,7 @@ const Fabric = {
       permission = await client.Permission({objectId, clearCache: true});
     }
 
-    const owner = await Fabric.GetContentObjectOwner({objectId: objectId});
-    const isOwner = EqualAddress(owner, await Fabric.CurrentAccountAddress());
-
-    let canEdit = isOwner;
-    try {
-      if(!canEdit && isNormalObject) {
-        canEdit = await client.CallContractMethod({
-          contractAddress: client.utils.HashToAddress(objectId),
-          methodName: "canEdit"
-        });
-      } else if(!canEdit && isContentType) {
-        canEdit = await client.CallContractMethod({
-          contractAddress: client.utils.HashToAddress(objectId),
-          methodName: "canCommit"
-        });
-      }
-    } catch(error) {
-      // eslint-disable-next-line no-console
-      console.error(`Unable to call canEdit/canCommit on ${objectId}`);
-    }
+    const {owner, isOwner, canEdit} = await Fabric.GetContentObjectUserPermissions({objectId});
 
     const walletAddress = await client.CallContractMethod({
       contractAddress: client.utils.HashToAddress(Fabric.contentSpaceId),
@@ -930,6 +911,35 @@ const Fabric = {
       isNormalObject,
       accessType,
       isV3
+    };
+  },
+
+  GetContentObjectUserPermissions: async({objectId, isContentType, isNormalObject}) => {
+    const owner = await Fabric.GetContentObjectOwner({objectId: objectId});
+    const isOwner = EqualAddress(owner, await Fabric.CurrentAccountAddress());
+
+    let canEdit = isOwner;
+    try {
+      if(!canEdit && isNormalObject) {
+        canEdit = await client.CallContractMethod({
+          contractAddress: client.utils.HashToAddress(objectId),
+          methodName: "canEdit"
+        });
+      } else if(!canEdit && isContentType) {
+        canEdit = await client.CallContractMethod({
+          contractAddress: client.utils.HashToAddress(objectId),
+          methodName: "canCommit"
+        });
+      }
+    } catch(error) {
+      // eslint-disable-next-line no-console
+      console.error(`Unable to call canEdit/canCommit on ${objectId}`);
+    }
+
+    return {
+      owner,
+      isOwner,
+      canEdit
     };
   },
 
