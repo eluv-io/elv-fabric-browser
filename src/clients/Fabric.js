@@ -730,7 +730,7 @@ const Fabric = {
     };
   },
 
-  GetContentObject: async ({libraryId, objectId}) => {
+  GetContentObject: async ({libraryId, objectId, refresh=false}) => {
     if(!libraryId) {
       libraryId = await client.ContentObjectLibraryId({objectId});
     }
@@ -743,7 +743,7 @@ const Fabric = {
     const latestVersionHash = await client.LatestVersionHash({objectId});
 
     // Cachable
-    if(!objectCache[latestVersionHash]) {
+    if(!objectCache[latestVersionHash] || refresh) {
       let [object, metadata] = await Promise.all([
         client.ContentObject({libraryId, objectId}),
         client.ContentObjectMetadata({libraryId, objectId})
@@ -1293,7 +1293,8 @@ const Fabric = {
 
   // List content types for display
   ListContentTypes: async ({params}) => {
-    let contentTypes = Object.values(await client.ContentTypes());
+    const typesResponse = await client.ContentTypes();
+    let contentTypes = Object.values(typesResponse);
 
     const GetName = contentType => (contentType.meta.public ? contentType.meta.public.name : contentType.meta.name) || "";
 

@@ -87,7 +87,10 @@ class ContentObjectGroups extends React.Component {
             <IconButton
               icon={RemoveIcon}
               label="Remove Access Group"
-              onClick={async () => this.RemoveAccessGroupPermission({groupAddress: group.address})}
+              onClick={async () => {
+                await this.RemoveAccessGroupPermission({groupAddress: group.address});
+                this.props.RefreshCallback();
+              }}
             >
               Remove
             </IconButton>

@@ -45,8 +45,8 @@ class ObjectStore {
   }
 
   @action.bound
-  ContentObject = flow(function * ({libraryId, objectId}) {
-    const object = yield Fabric.GetContentObject({libraryId, objectId});
+  ContentObject = flow(function * ({libraryId, objectId, refresh=false}) {
+    const object = yield Fabric.GetContentObject({libraryId, objectId, refresh});
 
     this.objects[objectId] = object;
     this.versions[object.hash] = object;
