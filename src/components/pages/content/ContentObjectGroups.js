@@ -76,13 +76,14 @@ class ContentObjectGroups extends React.Component {
   }
 
   AccessGroups() {
+    const editCondition = this.props.currentPage === "contentObject" ? this.props.objectStore.object.canEdit : this.props.groupStore.accessGroup.isManager;
     const groupsInfo = this.FilterGroups(this.state.filterOptions).map(group => {
       return {
         id: group.address,
         sortKey: (group.name || "zz").toLowerCase(),
         title: group.name || group.address,
         description: group.description,
-        status: this.props.objectStore.object.canEdit ? (
+        status: editCondition ? (
           <div className="listing-action-icon">
             <IconButton
               icon={RemoveIcon}
