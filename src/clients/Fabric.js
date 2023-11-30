@@ -93,31 +93,47 @@ const Fabric = {
   },
 
   async AddAccessGroupMember({contractAddress, memberAddress}) {
-    return await client.AddAccessGroupMember({
-      contractAddress,
-      memberAddress: FormatAddress(memberAddress)
-    });
+    try {
+      return await client.AddAccessGroupMember({
+        contractAddress,
+        memberAddress: FormatAddress(memberAddress)
+      });
+    } catch(error) {
+      throw Error("Failed to add access group membership");
+    }
   },
 
   async RemoveAccessGroupMember({contractAddress, memberAddress}) {
-    return await client.RemoveAccessGroupMember({
-      contractAddress,
-      memberAddress: FormatAddress(memberAddress)
-    });
+    try {
+      return await client.RemoveAccessGroupMember({
+        contractAddress,
+        memberAddress: FormatAddress(memberAddress)
+      });
+    } catch(error) {
+      throw Error("Failed to remove access group membership");
+    }
   },
 
   async AddAccessGroupManager({contractAddress, memberAddress}) {
-    return await client.AddAccessGroupManager({
-      contractAddress,
-      memberAddress: FormatAddress(memberAddress)
-    });
+    try {
+      return await client.AddAccessGroupManager({
+        contractAddress,
+        memberAddress: FormatAddress(memberAddress)
+      });
+    } catch(error) {
+      throw Error("Failed to add access group membership");
+    }
   },
 
   async RemoveAccessGroupManager({contractAddress, memberAddress}) {
-    return await client.RemoveAccessGroupManager({
-      contractAddress,
-      memberAddress: FormatAddress(memberAddress)
-    });
+    try {
+      return await client.RemoveAccessGroupManager({
+        contractAddress,
+        memberAddress: FormatAddress(memberAddress)
+      });
+    } catch(error) {
+      throw Error("Failed to remove access group managership");
+    }
   },
 
   async IsGroupMember({contractAddress, memberAddress}) {
