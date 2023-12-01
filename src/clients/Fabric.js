@@ -74,21 +74,25 @@ const Fabric = {
     return await client.DeleteAccessGroup({contractAddress: address});
   },
 
-  async LeaveAccessGroup({contractAddress}) {
+  async LeaveAccessGroup({contractAddress, manager=false, member=false}) {
     const currentAccountAddress = await Fabric.CurrentAccountAddress();
 
-    try {
-      await Fabric.RemoveAccessGroupManager({contractAddress, memberAddress: currentAccountAddress});
-    // eslint-disable-next-line no-empty
-    } catch(error) {
-      throw Error("Failed to remove access group managership");
+    if(manager) {
+      try {
+        await Fabric.RemoveAccessGroupManager({contractAddress, memberAddress: currentAccountAddress});
+      // eslint-disable-next-line no-empty
+      } catch(error) {
+        throw Error("Failed to remove access group managership");
+      }
     }
 
-    try {
-      await Fabric.RemoveAccessGroupMember({contractAddress, memberAddress: currentAccountAddress});
-    // eslint-disable-next-line no-empty
-    } catch(error) {
-      throw Error("Failed to remove access group membership");
+    if(member) {
+      try {
+        await Fabric.RemoveAccessGroupMember({contractAddress, memberAddress: currentAccountAddress});
+      // eslint-disable-next-line no-empty
+      } catch(error) {
+        throw Error("Failed to remove access group membership");
+      }
     }
   },
 
