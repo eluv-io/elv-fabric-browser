@@ -761,7 +761,7 @@ MergeMetadata = flow(function * ({
       metadataSubtree: "indexer/version"
     });
 
-    if(version === "2.0") {
+    if(version !== "1.0") {
       const v2Node = yield Fabric.SearchV2();
       const urlEnd = url.split("contentfabric.io");
       const v2Host = v2Node[0].split("contentfabric");
@@ -779,18 +779,18 @@ MergeMetadata = flow(function * ({
       metadataSubtree: "indexer/version"
     });
 
-    if(version === "2.0") {
-      const v2Node = yield Fabric.SearchV2();
-
-      yield Fabric.client.SetNodes({
-        fabricURIs: v2Node,
-        service: "search"
-      });
-    } else {
+    if(version === "1.0") {
       const v1Nodes = yield Fabric.SearchV1();
 
       yield Fabric.client.SetNodes({
         fabricURIs: v1Nodes,
+        service: "search"
+      });
+    } else {
+      const v2Node = yield Fabric.SearchV2();
+
+      yield Fabric.client.SetNodes({
+        fabricURIs: v2Node,
         service: "search"
       });
     }
