@@ -175,7 +175,6 @@ class AccessGroup extends React.Component {
             type: "button",
             hidden: this.props.groupStore.accessGroup.isOwner ||
               !(
-                this.props.groupStore.accessGroup.isMember ||
                 this.props.groupStore.accessGroup.isManager
               ),
             onClick: () => this.LeaveAccessGroup(),
