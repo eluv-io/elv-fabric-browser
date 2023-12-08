@@ -1114,6 +1114,16 @@ class ContentObject extends React.Component {
               throw error;
             }
 
+            try {
+              await this.props.objectStore.ContentObjectUserPermissions({
+                objectId: this.props.objectStore.objectId,
+                libraryId: this.props.objectStore.libraryId
+              });
+            } catch(error) {
+              // eslint-disable-next-line no-console
+              console.error(error);
+            }
+
             this.CheckUrlVersionHash();
 
             this.setState({
