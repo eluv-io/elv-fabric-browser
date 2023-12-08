@@ -89,6 +89,8 @@ class ContentLibrary extends React.Component {
     if(this.state.listingRef) {
       this.state.listingRef.Load();
     }
+
+    this.setState({pageVersion: this.state.pageVersion + 1});
   }
 
   AccessGroups() {
@@ -98,13 +100,8 @@ class ContentLibrary extends React.Component {
 
     const groupsInfo = Object.keys(groups).map(address => {
       const group = groups[address];
-
-      return {
-        id: address,
-        sortKey: (group.name || "zz").toLowerCase(),
-        title: group.name || address,
-        description: group.description,
-        status: (
+      const status = this.props.libraryStore.library.isManager ?
+        (
           <div className="listing-action-icon">
             <IconButton
               icon={RemoveIcon}
@@ -114,7 +111,14 @@ class ContentLibrary extends React.Component {
               Remove
             </IconButton>
           </div>
-        )
+        ) : "";
+
+      return {
+        id: address,
+        sortKey: (group.name || "zz").toLowerCase(),
+        title: group.name || address,
+        description: group.description,
+        status
       };
     });
 
@@ -167,6 +171,7 @@ class ContentLibrary extends React.Component {
                   type: this.state.groupsView,
                   params
                 });
+                await this.props.libraryStore.ContentLibraryUserPermissions({libraryId: this.props.libraryStore.libraryId});
                 await this.props.libraryStore.ContentLibraryGroupPermissions({libraryId:this.props.libraryStore.libraryId});
 
                 this.setState({listingVersion: this.state.listingVersion + 1});

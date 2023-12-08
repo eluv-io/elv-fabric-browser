@@ -97,7 +97,7 @@ class AccessGroup extends React.Component {
         key: `${this.state.view}-${member.address}`,
         title: member.name,
         description: member.address,
-        status: (
+        status: (this.state.view === "members" || this.props.groupStore.accessGroup.isOwner) ? (
           <div className="listing-action-icon">
             <IconButton
               icon={RemoveIcon}
@@ -108,7 +108,7 @@ class AccessGroup extends React.Component {
               Remove
             </IconButton>
           </div>
-        )
+        ) : ""
       };
     });
 
@@ -175,7 +175,6 @@ class AccessGroup extends React.Component {
             type: "button",
             hidden: this.props.groupStore.accessGroup.isOwner ||
               !(
-                this.props.groupStore.accessGroup.isMember ||
                 this.props.groupStore.accessGroup.isManager
               ),
             onClick: () => this.LeaveAccessGroup(),

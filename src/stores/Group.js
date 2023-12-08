@@ -182,7 +182,14 @@ class GroupStore {
 
   @action.bound
   LeaveAccessGroup = flow(function * ({contractAddress}) {
-    yield Fabric.LeaveAccessGroup({contractAddress});
+    const manager = this.accessGroup.isManager;
+    const member = (this.accessGroup.members || {}).hasOwnProperty(Fabric.currentAccountAddress);
+
+    yield Fabric.LeaveAccessGroup({
+      contractAddress,
+      member,
+      manager
+    });
 
     this.rootStore.notificationStore.SetNotificationMessage({
       message: "Access group successfully left",

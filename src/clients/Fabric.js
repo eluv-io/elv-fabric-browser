@@ -74,50 +74,70 @@ const Fabric = {
     return await client.DeleteAccessGroup({contractAddress: address});
   },
 
-  async LeaveAccessGroup({contractAddress}) {
+  async LeaveAccessGroup({contractAddress, manager=false, member=false}) {
     const currentAccountAddress = await Fabric.CurrentAccountAddress();
 
-    try {
-      await Fabric.RemoveAccessGroupManager({contractAddress, memberAddress: currentAccountAddress});
-    // eslint-disable-next-line no-empty
-    } catch(error) {
-      throw Error("Failed to remove access group managership");
+    if(manager) {
+      try {
+        await Fabric.RemoveAccessGroupManager({contractAddress, memberAddress: currentAccountAddress});
+      // eslint-disable-next-line no-empty
+      } catch(error) {
+        throw Error("Failed to remove access group managership");
+      }
     }
 
+    if(member) {
+      try {
+        await Fabric.RemoveAccessGroupMember({contractAddress, memberAddress: currentAccountAddress});
+      // eslint-disable-next-line no-empty
+      } catch(error) {
+        throw Error("Failed to remove access group membership");
+      }
+    }
+  },
+
+  async AddAccessGroupMember({contractAddress, memberAddress}) {
     try {
-      await Fabric.RemoveAccessGroupMember({contractAddress, memberAddress: currentAccountAddress});
-    // eslint-disable-next-line no-empty
+      return await client.AddAccessGroupMember({
+        contractAddress,
+        memberAddress: FormatAddress(memberAddress)
+      });
+    } catch(error) {
+      throw Error("Failed to add access group membership");
+    }
+  },
+
+  async RemoveAccessGroupMember({contractAddress, memberAddress}) {
+    try {
+      return await client.RemoveAccessGroupMember({
+        contractAddress,
+        memberAddress: FormatAddress(memberAddress)
+      });
     } catch(error) {
       throw Error("Failed to remove access group membership");
     }
   },
 
-  async AddAccessGroupMember({contractAddress, memberAddress}) {
-    return await client.AddAccessGroupMember({
-      contractAddress,
-      memberAddress: FormatAddress(memberAddress)
-    });
-  },
-
-  async RemoveAccessGroupMember({contractAddress, memberAddress}) {
-    return await client.RemoveAccessGroupMember({
-      contractAddress,
-      memberAddress: FormatAddress(memberAddress)
-    });
-  },
-
   async AddAccessGroupManager({contractAddress, memberAddress}) {
-    return await client.AddAccessGroupManager({
-      contractAddress,
-      memberAddress: FormatAddress(memberAddress)
-    });
+    try {
+      return await client.AddAccessGroupManager({
+        contractAddress,
+        memberAddress: FormatAddress(memberAddress)
+      });
+    } catch(error) {
+      throw Error("Failed to add access group membership");
+    }
   },
 
   async RemoveAccessGroupManager({contractAddress, memberAddress}) {
-    return await client.RemoveAccessGroupManager({
-      contractAddress,
-      memberAddress: FormatAddress(memberAddress)
-    });
+    try {
+      return await client.RemoveAccessGroupManager({
+        contractAddress,
+        memberAddress: FormatAddress(memberAddress)
+      });
+    } catch(error) {
+      throw Error("Failed to remove access group managership");
+    }
   },
 
   async IsGroupMember({contractAddress, memberAddress}) {
@@ -307,16 +327,12 @@ const Fabric = {
     let [
       libraryInfo,
       types,
-      owner,
-      currentAccountAddress,
       imageUrl,
       kmsAddress,
       tenantId
     ] = await Promise.all([
       client.ContentLibrary({libraryId}), // libraryInfo
       Fabric.ListLibraryContentTypes({libraryId}), // types
-      Fabric.GetContentLibraryOwner({libraryId}), // owner
-      Fabric.CurrentAccountAddress(), // currentAccountAddress
       Fabric.GetContentObjectImageUrl({ // imageUrl
         libraryId,
         objectId,
@@ -335,17 +351,6 @@ const Fabric = {
         ]
       })
     ]);
-
-    let isManager = false;
-    try {
-      isManager = await client.CallContractMethod({
-        contractAddress: client.utils.HashToAddress(libraryId),
-        methodName: "canEdit",
-      });
-    } catch(error) {
-      // eslint-disable-next-line no-console
-      console.error(`Unable to call canEdit on ${libraryId}`);
-    }
 
     const kmsId = kmsAddress ? `ikms${client.utils.AddressToHash(kmsAddress)}` : "";
 
@@ -378,11 +383,56 @@ const Fabric = {
       imageUrl,
       kmsId,
       tenantId,
-      owner,
       ownerName,
-      isOwner: EqualAddress(owner, currentAccountAddress),
-      isContentSpaceLibrary: libraryId === Fabric.contentSpaceLibraryId,
-      isManager
+      isContentSpaceLibrary: libraryId === Fabric.contentSpaceLibraryId
+    };
+  },
+
+  ContentLibraryUserPermissions: async ({libraryId, isContentSpaceLibrary}) => {
+    let canContribute = false, isManager = false;
+    const currentAccountAddress = await Fabric.CurrentAccountAddress();
+    const owner = await Fabric.GetContentLibraryOwner({libraryId});
+    const isOwner = EqualAddress(owner, currentAccountAddress);
+
+    if(!isContentSpaceLibrary) {
+      // Determine if current user can contribute to the library
+
+      const [contributorGroups, userGroups] = await Promise.all([
+        Fabric.LibraryGroupAddresses({libraryId, type: "contributor"}),
+        Fabric.AccessGroupAddresses()
+      ]);
+
+      const contractAddress = client.utils.HashToAddress(libraryId);
+      const canContributeResponse = await client.CallContractMethod({
+        contractAddress,
+        methodName: "canContribute",
+        methodArgs: [
+          FormatAddress(currentAccountAddress)
+        ]
+      });
+
+      canContribute = (
+        isOwner ||
+        (contributorGroups.filter(address => userGroups.includes(address))).length > 0 ||
+        canContributeResponse
+      );
+    }
+
+    try {
+      isManager = await client.CallContractMethod({
+        contractAddress: client.utils.HashToAddress(libraryId),
+        methodName: "canEdit",
+      });
+    } catch(error) {
+      // eslint-disable-next-line no-console
+      console.error(`Unable to call canEdit on ${libraryId}`);
+    }
+
+    return {
+      canContribute,
+      owner,
+      isOwner,
+      isManager,
     };
   },
 
@@ -440,7 +490,7 @@ const Fabric = {
 
   ListContentLibraryGroups: async ({libraryId, type, params={}}) => {
     if(["accessor", "contributor"].includes(type)) {
-      return await Fabric.ListAccessGroups({params: {libraryId, type, ...params}});
+      return Fabric.ListAccessGroups({params: {libraryId, type, ...params}});
     } else if(type === "manage") {
       const accessGroups = {};
       const accessGroupList = await Fabric.ListContentLibraryManagerGroups({libraryId});
@@ -458,15 +508,19 @@ const Fabric = {
   },
 
   ListContentLibraryManagerGroups: async ({libraryId}) => {
-    const response = client.utils.FromHex(
-      await client.CallContractMethod({
-        contractAddress: Fabric.utils.HashToAddress(libraryId),
-        methodName: "getMeta",
-        methodArgs: ["managerGroups"]
-      })
-    );
+    const groups = await client.ContentObjectGroupPermissions({objectId: libraryId.replace("ilib", "iq__")});
+    const filteredGroups = [];
 
-    return response && JSON.parse(response) ? JSON.parse(response) : [];
+    for(let i = 0; i < Object.keys(groups).length; i++) {
+      const address = Object.keys(groups)[i];
+      const group = groups[address] || [];
+
+      if(group.includes("manage")) {
+        filteredGroups.push(address);
+      }
+    }
+
+    return filteredGroups;
   },
 
   AddContentLibraryGroup: async ({libraryId, address, groupType}) => {
@@ -482,65 +536,18 @@ const Fabric = {
   },
 
   AddContentLibraryManagerGroup: async ({libraryId, address}) => {
-    const contractAddress = client.utils.HashToAddress(libraryId);
-    const event = await client.CallContractMethodAndWait({
-      contractAddress,
-      methodName: "setRights",
-      methodArgs: [
-        FormatAddress(address),
-        2, // TYPE_SEE = 0; TYPE_ACCESS = 1; TYPE_EDIT = 2
-        1 // adding
-      ]
-    });
-
-    const managerGroupsList = await Fabric.ListContentLibraryManagerGroups({libraryId});
-
-    if(!managerGroupsList.includes(address)) {
-      managerGroupsList.push(address);
-    }
-
-    await client.ReplaceContractMetadata({
-      contractAddress,
-      metadataKey: "managerGroups",
-      metadata: managerGroupsList
-    });
-
-    if(!event.logs || event.logs.length === 0) {
-      throw Error(`Failed to add manage group ${address}`);
-    }
-  },
-
-  CheckLibraryCanContribute: async ({libraryId}) => {
-    const contractAddress = client.utils.HashToAddress(libraryId);
-    return client.CallContractMethod({
-      contractAddress,
-      methodName: "canContribute",
-      methodArgs: [
-        FormatAddress(Fabric.currentAccountAddress)
-      ]
+    await client.AddContentObjectGroupPermission({
+      objectId: libraryId.replace("ilib", "iq__"),
+      groupAddress: address,
+      permission: "manage"
     });
   },
 
   RemoveContentLibraryManagerGroup: async ({libraryId, address}) => {
-    const contractAddress = client.utils.HashToAddress(libraryId);
-    await client.CallContractMethodAndWait({
-      contractAddress,
-      methodName: "setRights",
-      methodArgs: [
-        FormatAddress(address),
-        2, // TYPE_SEE = 0; TYPE_ACCESS = 1; TYPE_EDIT = 2
-        0 // revoking
-      ]
-    });
-
-    let managerGroupList = await Fabric.ListContentLibraryManagerGroups({libraryId});
-
-    managerGroupList = managerGroupList.filter(groupAddress => groupAddress !== address);
-
-    await client.ReplaceContractMetadata({
-      contractAddress,
-      metadataKey: "managerGroups",
-      metadata: managerGroupList
+    await client.RemoveContentObjectGroupPermission({
+      objectId: libraryId.replace("ilib", "iq__"),
+      groupAddress: address,
+      permission: "manage"
     });
   },
 
@@ -743,7 +750,7 @@ const Fabric = {
     };
   },
 
-  GetContentObject: async ({libraryId, objectId}) => {
+  GetContentObject: async ({libraryId, objectId, refresh=false}) => {
     if(!libraryId) {
       libraryId = await client.ContentObjectLibraryId({objectId});
     }
@@ -756,7 +763,7 @@ const Fabric = {
     const latestVersionHash = await client.LatestVersionHash({objectId});
 
     // Cachable
-    if(!objectCache[latestVersionHash]) {
+    if(!objectCache[latestVersionHash] || refresh) {
       let [object, metadata] = await Promise.all([
         client.ContentObject({libraryId, objectId}),
         client.ContentObjectMetadata({libraryId, objectId})
@@ -779,26 +786,7 @@ const Fabric = {
       permission = await client.Permission({objectId, clearCache: true});
     }
 
-    const owner = await Fabric.GetContentObjectOwner({objectId: objectId});
-    const isOwner = EqualAddress(owner, await Fabric.CurrentAccountAddress());
-
-    let canEdit = isOwner;
-    try {
-      if(!canEdit && isNormalObject) {
-        canEdit = await client.CallContractMethod({
-          contractAddress: client.utils.HashToAddress(objectId),
-          methodName: "canEdit"
-        });
-      } else if(!canEdit && isContentType) {
-        canEdit = await client.CallContractMethod({
-          contractAddress: client.utils.HashToAddress(objectId),
-          methodName: "canCommit"
-        });
-      }
-    } catch(error) {
-      // eslint-disable-next-line no-console
-      console.error(`Unable to call canEdit/canCommit on ${objectId}`);
-    }
+    const {owner, isOwner, canEdit} = await Fabric.GetContentObjectUserPermissions({objectId});
 
     const walletAddress = await client.CallContractMethod({
       contractAddress: client.utils.HashToAddress(Fabric.contentSpaceId),
@@ -943,6 +931,35 @@ const Fabric = {
       isNormalObject,
       accessType,
       isV3
+    };
+  },
+
+  GetContentObjectUserPermissions: async({objectId, isContentType, isNormalObject}) => {
+    const owner = await Fabric.GetContentObjectOwner({objectId: objectId});
+    const isOwner = EqualAddress(owner, await Fabric.CurrentAccountAddress());
+
+    let canEdit = isOwner;
+    try {
+      if(!canEdit && isNormalObject) {
+        canEdit = await client.CallContractMethod({
+          contractAddress: client.utils.HashToAddress(objectId),
+          methodName: "canEdit"
+        });
+      } else if(!canEdit && isContentType) {
+        canEdit = await client.CallContractMethod({
+          contractAddress: client.utils.HashToAddress(objectId),
+          methodName: "canCommit"
+        });
+      }
+    } catch(error) {
+      // eslint-disable-next-line no-console
+      console.error(`Unable to call canEdit/canCommit on ${objectId}`);
+    }
+
+    return {
+      owner,
+      isOwner,
+      canEdit
     };
   },
 
@@ -1296,7 +1313,8 @@ const Fabric = {
 
   // List content types for display
   ListContentTypes: async ({params}) => {
-    let contentTypes = Object.values(await client.ContentTypes());
+    const typesResponse = await client.ContentTypes();
+    let contentTypes = Object.values(typesResponse);
 
     const GetName = contentType => (contentType.meta.public ? contentType.meta.public.name : contentType.meta.name) || "";
 

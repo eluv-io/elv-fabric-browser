@@ -84,7 +84,8 @@ class ContentObject extends React.Component {
       showNonOwnerCapManagement: false,
       newNonOwnerCapPublicKey: "",
       newNonOwnerCapLabel: "",
-      capsVersion: false
+      capsVersion: false,
+      refresh: false
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -868,7 +869,7 @@ class ContentObject extends React.Component {
             type: "button",
             hidden: (
               this.props.objectStore.object.isContentLibraryObject ||
-              (this.props.objectStore.object.isV3 && !this.props.libraryStore.library || !this.props.libraryStore.library.isManager) ||
+              (this.props.objectStore.object.isV3 && !!this.props.libraryStore.library && !this.props.libraryStore.library.isManager) ||
               (!this.props.objectStore.object.isV3 && !this.props.objectStore.object.isOwner)
             ),
             onClick: () => this.DeleteContentObject(),
@@ -978,7 +979,14 @@ class ContentObject extends React.Component {
         <ContentObjectGroups
           currentPage="contentObject"
           showGroupPermissionsButton={this.props.objectStore.object.isOwner || (this.props.objectStore.object.isNormalObject && this.props.objectStore.object.permission !== "owner" && this.props.objectStore.object.canEdit)}
-          LoadGroupPermissions={() => this.props.objectStore.ContentObjectGroupPermissions({objectId: this.props.objectStore.objectId})}
+          RefreshCallback={() => this.setState({refresh: true, pageVersion: this.state.pageVersion + 1})}
+          LoadGroupPermissions={async () => {
+            await this.props.objectStore.ContentObjectGroupPermissions({objectId: this.props.objectStore.objectId});
+            await this.props.objectStore.ContentObjectUserPermissions({
+              objectId: this.props.objectStore.objectId,
+              libraryId: this.props.objectStore.libraryId
+            });
+          }}
         />
       );
     } else if(this.state.view === "info") {
@@ -1097,7 +1105,8 @@ class ContentObject extends React.Component {
             try {
               await this.props.objectStore.ContentObject({
                 libraryId: this.props.objectStore.libraryId,
-                objectId: this.props.objectStore.objectId
+                objectId: this.props.objectStore.objectId,
+                refresh: this.state.refresh
               });
             } catch(error) {
               // eslint-disable-next-line no-console
@@ -1110,7 +1119,8 @@ class ContentObject extends React.Component {
             this.setState({
               displayAppUrl:
                 this.props.objectStore.object.displayAppUrl ||
-                (this.props.objectStore.object.typeInfo || {}).displayAppUrl
+                (this.props.objectStore.object.typeInfo || {}).displayAppUrl,
+              refresh: false
             });
           }
         }

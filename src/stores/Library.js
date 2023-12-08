@@ -49,20 +49,17 @@ class LibraryStore {
       listingParams: listingParams || {}
     };
 
-    if(!this.libraries[libraryId].isContentSpaceLibrary) {
-      // Determine if current user can contribute to the library
+    yield this.ContentLibraryUserPermissions({libraryId});
+  });
 
-      const [contributorGroups, userGroups] = yield Promise.all([
-        Fabric.LibraryGroupAddresses({libraryId, type: "contributor"}),
-        Fabric.AccessGroupAddresses()
-      ]);
+  @action.bound
+  ContentLibraryUserPermissions = flow(function * ({libraryId}) {
+    const response = yield Fabric.ContentLibraryUserPermissions({
+      libraryId,
+      isContentSpaceLibrary: this.libraries[libraryId].isContentSpaceLibrary
+    });
 
-      const canContribute = yield Fabric.CheckLibraryCanContribute({libraryId});
-
-      this.libraries[libraryId].canContribute =
-        this.libraries[libraryId].isOwner ||
-        (contributorGroups.filter(address => userGroups.includes(address))).length > 0 || canContribute;
-    }
+    Object.keys(response).forEach(permission => this.libraries[libraryId][permission] = response[permission]);
   });
 
   @action.bound

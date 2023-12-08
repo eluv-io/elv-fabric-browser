@@ -24,6 +24,7 @@ class TypeStore {
 
   @action.bound
   ListContentTypes = flow(function * ({params}) {
+    this.types = {};
     const {types, count} = yield Cancelable(
       params.cancelable,
       async () => Fabric.ListContentTypes({params})
