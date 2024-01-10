@@ -96,6 +96,24 @@ class ObjectStore {
   });
 
   @action.bound
+  AddContentAdminsGroupPermissions = flow(function * ({objectId}) {
+    try {
+      // Automatically add permissions for content manage
+      const contentAdminsGroupAddress = yield Fabric.GetContentAdminsGroupAddress();
+      yield Fabric.AddContentObjectGroupPermission({
+        objectId,
+        groupAddress: contentAdminsGroupAddress,
+        permission: "manage"
+      });
+    } catch(error) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to add new object to content admins group:");
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  });
+
+  @action.bound
   UpdateContentObject = flow(function * ({
     libraryId,
     objectId,
@@ -161,6 +179,10 @@ class ObjectStore {
       writeToken,
       commitMessage: commitMessage || "Fabric Browser form"
     });
+
+    if(create) {
+      yield this.AddContentAdminsGroupPermissions({objectId});
+    }
 
     this.rootStore.notificationStore.SetNotificationMessage({
       message: `Successfully ${create ? "created": "updated"} content`,
@@ -267,6 +289,8 @@ class ObjectStore {
 
   @action.bound CopyContentObject = flow(function * ({libraryId, originalVersionHash, options={}}) {
     const response = yield Fabric.CopyContentObject({libraryId, originalVersionHash, options});
+
+    yield this.AddContentAdminsGroupPermissions({objectId: response.id});
 
     this.rootStore.notificationStore.SetNotificationMessage({
       message: "Successfully copied object",
