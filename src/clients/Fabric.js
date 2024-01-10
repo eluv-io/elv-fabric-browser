@@ -1088,6 +1088,35 @@ const Fabric = {
 
   /* Object creation / modification */
 
+  GetContentAdminsGroupAddress: async () => {
+    try {
+      // Attempt to add newly created object to content admins group
+      const tenantContractId = await client.userProfileClient.TenantContractId();
+      const contentAdminGroupAddress = await client.CallContractMethod({
+        contractAddress: client.utils.HashToAddress(tenantContractId),
+        methodName: "groupsMapping",
+        methodArgs: ["content_admin", 0],
+        formatArguments: true,
+      });
+
+      if(!contentAdminGroupAddress) {
+        throw "Unable to determine content admins group address";
+      }
+
+      const userGroups = await client.Collection({collectionType: "accessGroups"});
+      if(!userGroups.find(address => client.utils.EqualAddress(address, contentAdminGroupAddress))) {
+        throw "Current user not a member of content admins group " + contentAdminGroupAddress;
+      }
+
+      return contentAdminGroupAddress;
+    } catch(error) {
+      // eslint-disable-next-line no-console
+      console.error("Error adding new object to content admins group:");
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  },
+
   CreateContentObject: async ({
     libraryId,
     type,

@@ -104,6 +104,9 @@ class LibraryStore {
       });
     }
 
+    const contentAdminsGroupAddress = yield Fabric.GetContentAdminsGroupAddress();
+    yield Fabric.AddContentLibraryManagerGroup({libraryId, address: contentAdminsGroupAddress});
+
     this.rootStore.notificationStore.SetNotificationMessage({
       message: "Successfully created content library '" + name + "'",
       redirect: true
