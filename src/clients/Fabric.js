@@ -788,32 +788,17 @@ const Fabric = {
 
     const {owner, isOwner, canEdit} = await Fabric.GetContentObjectUserPermissions({objectId});
 
-    const walletAddress = await client.CallContractMethod({
-      contractAddress: client.utils.HashToAddress(Fabric.contentSpaceId),
-      methodName: "userWallets",
-      methodArgs: [Fabric.currentAccountAddress]
-    });
-
-
-    let hasContentTypeAccess = false;
-    if(object.type) {
-      hasContentTypeAccess = await client.CallContractMethod({
-        contractAddress: walletAddress,
-        methodName: "checkRights",
-        methodArgs: [
-          4, // CATEGORY_CONTENT_TYPE = 4
-          client.utils.HashToAddress(Fabric.utils.DecodeVersionHash(object.type).objectId),
-          1 // TYPE_SEE = 0; TYPE_ACCESS = 1; TYPE_EDIT = 2
-        ]
-      });
-    }
-
     let typeInfo;
     if(object.type) {
-      typeInfo = await Fabric.GetContentType({
-        versionHash: object.type,
-        publicOnly: (!canEdit && permission === "public" || !hasContentTypeAccess)
-      });
+      try {
+        typeInfo = await Fabric.GetContentType({versionHash: object.type, publicOnly: (!canEdit && permission === "public")});
+      } catch(error) {
+        // eslint-disable-next-line no-console
+        console.error(`Unable to load private metadata for type: ${object.type}. Loading public metadata.`);
+
+        typeInfo = await Fabric.GetContentType({versionHash: object.type, publicOnly: true});
+      }
+
       typeInfo.latestTypeHash = typeInfo.latestType ? typeInfo.latestType.hash : "";
     }
 
