@@ -103,16 +103,6 @@ class ObjectStore {
       yield Fabric.AddContentObjectGroupPermission({
         objectId,
         groupAddress: contentAdminsGroupAddress,
-        permission: "see"
-      });
-      yield Fabric.AddContentObjectGroupPermission({
-        objectId,
-        groupAddress: contentAdminsGroupAddress,
-        permission: "access"
-      });
-      yield Fabric.AddContentObjectGroupPermission({
-        objectId,
-        groupAddress: contentAdminsGroupAddress,
         permission: "manage"
       });
     } catch(error) {
