@@ -61,6 +61,14 @@ class TypeStore {
       bitcode
     });
 
+    // Automatically add permissions for content admins
+    const contentAdminsGroupAddress = yield Fabric.GetContentAdminsGroupAddress();
+    yield Fabric.AddContentObjectGroupPermission({
+      objectId: typeId,
+      groupAddress: contentAdminsGroupAddress,
+      permission: "manage"
+    });
+
     this.rootStore.notificationStore.SetNotificationMessage({
       message: "Successfully created content type",
       redirect: true
