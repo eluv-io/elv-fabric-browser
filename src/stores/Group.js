@@ -120,6 +120,14 @@ class GroupStore {
         });
       }
 
+      // Automatically add permissions for content admins
+      const contentAdminsGroupAddress = yield Fabric.GetContentAdminsGroupAddress();
+      yield Fabric.AddContentObjectGroupPermission({
+        objectId: Fabric.utils.AddressToObjectId(address),
+        groupAddress: contentAdminsGroupAddress,
+        permission: "manage"
+      });
+
       this.rootStore.notificationStore.SetNotificationMessage({
         message: "Access group successfully created",
         redirect: true

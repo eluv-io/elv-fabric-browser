@@ -98,7 +98,7 @@ class ObjectStore {
   @action.bound
   AddContentAdminsGroupPermissions = flow(function * ({objectId}) {
     try {
-      // Automatically add permissions for content manage
+      // Automatically add permissions for content admins group
       const contentAdminsGroupAddress = yield Fabric.GetContentAdminsGroupAddress();
       yield Fabric.AddContentObjectGroupPermission({
         objectId,
