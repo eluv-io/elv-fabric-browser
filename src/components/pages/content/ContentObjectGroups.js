@@ -24,7 +24,8 @@ class ContentObjectGroups extends React.Component {
           filter: ""
         }
       },
-      pageVersion: 0
+      pageVersion: 0,
+      loaded: false
     };
   }
 
@@ -145,13 +146,18 @@ class ContentObjectGroups extends React.Component {
         }}
         render={() => (
           <React.Fragment>
-            { groupPermissionsButton }
-            <Tabs
-              options={options}
-              className="secondary"
-              selected={this.state.view}
-              onChange={(value) => this.setState({view: value})}
-            />
+            {
+              this.state.loaded &&
+                <>
+                  { groupPermissionsButton }
+                  <Tabs
+                    options={options}
+                    className="secondary"
+                    selected={this.state.view}
+                    onChange={(value) => this.setState({view: value})}
+                  />
+                </>
+            }
             <Listing
               ref={ref => {
                 if(!this.state.listingRef) {
@@ -167,7 +173,7 @@ class ContentObjectGroups extends React.Component {
               count={GroupCount()}
               LoadContent={async (filterOptions) => {
                 await this.props.LoadGroupPermissions();
-                this.setState(filterOptions);
+                this.setState({filterOptions, loaded: true});
               }}
               RenderContent={() => this.AccessGroups()}
             />

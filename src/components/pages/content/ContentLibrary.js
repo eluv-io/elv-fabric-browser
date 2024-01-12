@@ -35,7 +35,8 @@ class ContentLibrary extends React.Component {
       pageVersion: 0,
       showGroupForm: false,
       listingVersion: 0,
-      objectId: ""
+      objectId: "",
+      loaded: false
     };
 
     this.PageContent = this.PageContent.bind(this);
@@ -135,23 +136,25 @@ class ContentLibrary extends React.Component {
         render={() => (
           <React.Fragment>
             {
-              this.props.libraryStore.library.isManager &&
-              <div>
-                <Action onClick={() => this.setState({showGroupForm: true})}>
-                  Manage Group Permissions
-                </Action>
-              </div>
+              this.state.loaded && this.props.libraryStore.library.isManager &&
+                <>
+                  <div>
+                    <Action onClick={() => this.setState({showGroupForm: true})}>
+                      Manage Group Permissions
+                    </Action>
+                  </div>
+                  <Tabs
+                    options={[
+                      ["View", "accessor"],
+                      ["Contribute", "contributor"],
+                      ["Manage", "manage"]
+                    ]}
+                    className="secondary"
+                    selected={this.state.groupsView}
+                    onChange={(value) => this.setState({groupsView: value})}
+                  />
+                </>
             }
-            <Tabs
-              options={[
-                ["View", "accessor"],
-                ["Contribute", "contributor"],
-                ["Manage", "manage"]
-              ]}
-              className="secondary"
-              selected={this.state.groupsView}
-              onChange={(value) => this.setState({groupsView: value})}
-            />
             <Listing
               ref={ref => {
                 if(!this.state.listingRef) {
@@ -174,7 +177,7 @@ class ContentLibrary extends React.Component {
                 await this.props.libraryStore.ContentLibraryUserPermissions({libraryId: this.props.libraryStore.libraryId});
                 await this.props.libraryStore.ContentLibraryGroupPermissions({libraryId:this.props.libraryStore.libraryId});
 
-                this.setState({listingVersion: this.state.listingVersion + 1});
+                this.setState({listingVersion: this.state.listingVersion + 1, loaded: true});
               }}
               RenderContent={this.AccessGroups}
             />

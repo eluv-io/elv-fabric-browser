@@ -869,7 +869,7 @@ class ContentObject extends React.Component {
             type: "button",
             hidden: (
               this.props.objectStore.object.isContentLibraryObject ||
-              (this.props.objectStore.object.isV3 && !!this.props.libraryStore.library && !this.props.libraryStore.library.isManager) ||
+              (this.props.objectStore.object.isV3 && !this.props.libraryStore.library || !!this.props.libraryStore.library && !this.props.libraryStore.library.isManager) ||
               (!this.props.objectStore.object.isV3 && !this.props.objectStore.object.isOwner)
             ),
             onClick: () => this.DeleteContentObject(),
@@ -1112,6 +1112,16 @@ class ContentObject extends React.Component {
               // eslint-disable-next-line no-console
               console.error(error);
               throw error;
+            }
+
+            try {
+              await this.props.objectStore.ContentObjectUserPermissions({
+                objectId: this.props.objectStore.objectId,
+                libraryId: this.props.objectStore.libraryId
+              });
+            } catch(error) {
+              // eslint-disable-next-line no-console
+              console.error(error);
             }
 
             this.CheckUrlVersionHash();

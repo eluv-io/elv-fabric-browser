@@ -333,8 +333,8 @@ class Listing extends React.Component {
 
     return (
       <div key={`listing-${this.props.pageId}`} className={`listing ${this.props.className || ""}`}>
-        { this.Actions() }
         <LoadingElement loading={this.state.status.loading} loadingClassname="loading" loadingIcon="rotate">
+          { this.Actions() }
           { this.Count() }
           <ListingView
             count={this.props.count}
