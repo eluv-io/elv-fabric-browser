@@ -426,6 +426,7 @@ const Fabric = {
     } catch(error) {
       // eslint-disable-next-line no-console
       console.error(`Unable to call canEdit on ${libraryId}`);
+      isManager = isOwner;
     }
 
     return {
