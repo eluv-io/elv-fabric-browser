@@ -545,7 +545,7 @@ class ContentObject extends React.Component {
     );
 
     let info = <div>{ Fabric.permissionLevels[this.props.objectStore.object.permission].short }</div>;
-    if(this.props.objectStore.object.isOwner) {
+    if(this.props.objectStore.object.canEdit) {
       const options = Object.keys(Fabric.permissionLevels).map(permission =>
         <option key={`visibility-option-${permission}`} value={permission}>{ Fabric.permissionLevels[permission].short }</option>
       );

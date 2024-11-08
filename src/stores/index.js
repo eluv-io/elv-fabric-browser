@@ -57,3 +57,5 @@ export const objectStore = rootStore.objectStore;
 export const routeStore = rootStore.routerStore;
 export const typeStore = rootStore.typeStore;
 export const contentStore = rootStore.contentStore;
+
+window.rootStore = rootStore;
