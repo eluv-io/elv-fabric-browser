@@ -2070,13 +2070,22 @@ const Fabric = {
             methodArgs: ["_tenantId"]
           });
         } catch(error) {
-        // eslint-disable-next-line no-console
+          // eslint-disable-next-line no-console
           console.error("Failed to get tenant ID.", error);
         }
 
         if(tenantIdMeta) {
           const tenantIdJson = client.utils.FromHex(tenantIdMeta);
-          tenantId = tenantIdJson ? JSON.parse(tenantIdJson) : "";
+          if(tenantIdJson.startsWith("iten")) {
+            tenantId = tenantIdJson;
+          } else {
+            try {
+              tenantId = tenantIdJson ? JSON.parse(tenantIdJson) : "";
+            } catch(error) {
+              // eslint-disable-next-line no-console
+              console.error("Failed to parse tenant ID", tenantIdJson, error);
+            }
+          }
         }
 
         isManager = await client.CallContractMethod({
