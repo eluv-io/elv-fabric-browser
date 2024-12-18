@@ -357,18 +357,18 @@ const Fabric = {
     tenantId = tenantId ? Buffer.from(tenantId.replace("0x", ""), "hex").toString("utf-8") : "";
 
 
-    // Owner name not available
     let ownerName;
-    /*
     try {
+      const ownerAddress = await client.CallContractMethod({
+        contractAddress: client.utils.HashToAddress(libraryId),
+        methodName: "owner"
+      });
       ownerName = await client.userProfileClient.PublicUserMetadata({
-        address: owner,
+        address: ownerAddress,
         metadataSubtree: "name"
       });
     // eslint-disable-next-line no-empty
     } catch(error) {}
-
-     */
 
     return {
       ...libraryInfo,
@@ -877,9 +877,7 @@ const Fabric = {
       metadata: object.meta
     });
 
-    // Not able to get owner name
     let ownerName;
-    /*
     try {
       ownerName = await client.userProfileClient.PublicUserMetadata({
         address: owner,
@@ -887,8 +885,6 @@ const Fabric = {
       });
     // eslint-disable-next-line no-empty
     } catch(error) {}
-
-     */
 
     return {
       ...object,
@@ -2051,7 +2047,6 @@ const Fabric = {
 
         isOwner = client.utils.EqualAddress(owner, currentAccountAddress);
 
-        /*
         try {
           ownerName = await client.userProfileClient.PublicUserMetadata({
             address: owner,
@@ -2059,8 +2054,6 @@ const Fabric = {
           });
         // eslint-disable-next-line no-empty
         } catch(error) {}
-
-         */
 
         let tenantIdMeta;
         try {
