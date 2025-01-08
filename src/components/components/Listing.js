@@ -207,7 +207,7 @@ class Listing extends React.Component {
   }
 
   PreviousPageButtons() {
-    const disabled = this.state.page <= 1;
+    const disabled = this.state.page <= 1 || this.state.status.loading;
 
     return [
       this.PageButton("First Page", "First", 1, disabled),
@@ -217,7 +217,7 @@ class Listing extends React.Component {
 
   NextPageButtons() {
     const totalPages = Math.ceil(this.props.count / this.state.perPage);
-    const disabled = (this.state.page * this.state.perPage) >= this.props.count;
+    const disabled = (this.state.page * this.state.perPage) >= this.props.count || this.state.status.loading;
 
     return [
       this.PageButton("Next Page", "Next", this.state.page + 1, disabled),
@@ -333,8 +333,8 @@ class Listing extends React.Component {
 
     return (
       <div key={`listing-${this.props.pageId}`} className={`listing ${this.props.className || ""}`}>
+        { this.Actions() }
         <LoadingElement loading={this.state.status.loading} loadingClassname="loading" loadingIcon="rotate">
-          { this.Actions() }
           { this.Count() }
           <ListingView
             count={this.props.count}
