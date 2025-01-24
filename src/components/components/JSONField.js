@@ -25,12 +25,18 @@ const JSONField = ({json, diffJson, DiffComponent}) => {
     />
   );
 
+  const length = JSON.stringify(json).length;
+
   let content;
   switch(viewType) {
     case "raw":
       content = (
         <pre className="content-object-data">
-          <Copyable copy={JSON.stringify(json, null, 2)} className="raw-data">{JSON.stringify(json, null, 2)}</Copyable>
+          {
+            length > 25000000 ?
+              "Metadata too large to display" :
+              <Copyable copy={JSON.stringify(json, null, 2)} className="raw-data">{JSON.stringify(json, null, 2)}</Copyable>
+          }
         </pre>
       );
       break;
@@ -44,23 +50,27 @@ const JSONField = ({json, diffJson, DiffComponent}) => {
         break;
       } else if(DiffComponent) {
         content = (
-          <div className="diff-wrapper">
-            <DiffComponent />
-          </div>
+          length > 1000000 ?
+            <pre className="content-object-data">
+              Diff too large to display
+            </pre> :
+            <div className="diff-wrapper">
+              <DiffComponent/>
+            </div>
         );
         break;
       }
       break;
     case "formatted":
     default:
-      content = <TraversableJson json={json} />;
+      content = <TraversableJson json={json}/>;
       break;
   }
 
   return (
     <React.Fragment>
-      { tabs }
-      { content }
+      {tabs}
+      {content}
     </React.Fragment>
   );
 };
