@@ -76,7 +76,7 @@ class LibraryStore {
       throw `Invalid Public Metadata: ${error.message}`;
     }
 
-    if(tenantId && Fabric.utils.ValidHash(tenantId)) {
+    if(tenantId && !Fabric.utils.ValidHash(tenantId)) {
       throw "Invalid Tenant ID";
     }
 
