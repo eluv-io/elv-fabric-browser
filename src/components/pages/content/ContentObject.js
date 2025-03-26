@@ -69,9 +69,11 @@ class ContentObject extends React.Component {
   constructor(props) {
     super(props);
 
+    const searchParams = new URLSearchParams(window.location.search);
+
     this.state = {
       appRef: React.createRef(),
-      view: "info",
+      view: searchParams.get("view") || "info",
       partDownloadProgress: {},
       pageVersion: 0,
       permissionChanging: false,

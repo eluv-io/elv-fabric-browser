@@ -12,6 +12,7 @@ let objectCache = {};
 
 const Fabric = {
   /* Utils */
+  currentPath: undefined,
   client,
   currentAccountAddress: undefined,
   utils: client.utils,
@@ -36,6 +37,19 @@ const Fabric = {
   },
 
   async SetFramePath({path}) {
+    // Preserve url params only for current page
+    if(!Fabric.currentPath || Fabric.currentPath === path) {
+      Fabric.currentPath = path;
+
+      const searchParams = new URLSearchParams(location.search);
+
+      if(searchParams.size > 0) {
+        path = `${path}?${searchParams.toString()}`;
+      }
+    } else {
+      Fabric.currentPath = path;
+    }
+
     return await client.SendMessage({
       options: {
         operation: "SetFramePath",

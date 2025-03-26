@@ -96,10 +96,17 @@ class IFrameBase extends React.Component {
   }
 
   render() {
+    // Pass url params through to app
+    const appUrl = new URL(this.props.appUrl);
+    const params = new URLSearchParams(window.location.search);
+    params.keys().forEach(key =>
+      appUrl.searchParams.set(key, params.get(key))
+    );
+
     return (
       <iframe
         ref={this.props.appRef}
-        src={this.props.appUrl}
+        src={appUrl.toString()}
         allow="encrypted-media *"
         allowFullScreen
         sandbox={this.SandboxPermissions()}
