@@ -99,7 +99,7 @@ class IFrameBase extends React.Component {
     // Pass url params through to app
     const appUrl = new URL(this.props.appUrl);
     const params = new URLSearchParams(window.location.search);
-    params.keys().forEach(key =>
+    Array.from(params.keys()).forEach(key =>
       appUrl.searchParams.set(key, params.get(key))
     );
 
