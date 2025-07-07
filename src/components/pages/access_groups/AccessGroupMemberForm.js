@@ -1,6 +1,6 @@
 import React from "react";
 import Path from "path";
-import {Form} from "elv-components-js";
+import {Confirm, Form} from "elv-components-js";
 import {inject, observer} from "mobx-react";
 import {AsyncComponent} from "elv-components-js";
 import ActionsToolbar from "../../components/ActionsToolbar";
@@ -28,6 +28,18 @@ class AccessGroupMemberForm extends React.Component {
   }
 
   async HandleSubmit() {
+    if(!(await this.props.groupStore.IsSameTenant({userAddress: this.state.memberAddress}))) {
+      let rejected = false;
+      await Confirm({
+        message: "Warning: This user is associated with a different tenancy. Are you sure you want to add them to this group?",
+        onCancel: () => { rejected = true; }
+      });
+
+      if(rejected) {
+        throw "Warning: This user is associated with a different tenancy";
+      }
+    }
+
     await this.props.groupStore.AddAccessGroupMember({
       contractAddress: this.props.groupStore.contractAddress,
       memberAddress: this.state.memberAddress,

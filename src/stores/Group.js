@@ -161,6 +161,20 @@ class GroupStore {
   });
 
   @action.bound
+  async IsSameTenant({userAddress}) {
+    try {
+      const walletAddress = await Fabric.client.userProfileClient.UserWalletAddress({address: userAddress});
+      const userTenant = await Fabric.client.TenantContractId({contractAddress: walletAddress});
+      const myTenant = await Fabric.client.userProfileClient.TenantContractId();
+
+      return Fabric.utils.EqualHash(userTenant, myTenant);
+    } catch(error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  @action.bound
   AddAccessGroupMember = flow(function * ({contractAddress, memberAddress, manager=false}) {
     if(manager) {
       yield Fabric.AddAccessGroupManager({contractAddress, memberAddress});
