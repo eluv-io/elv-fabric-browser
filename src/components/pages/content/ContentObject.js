@@ -381,7 +381,7 @@ class ContentObject extends React.Component {
 
     const typeLink = version.type ?
       <Link className="inline-link" to={UrlJoin("/content-types", version.typeInfo.id)}>
-        { version.typeInfo.name || version.typeInfo.id }
+        { version.typeInfo?.name || version.typeInfo.id }
       </Link> :
       "None";
 
@@ -600,7 +600,7 @@ class ContentObject extends React.Component {
     return (
       <Modal closable={true} OnClickOutside={CloseModal}>
         <Form
-          legend={`Create encryption key for ${this.props.objectStore.object.name}`}
+          legend={`Create encryption key for ${this.props.objectStore.object?.name}`}
           OnComplete={CloseModal}
           OnCancel={CloseModal}
           OnSubmit={async () => {
@@ -726,7 +726,7 @@ class ContentObject extends React.Component {
 
     const typeLink = object.type ?
       <Link className="inline-link" to={UrlJoin("/content-types", object.typeInfo.id)}>
-        { object.typeInfo.name || object.typeInfo.id }
+        { object.typeInfo?.name || object.typeInfo.id }
       </Link> :
       "None";
 
@@ -755,7 +755,7 @@ class ContentObject extends React.Component {
     return (
       <div className="object-info label-box">
         <LabelledField label="Name">
-          { object.meta.public.name || object.id }
+          { object.meta.public?.name || object.id }
         </LabelledField>
 
         <LabelledField
@@ -831,7 +831,7 @@ class ContentObject extends React.Component {
           {
             label: "Back",
             type: "link",
-            path: Path.dirname(this.props.match.url),
+            path: this.props.objectStore.object.isTenantObject ? "/content" : Path.dirname(this.props.match.url),
             className: "secondary"
           },
           {
@@ -941,7 +941,7 @@ class ContentObject extends React.Component {
       options: {
         meta: {
           public: {
-            name: `${originalObject.name} (copy)`
+            name: `${originalObject?.name} (copy)`
           }
         }
       }
@@ -965,10 +965,12 @@ class ContentObject extends React.Component {
     }
 
     let header;
-    if(this.props.objectStore.object.isContentLibraryObject) {
-      header = this.props.libraryStore.library.name + " > Library Object";
+    if(this.props.objectStore.object.isTenantObject) {
+      header = "Tenant Object";
+    } else if(this.props.objectStore.object.isContentLibraryObject) {
+      header = this.props.libraryStore.library?.name + " > Library Object";
     } else if(this.props.objectStore.object.isContentType) {
-      header = "Content Types > " + this.props.objectStore.object.name;
+      header = "Content Types > " + this.props.objectStore.object?.name;
     } else {
       header = (this.props.libraryStore.library ? this.props.libraryStore.library.name : this.props.objectStore.libraryId) + " > " + this.props.objectStore.object.name;
     }

@@ -1,6 +1,7 @@
 import { FrameClient } from "@eluvio/elv-client-js/src/FrameClient";
 import UrlJoin from "url-join";
 import {EqualAddress, FormatAddress, LROStatus} from "../utils/Helpers";
+import Utils from "@eluvio/elv-client-js/src/Utils";
 const Fetch = typeof fetch !== "undefined" ? fetch : require("node-fetch").default;
 
 let client = new FrameClient({
@@ -773,6 +774,8 @@ const Fabric = {
     const isContentLibraryObject = client.utils.EqualHash(libraryId, objectId);
     const isContentType = libraryId === Fabric.contentSpaceLibraryId && !isContentLibraryObject;
     const isNormalObject = !isContentLibraryObject && !isContentType;
+    const tenantId = await client.ContentObjectTenantId({objectId});
+    const isTenantObject = tenantId && objectId && Utils.EqualAddress(Utils.HashToAddress(objectId), Utils.HashToAddress(tenantId));
     const {isV3} = await client.ContractInfo({id: objectId});
 
     const latestVersionHash = await client.LatestVersionHash({objectId});
@@ -926,7 +929,9 @@ const Fabric = {
       isContentType,
       isNormalObject,
       accessType,
-      isV3
+      isV3,
+      tenantId,
+      isTenantObject
     };
   },
 
