@@ -300,6 +300,25 @@ class ObjectStore {
     return response;
   });
 
+  @action.bound TransferObjectOwnership = flow(function * ({libraryId, objectId, newPublicKey}) {
+    try {
+      yield Fabric.TransferObjectOwnership({
+        libraryId,
+        objectId,
+        newPublicKey
+      });
+
+      this.rootStore.notificationStore.SetNotificationMessage({
+        message: "Successfully transferred ownership",
+        redirect: true
+      });
+    } catch(error) {
+      // eslint-disable-next-line no-console
+      console.error("Unable to transfer ownership", error);
+      throw error;
+    }
+  });
+
   @action.bound
   FinalizeContentObject = flow(function * ({libraryId, objectId}) {
     const object = this.objects[objectId];

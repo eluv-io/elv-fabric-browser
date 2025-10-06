@@ -1080,7 +1080,16 @@ const Fabric = {
   },
 
   GetContentObjectOwner: async ({objectId}) => {
-    return FormatAddress(await client.ContentObjectOwner({objectId}));
+    try {
+      return Fabric.utils.FormatAddress(
+        await client.CallContractMethod({
+          contractAddress: Fabric.client.utils.HashToAddress(objectId),
+          methodName: "owner"
+        })
+      );
+    } catch(_e) {
+      return FormatAddress(await client.ContentObjectOwner({objectId}));
+    }
   },
 
   GetAccessInfo: async ({objectId}) => {
@@ -1217,6 +1226,32 @@ const Fabric = {
     });
 
     return response;
+  },
+
+  TransferObjectOwnership: async({
+    libraryId,
+    objectId,
+    newPublicKey
+  }) => {
+    const {writeToken} = await client.EditContentObject({
+      libraryId,
+      objectId
+    });
+
+    await client.TransferOwnership({
+      libraryId,
+      objectId,
+      writeToken,
+      newOwnerPublicKey: newPublicKey
+    });
+
+    await client.FinalizeContentObject({
+      libraryId,
+      objectId,
+      writeToken,
+      commitMessage: "Transferred ownership",
+      awaitCommitConfirmation: true
+    });
   },
 
   FinalizeContentObject: async ({

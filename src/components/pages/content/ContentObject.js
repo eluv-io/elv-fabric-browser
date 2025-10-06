@@ -82,6 +82,8 @@ class ContentObject extends React.Component {
       prevVersionsToggled: false,
       moreOptions: false,
       showCopyObjectModal: false,
+      showTransferOwnershipModal: false,
+      transferPublicKey: "",
       redirectIds: {},
       showNonOwnerCapManagement: false,
       newNonOwnerCapPublicKey: "",
@@ -867,6 +869,12 @@ class ContentObject extends React.Component {
             title: !(this.props.objectStore.object.isOwner || hasUserCap) ? "You don't have the key" : undefined
           },
           {
+            label: "Transfer Ownership",
+            type: "button",
+            onClick: () => this.setState({showTransferOwnershipModal: true}),
+            hidden: !(this.props.objectStore.object.isOwner)
+          },
+          {
             label: "Delete",
             type: "button",
             hidden: (
@@ -952,6 +960,19 @@ class ContentObject extends React.Component {
         objectId: id,
         libraryId: qlib_id
       }
+    });
+  }
+
+  TransferOwnership = async() => {
+    await this.props.objectStore.TransferObjectOwnership({
+      libraryId: this.props.objectStore.libraryId,
+      objectId: this.props.objectStore.objectId,
+      newPublicKey: this.state.transferPublicKey
+    });
+
+    this.setState({
+      showTransferOwnershipModal: false,
+      pageVersion: this.state.pageVersion + 1
     });
   }
 
@@ -1072,6 +1093,21 @@ class ContentObject extends React.Component {
               header="Select a library"
               confirmMessageCallback={({name, libraryName}) => `Are you sure you want to copy ${name} into ${libraryName}?`}
             /> : null
+        }
+        {
+          this.state.showTransferOwnershipModal &&
+          <Modal OnClickOutside={() => this.setState({showTransferOwnershipModal: false})}>
+            <Form
+              legend="Transfer Ownership"
+              OnCancel={() => this.setState({showTransferOwnershipModal: false})}
+              OnSubmit={() => this.TransferOwnership()}
+            >
+              <div className="form-content">
+                <label htmlFor="publicKey">Public Key</label>
+                <textarea name="publicKey" value={this.state.transferPublicKey} onChange={(event) => this.setState({transferPublicKey: event.target.value})} style={{height: "6rem"}} />
+              </div>
+            </Form>
+          </Modal>
         }
       </div>
     );
