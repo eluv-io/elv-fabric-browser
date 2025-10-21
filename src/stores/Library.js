@@ -45,6 +45,7 @@ class LibraryStore {
     const {listingParams} = this.libraries[libraryId] || {};
 
     this.libraries[libraryId] = {
+      ...(this.libraries[libraryId] || {}),
       ...(yield Fabric.GetContentLibrary({libraryId})),
       listingParams: listingParams || {}
     };
@@ -341,7 +342,23 @@ class LibraryStore {
   });
 
   @action.bound
-  ListContentObjects = flow(function * ({libraryId, params}) {
+  ListContentObjects = flow(function * ({libraryId, params={}}) {
+    let previousParams = { ...(this.libraries[libraryId]?.listingParams || {}) };
+    delete previousParams.cancelable;
+    delete previousParams.cancelableEvents;
+    delete previousParams.cacheId;
+    delete params.cancelable;
+    delete params.cancelableEvents;
+    delete params.cacheId;
+
+    if(
+      JSON.stringify(previousParams) === JSON.stringify(params) &&
+      Date.now() - this.libraries[libraryId]?.retrievedAt < 60000
+    ) {
+      // Cache hit
+      return;
+    }
+
     const {objects, count, cacheId} = yield Cancelable(
       params.cancelable,
       async () => await Fabric.ListContentObjects({libraryId, params})
@@ -349,6 +366,8 @@ class LibraryStore {
 
     this.libraries[libraryId].objects = objects;
     this.libraries[libraryId].objectsCount = count;
+    this.libraries[libraryId].retrievedAt = Date.now();
+    this.libraries[libraryId].cacheId = cacheId;
     this.libraries[libraryId].listingParams = {
       ...params,
       cacheId
@@ -368,6 +387,8 @@ class LibraryStore {
       // Reset listing params
       this.libraries[libraryId].listingParams = {};
     }
+
+    this.libraries[libraryId].retrievedAt = 0;
   }
 
   async LookupContent(contentId) {
