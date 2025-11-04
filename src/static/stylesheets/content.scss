@@ -21,6 +21,17 @@
   max-width: 100%;
 }
 
+.auth-token {
+  @include elv-ellipsis;
+  margin-bottom: 5px;
+}
+
+.auth-token-expiration {
+  color: $elv-color-text-light;
+  font-size: 14px;
+  font-style: italic;
+}
+
 .object-image {
   position: absolute;
   right: $elv-spacing-s;

@@ -99,12 +99,17 @@ class ContentObject extends React.Component {
   async componentDidMount() {
     this.mounted = true;
 
+    const token = await this.props.objectStore.rootStore.client.CreateSignedToken({
+      libraryId: this.props.objectStore.libraryId,
+      objectId: this.props.objectStore.objectId,
+      duration: 7 * 24 * 60 * 60 * 1000
+    });
+
     this.setState({
-      editorSignedToken: await this.props.objectStore.rootStore.client.CreateSignedToken({
-        libraryId: this.props.objectStore.libraryId,
-        objectId: this.props.objectStore.objectId,
-        duration: 7 * 24 * 60 * 60 * 1000
-      })
+      editorSignedToken: token,
+      editorSignedTokenExpiration: new Date(
+        this.props.objectStore.rootStore.client.utils.DecodeSignedToken(token).payload.exp
+      ).toLocaleString()
     });
 
     // Wait a bit to avoid react mount-unmount bounce
@@ -807,8 +812,13 @@ class ContentObject extends React.Component {
           { this.Permissions() }
         </LabelledField>
 
-        <LabelledField label="Auth Token" copyValue={this.state.editorSignedToken} alignTop={false}>
-          { this.state.editorSignedToken }
+        <LabelledField label="Auth Token" copyValue={this.state.editorSignedToken} alignTop>
+          <div className="auth-token">
+            { this.state.editorSignedToken }
+          </div>
+          <div className="auth-token-expiration">
+            Expires: { this.state.editorSignedTokenExpiration}
+          </div>
         </LabelledField>
 
         <br />
