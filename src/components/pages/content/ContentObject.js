@@ -99,6 +99,14 @@ class ContentObject extends React.Component {
   async componentDidMount() {
     this.mounted = true;
 
+    this.setState({
+      editorSignedToken: await this.props.objectStore.rootStore.client.CreateSignedToken({
+        libraryId: this.props.objectStore.libraryId,
+        objectId: this.props.objectStore.objectId,
+        duration: 7 * 24 * 60 * 60 * 1000
+      })
+    });
+
     // Wait a bit to avoid react mount-unmount bounce
     await new Promise(resolve => setTimeout(resolve, 50));
     if(!this.mounted) {
@@ -799,9 +807,14 @@ class ContentObject extends React.Component {
           { this.Permissions() }
         </LabelledField>
 
+        <LabelledField label="Auth Token" copyValue={this.state.editorSignedToken} alignTop={false}>
+          { this.state.editorSignedToken }
+        </LabelledField>
+
         <br />
 
         { this.OwnerCapsSection() }
+
 
         { this.ObjectVersion({versionHash: object.hash, latestVersion: true}) }
 
