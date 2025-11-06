@@ -65,6 +65,25 @@ class ObjectStore {
   });
 
   @action.bound
+  ContentObjectCaps = flow(function * ({libraryId, objectId}) {
+    const {hasCaps, hasCapsForOwner} = yield Fabric.GetContentObjectCaps({
+      libraryId,
+      objectId
+    });
+
+    this.objects[objectId]._hasCaps = hasCaps;
+    this.objects[objectId]._hasCapsForOwner = hasCapsForOwner;
+
+    if(hasCaps && !hasCapsForOwner) {
+      this.rootStore.warningStore.AddWarning({
+        warningTitle: "MISSING_OWNER_CAP",
+        objectId,
+        message: "Warning: General CAPS are present, but owner CAPS are missing.",
+      });
+    }
+  });
+
+  @action.bound
   ContentObjectParts = flow(function * ({versionHash}) {
     if(this.versions[versionHash] && this.versions[versionHash].parts) { return; }
 
@@ -298,6 +317,25 @@ class ObjectStore {
     });
 
     return response;
+  });
+
+  @action.bound TransferObjectOwnership = flow(function * ({libraryId, objectId, newPublicKey}) {
+    try {
+      yield Fabric.TransferObjectOwnership({
+        libraryId,
+        objectId,
+        newPublicKey
+      });
+
+      this.rootStore.notificationStore.SetNotificationMessage({
+        message: "Successfully transferred ownership",
+        redirect: true
+      });
+    } catch(error) {
+      // eslint-disable-next-line no-console
+      console.error("Unable to transfer ownership", error);
+      throw error;
+    }
   });
 
   @action.bound
