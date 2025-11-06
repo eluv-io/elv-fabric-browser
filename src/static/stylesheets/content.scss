@@ -19,6 +19,12 @@
 
 .object-info {
   max-width: 100%;
+
+  .missing-caps-warning {
+    padding: 10px;
+    background-color: rgba(#ffdd00, 0.4);
+    margin-bottom: 10px;
+  }
 }
 
 .object-image {
@@ -231,6 +237,12 @@ pre,
     font-size: .9rem;
     padding-bottom: 15px;
     padding-top: 15px;
+  }
+
+  .missing-caps-warning {
+    padding: 10px;
+    background-color: rgba(#ffdd00, 0.4);
+    margin-bottom: 10px;
   }
 }
 

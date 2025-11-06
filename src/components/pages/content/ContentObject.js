@@ -26,6 +26,7 @@ import DeleteIcon from "../../../static/icons/trash.svg";
 import Diff from "../../components/Diff";
 import {ContentBrowserModal} from "../../components/ContentBrowser";
 import ActionsToolbar from "../../components/ActionsToolbar";
+import Warnings from "../../components/Warnings";
 
 const DownloadPart = ({libraryId, objectId, versionHash, partHash, partName, DownloadMethod}) => {
   const [progress, setProgress] = useState(undefined);
@@ -1018,6 +1019,7 @@ class ContentObject extends React.Component {
       pageContent = (
         <React.Fragment>
           { this.Image() }
+          <Warnings />
           { this.ObjectInfo() }
         </React.Fragment>
       );
@@ -1147,6 +1149,17 @@ class ContentObject extends React.Component {
                 libraryId: this.props.objectStore.libraryId,
                 objectId: this.props.objectStore.objectId,
                 refresh: this.state.refresh
+              });
+            } catch(error) {
+              // eslint-disable-next-line no-console
+              console.error(error);
+              throw error;
+            }
+
+            try {
+              await this.props.objectStore.ContentObjectCaps({
+                libraryId: this.props.objectStore.libraryId,
+                objectId: this.props.objectStore.objectId
               });
             } catch(error) {
               // eslint-disable-next-line no-console

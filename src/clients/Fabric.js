@@ -964,6 +964,36 @@ const Fabric = {
     };
   },
 
+  GetContentObjectCaps: async({
+    libraryId,
+    objectId
+  }) => {
+    const hasCaps = await client.HasCaps({
+      libraryId,
+      objectId
+    });
+    let hasCapsForOwner = false;
+
+    if(hasCaps) {
+      // Check for owner cap
+      const contentOwner = await client.ContentObjectOwner({
+        libraryId,
+        objectId
+      });
+
+      hasCapsForOwner = await client.HasCapsForUser({
+        libraryId,
+        objectId,
+        userAddress: contentOwner
+      });
+    }
+
+    return {
+      hasCaps,
+      hasCapsForOwner
+    };
+  },
+
   GetContentObjectMetadata: async ({
     libraryId,
     objectId,
@@ -1249,7 +1279,7 @@ const Fabric = {
       libraryId,
       objectId,
       writeToken,
-      commitMessage: "Transferred ownership",
+      commitMessage: "Transfer ownership",
       awaitCommitConfirmation: true
     });
   },

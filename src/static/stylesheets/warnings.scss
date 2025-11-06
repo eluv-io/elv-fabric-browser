@@ -1,0 +1,20 @@
+.warnings-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  .warning-box {
+    padding: 10px $elv-spacing-ss;
+    background-color: rgba(#ffdd00, 0.4);
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: row;
+
+    .clear-notification {
+      height: auto;
+      width: 20px;
+      display: flex;
+      margin-left: auto;
+    }
+  }
+}
