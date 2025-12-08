@@ -923,7 +923,6 @@ MergeMetadata = flow(function * ({
     this.objects[objectId].meta = yield Fabric.GetContentObjectMetadata({
       libraryId,
       objectId,
-      writeToken,
       service: "search"
     });
 

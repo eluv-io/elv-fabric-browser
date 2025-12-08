@@ -201,12 +201,7 @@ const SearchConfiguration = observer((props) => {
   const UpdateIndex = async () => {
     const {libraryId, objectId} = objectStore;
     const rootObjectId = (
-      objectStore.object.meta &&
-      objectStore.object.meta.indexer &&
-      objectStore.object.meta.indexer.config &&
-      objectStore.object.meta.indexer.config.fabric &&
-      objectStore.object.meta.indexer.config.fabric.root &&
-      objectStore.object.meta.indexer.config.fabric.root.content
+      objectStore.object.meta?.indexer?.config?.fabric?.root?.content
     );
 
     const lastRunHash = await objectStore.GetContentObjectMetadata({
