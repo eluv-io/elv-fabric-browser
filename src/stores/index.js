@@ -10,6 +10,7 @@ import TypeStore from "./Type";
 import ObjectStore from "./Object";
 import NotificationStore from "./Notifications";
 import ContentStore from "./Content";
+import WarningStore from "./WarningStore";
 
 // Force strict mode so mutations are only allowed within actions.
 configure({
@@ -32,6 +33,7 @@ class RootStore {
     this.routerStore = new RouterStore(this);
     this.typeStore = new TypeStore(this);
     this.contentStore = new ContentStore(this);
+    this.warningStore = new WarningStore(this);
   }
 
   @action.bound
@@ -57,5 +59,6 @@ export const objectStore = rootStore.objectStore;
 export const routeStore = rootStore.routerStore;
 export const typeStore = rootStore.typeStore;
 export const contentStore = rootStore.contentStore;
+export const warningStore = rootStore.warningStore;
 
 window.rootStore = rootStore;

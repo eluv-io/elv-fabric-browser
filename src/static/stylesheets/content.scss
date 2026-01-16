@@ -19,6 +19,12 @@
 
 .object-info {
   max-width: 100%;
+
+  .missing-caps-warning {
+    background-color: rgba(#fd0, 0.4);
+    margin-bottom: 10px;
+    padding: 10px;
+  }
 }
 
 .auth-token {
@@ -242,6 +248,12 @@ pre,
     font-size: .9rem;
     padding-bottom: 15px;
     padding-top: 15px;
+  }
+
+  .missing-caps-warning {
+    background-color: rgba(#fd0, 0.4);
+    margin-bottom: 10px;
+    padding: 10px;
   }
 }
 

@@ -26,6 +26,7 @@ import DeleteIcon from "../../../static/icons/trash.svg";
 import Diff from "../../components/Diff";
 import {ContentBrowserModal} from "../../components/ContentBrowser";
 import ActionsToolbar from "../../components/ActionsToolbar";
+import Warnings from "../../components/Warnings";
 
 const DownloadPart = ({libraryId, objectId, versionHash, partHash, partName, DownloadMethod}) => {
   const [progress, setProgress] = useState(undefined);
@@ -82,6 +83,8 @@ class ContentObject extends React.Component {
       prevVersionsToggled: false,
       moreOptions: false,
       showCopyObjectModal: false,
+      showTransferOwnershipModal: false,
+      transferPublicKey: "",
       redirectIds: {},
       showNonOwnerCapManagement: false,
       newNonOwnerCapPublicKey: "",
@@ -890,6 +893,12 @@ class ContentObject extends React.Component {
             title: !(this.props.objectStore.object.isOwner || hasUserCap) ? "You don't have the key" : undefined
           },
           {
+            label: "Transfer Ownership",
+            type: "button",
+            onClick: () => this.setState({showTransferOwnershipModal: true}),
+            hidden: !(this.props.objectStore.object.isOwner)
+          },
+          {
             label: "Delete",
             type: "button",
             hidden: (
@@ -978,6 +987,19 @@ class ContentObject extends React.Component {
     });
   }
 
+  TransferOwnership = async() => {
+    await this.props.objectStore.TransferObjectOwnership({
+      libraryId: this.props.objectStore.libraryId,
+      objectId: this.props.objectStore.objectId,
+      newPublicKey: this.state.transferPublicKey
+    });
+
+    this.setState({
+      showTransferOwnershipModal: false,
+      pageVersion: this.state.pageVersion + 1
+    });
+  }
+
   PageContent() {
     if(this.state.deleted) {
       return <Redirect push to={Path.dirname(this.props.match.url)} />;
@@ -1020,6 +1042,7 @@ class ContentObject extends React.Component {
       pageContent = (
         <React.Fragment>
           { this.Image() }
+          <Warnings />
           { this.ObjectInfo() }
         </React.Fragment>
       );
@@ -1096,6 +1119,21 @@ class ContentObject extends React.Component {
               confirmMessageCallback={({name, libraryName}) => `Are you sure you want to copy ${name} into ${libraryName}?`}
             /> : null
         }
+        {
+          this.state.showTransferOwnershipModal &&
+          <Modal OnClickOutside={() => this.setState({showTransferOwnershipModal: false})}>
+            <Form
+              legend="Transfer Ownership"
+              OnCancel={() => this.setState({showTransferOwnershipModal: false})}
+              OnSubmit={() => this.TransferOwnership()}
+            >
+              <div className="form-content">
+                <label htmlFor="publicKey">Public Key</label>
+                <textarea name="publicKey" value={this.state.transferPublicKey} onChange={(event) => this.setState({transferPublicKey: event.target.value})} style={{height: "6rem"}} />
+              </div>
+            </Form>
+          </Modal>
+        }
       </div>
     );
   }
@@ -1134,6 +1172,17 @@ class ContentObject extends React.Component {
                 libraryId: this.props.objectStore.libraryId,
                 objectId: this.props.objectStore.objectId,
                 refresh: this.state.refresh
+              });
+            } catch(error) {
+              // eslint-disable-next-line no-console
+              console.error(error);
+              throw error;
+            }
+
+            try {
+              await this.props.objectStore.ContentObjectCaps({
+                libraryId: this.props.objectStore.libraryId,
+                objectId: this.props.objectStore.objectId
               });
             } catch(error) {
               // eslint-disable-next-line no-console
