@@ -470,6 +470,7 @@ const SearchConfiguration = observer((props) => {
               >
                 <option value="text">Text</option>
                 <option value="string">String</option>
+                <option value="date">Date</option>
               </select>
             </div>
 
