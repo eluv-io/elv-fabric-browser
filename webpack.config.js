@@ -12,7 +12,8 @@ module.exports = {
   output: {
     path: Path.resolve(__dirname, "dist"),
     filename: "index.js",
-    chunkFilename: "[name].bundle.js"
+    chunkFilename: "[name].bundle.js",
+    globalObject: "this"
   },
   devServer: {
     disableHostCheck: true,
@@ -84,6 +85,10 @@ module.exports = {
           },
           "sass-loader"
         ]
+      },
+      {
+        test: /\.worker\.js$/,
+        use: {loader: "worker-loader", options: {filename: "[name].js"}}
       },
       {
         test: /\.(js|mjs)$/,

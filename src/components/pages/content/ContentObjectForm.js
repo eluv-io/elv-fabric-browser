@@ -196,7 +196,8 @@ class ContentObjectForm extends React.Component {
 
     return (
       <AppFrame
-        appUrl={this.state.manageAppUrl}
+        // appUrl={this.state.manageAppUrl}
+        appUrl={"http://localhost:8085"}
         queryParams={queryParams}
         onComplete={() => this.setState({completed: true})}
         onCancel={() => this.setState({completed: true})}
