@@ -11,6 +11,7 @@ const concurrentUploads = 3;
 
 class ObjectStore {
   @observable writeTokens = {};
+  @observable writeTokenMeta = {};
 
   @computed get libraryId() {
     return this.rootStore.routerStore.libraryId;
@@ -62,6 +63,17 @@ class ObjectStore {
     if(this.versions[versionHash]) { return; }
 
     this.versions[versionHash] = yield Fabric.GetContentObjectVersion({versionHash});
+  });
+
+  @action.bound
+  ContentObjectWriteTokenMetadata = flow(function * ({libraryId, objectId, writeToken}) {
+    this.writeTokens[objectId] = writeToken;
+    yield Fabric.RegisterWriteTokenNode({writeToken});
+    this.writeTokenMeta[objectId] = yield Fabric.GetContentObjectMetadata({
+      libraryId,
+      objectId,
+      writeToken
+    });
   });
 
   @action.bound
@@ -323,6 +335,7 @@ class ObjectStore {
     });
 
     delete this.writeTokens[objectId];
+    delete this.writeTokenMeta[objectId];
 
     return response;
   });
@@ -330,6 +343,7 @@ class ObjectStore {
   @action.bound
   DiscardWriteToken({objectId}) {
     delete this.writeTokens[objectId];
+    delete this.writeTokenMeta[objectId];
   }
 
   @action.bound

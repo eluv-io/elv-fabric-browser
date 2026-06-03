@@ -622,6 +622,8 @@ const Fabric = {
         objectId = Fabric.utils.DecodeVersionHash(contentId).objectId;
       } else if(contentId.startsWith("iq__")) {
         objectId = contentId;
+      } else if(contentId.startsWith("tqw__")) {
+        objectId = Fabric.utils.DecodeWriteToken(contentId).objectId;
       } else if(contentId.startsWith("0x")) {
         const id = Fabric.utils.AddressToObjectId(contentId);
         accessType = await Fabric.AccessType({id});
@@ -1155,6 +1157,27 @@ const Fabric = {
       options,
       service
     });
+  },
+
+  RegisterWriteTokenNode: async ({writeToken}) => {
+    try {
+      let nodeUrl = await client.WriteTokenNodeUrlNetwork({writeToken});
+
+      if(!nodeUrl) {
+        const decoded = client.utils.DecodeWriteToken(writeToken);
+        if(decoded.nodeId) {
+          const nodes = await client.SpaceNodes({matchNodeId: decoded.nodeId});
+          nodeUrl = nodes?.[0]?.services?.fabric_api?.urls?.[0];
+        }
+      }
+
+      if(nodeUrl) {
+        await client.RecordWriteToken({writeToken, fabricNodeUrl: nodeUrl});
+      }
+    } catch(error) {
+      // eslint-disable-next-line no-console
+      console.warn("Could not resolve node for write token:", error);
+    }
   },
 
   MergeMetadata: async ({
