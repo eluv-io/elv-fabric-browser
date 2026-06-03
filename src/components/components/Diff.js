@@ -14,7 +14,7 @@ const GetDiffParts = ({json, diff}) => {
   let diffIndex = 0;
 
   const parts = diffArray.map((part, i) => {
-    const consecutiveAddedPart = part.added ? !!(diffArray[i - 1].removed) : false;
+    const consecutiveAddedPart = part.added && i > 0 ? !!(diffArray[i - 1].removed) : false;
     const containerPattern = /^.+\"container\":.\"hq__[a-zA-Z0-9_]*\"/;
     const isDiff = (part.added || part.removed) && !consecutiveAddedPart && !containerPattern.test(part.value);
 
@@ -130,5 +130,34 @@ const Diff = observer(({json, diff}) => {
     </div>
   );
 });
+
+export const WriteTokenDiff = ({publishedMeta, writeTokenMeta}) => {
+  const [totalDiffCount, setTotalDiffCount] = useState(0);
+  const [parts, setParts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      const {parts, diffIndex} = GetDiffParts({
+        json: writeTokenMeta,
+        diff: publishedMeta
+      });
+      setParts(parts);
+      setTotalDiffCount(diffIndex);
+      setLoading(false);
+    }, 0);
+
+    return () => clearTimeout(timeout);
+  }, []);
+
+  if(loading) { return <div className="diff-loading">Computing diff...</div>; }
+
+  return (
+    <div className="diff-container">
+      <RenderDiff parts={parts} />
+      {parts.length > 0 && <DiffActions totalDiffCount={totalDiffCount} />}
+    </div>
+  );
+};
 
 export default Diff;

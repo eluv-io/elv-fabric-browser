@@ -23,7 +23,7 @@ import RefreshIcon from "../../../static/icons/refresh.svg";
 import InfoIcon from "../../../static/icons/help-circle.svg";
 import DeleteIcon from "../../../static/icons/trash.svg";
 
-import Diff from "../../components/Diff";
+import Diff, {WriteTokenDiff} from "../../components/Diff";
 import {ContentBrowserModal} from "../../components/ContentBrowser";
 import ActionsToolbar from "../../components/ActionsToolbar";
 
@@ -147,6 +147,7 @@ class ContentObject extends React.Component {
 
         await new Promise(resolve => setTimeout(resolve, 2000));
 
+        this.props.history.replace(this.props.location.pathname);
         this.setState({pageVersion: this.state.pageVersion + 1});
       }
     });
@@ -825,6 +826,7 @@ class ContentObject extends React.Component {
 
         { this.OwnerCapsSection() }
 
+        { this.WriteTokenSection() }
 
         { this.ObjectVersion({versionHash: object.hash, latestVersion: true}) }
 
@@ -832,6 +834,46 @@ class ContentObject extends React.Component {
 
         { versionSection }
       </div>
+    );
+  }
+
+  WriteTokenSection() {
+    const {objectStore} = this.props;
+    const writeToken = objectStore.writeTokens[objectStore.objectId];
+    const writeTokenMeta = objectStore.writeTokenMeta[objectStore.objectId];
+
+    if(!writeToken || !writeTokenMeta) { return null; }
+
+    const metaUnchanged = JSON.stringify(writeTokenMeta) === JSON.stringify(objectStore.object.meta);
+
+    return (
+      <ToggleSection label="Write Token Draft" toggleOpen>
+        <div className="indented">
+          <LabelledField label="Write Token" copyValue={writeToken}>
+            {writeToken}
+          </LabelledField>
+          <br />
+          <ToggleSection label="Metadata">
+            <div className="indented">
+              {
+                metaUnchanged ?
+                  <div className="labelled-field">
+                    <span className="help-text">No metadata changes in this draft</span>
+                  </div> :
+                  <JSONField
+                    json={writeTokenMeta}
+                    DiffComponent={() => (
+                      <WriteTokenDiff
+                        publishedMeta={objectStore.object.meta}
+                        writeTokenMeta={writeTokenMeta}
+                      />
+                    )}
+                  />
+              }
+            </div>
+          </ToggleSection>
+        </div>
+      </ToggleSection>
     );
   }
 
@@ -1118,7 +1160,11 @@ class ContentObject extends React.Component {
         key={`object-page-${this.state.pageVersion}`}
         Load={
           async () => {
-            this.props.objectStore.DiscardWriteToken({objectId: this.props.objectStore.objectId});
+            const routeWriteToken = this.props.location.state && this.props.location.state.writeToken;
+
+            if(!routeWriteToken) {
+              this.props.objectStore.DiscardWriteToken({objectId: this.props.objectStore.objectId});
+            }
 
             try {
               await this.props.libraryStore.ContentLibrary({
@@ -1149,6 +1195,19 @@ class ContentObject extends React.Component {
             } catch(error) {
               // eslint-disable-next-line no-console
               console.error(error);
+            }
+
+            if(routeWriteToken) {
+              try {
+                await this.props.objectStore.ContentObjectWriteTokenMetadata({
+                  libraryId: this.props.objectStore.libraryId,
+                  objectId: this.props.objectStore.objectId,
+                  writeToken: routeWriteToken
+                });
+              } catch(error) {
+                // eslint-disable-next-line no-console
+                console.error(error);
+              }
             }
 
             this.CheckUrlVersionHash();

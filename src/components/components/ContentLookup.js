@@ -18,8 +18,11 @@ const ContentLookup = observer(() => {
   };
 
   const versionHash = contentLookupId.startsWith("hq__") ? contentLookupId : undefined;
+  const writeToken = (contentLookupId.startsWith("tqw__") || contentLookupId.startsWith("tq__"))
+    ? contentLookupId
+    : undefined;
 
-  if(lookupRedirect) { return <Redirect to={{pathname: lookupRedirect, state: {versionHash}}}/>; }
+  if(lookupRedirect) { return <Redirect to={{pathname: lookupRedirect, state: {versionHash, writeToken}}}/>; }
 
   return (
     <div className="content-lookup-container">
@@ -27,7 +30,7 @@ const ContentLookup = observer(() => {
         value={contentLookupId}
         onChange={event => setContentLookupId( event.target.value)}
         onKeyPress={onEnterPressed(Lookup)}
-        placeholder="Find content by ID, version hash or address"
+        placeholder="Find content by ID, version hash, write token or address"
       />
       <Action onClick={Lookup}>
         Search
