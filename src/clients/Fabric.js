@@ -622,7 +622,7 @@ const Fabric = {
         objectId = Fabric.utils.DecodeVersionHash(contentId).objectId;
       } else if(contentId.startsWith("iq__")) {
         objectId = contentId;
-      } else if(contentId.startsWith("tqw__") || contentId.startsWith("tq__")) {
+      } else if(contentId.startsWith("tqw__")) {
         objectId = Fabric.utils.DecodeWriteToken(contentId).objectId;
       } else if(contentId.startsWith("0x")) {
         const id = Fabric.utils.AddressToObjectId(contentId);

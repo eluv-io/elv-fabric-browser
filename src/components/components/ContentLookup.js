@@ -18,9 +18,7 @@ const ContentLookup = observer(() => {
   };
 
   const versionHash = contentLookupId.startsWith("hq__") ? contentLookupId : undefined;
-  const writeToken = (contentLookupId.startsWith("tqw__") || contentLookupId.startsWith("tq__"))
-    ? contentLookupId
-    : undefined;
+  const writeToken = contentLookupId.startsWith("tqw__") ? contentLookupId : undefined;
 
   if(lookupRedirect) { return <Redirect to={{pathname: lookupRedirect, state: {versionHash, writeToken}}}/>; }
 
