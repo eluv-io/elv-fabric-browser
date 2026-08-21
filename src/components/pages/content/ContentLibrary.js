@@ -212,6 +212,7 @@ class ContentLibrary extends React.Component {
         id: objectId,
         sortKey: (object.name || "zz").toLowerCase(),
         title: object.name || objectId,
+        subtitle: object.name ? objectId : undefined,
         description: object.description,
         status: "",
         icon: object.imageUrl || ContentIcon,
