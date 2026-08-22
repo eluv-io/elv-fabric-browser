@@ -283,6 +283,7 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
         }
 
         .copy-icon {
+          cursor: pointer;
           flex-shrink: 0;
           height: 1.1em;
           margin-left: auto;
@@ -292,8 +293,8 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
 
       .description {
         overflow-y: hidden;
-        width: 100%;
         padding: $elv-spacing-xs;
+        width: 100%;
       }
 
       .description,
