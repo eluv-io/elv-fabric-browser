@@ -1,10 +1,11 @@
 import React from "react";
 import PropTypes from "prop-types";
-import {ImageIcon} from "elv-components-js";
+import {Copy, ImageIcon} from "elv-components-js";
 import {Redirect} from "react-router";
 import {Link} from "react-router-dom";
 import {observer} from "mobx-react";
 import Fabric from "../../clients/Fabric";
+import CopyIcon from "../../static/icons/clipboard.svg";
 
 const IMAGE_HEIGHT = 300;
 
@@ -25,10 +26,27 @@ class ListingItem extends React.Component {
   AsTableRow() {
     let className = "listing-row";
     let elements = [
-      <div key={`listing-title-${this.props.id}`} title={this.props.title}>
+      <div key={`listing-title-${this.props.id}`} title={this.props.title} className="title-cell">
         <div className="title cropped-text" tabIndex={-1}>
           {this.props.title}
         </div>
+        {
+          this.props.subtitle ?
+            <div
+              className="title-subtitle"
+              tabIndex={-1}
+              onClick={event => {
+                event.preventDefault();
+                event.stopPropagation();
+              }}
+            >
+              <span className="cropped-text">{this.props.subtitle}</span>
+              <Copy copy={this.props.subtitle}>
+                <ImageIcon className="copy-icon" icon={CopyIcon} />
+              </Copy>
+            </div> :
+            null
+        }
       </div>,
       <div key={`listing-description-${this.props.id}`} title={this.props.description}>
         <div className="description cropped-text" tabIndex={-1}>
@@ -145,6 +163,7 @@ class ListingItem extends React.Component {
 ListingItem.propTypes = {
   id: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
+  subtitle: PropTypes.string,
   description: PropTypes.string,
   status: PropTypes.oneOfType([
     PropTypes.string,
