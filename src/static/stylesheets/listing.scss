@@ -276,10 +276,10 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
 
         .title {
           -webkit-box-orient: vertical;
-          display: -webkit-box;
           -webkit-line-clamp: 2;
-          line-clamp: 2;
+          display: -webkit-box;
           font-size: 18px;
+          line-clamp: 2;
           line-height: 1.25;
           overflow: hidden;
           overflow-wrap: break-word;
