@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import UrlJoin from "url-join";
 import Path from "path";
+import {DateTime} from "luxon";
 import ContentIcon from "../../../static/icons/content.svg";
 import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
@@ -205,20 +206,26 @@ class ContentLibrary extends React.Component {
   ContentObjects() {
     if(!this.props.libraryStore.library.objects) { return []; }
 
-    const objects = Object.keys(this.props.libraryStore.library.objects).map(objectId => {
-      const object = this.props.libraryStore.library.objects[objectId];
+    const objects = Object.keys(this.props.libraryStore.library.objects)
+      .filter(objectId => !this.props.libraryStore.library.objects[objectId].isContentLibraryObject)
+      .map(objectId => {
+        const object = this.props.libraryStore.library.objects[objectId];
 
-      return {
-        id: objectId,
-        sortKey: (object.name || "zz").toLowerCase(),
-        title: object.name || objectId,
-        subtitle: object.name ? objectId : undefined,
-        description: object.description,
-        status: "",
-        icon: object.imageUrl || ContentIcon,
-        link: UrlJoin(this.props.match.url, objectId)
-      };
-    });
+        const modified = object.modifiedAt && DateTime.fromISO(object.modifiedAt).isValid ?
+          DateTime.fromISO(object.modifiedAt).toFormat("yyyy-MM-dd HH:mm") :
+          undefined;
+
+        return {
+          id: objectId,
+          sortKey: (object.name || "zz").toLowerCase(),
+          title: object.name || objectId,
+          subtitle: object.name ? objectId : undefined,
+          description: object.description,
+          status: modified || "",
+          icon: object.imageUrl || ContentIcon,
+          link: UrlJoin(this.props.match.url, objectId)
+        };
+      });
 
     return objects.sort((a, b) => a.sortKey.toLowerCase() > b.sortKey.toLowerCase() ? 1 : -1);
   }
@@ -244,6 +251,10 @@ class ContentLibrary extends React.Component {
           });
 
           this.setState({listingVersion: this.state.listingVersion + 1});
+
+          this.props.libraryStore.LoadObjectModifiedTimes({
+            libraryId: this.props.libraryStore.libraryId
+          });
         }}
         RenderContent={this.ContentObjects}
       />
@@ -440,6 +451,8 @@ class ContentLibrary extends React.Component {
         <PageHeader
           header={this.props.libraryStore.library.name}
           subHeader={this.props.libraryStore.library.description}
+          id={this.props.libraryStore.libraryId}
+          idLink={UrlJoin(this.props.match.url, this.props.libraryStore.library.libraryObjectId)}
         />
         { tabs }
         <div className="page-content-container">

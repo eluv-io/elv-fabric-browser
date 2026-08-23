@@ -32,6 +32,12 @@ class ObjectStore {
     return object ? object.groupPermissions : undefined;
   }
 
+  @computed get objectOfferings() {
+    const object = this.objects[this.objectId];
+
+    return object ? object.offerings : undefined;
+  }
+
   @computed get currentAccountAddress() {
     return this.rootStore.currentAccountAddress;
   }
@@ -82,6 +88,11 @@ class ObjectStore {
   @action.bound
   ContentObjectGroupPermissions = flow(function * ({objectId}) {
     this.objects[objectId].groupPermissions = yield Fabric.GetContentObjectGroupPermissions({objectId});
+  });
+
+  @action.bound
+  ContentObjectOfferings = flow(function * ({objectId, versionHash}) {
+    this.objects[objectId].offerings = yield Fabric.AvailableOfferings({objectId, versionHash});
   });
 
   @action.bound

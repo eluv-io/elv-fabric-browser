@@ -282,10 +282,12 @@ const Fabric = {
 
           libraries[libraryId] = {
             libraryId,
+            libraryObjectId,
             name: meta.public && meta.public.name || libraryId,
             description: (meta.public && meta.public.description) || meta.description,
             imageUrl,
-            isContentSpaceLibrary: libraryId === Fabric.contentSpaceLibraryId
+            isContentSpaceLibrary: libraryId === Fabric.contentSpaceLibraryId,
+            modifiedAt: undefined // lazy load
           };
         } catch(error) {
           /* eslint-disable no-console */
@@ -734,7 +736,16 @@ const Fabric = {
             /* eslint-enable no-console */
           }
 
-          const accessInfo = await Fabric.GetAccessInfo({objectId: object.id});
+          let accessInfo;
+          try {
+            accessInfo = await Fabric.GetAccessInfo({objectId: object.id});
+          } catch(error) {
+            /* eslint-disable no-console */
+            console.error("Failed to get access info for " + object.id);
+            console.error(error);
+            /* eslint-enable no-console */
+          }
+
           const meta = latestVersion.meta || {};
           const publicMeta = meta.public || {};
           objects[object.id] = {
@@ -748,6 +759,8 @@ const Fabric = {
             description: publicMeta.description || meta.description,
             accessInfo,
             imageUrl,
+            modifiedAt: undefined,
+            isContentLibraryObject: client.utils.EqualHash(libraryId, object.id),
             contractAddress: client.utils.HashToAddress(object.id)
           };
         } catch(error) {
@@ -1643,6 +1656,32 @@ const Fabric = {
       // eslint-disable-next-line no-console
       console.error(error);
       return [];
+    }
+  },
+
+  GetObjectCommitInfo: async ({libraryId, objectId, versionHash}) => {
+    try {
+      return await client.ContentObjectMetadata({libraryId, objectId, versionHash, metadataSubtree: "commit"});
+    } catch(error) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to get commit info for ", libraryId, objectId, versionHash);
+      // eslint-disable-next-line no-console
+      console.error(error);
+      return undefined;
+    }
+  },
+
+  /* Offerings */
+
+  AvailableOfferings: async ({objectId, versionHash}) => {
+    try {
+      return await client.AvailableOfferings({objectId, versionHash});
+    } catch(error) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to get available offerings for ", objectId, versionHash);
+      // eslint-disable-next-line no-console
+      console.error(error);
+      return {};
     }
   },
 

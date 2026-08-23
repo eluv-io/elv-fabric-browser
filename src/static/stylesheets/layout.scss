@@ -52,6 +52,23 @@ body,
   .page-header-container {
     margin: $elv-spacing-m 0;
 
+    .page-header-id {
+      align-items: center;
+      color: $elv-color-text-light;
+      display: flex;
+      font-size: $elv-font-m;
+      margin-top: $elv-spacing-xxs;
+
+      &:link, &:visited {
+        color: $elv-color-text-light;
+      }
+
+      &:hover {
+        cursor: pointer;
+        text-decoration: underline;
+      }
+    }
+
     .page-subheader {
       @include elv-ellipsis;
       color: $elv-color-text-light;

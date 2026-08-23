@@ -12,7 +12,7 @@ import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
 import {Action, Confirm, Form, IconButton, ImageIcon, LoadingElement, Modal, Tabs, ToolTip} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
-import {AccessChargeDisplay, AddressToHash, HashToAddress, Percentage} from "../../../utils/Helpers";
+import {AccessChargeDisplay, AddressToHash, HashToAddress, Percentage, PartHashIsEncrypted} from "../../../utils/Helpers";
 import {inject, observer} from "mobx-react";
 import ToggleSection from "../../components/ToggleSection";
 import JSONField from "../../components/JSONField";
@@ -332,6 +332,10 @@ class ContentObject extends React.Component {
             { part.hash }
           </LabelledField>
 
+          <LabelledField label="Encryption">
+            { PartHashIsEncrypted(part.hash) ? "Encrypted" : "None" }
+          </LabelledField>
+
           <LabelledField label="Size">
             { PrettyBytes(part.size) }
           </LabelledField>
@@ -348,6 +352,25 @@ class ContentObject extends React.Component {
         <h3>Parts</h3>
         { parts }
       </div>
+    );
+  }
+
+  PlayoutFormatsSection() {
+    const object = this.props.objectStore.object;
+
+    return (
+      <LabelledField label="Playout & Formats">
+        <AsyncComponent
+          Load={async () => await this.props.objectStore.ContentObjectOfferings({ objectId: object.id })}
+          render={() => {
+            const offerings = Object.keys(this.props.objectStore.objectOfferings || {});
+
+            return offerings.length === 0 ?
+              <span className="help-text">None available</span> :
+              offerings.join(", ");
+          }}
+        />
+      </LabelledField>
     );
   }
 
@@ -794,9 +817,15 @@ class ContentObject extends React.Component {
           { object.id }
         </LabelledField>
 
+        <LabelledField label="Tenant ID" hidden={!object.tenantId}>
+          { object.tenantId }
+        </LabelledField>
+
         <LabelledField label="Type" hidden={object.isContentType}>
           { typeLink }
         </LabelledField>
+
+        { !object.isContentType && !object.isContentLibraryObject ? this.PlayoutFormatsSection() : null }
 
         { this.ContractInfo() }
 
@@ -824,7 +853,6 @@ class ContentObject extends React.Component {
         <br />
 
         { this.OwnerCapsSection() }
-
 
         { this.ObjectVersion({versionHash: object.hash, latestVersion: true}) }
 

@@ -235,6 +235,7 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
         display: flex;
         height: $listing-row-height;
         max-height: $listing-row-height;
+        min-width: 0;
 
         &:not(.icon-container) {
           padding-left: $elv-spacing-xs;
@@ -251,6 +252,7 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
 
       .cropped-text {
         @include elv-ellipsis;
+        min-width: 0;
       }
 
       .title-cell {
@@ -273,20 +275,17 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
 
       .title-subtitle {
         color: $elv-color-text-lighter;
-        cursor: text;
         font-size: $elv-font-m;
         gap: $elv-spacing-xxs;
-        user-select: text;
 
-        .cropped-text {
-          min-width: 0;
+        .copy-icon-container {
+          cursor: pointer;
+          display: flex;
+          flex-shrink: 0;
         }
 
         .copy-icon {
-          cursor: pointer;
-          flex-shrink: 0;
           height: 1.1em;
-          margin-left: auto;
           width: 1.1em;
         }
       }

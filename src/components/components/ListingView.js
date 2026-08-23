@@ -32,18 +32,19 @@ class ListingItem extends React.Component {
         </div>
         {
           this.props.subtitle ?
-            <div
-              className="title-subtitle"
-              tabIndex={-1}
-              onClick={event => {
-                event.preventDefault();
-                event.stopPropagation();
-              }}
-            >
+            <div className="title-subtitle" tabIndex={-1}>
               <span className="cropped-text">{this.props.subtitle}</span>
-              <Copy copy={this.props.subtitle}>
-                <ImageIcon className="copy-icon" icon={CopyIcon} />
-              </Copy>
+              <span
+                className="copy-icon-container"
+                onClick={event => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                }}
+              >
+                <Copy copy={this.props.subtitle}>
+                  <ImageIcon className="copy-icon" icon={CopyIcon} />
+                </Copy>
+              </span>
             </div> :
             null
         }

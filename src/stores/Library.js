@@ -1,4 +1,4 @@
-import {observable, action, flow, computed} from "mobx";
+import {observable, action, flow, computed, runInAction} from "mobx";
 import Fabric from "../clients/Fabric";
 import {ParseInputJson} from "elv-components-js";
 import {Cancelable} from "../utils/Cancelable";
@@ -37,6 +37,34 @@ class LibraryStore {
 
     this.libraries = libraries;
     this.count = count;
+  });
+
+  @action.bound
+  LoadLibraryModifiedTimes = flow(function * () {
+    const libraries = this.libraries || {};
+    const libraryIds = Object.keys(libraries).filter(libraryId => libraries[libraryId].modifiedAt === undefined);
+
+    yield Fabric.utils.LimitedMap(
+      5,
+      libraryIds,
+      async libraryId => {
+        const library = libraries[libraryId];
+        const objectId = libraryId.replace("ilib", "iq__");
+
+        try {
+          const commit = await Fabric.GetObjectCommitInfo({libraryId, objectId});
+
+          runInAction(() => library.modifiedAt = (commit && commit.timestamp) || null);
+        } catch(error) {
+          // eslint-disable-next-line no-console
+          console.error("Failed to load modified time for " + libraryId);
+          // eslint-disable-next-line no-console
+          console.error(error);
+
+          runInAction(() => library.modifiedAt = null);
+        }
+      }
+    );
   });
 
   @action.bound
@@ -372,6 +400,33 @@ class LibraryStore {
       ...params,
       cacheId
     };
+  });
+
+  @action.bound
+  LoadObjectModifiedTimes = flow(function * ({libraryId}) {
+    const objects = this.libraries[libraryId]?.objects || {};
+    const objectIds = Object.keys(objects).filter(objectId => objects[objectId].modifiedAt === undefined);
+
+    yield Fabric.utils.LimitedMap(
+      5,
+      objectIds,
+      async objectId => {
+        const object = objects[objectId];
+
+        try {
+          const commit = await Fabric.GetObjectCommitInfo({libraryId, objectId, versionHash: object.hash});
+
+          runInAction(() => object.modifiedAt = (commit && commit.timestamp) || null);
+        } catch(error) {
+          // eslint-disable-next-line no-console
+          console.error("Failed to load modified time for " + objectId);
+          // eslint-disable-next-line no-console
+          console.error(error);
+
+          runInAction(() => object.modifiedAt = null);
+        }
+      }
+    );
   });
 
   @action.bound

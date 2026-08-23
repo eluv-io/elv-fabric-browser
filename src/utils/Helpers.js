@@ -102,6 +102,10 @@ export const AccessChargeDisplay = (accessCharge) => {
   return <Balance balance={accessCharge} />;
 };
 
+export const PartHashIsEncrypted = (partHash) => {
+  return typeof partHash === "string" && partHash.length > 3 && partHash[3] === "e";
+};
+
 export const ParseBytes32 = (bytes32String) => {
   try {
     return Bytes32ToUtf8(bytes32String);
