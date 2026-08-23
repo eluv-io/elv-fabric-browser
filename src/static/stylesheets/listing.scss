@@ -2,7 +2,7 @@ $aspect-ratio: 0.75; // 4/3
 $grid-listing-width: 150px;
 $table-listing-width: 95px;
 
-$listing-row-height: 3.5rem;
+$listing-row-height: 4.25rem;
 $listing-icon-width: calc(#{$listing-row-height} * 16 / 9);
 
 $listing-grid-height: 9rem;
@@ -193,6 +193,11 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
     svg {
       background-color: transparent;
     }
+
+    &.svg-icon-container svg {
+      max-height: 85%;
+      max-width: 85%;
+    }
   }
 
   // Table view
@@ -208,21 +213,21 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
 
     .listing-row {
       display: grid;
-      grid-template-columns: $listing-icon-width 3fr 3fr 1fr;
+      grid-template-columns: $listing-icon-width 4fr 2fr 1fr;
       margin-bottom: $elv-spacing-ss;
       max-height: $listing-row-height;
       min-height: $listing-row-height;
       width: 100%;
 
       &.listing-row-no-icon {
-        grid-template-columns: 3fr 3fr 1fr;
+        grid-template-columns: 4fr 2fr 1fr;
       }
 
       &.listing-row-no-status {
-        grid-template-columns: $listing-icon-width 1fr 1fr;
+        grid-template-columns: $listing-icon-width 2fr 1fr;
 
         &.listing-row-no-icon {
-          grid-template-columns: 1fr 1fr;
+          grid-template-columns: 2fr 1fr;
         }
       }
 
@@ -260,6 +265,7 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
         flex-direction: column;
         gap: 4px;
         justify-content: center;
+        overflow: hidden;
 
         .title,
         .title-subtitle {
@@ -269,7 +275,15 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
         }
 
         .title {
+          -webkit-box-orient: vertical;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          line-clamp: 2;
           font-size: 18px;
+          line-height: 1.25;
+          overflow: hidden;
+          overflow-wrap: break-word;
+          white-space: normal;
         }
       }
 

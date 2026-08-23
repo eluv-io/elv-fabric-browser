@@ -27,7 +27,7 @@ class ListingItem extends React.Component {
     let className = "listing-row";
     let elements = [
       <div key={`listing-title-${this.props.id}`} title={this.props.title} className="title-cell">
-        <div className="title cropped-text" tabIndex={-1}>
+        <div className="title" tabIndex={-1}>
           {this.props.title}
         </div>
         {
