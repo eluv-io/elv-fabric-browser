@@ -30,7 +30,7 @@ class ContentLibraries extends React.Component {
         id: libraryId,
         sortKey: library.name || "zz",
         title: library.name || "Content Library " + libraryId,
-        subtitle: library.name ? library.libraryObjectId : undefined,
+        subtitle: library.name ? libraryId : undefined,
         description: library.description,
         status: modified || "",
         icon: library.imageUrl || LibraryIcon,
