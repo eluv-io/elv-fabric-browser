@@ -49,10 +49,9 @@ class LibraryStore {
       libraryIds,
       async libraryId => {
         const library = libraries[libraryId];
-        const objectId = libraryId.replace("ilib", "iq__");
 
         try {
-          const commit = await Fabric.GetObjectCommitInfo({libraryId, objectId});
+          const commit = await Fabric.GetObjectCommitInfo({libraryId, objectId: library.libraryObjectId});
 
           runInAction(() => library.modifiedAt = (commit && commit.timestamp) || null);
         } catch(error) {

@@ -361,7 +361,7 @@ class ContentObject extends React.Component {
     return (
       <LabelledField label="Playout & Formats">
         <AsyncComponent
-          Load={async () => await this.props.objectStore.ContentObjectOfferings({ objectId: object.id })}
+          Load={async () => await this.props.objectStore.ContentObjectOfferings({ objectId: object.id, versionHash: object.hash })}
           render={() => {
             const offerings = Object.keys(this.props.objectStore.objectOfferings || {});
 

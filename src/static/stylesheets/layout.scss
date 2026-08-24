@@ -58,7 +58,9 @@ body,
       display: flex;
       font-size: $elv-font-m;
       margin-top: $elv-spacing-xxs;
+    }
 
+    a.page-header-id {
       &:link, &:visited {
         color: $elv-color-text-light;
       }
