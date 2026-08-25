@@ -794,10 +794,6 @@ class ContentObject extends React.Component {
           { object.id }
         </LabelledField>
 
-        <LabelledField label="Tenant ID" hidden={!object.tenantId}>
-          { object.tenantId }
-        </LabelledField>
-
         <LabelledField label="Type" hidden={object.isContentType}>
           { typeLink }
         </LabelledField>
