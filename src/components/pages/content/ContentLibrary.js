@@ -206,7 +206,6 @@ class ContentLibrary extends React.Component {
     if(!this.props.libraryStore.library.objects) { return []; }
 
     const objects = Object.keys(this.props.libraryStore.library.objects)
-      .filter(objectId => !this.props.libraryStore.library.objects[objectId].isContentLibraryObject)
       .map(objectId => {
         const object = this.props.libraryStore.library.objects[objectId];
 

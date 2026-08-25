@@ -755,7 +755,6 @@ const Fabric = {
             description: publicMeta.description || meta.description,
             accessInfo,
             imageUrl,
-            isContentLibraryObject: client.utils.EqualHash(libraryId, object.id),
             contractAddress: client.utils.HashToAddress(object.id)
           };
         } catch(error) {

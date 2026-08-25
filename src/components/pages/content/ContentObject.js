@@ -12,7 +12,7 @@ import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
 import {Action, Confirm, Form, IconButton, ImageIcon, LoadingElement, Modal, Tabs, ToolTip} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
-import {AccessChargeDisplay, AddressToHash, HashToAddress, Percentage, PartHashIsEncrypted} from "../../../utils/Helpers";
+import {AccessChargeDisplay, AddressToHash, HashToAddress, Percentage} from "../../../utils/Helpers";
 import {inject, observer} from "mobx-react";
 import ToggleSection from "../../components/ToggleSection";
 import JSONField from "../../components/JSONField";
@@ -330,10 +330,6 @@ class ContentObject extends React.Component {
           { name }
           <LabelledField label="Hash">
             { part.hash }
-          </LabelledField>
-
-          <LabelledField label="Encryption">
-            { PartHashIsEncrypted(part.hash) ? "Encrypted" : "None" }
           </LabelledField>
 
           <LabelledField label="Size">
