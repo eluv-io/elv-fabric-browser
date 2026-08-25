@@ -305,6 +305,7 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
       }
 
       .description {
+        height: auto;
         overflow-y: hidden;
         padding: $elv-spacing-xs;
         width: 100%;

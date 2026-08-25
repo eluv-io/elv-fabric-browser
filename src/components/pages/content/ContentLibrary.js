@@ -18,6 +18,7 @@ import ContentLibraryGroupForm from "./ContentLibraryGroupForm";
 import {ContentBrowserModal} from "../../components/ContentBrowser";
 import {Redirect} from "react-router";
 import ActionsToolbar from "../../components/ActionsToolbar";
+import {DateTime} from "luxon";
 import RemoveIcon from "../../../static/icons/close.svg";
 
 @inject("libraryStore")
@@ -208,12 +209,15 @@ class ContentLibrary extends React.Component {
     const objects = Object.keys(this.props.libraryStore.library.objects).map(objectId => {
       const object = this.props.libraryStore.library.objects[objectId];
 
+      const confirmedAt = object.confirmedAt && DateTime.fromISO(object.confirmedAt);
+
       return {
         id: objectId,
         sortKey: (object.name || "zz").toLowerCase(),
         title: object.name || objectId,
         subtitle: object.name ? objectId : undefined,
         description: object.description,
+        status: confirmedAt && confirmedAt.isValid ? confirmedAt.toFormat("yyyy-MM-dd HH:mm") : "",
         icon: object.imageUrl || ContentIcon,
         link: UrlJoin(this.props.match.url, objectId)
       };

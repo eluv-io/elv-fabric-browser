@@ -742,6 +742,8 @@ const Fabric = {
             // ignore
           }
 
+          const status = await Fabric.GetContentObjectStatus({libraryId, objectId: object.id});
+
           const meta = latestVersion.meta || {};
           const publicMeta = meta.public || {};
           objects[object.id] = {
@@ -755,6 +757,7 @@ const Fabric = {
             description: publicMeta.description || meta.description,
             accessInfo,
             imageUrl,
+            confirmedAt: status?.status_details?.confirmed?.at,
             contractAddress: client.utils.HashToAddress(object.id)
           };
         } catch(error) {
@@ -1022,6 +1025,24 @@ const Fabric = {
       meta: metadata,
       verification: {}
     };
+  },
+
+  GetContentObjectStatus: async ({libraryId, objectId}) => {
+    try {
+      const url = new URL(await client.FabricUrl({libraryId, objectId}));
+      url.pathname = UrlJoin(url.pathname, "status");
+      url.searchParams.set("details", "true");
+
+      const response = await fetch(url.toString());
+
+      return await response.json();
+    } catch(error) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to get content object status for ", libraryId, objectId);
+      // eslint-disable-next-line no-console
+      console.error(error);
+      return undefined;
+    }
   },
 
   GetContentObjectImageUrl: async ({libraryId, objectId, versionHash, metadata}) => {
