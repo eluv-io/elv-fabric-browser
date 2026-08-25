@@ -1,4 +1,4 @@
-import {observable, action, flow, computed, runInAction} from "mobx";
+import {observable, action, flow, computed} from "mobx";
 import Fabric from "../clients/Fabric";
 import {ParseInputJson} from "elv-components-js";
 import {Cancelable} from "../utils/Cancelable";
@@ -372,33 +372,6 @@ class LibraryStore {
       ...params,
       cacheId
     };
-  });
-
-  @action.bound
-  LoadObjectModifiedTimes = flow(function * ({libraryId}) {
-    const objects = this.libraries[libraryId]?.objects || {};
-    const objectIds = Object.keys(objects).filter(objectId => objects[objectId].modifiedAt === undefined);
-
-    yield Fabric.utils.LimitedMap(
-      5,
-      objectIds,
-      async objectId => {
-        const object = objects[objectId];
-
-        try {
-          const commit = await Fabric.GetObjectCommitInfo({libraryId, objectId, versionHash: object.hash});
-
-          runInAction(() => object.modifiedAt = (commit && commit.timestamp) || null);
-        } catch(error) {
-          // eslint-disable-next-line no-console
-          console.error("Failed to load modified time for " + objectId);
-          // eslint-disable-next-line no-console
-          console.error(error);
-
-          runInAction(() => object.modifiedAt = null);
-        }
-      }
-    );
   });
 
   @action.bound

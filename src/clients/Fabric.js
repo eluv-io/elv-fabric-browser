@@ -739,10 +739,7 @@ const Fabric = {
           try {
             accessInfo = await Fabric.GetAccessInfo({objectId: object.id});
           } catch(error) {
-            /* eslint-disable no-console */
-            console.error("Failed to get access info for " + object.id);
-            console.error(error);
-            /* eslint-enable no-console */
+            // some object contracts don't implement getAccessInfo
           }
 
           const meta = latestVersion.meta || {};
@@ -758,7 +755,6 @@ const Fabric = {
             description: publicMeta.description || meta.description,
             accessInfo,
             imageUrl,
-            modifiedAt: undefined,
             isContentLibraryObject: client.utils.EqualHash(libraryId, object.id),
             contractAddress: client.utils.HashToAddress(object.id)
           };
@@ -1655,18 +1651,6 @@ const Fabric = {
       // eslint-disable-next-line no-console
       console.error(error);
       return [];
-    }
-  },
-
-  GetObjectCommitInfo: async ({libraryId, objectId, versionHash}) => {
-    try {
-      return await client.ContentObjectMetadata({libraryId, objectId, versionHash, metadataSubtree: "commit"});
-    } catch(error) {
-      // eslint-disable-next-line no-console
-      console.error("Failed to get commit info for ", libraryId, objectId, versionHash);
-      // eslint-disable-next-line no-console
-      console.error(error);
-      return undefined;
     }
   },
 

@@ -2,7 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import UrlJoin from "url-join";
 import Path from "path";
-import {DateTime} from "luxon";
 import ContentIcon from "../../../static/icons/content.svg";
 import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
@@ -211,17 +210,12 @@ class ContentLibrary extends React.Component {
       .map(objectId => {
         const object = this.props.libraryStore.library.objects[objectId];
 
-        const modified = object.modifiedAt && DateTime.fromISO(object.modifiedAt).isValid ?
-          DateTime.fromISO(object.modifiedAt).toFormat("yyyy-MM-dd HH:mm") :
-          undefined;
-
         return {
           id: objectId,
           sortKey: (object.name || "zz").toLowerCase(),
           title: object.name || objectId,
           subtitle: object.name ? objectId : undefined,
           description: object.description,
-          status: modified || "",
           icon: object.imageUrl || ContentIcon,
           link: UrlJoin(this.props.match.url, objectId)
         };
@@ -251,10 +245,6 @@ class ContentLibrary extends React.Component {
           });
 
           this.setState({listingVersion: this.state.listingVersion + 1});
-
-          this.props.libraryStore.LoadObjectModifiedTimes({
-            libraryId: this.props.libraryStore.libraryId
-          });
         }}
         RenderContent={this.ContentObjects}
       />
