@@ -1037,10 +1037,6 @@ const Fabric = {
 
       return await response.json();
     } catch(error) {
-      // eslint-disable-next-line no-console
-      console.error("Failed to get content object status for ", libraryId, objectId);
-      // eslint-disable-next-line no-console
-      console.error(error);
       return undefined;
     }
   },
