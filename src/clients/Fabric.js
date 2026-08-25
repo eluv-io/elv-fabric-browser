@@ -739,7 +739,7 @@ const Fabric = {
           try {
             accessInfo = await Fabric.GetAccessInfo({objectId: object.id});
           } catch(error) {
-            // some object contracts don't implement getAccessInfo
+            // ignore
           }
 
           const meta = latestVersion.meta || {};
