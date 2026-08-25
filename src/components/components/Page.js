@@ -8,7 +8,7 @@ export const PageHeader = ({header, subHeader, id, idLink}) => {
   }
 
   let idElement = null;
-  if(id) {
+  if (id) {
     idElement = idLink ?
       <Link className="page-header-id" to={idLink}>{ id }</Link> :
       <div className="page-header-id">{ id }</div>;
