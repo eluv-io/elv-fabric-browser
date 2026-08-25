@@ -286,8 +286,7 @@ const Fabric = {
             name: meta.public && meta.public.name || libraryId,
             description: (meta.public && meta.public.description) || meta.description,
             imageUrl,
-            isContentSpaceLibrary: libraryId === Fabric.contentSpaceLibraryId,
-            modifiedAt: undefined // lazy load
+            isContentSpaceLibrary: libraryId === Fabric.contentSpaceLibraryId
           };
         } catch(error) {
           /* eslint-disable no-console */
@@ -1668,20 +1667,6 @@ const Fabric = {
       // eslint-disable-next-line no-console
       console.error(error);
       return undefined;
-    }
-  },
-
-  /* Offerings */
-
-  AvailableOfferings: async ({objectId, versionHash}) => {
-    try {
-      return await client.AvailableOfferings({objectId, versionHash});
-    } catch(error) {
-      // eslint-disable-next-line no-console
-      console.error("Failed to get available offerings for ", objectId, versionHash);
-      // eslint-disable-next-line no-console
-      console.error(error);
-      return {};
     }
   },
 

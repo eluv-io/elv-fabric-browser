@@ -355,25 +355,6 @@ class ContentObject extends React.Component {
     );
   }
 
-  PlayoutFormatsSection() {
-    const object = this.props.objectStore.object;
-
-    return (
-      <LabelledField label="Playout & Formats">
-        <AsyncComponent
-          Load={async () => await this.props.objectStore.ContentObjectOfferings({ objectId: object.id, versionHash: object.hash })}
-          render={() => {
-            const offerings = Object.keys(this.props.objectStore.objectOfferings || {});
-
-            return offerings.length === 0 ?
-              <span className="help-text">None available</span> :
-              offerings.join(", ");
-          }}
-        />
-      </LabelledField>
-    );
-  }
-
   CommitInfo(versionHash) {
     const version = this.props.objectStore.versions[versionHash];
 
@@ -824,8 +805,6 @@ class ContentObject extends React.Component {
         <LabelledField label="Type" hidden={object.isContentType}>
           { typeLink }
         </LabelledField>
-
-        { !object.isContentType && !object.isContentLibraryObject ? this.PlayoutFormatsSection() : null }
 
         { this.ContractInfo() }
 

@@ -40,33 +40,6 @@ class LibraryStore {
   });
 
   @action.bound
-  LoadLibraryModifiedTimes = flow(function * () {
-    const libraries = this.libraries || {};
-    const libraryIds = Object.keys(libraries).filter(libraryId => libraries[libraryId].modifiedAt === undefined);
-
-    yield Fabric.utils.LimitedMap(
-      5,
-      libraryIds,
-      async libraryId => {
-        const library = libraries[libraryId];
-
-        try {
-          const commit = await Fabric.GetObjectCommitInfo({libraryId, objectId: library.libraryObjectId});
-
-          runInAction(() => library.modifiedAt = (commit && commit.timestamp) || null);
-        } catch(error) {
-          // eslint-disable-next-line no-console
-          console.error("Failed to load modified time for " + libraryId);
-          // eslint-disable-next-line no-console
-          console.error(error);
-
-          runInAction(() => library.modifiedAt = null);
-        }
-      }
-    );
-  });
-
-  @action.bound
   ContentLibrary = flow(function * ({libraryId}) {
     // Preserve listing params
     const {listingParams} = this.libraries[libraryId] || {};

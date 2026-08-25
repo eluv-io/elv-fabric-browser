@@ -1,6 +1,5 @@
 import React from "react";
 import UrlJoin from "url-join";
-import {DateTime} from "luxon";
 import LibraryIcon from "../../../static/icons/content.svg";
 import {PageHeader} from "../../components/Page";
 import Listing from "../../components/Listing";
@@ -22,17 +21,12 @@ class ContentLibraries extends React.Component {
     const libraries = Object.keys(this.props.libraryStore.libraries).sort().map(libraryId => {
       const library = this.props.libraryStore.libraries[libraryId];
 
-      const modified = library.modifiedAt && DateTime.fromISO(library.modifiedAt).isValid ?
-        DateTime.fromISO(library.modifiedAt).toFormat("yyyy-MM-dd HH:mm") :
-        undefined;
-
       return {
         id: libraryId,
         sortKey: library.name || "zz",
         title: library.name || "Content Library " + libraryId,
         subtitle: library.name ? libraryId : undefined,
         description: library.description,
-        status: modified || "",
         icon: library.imageUrl || LibraryIcon,
         link: UrlJoin("/content", libraryId)
       };
@@ -61,10 +55,7 @@ class ContentLibraries extends React.Component {
               pageId="ContentLibraries"
               paginate={true}
               count={this.props.libraryStore.count}
-              LoadContent={async ({action, params}) => {
-                await this.props.libraryStore.ListContentLibraries({action, params});
-                this.props.libraryStore.LoadLibraryModifiedTimes();
-              }}
+              LoadContent={this.props.libraryStore.ListContentLibraries}
               RenderContent={this.ContentLibraries}
             />
           </div>
