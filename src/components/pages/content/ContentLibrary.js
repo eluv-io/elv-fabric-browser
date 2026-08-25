@@ -205,20 +205,19 @@ class ContentLibrary extends React.Component {
   ContentObjects() {
     if(!this.props.libraryStore.library.objects) { return []; }
 
-    const objects = Object.keys(this.props.libraryStore.library.objects)
-      .map(objectId => {
-        const object = this.props.libraryStore.library.objects[objectId];
+    const objects = Object.keys(this.props.libraryStore.library.objects).map(objectId => {
+      const object = this.props.libraryStore.library.objects[objectId];
 
-        return {
-          id: objectId,
-          sortKey: (object.name || "zz").toLowerCase(),
-          title: object.name || objectId,
-          subtitle: object.name ? objectId : undefined,
-          description: object.description,
-          icon: object.imageUrl || ContentIcon,
-          link: UrlJoin(this.props.match.url, objectId)
-        };
-      });
+      return {
+        id: objectId,
+        sortKey: (object.name || "zz").toLowerCase(),
+        title: object.name || objectId,
+        subtitle: object.name ? objectId : undefined,
+        description: object.description,
+        icon: object.imageUrl || ContentIcon,
+        link: UrlJoin(this.props.match.url, objectId)
+      };
+    });
 
     return objects.sort((a, b) => a.sortKey.toLowerCase() > b.sortKey.toLowerCase() ? 1 : -1);
   }
