@@ -235,6 +235,26 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
         background-color: $elv-color-bg-light-dark;
       }
 
+      &.listing-header {
+        color: $elv-color-text-lighter;
+        font-size: $elv-font-s;
+        margin-bottom: $elv-spacing-xs;
+        min-height: auto;
+        text-transform: uppercase;
+
+        &:hover {
+          background-color: transparent;
+        }
+
+        div {
+          height: auto;
+        }
+
+        .title-cell {
+          padding-left: $elv-spacing-xs;
+        }
+      }
+
       div {
         align-items: center;
         display: flex;
@@ -315,10 +335,6 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
       .status {
         color: $elv-color-text-lighter;
         font-size: $elv-font-m;
-      }
-
-      .status {
-        justify-content: center;
       }
     }
   }

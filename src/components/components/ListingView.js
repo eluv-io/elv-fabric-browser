@@ -190,6 +190,14 @@ class Listing extends React.Component {
     if(this.props.display === "list") {
       return (
         <div className={`table-listing ${this.props.noLink ? "auto-cursor" : ""}`}>
+          <div
+            className={`listing-row listing-header ${this.props.noIcon ? "listing-row-no-icon" : ""} ${this.props.noStatus ? "listing-row-no-status" : ""}`}
+          >
+            { !this.props.noIcon ? <div /> : null }
+            <div className="title-cell">Item</div>
+            <div>Description</div>
+            { !this.props.noStatus ? <div className="status">Last Update</div> : null }
+          </div>
           { content.map(item =>
             <ListingItem
               key={item.id}
