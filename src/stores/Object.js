@@ -457,26 +457,6 @@ MergeMetadata = flow(function * ({
     return await Fabric.FileUrl({libraryId, objectId, writeToken, filePath});
   }
 
-  // Set object image from existing file
-  @action.bound
-  SetExistingObjectImage = flow(function * ({libraryId, objectId, filePath}) {
-    const writeToken = yield this.EditContentObject({libraryId, objectId, action: "Set object image"});
-
-    yield Fabric.ReplaceMetadata({
-      libraryId,
-      objectId,
-      writeToken,
-      metadataSubtree: "public/display_image",
-      metadata: {
-        "/": UrlJoin(".", "files", filePath)
-      }
-    });
-
-    this.rootStore.notificationStore.SetNotificationMessage({
-      message: "Successfully updated image on object draft"
-    });
-  });
-
   @action.bound
   SetPermission = flow(function * ({objectId, permission}) {
     this.rootStore.notificationStore.ClearMessage();

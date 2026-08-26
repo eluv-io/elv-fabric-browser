@@ -17,7 +17,6 @@ const Fabric = {
   client,
   currentAccountAddress: undefined,
   utils: client.utils,
-  cachedImages: {},
   concurrencyLimit: 20,
   permissionLevels: client.permissionLevels,
 
@@ -273,19 +272,12 @@ const Fabric = {
       async ({libraryId, meta}) => {
         try {
           const libraryObjectId = libraryId.replace("ilib", "iq__");
-          /* Image */
-          const imageUrl = await Fabric.GetContentObjectImageUrl({
-            libraryId,
-            objectId: libraryObjectId,
-            metadata: meta
-          });
 
           libraries[libraryId] = {
             libraryId,
             libraryObjectId,
             name: meta.public && meta.public.name || libraryId,
             description: (meta.public && meta.public.description) || meta.description,
-            imageUrl,
             isContentSpaceLibrary: libraryId === Fabric.contentSpaceLibraryId
           };
         } catch(error) {
@@ -320,8 +312,6 @@ const Fabric = {
       };
     }
 
-    const latestVersionHash = await client.LatestVersionHash({objectId});
-
     /* Library object and private metadata */
 
     let privateMeta = {};
@@ -343,18 +333,11 @@ const Fabric = {
     let [
       libraryInfo,
       types,
-      imageUrl,
       kmsAddress,
       tenantId
     ] = await Promise.all([
       client.ContentLibrary({libraryId}), // libraryInfo
       Fabric.ListLibraryContentTypes({libraryId}), // types
-      Fabric.GetContentObjectImageUrl({ // imageUrl
-        libraryId,
-        objectId,
-        versionHash: latestVersionHash,
-        metadata: { public: publicMeta }
-      }),
       client.CallContractMethod({ // kmsAdress
         contractAddress: client.utils.HashToAddress(libraryId),
         methodName: "addressKMS"
@@ -396,7 +379,6 @@ const Fabric = {
       libraryObjectId: libraryId.replace("ilib", "iq__"),
       privateMeta,
       publicMeta,
-      imageUrl,
       kmsId,
       tenantId,
       ownerName,
@@ -720,21 +702,6 @@ const Fabric = {
 
           const latestVersion = object.versions[0];
 
-          let imageUrl;
-          try {
-            imageUrl = await Fabric.GetContentObjectImageUrl({
-              libraryId,
-              objectId: object.id,
-              versionHash: latestVersion.hash,
-              metadata: object.versions[0].meta
-            });
-          } catch(error) {
-            /* eslint-disable no-console */
-            console.error("Failed to check for display image for" + object.id);
-            console.error(error);
-            /* eslint-enable no-console */
-          }
-
           let accessInfo;
           try {
             accessInfo = await Fabric.GetAccessInfo({objectId: object.id});
@@ -756,8 +723,8 @@ const Fabric = {
             name: (publicMeta.name || meta.name || "").toString(),
             description: publicMeta.description || meta.description,
             accessInfo,
-            imageUrl,
             confirmedAt: status?.status_details?.confirmed?.at,
+            isContentLibraryObject: client.utils.EqualHash(libraryId, object.id),
             contractAddress: client.utils.HashToAddress(object.id)
           };
         } catch(error) {
@@ -839,12 +806,6 @@ const Fabric = {
 
     let tasks = [
       client.AccessType({id: objectId}), // accessType
-      Fabric.GetContentObjectImageUrl({ // imageUrl
-        libraryId,
-        objectId,
-        versionHash: object.hash,
-        metadata: object.meta
-      }),
       Fabric.AppUrls({ // appUrls
         object: {
           id: object.id,
@@ -882,7 +843,6 @@ const Fabric = {
 
     let [
       accessType,
-      imageUrl,
       appUrls,
       baseFileUrl,
       visibility,
@@ -922,7 +882,6 @@ const Fabric = {
       description: object.meta.public.description || object.meta.description,
       baseFileUrl,
       typeInfo,
-      imageUrl,
       lroStatus,
       contractAddress: FormatAddress(client.utils.HashToAddress(objectId)),
       kmsId,
@@ -1038,42 +997,6 @@ const Fabric = {
       return await response.json();
     } catch(error) {
       return undefined;
-    }
-  },
-
-  GetContentObjectImageUrl: async ({libraryId, objectId, versionHash, metadata}) => {
-    try {
-      const fileImageUrl = await client.ContentObjectImageUrl({
-        libraryId,
-        objectId,
-        versionHash
-      });
-
-      if(fileImageUrl) {
-        return fileImageUrl;
-      }
-
-      if(!Fabric.cachedImages[objectId]) {
-        let imagePartHash;
-
-        if(metadata) {
-          imagePartHash = (metadata.public && metadata.public.image) || metadata.image;
-        } else {
-          imagePartHash =
-            await client.ContentObjectMetadata({libraryId, objectId, versionHash, metadataSubtree: "public/image"});
-        }
-
-        if(imagePartHash) {
-          Fabric.cachedImages[objectId] = await client.PublicRep({libraryId, objectId, versionHash, rep: "image"});
-        }
-      }
-
-      return Fabric.cachedImages[objectId];
-    } catch(error) {
-      // eslint-disable-next-line no-console
-      console.error("Failed to load image for", libraryId || "", objectId || "", versionHash || "");
-      // eslint-disable-next-line no-console
-      console.error(error);
     }
   },
 
@@ -1251,8 +1174,6 @@ const Fabric = {
     awaitCommitConfirmation=true,
     service="default"
   }) => {
-    delete Fabric.cachedImages[objectId];
-
     return await client.FinalizeContentObject({
       libraryId,
       objectId,

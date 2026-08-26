@@ -226,22 +226,6 @@ class FileBrowser extends React.Component {
           { size }
         </div>
         <div className="actions-cell">
-          <IconButton
-            hidden={reference || !this.props.SetObjectImage || !this.IsImage(name) || encrypted}
-            title={`Set ${name} as display image`}
-            icon={PictureIcon}
-            onClick={async event => {
-              event.stopPropagation();
-
-              await Confirm({
-                message: `Are you sure you want to set this object's display image to ${name}?`,
-                onConfirm: async () => await this.props.SetObjectImage({
-                  filePath: UrlJoin(this.state.path, name).replace("./", "")
-                })
-              });
-            }}
-            className="delete-button"
-          />
           <DownloadButton
             hidden={reference}
             name={name}
@@ -458,7 +442,6 @@ FileBrowser.propTypes = {
   DownloadFile: PropTypes.func.isRequired,
   DownloadUrl: PropTypes.func.isRequired,
   CreateDirectory: PropTypes.func.isRequired,
-  SetObjectImage: PropTypes.func,
   Reload: PropTypes.func
 };
 

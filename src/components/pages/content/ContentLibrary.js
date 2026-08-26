@@ -206,22 +206,24 @@ class ContentLibrary extends React.Component {
   ContentObjects() {
     if(!this.props.libraryStore.library.objects) { return []; }
 
-    const objects = Object.keys(this.props.libraryStore.library.objects).map(objectId => {
-      const object = this.props.libraryStore.library.objects[objectId];
+    const objects = Object.keys(this.props.libraryStore.library.objects)
+      .filter(objectId => !this.props.libraryStore.library.objects[objectId].isContentLibraryObject)
+      .map(objectId => {
+        const object = this.props.libraryStore.library.objects[objectId];
 
-      const confirmedAt = object.confirmedAt && DateTime.fromISO(object.confirmedAt);
+        const confirmedAt = object.confirmedAt && DateTime.fromISO(object.confirmedAt);
 
-      return {
-        id: objectId,
-        sortKey: (object.name || "zz").toLowerCase(),
-        title: object.name || objectId,
-        subtitle: object.name ? objectId : undefined,
-        description: object.description,
-        status: confirmedAt && confirmedAt.isValid ? confirmedAt.toFormat("yyyy-MM-dd HH:mm") : "",
-        icon: object.imageUrl || ContentIcon,
-        link: UrlJoin(this.props.match.url, objectId)
-      };
-    });
+        return {
+          id: objectId,
+          sortKey: (object.name || "zz").toLowerCase(),
+          title: object.name || objectId,
+          subtitle: object.name ? objectId : undefined,
+          description: object.description,
+          status: confirmedAt && confirmedAt.isValid ? confirmedAt.toFormat("yyyy-MM-dd HH:mm") : "",
+          icon: ContentIcon,
+          link: UrlJoin(this.props.match.url, objectId)
+        };
+      });
 
     return objects.sort((a, b) => a.sortKey.toLowerCase() > b.sortKey.toLowerCase() ? 1 : -1);
   }
@@ -253,16 +255,6 @@ class ContentLibrary extends React.Component {
     );
   }
 
-  LibraryImage() {
-    if(!this.props.libraryStore.library.imageUrl) { return null; }
-
-    return (
-      <div className="object-image">
-        <img src={this.props.libraryStore.library.imageUrl}/>
-      </div>
-    );
-  }
-
   LibraryInfo() {
     const library = this.props.libraryStore.library;
 
@@ -280,7 +272,6 @@ class ContentLibrary extends React.Component {
 
     return (
       <div className="object-info label-box">
-        { this.LibraryImage() }
         <LabelledField label="Name">
           { library.name }
         </LabelledField>
