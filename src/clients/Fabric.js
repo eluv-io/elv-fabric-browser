@@ -724,6 +724,7 @@ const Fabric = {
             description: publicMeta.description || meta.description,
             accessInfo,
             confirmedAt: status?.status_details?.confirmed?.at,
+            isContentLibraryObject: client.utils.EqualHash(libraryId, object.id),
             contractAddress: client.utils.HashToAddress(object.id)
           };
         } catch(error) {
