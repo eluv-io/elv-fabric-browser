@@ -825,7 +825,6 @@ class ContentObject extends React.Component {
 
         { this.OwnerCapsSection() }
 
-
         { this.ObjectVersion({versionHash: object.hash, latestVersion: true}) }
 
         <br />

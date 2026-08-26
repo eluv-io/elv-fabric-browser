@@ -282,6 +282,7 @@ const Fabric = {
 
           libraries[libraryId] = {
             libraryId,
+            libraryObjectId,
             name: meta.public && meta.public.name || libraryId,
             description: (meta.public && meta.public.description) || meta.description,
             imageUrl,
@@ -734,7 +735,15 @@ const Fabric = {
             /* eslint-enable no-console */
           }
 
-          const accessInfo = await Fabric.GetAccessInfo({objectId: object.id});
+          let accessInfo;
+          try {
+            accessInfo = await Fabric.GetAccessInfo({objectId: object.id});
+          } catch(error) {
+            // ignore
+          }
+
+          const status = await Fabric.GetContentObjectStatus({libraryId, objectId: object.id});
+
           const meta = latestVersion.meta || {};
           const publicMeta = meta.public || {};
           objects[object.id] = {
@@ -748,6 +757,7 @@ const Fabric = {
             description: publicMeta.description || meta.description,
             accessInfo,
             imageUrl,
+            confirmedAt: status?.status_details?.confirmed?.at,
             contractAddress: client.utils.HashToAddress(object.id)
           };
         } catch(error) {
@@ -1015,6 +1025,20 @@ const Fabric = {
       meta: metadata,
       verification: {}
     };
+  },
+
+  GetContentObjectStatus: async ({libraryId, objectId}) => {
+    try {
+      const url = new URL(await client.FabricUrl({libraryId, objectId}));
+      url.pathname = UrlJoin(url.pathname, "status");
+      url.searchParams.set("details", "true");
+
+      const response = await fetch(url.toString());
+
+      return await response.json();
+    } catch(error) {
+      return undefined;
+    }
   },
 
   GetContentObjectImageUrl: async ({libraryId, objectId, versionHash, metadata}) => {
