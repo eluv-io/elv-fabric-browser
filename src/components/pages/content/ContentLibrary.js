@@ -218,7 +218,7 @@ class ContentLibrary extends React.Component {
         subtitle: object.name ? objectId : undefined,
         description: object.description,
         status: confirmedAt && confirmedAt.isValid ? confirmedAt.toFormat("yyyy-MM-dd HH:mm") : "",
-        icon: object.imageUrl || ContentIcon,
+        icon: ContentIcon,
         link: UrlJoin(this.props.match.url, objectId)
       };
     });
@@ -253,16 +253,6 @@ class ContentLibrary extends React.Component {
     );
   }
 
-  LibraryImage() {
-    if(!this.props.libraryStore.library.imageUrl) { return null; }
-
-    return (
-      <div className="object-image">
-        <img src={this.props.libraryStore.library.imageUrl}/>
-      </div>
-    );
-  }
-
   LibraryInfo() {
     const library = this.props.libraryStore.library;
 
@@ -280,7 +270,6 @@ class ContentLibrary extends React.Component {
 
     return (
       <div className="object-info label-box">
-        { this.LibraryImage() }
         <LabelledField label="Name">
           { library.name }
         </LabelledField>

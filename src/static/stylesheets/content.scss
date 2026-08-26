@@ -32,16 +32,6 @@
   font-style: italic;
 }
 
-.object-image {
-  position: absolute;
-  right: $elv-spacing-s;
-
-  img {
-    max-height: 20vw;
-    max-width: 20vw;
-  }
-}
-
 .video-player {
   display: flex;
   justify-content: center;

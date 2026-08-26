@@ -294,16 +294,6 @@ class ContentObject extends React.Component {
     return PrettyBytes(version.parts.reduce((a, part) => a + part.size, 0));
   }
 
-  Image() {
-    if(!this.props.objectStore.object.imageUrl) { return null; }
-
-    return (
-      <div className="object-image">
-        <img src={this.props.objectStore.object.imageUrl} />
-      </div>
-    );
-  }
-
   ObjectParts(version) {
     if(!version || !version.parts || version.parts.length === 0) { return null; }
 
@@ -1018,7 +1008,6 @@ class ContentObject extends React.Component {
     } else if(this.state.view === "info") {
       pageContent = (
         <React.Fragment>
-          { this.Image() }
           { this.ObjectInfo() }
         </React.Fragment>
       );
@@ -1030,11 +1019,6 @@ class ContentObject extends React.Component {
               libraryId: this.props.objectStore.libraryId,
               objectId: this.props.objectStore.objectId,
               writeToken: this.props.objectStore.writeTokens[this.props.objectStore.objectId],
-              filePath
-            })}
-            SetObjectImage={async ({filePath}) => await this.props.objectStore.SetExistingObjectImage({
-              libraryId: this.props.objectStore.libraryId,
-              objectId: this.props.objectStore.objectId,
               filePath
             })}
             DownloadFile={async ({filePath, callback}) => {
