@@ -203,7 +203,6 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
   // Table view
   .table-listing {
     @include elv-no-select;
-    cursor: pointer;
     width: 100%;
 
     &.auto-cursor {
@@ -270,6 +269,10 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
           padding-left: 0;
         }
 
+        &.title-subtitle {
+          padding-left: $elv-spacing-xxs;
+        }
+
         &.cropped-text {
           display: block;
         }
@@ -297,31 +300,28 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
         .title {
           -webkit-box-orient: vertical;
           -webkit-line-clamp: 2;
+          color: inherit;
           display: -webkit-box;
           font-size: 18px;
           line-clamp: 2;
           line-height: 1.25;
           overflow: hidden;
           overflow-wrap: break-word;
+          padding-left: 2px;
           white-space: normal;
+        }
+
+        a.title {
+          cursor: pointer;
         }
       }
 
       .title-subtitle {
         color: $elv-color-text-lighter;
+        cursor: text;
         font-size: $elv-font-m;
         gap: $elv-spacing-xxs;
-
-        .copy-icon-container {
-          cursor: pointer;
-          display: flex;
-          flex-shrink: 0;
-        }
-
-        .copy-icon {
-          height: 1.1em;
-          width: 1.1em;
-        }
+        user-select: text;
       }
 
       .description {

@@ -443,8 +443,6 @@ class ContentLibrary extends React.Component {
         <PageHeader
           header={this.props.libraryStore.library.name}
           subHeader={this.props.libraryStore.library.description}
-          id={this.props.libraryStore.libraryId}
-          idLink={UrlJoin(this.props.match.url, this.props.libraryStore.library.libraryObjectId)}
         />
         { tabs }
         <div className="page-content-container">

@@ -1,11 +1,10 @@
 import React from "react";
 import PropTypes from "prop-types";
-import {Copy, ImageIcon} from "elv-components-js";
+import {ImageIcon} from "elv-components-js";
 import {Redirect} from "react-router";
 import {Link} from "react-router-dom";
 import {observer} from "mobx-react";
 import Fabric from "../../clients/Fabric";
-import CopyIcon from "../../static/icons/clipboard.svg";
 
 const IMAGE_HEIGHT = 300;
 
@@ -25,26 +24,22 @@ class ListingItem extends React.Component {
 
   AsTableRow() {
     let className = "listing-row";
+
+    const title = this.props.link ?
+      <Link className="title" to={this.props.link} title={this.props.title} aria-label={this.props.title} tabIndex={-1}>
+        {this.props.title}
+      </Link> :
+      <div className="title" title={this.props.title} tabIndex={-1}>
+        {this.props.title}
+      </div>;
+
     let elements = [
-      <div key={`listing-title-${this.props.id}`} title={this.props.title} className="title-cell">
-        <div className="title" tabIndex={-1}>
-          {this.props.title}
-        </div>
+      <div key={`listing-title-${this.props.id}`} className="title-cell">
+        { title }
         {
           this.props.subtitle ?
             <div className="title-subtitle" tabIndex={-1}>
               <span className="cropped-text">{this.props.subtitle}</span>
-              <span
-                className="copy-icon-container"
-                onClick={event => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                }}
-              >
-                <Copy copy={this.props.subtitle}>
-                  <ImageIcon className="copy-icon" icon={CopyIcon} />
-                </Copy>
-              </span>
             </div> :
             null
         }
@@ -87,24 +82,11 @@ class ListingItem extends React.Component {
       );
     }
 
-    if(this.props.link) {
-      return (
-        <Link
-          title={this.props.title}
-          to={this.props.link}
-          aria-label={this.props.title}
-          className={className}
-        >
-          { elements }
-        </Link>
-      );
-    } else {
-      return (
-        <div title={this.props.title} aria-label={this.props.title} className={className}>
-          { elements }
-        </div>
-      );
-    }
+    return (
+      <div className={className}>
+        { elements }
+      </div>
+    );
   }
 
   AsGridElement() {
