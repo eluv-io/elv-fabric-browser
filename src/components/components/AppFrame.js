@@ -10,6 +10,7 @@ import Fabric from "../../clients/Fabric";
 import PropTypes from "prop-types";
 import URI from "urijs";
 import {inject, observer} from "mobx-react";
+import {CurrentColorScheme, SubscribeColorScheme} from "../../utils/ColorScheme";
 
 // Ensure error objects can be properly serialized in messages
 if(!("toJSON" in Error.prototype)) {
@@ -138,9 +139,40 @@ class AppFrame extends React.Component {
     };
 
     this.ApiRequestListener = this.ApiRequestListener.bind(this);
+    this.AnnounceColorScheme = this.AnnounceColorScheme.bind(this);
+  }
+
+  // The push half of the contract, mirroring what ElvCore does for us: the
+  // contained app is told when the viewer changes their mind. The pull half is
+  // the GetColorScheme case in ApiRequestListener — an app needs both, since a
+  // listener alone misses the value it starts with.
+  componentDidMount() {
+    this.unsubscribeColorScheme = SubscribeColorScheme(this.AnnounceColorScheme);
+  }
+
+  AnnounceColorScheme(colorScheme) {
+    const frame = this.state.appRef.current;
+
+    if(!frame || !frame.contentWindow) { return; }
+
+    try {
+      frame.contentWindow.postMessage(
+        {
+          type: "ElvFrameEvent",
+          event: "ColorSchemeChanged",
+          colorScheme
+        },
+        "*"
+      );
+    } catch(error) {
+      /* eslint-disable-next-line no-console */
+      console.error("Error announcing colour scheme to frame", error);
+    }
   }
 
   async componentWillUnmount() {
+    if(this.unsubscribeColorScheme) { this.unsubscribeColorScheme(); }
+
     // Ensure region and static token are reset after app is unloaded in case app changed it
     await Fabric.ResetRegion();
     await Fabric.ClearStaticToken();
@@ -227,6 +259,14 @@ class AppFrame extends React.Component {
 
         case "Reload":
           if(this.props.Reload) { await this.props.Reload(); }
+          break;
+
+        // The pull half. Answers with the scheme already resolved to light or
+        // dark, which is what core does for us and what a contained app needs —
+        // its own prefers-color-scheme would report the OS, not what it is
+        // being displayed inside.
+        case "GetColorScheme":
+          this.Respond(event.data.requestId, event.source, {response: CurrentColorScheme()});
           break;
 
         case "SetFrameDimensions":

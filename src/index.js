@@ -8,6 +8,7 @@ import UrlJoin from "url-join";
 import "./utils/StringExtensions";
 import "elv-components-js/src/utils/LimitedMap";
 
+import {InitializeColorScheme} from "./utils/ColorScheme";
 import ScrollToTop from "./router/ScrollToTop";
 import NavigationBar from "./components/NavigationBar";
 import Notifications from "./components/Notifications";
@@ -15,6 +16,11 @@ import Routes from "./router";
 
 import * as Stores from "./stores";
 import {Provider} from "mobx-react";
+
+// Ask core what colour scheme it is showing, and keep listening for changes.
+// Runs before render so the first paint is already in the right scheme rather
+// than flashing light. See utils/ColorScheme.js for the contract.
+InitializeColorScheme();
 
 const App = () => {
   if(window.self === window.top) {

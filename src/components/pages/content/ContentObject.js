@@ -303,40 +303,45 @@ class ContentObject extends React.Component {
       names[partNames[name]] = name;
     });
 
-    const parts = (version.parts.map((part, partNumber) => {
-      const download = <DownloadPart
-        libraryId={this.props.objectStore.libraryId}
-        objectId={this.props.objectStore.objectId}
-        versionHash={version.hash}
-        partHash={part.hash}
-        partName={names[part.hash]}
-        DownloadMethod={this.props.objectStore.DownloadPart}
-      />;
-
-      const name = names[part.hash] ? <LabelledField label="Name" value={names[part.hash]}/> : null;
-
-      return (
-        <div key={part.hash + "-" + partNumber} className="part-info">
-          { name }
-          <LabelledField label="Hash">
-            { part.hash }
-          </LabelledField>
-
-          <LabelledField label="Size">
-            { PrettyBytes(part.size) }
-          </LabelledField>
-
-          <LabelledField label="Download">
-            { download }
-          </LabelledField>
+    // Was four stacked LabelledFields per part, repeated — so a handful of
+    // parts filled the screen and the hashes could not be compared down a
+    // column. As a table it matches the Encryption Keys table above, so both
+    // read as one pattern.
+    //
+    // Now one element per row rather than the Encryption Keys table's flat run of
+    // cells, so each row can carry its own divider.
+    const parts = (version.parts.map((part, partNumber) => (
+      <div className="table-row" key={part.hash + "-" + partNumber}>
+        <div className="table-cell">{ names[part.hash] || "—" }</div>
+        <div className="table-cell monospace cropped-text" title={part.hash}>{ part.hash }</div>
+        <div className="table-cell size-cell">{ PrettyBytes(part.size) }</div>
+        <div className="table-cell download-cell">
+          <DownloadPart
+            libraryId={this.props.objectStore.libraryId}
+            objectId={this.props.objectStore.objectId}
+            versionHash={version.hash}
+            partHash={part.hash}
+            partName={names[part.hash]}
+            DownloadMethod={this.props.objectStore.DownloadPart}
+          />
         </div>
-      );
-    }));
+      </div>
+    )));
 
     return (
       <div>
         <h3>Parts</h3>
-        { parts }
+        <div className="parts-table">
+          <div className="header-rows">
+            <div className="table-cell">Name</div>
+            <div className="table-cell">Hash</div>
+            <div className="table-cell size-cell">Size</div>
+            <div className="table-cell"></div>
+          </div>
+          <div className="body-rows">
+            { parts }
+          </div>
+        </div>
       </div>
     );
   }
@@ -393,17 +398,21 @@ class ContentObject extends React.Component {
         { latestVersion ? <h3>Latest Version</h3> : null }
 
         <div className="indented">
-          <LabelledField label="Hash" copyValue={versionHash}>
+          <LabelledField label="Hash" copyValue={versionHash} monospace>
             { versionHash }
           </LabelledField>
 
-          <br />
+          {
+            // <br />
+            // A literal line break between Hash and Type, from before these
+            // rows carried dividers.
+          }
 
           <LabelledField label="Type" hidden={version.isContentType}>
             { typeLink }
           </LabelledField>
 
-          <LabelledField label="Type Hash" hidden={!version.type || version.isContentType} copyValue={version.type}>
+          <LabelledField label="Type Hash" hidden={!version.type || version.isContentType} copyValue={version.type} monospace>
             { version.type }
           </LabelledField>
 
@@ -411,7 +420,10 @@ class ContentObject extends React.Component {
 
           <br />
 
-          <ToggleSection label="Metadata">
+          <ToggleSection
+            label="Metadata"
+            badge={`${Object.keys(version.meta || {}).length} keys`}
+          >
             <div className="indented">
               <JSONField
                 json={version.meta}
@@ -465,9 +477,15 @@ class ContentObject extends React.Component {
 
           <br/>
 
-          <LabelledField hidden={!this.props.objectStore.object.isOwner}>
-            { this.DeleteVersionButton(versionHash) }
-          </LabelledField>
+          {
+            // Was a LabelledField with an empty label, so the 180px label
+            // column stranded this mid-page with nothing above it in that
+            // column. Now aligned at the content edge with the version block above it.
+            this.props.objectStore.object.isOwner ?
+              <div className="version-actions">
+                { this.DeleteVersionButton(versionHash) }
+              </div> : null
+          }
         </div>
       </div>
     );
@@ -583,9 +601,21 @@ class ContentObject extends React.Component {
       );
     }
 
+    // Scanning a library for the risky objects meant reading every dropdown.
+    // Derived from the level's own visibility setting rather than its name, so
+    // a level added later classifies itself: 0 is not publicly listable.
+    const permission = Fabric.permissionLevels[this.props.objectStore.object.permission];
+    const restricted = permission?.settings?.visibility === 0;
+    const badge = (
+      <span className={`visibility-badge ${restricted ? "restricted" : "open"}`}>
+        { restricted ? "Restricted" : "Public" }
+      </span>
+    );
+
     return (
       <div className="visibility-info">
         { info }
+        { this.state.permissionChanging ? null : badge }
         { this.state.permissionChanging ? null : infoIcon }
       </div>
     );
@@ -661,7 +691,11 @@ class ContentObject extends React.Component {
 
     return (
       <div className="non-owner-caps-container">
-        <ToggleSection label="Encryption Keys" toggleOpen={this.state.showNonOwnerCapManagement}>
+        <ToggleSection
+          label="Encryption Keys"
+          badge={capKeys.length ? `${capKeys.length} ${capKeys.length === 1 ? "key" : "keys"}` : undefined}
+          toggleOpen={this.state.showNonOwnerCapManagement}
+        >
           {addCapsButton}
           {
             capKeys.length === 0 && <div className="table-note">No encryption keys to display</div>
@@ -736,6 +770,7 @@ class ContentObject extends React.Component {
     const versionSection = object.versionCount > 0 ?
       <ToggleSection
         label="Previous Versions"
+        badge={`${object.versionCount} ${object.versionCount === 1 ? "version" : "versions"}`}
         className="version-info"
         toggleOpen={this.state.prevVersionsToggled}
       >
@@ -780,7 +815,7 @@ class ContentObject extends React.Component {
           </Link>
         </LabelledField>
 
-        <LabelledField label="Object ID">
+        <LabelledField label="Object ID" monospace>
           { object.id }
         </LabelledField>
 
@@ -1047,8 +1082,12 @@ class ContentObject extends React.Component {
       );
     }
 
+    // The display view is a single frame that sizes itself, so the generous
+    // bottom gutter the scrolling views need is dead space beneath it. A
+    // modifier lets the stylesheet tell the two cases apart without an :has()
+    // selector reaching back up the tree.
     return (
-      <div className="page-container content-page-container">
+      <div className={"page-container content-page-container " + (this.state.view === "display" ? "display-view" : "")}>
         <Prompt
           message={"Are you sure you want to navigate away from this page? You have unsaved changes that will be lost."}
           when={!!this.props.objectStore.writeTokens[this.props.objectStore.objectId]}

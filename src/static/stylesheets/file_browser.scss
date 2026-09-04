@@ -4,17 +4,20 @@
 
 .file-browser-table {
   .file-browser-row {
-    border: 1px solid $elv-color-gray;
+    // Boxed rows stacked into a heavy grid. A single hairline underneath each
+    // reads as one table instead of many outlined cells.
+    border: 0;
+    border-bottom: 1px solid var(--elv-line);
     display: grid;
     grid-template-columns: 3rem minmax(5rem, 4fr) minmax(6rem, 1fr) 10rem;
     height: $elv-spacing-ml;
 
-    &:not(:last-child) {
+    &:last-child {
       border-bottom: 0;
     }
 
     &:hover {
-      background-color: $elv-color-lightergray;
+      background-color: var(--elv-bg-subtle);
     }
 
     svg {
@@ -34,13 +37,13 @@
 
     button > svg {
       &:hover {
-        background-color: $elv-color-gray;
+        background-color: var(--elv-bg-raised);
         border-radius: 5px;
       }
     }
 
     .encrypted-file-icon {
-      fill: $elv-color-darkgray;
+      fill: var(--elv-ink-muted);
       stroke: transparent;
     }
 
@@ -51,8 +54,23 @@
       padding-left: $elv-spacing-xs;
     }
 
+    // A directory is the one thing in this table you can act on by clicking
+    // its name, so it carries the accent.
     .directory-cell {
+      color: var(--elv-accent);
       cursor: pointer;
+      font-weight: 500;
+
+      &:hover {
+        text-decoration: underline;
+        text-underline-offset: 2px; // sass-lint:disable-line no-misspelled-properties
+      }
+    }
+
+    // Sizes are quantities, so UI face with tabular figures.
+    .info-cell {
+      color: var(--elv-ink-muted);
+      font-variant-numeric: tabular-nums;
     }
 
     .create-directory-icon {
@@ -87,8 +105,16 @@
   }
 
   .file-browser-header {
+    background-color: var(--elv-bg-subtle);
+    border-radius: var(--elv-radius-panel) var(--elv-radius-panel) 0 0;
     grid-template-columns: 3rem minmax(5rem, 3fr) 2fr;
     height: 3rem;
+
+    // The current directory is a path you read and copy — monospace.
+    .display-path {
+      font-family: var(--elv-font-mono);
+      font-size: 12px;
+    }
 
     .size-header {
       justify-content: flex-end;

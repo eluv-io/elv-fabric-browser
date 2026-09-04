@@ -44,7 +44,10 @@ class ListingItem extends React.Component {
             null
         }
       </div>,
-      <div key={`listing-description-${this.props.id}`} title={this.props.description}>
+      // Item and Last Update each have a class on their cell; Description was
+      // the only column without one, so its header cell and its body cell were
+      // indented by two different rules. One class on both ends makes the two share a single rule.
+      <div key={`listing-description-${this.props.id}`} className="description-cell" title={this.props.description}>
         <div className="description cropped-text" tabIndex={-1}>
           {this.props.description}
         </div>
@@ -90,6 +93,9 @@ class ListingItem extends React.Component {
   }
 
   AsGridElement() {
+    // listing.scss has styled .grid-listing-element —
+    // the card outline, the positioned info panel, the hover.
+    const className = "grid-listing-element";
     const isSVG = typeof this.props.icon === "string" && this.props.icon.startsWith("<svg");
     const elements = (
       <React.Fragment>
@@ -117,6 +123,7 @@ class ListingItem extends React.Component {
           title={this.props.title}
           to={this.props.link}
           aria-label={this.props.title}
+          className={className}
         >
           { elements }
         </Link>
@@ -177,7 +184,7 @@ class Listing extends React.Component {
           >
             { !this.props.noIcon ? <div /> : null }
             <div className="title-cell">Item</div>
-            <div>Description</div>
+            <div className="description-cell">Description</div>
             { !this.props.noStatus ? <div className="status">Last Update</div> : null }
           </div>
           { content.map(item =>

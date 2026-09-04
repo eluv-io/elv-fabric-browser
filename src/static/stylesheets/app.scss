@@ -14,3 +14,8 @@
 @import "forms";
 @import "content_browser";
 @import "search_form";
+@import "toggle_section";
+
+// Last: its selectors tie with the library's own rules on specificity, so it
+// has to win on order. See the file header.
+@import "color-scheme";

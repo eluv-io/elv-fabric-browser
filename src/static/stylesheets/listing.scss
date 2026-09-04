@@ -3,7 +3,12 @@ $grid-listing-width: 150px;
 $table-listing-width: 95px;
 
 $listing-row-height: 4.25rem;
-$listing-icon-width: calc(#{$listing-row-height} * 16 / 9);
+// $listing-icon-width: calc(#{$listing-row-height} * 16 / 9);
+$listing-icon-width: 46px;
+
+$listing-item-fr: 3.1fr;
+$listing-description-fr: 2.65fr;
+$listing-status-fr: 1fr;
 
 $listing-grid-height: 9rem;
 $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
@@ -48,7 +53,7 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
 
       input,
       select {
-        border: 1px solid $elv-color-lightgray;
+        border: 1px solid var(--elv-line-strong);
         flex-basis: 100px;
         flex-grow: 1;
         flex-shrink: 1;
@@ -67,7 +72,7 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
       height: 100%;
 
       li {
-        border: 1px solid $elv-color-lightgray;
+        border: 1px solid var(--elv-line);
         border-right: 0;
         height: 100%;
 
@@ -77,22 +82,24 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
           border: 0;
           cursor: pointer;
           display: flex;
-          font-size: $elv-font-m;
+          // font-size: $elv-font-m;
+          font-size: 12.5px;
+          font-variant-numeric: tabular-nums;
           height: 100%;
           justify-content: center;
           margin: 0;
           min-width: 2.5em;
 
           &:hover {
-            background: $elv-color-lightgray;
+            background: var(--elv-bg-subtle);
           }
 
           &:active {
-            background: $elv-color-lightergray;
+            background: var(--elv-bg-raised);
           }
 
           &:disabled {
-            color: $elv-color-text-dark;
+            color: var(--elv-ink);
             font-weight: bold;
 
             &:hover,
@@ -101,15 +108,18 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
               cursor: auto;
             }
 
+            // background: $elv-color-lightestgray;  — a light literal, so in
+            // dark mode the current page painted near-white behind the
+            // --elv-ink text above, which is itself light there.
             &.selected {
-              background: $elv-color-lightestgray;
+              background: var(--elv-bg-raised);
             }
           }
         }
 
         .text-button {
           &:disabled {
-            color: $elv-color-mediumgray;
+            color: var(--elv-ink-faint);
             font-weight: normal;
 
             &:hover,
@@ -120,8 +130,11 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
           }
         }
 
+        // The other three borders on these list items are already tokenised;
+        // this one was missed, so the closing edge of the Last button drew a
+        // near-white line down the dark scheme.
         &:last-child {
-          border-right: 1px solid $elv-color-lightgray;
+          border-right: 1px solid var(--elv-line);
         }
       }
     }
@@ -157,8 +170,10 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
   .listing-count {
     @include elv-no-select;
 
-    color: $elv-color-text-lighter;
+    color: var(--elv-ink-faint);
     display: flex;
+    font-size: 12.5px;
+    font-variant-numeric: tabular-nums;
     justify-content: center;
     margin: $elv-spacing-xs 0 $elv-spacing-s;
   }
@@ -169,16 +184,21 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
 
   .icon-container {
     align-items: center;
+    background-color: var(--elv-bg-subtle);
+    border: 1px solid var(--elv-line);
+    border-radius: 4px;
+    color: var(--elv-ink-faint);
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
     height: 100%;
     justify-content: center;
+    max-height: 30px;
     padding: 0;
     width: 100%;
 
     &:not(.svg-icon-container) {
-      background-color: $elv-color-bg-black;
+      background-color: var(--elv-bg-subtle);
     }
 
     img,
@@ -210,34 +230,52 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
       user-select: auto;
     }
 
+    // The item column was twice the description's, but an item is a name plus a
+    // hash — both of which wrap or crop gracefully — while a description is a
+    // sentence that either fits or ends in an ellipsis. Widening the
+    // description at the item column's expense is what lets it be read.
     .listing-row {
+      border-bottom: 1px solid var(--elv-line);
+      border-radius: var(--elv-radius-panel);
       display: grid;
-      grid-template-columns: $listing-icon-width 4fr 2fr 1fr;
-      margin-bottom: $elv-spacing-ss;
+      // grid-template-columns: $listing-icon-width 4fr 2fr 1fr;
+      grid-template-columns: $listing-icon-width minmax(0, $listing-item-fr) minmax(0, $listing-description-fr) minmax(0, $listing-status-fr);
+      // margin-bottom: $elv-spacing-ss;  — folded into the row height above
       max-height: $listing-row-height;
       min-height: $listing-row-height;
       width: 100%;
 
       &.listing-row-no-icon {
-        grid-template-columns: 4fr 2fr 1fr;
+        // grid-template-columns: 4fr 2fr 1fr;
+        grid-template-columns: minmax(0, $listing-item-fr) minmax(0, $listing-description-fr) minmax(0, $listing-status-fr);
       }
 
       &.listing-row-no-status {
-        grid-template-columns: $listing-icon-width 2fr 1fr;
+        // grid-template-columns: $listing-icon-width 2fr 1fr;
+        grid-template-columns: $listing-icon-width minmax(0, $listing-item-fr) minmax(0, $listing-description-fr);
 
         &.listing-row-no-icon {
-          grid-template-columns: 2fr 1fr;
+          // grid-template-columns: 2fr 1fr;
+          grid-template-columns: minmax(0, $listing-item-fr) minmax(0, $listing-description-fr);
         }
       }
 
       &:hover {
-        background-color: $elv-color-bg-light-dark;
+        background-color: var(--elv-bg-subtle);
       }
 
       &.listing-header {
-        color: $elv-color-text-lighter;
-        font-size: $elv-font-s;
-        margin-bottom: $elv-spacing-xs;
+        border-bottom: 1px solid var(--elv-line);
+        color: var(--elv-ink-faint);
+        font-family: var(--elv-font-mono);
+        // font-size: $elv-font-s;
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: .1em;
+        // No gap below the rule. A row's contents sit 11px under the separator
+        // above them; this margin added 8px on top of that, so the first row
+        // hung further from the header than the rows hang from each other.
+        margin-bottom: 0;
         min-height: auto;
         text-transform: uppercase;
 
@@ -249,8 +287,19 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
           height: auto;
         }
 
+        // .listing-row .status sets 12.5px on this cell directly, and a direct
+        // match beats the header's own font-size however specific the header
+        // selector is — an inherited value always loses to one. Handing it back
+        // to inherit puts LAST UPDATE at the same size as ITEM and DESCRIPTION.
+        .status {
+          font-size: inherit;
+        }
+
+        // Matches the rows' title-cell below so ITEM sits over the titles —
+        // 12px on the cell plus the 2px .title carries of its own.
         .title-cell {
-          padding-left: $elv-spacing-xs;
+          // padding-left: $elv-spacing-xs;
+          padding-left: 14px;
         }
       }
 
@@ -265,8 +314,11 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
           padding-left: $elv-spacing-xs;
         }
 
+        // The icon box fills its grid track, so the gap to the title has to
+        // come from this side. 0 put the title hard against the icon border.
         &.title-cell {
-          padding-left: 0;
+          // padding-left: 0;
+          padding-left: 12px;
         }
 
         &.title-subtitle {
@@ -281,6 +333,31 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
       .cropped-text {
         @include elv-ellipsis;
         min-width: 0;
+      }
+
+      // Item and Last Update each own their cell through a class; Description
+      // was the only column without one, so the header's cell and the body's
+      // cell were being indented by two separate rules that merely agreed on a
+      // value — and any rule reaching one of them could move it alone. Both
+      // ends carry .description-cell now, so a single declaration sets the
+      // indent for both and they cannot drift apart. Doubled because
+      // `div:not(.icon-container)` above outranks a single class on padding.
+      .description-cell.description-cell { // sass-lint:disable-line force-element-nesting
+        justify-content: flex-start;
+        padding-left: $elv-spacing-xs;
+        text-align: left;
+      }
+
+      // The `div { height: $listing-row-height }` rule above catches the icon
+      // box too — it outranks .icon-container's own 30px cap — so the box grew
+      // to the full row and its bottom border landed exactly on the row
+      // separator. A square box, centred in the track, gives the separator a
+      // clear 5px on either side. $listing-icon-width is also the box's width,
+      // so the glyph inside (capped at 85% of the smaller side) is unchanged.
+      .icon-container {
+        align-self: center;
+        height: $listing-icon-width;
+        max-height: $listing-icon-width;
       }
 
       .title-cell {
@@ -300,9 +377,16 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
         .title {
           -webkit-box-orient: vertical;
           -webkit-line-clamp: 2;
+          // Same clamp, same trap as .description below: a title with no link
+          // renders as a div, so it picks up align-items: center from
+          // `.listing-row div` and centres in any engine that reads
+          // display: -webkit-box as flex. Linked titles are <a> and escape it,
+          // which is the only reason this has not shown up yet.
+          align-items: flex-start;
           color: inherit;
           display: -webkit-box;
-          font-size: 18px;
+          font-size: 14px;
+          font-weight: 500;
           line-clamp: 2;
           line-height: 1.25;
           overflow: hidden;
@@ -316,10 +400,14 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
         }
       }
 
+      // Every listing row is identified by a hash, which is the same
+      // legibility problem the object page had.
       .title-subtitle {
-        color: $elv-color-text-lighter;
+        color: var(--elv-ink-faint);
         cursor: text;
-        font-size: $elv-font-m;
+        font-family: var(--elv-font-mono);
+        // font-size: $elv-font-m;
+        font-size: 11.5px;
         gap: $elv-spacing-xxs;
         user-select: text;
       }
@@ -327,14 +415,50 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
       .description {
         height: auto;
         overflow-y: hidden;
-        padding: $elv-spacing-xs;
+        // padding: $elv-spacing-xs;
+        // Vertical padding came out of the two lines the row can now hold, so
+        // it is spent on a right gutter instead — the left one comes from the
+        // grid cell.
+        padding: 0 $elv-spacing-xs 0 0;
         width: 100%;
+      }
+
+      // The markup asks for .cropped-text here, which is one nowrap line and an
+      // ellipsis. The column is the wide one now, so it wraps to two lines and
+      // clamps rather than cropping mid-word. Specificity has to beat the
+      // `div.cropped-text` rule above, hence the doubled class.
+      // -webkit-box clamp was what centred the sentence, and
+      // text-align could not reach it, so stopped using box.
+      .description.cropped-text { // sass-lint:disable-line force-element-nesting
+        display: block;
+        line-height: 1.35;
+        // Two lines at the line-height above. What .cropped-text asks for is one
+        // nowrap line and an ellipsis; the column is wide enough now that the
+        // sentence deserves to wrap instead.
+        max-height: 2.7em;
+        overflow: hidden;
+        // The `div:not(.icon-container)` rule above already indents the grid
+        // cell this sits in, and outranks a single-class `.description` on
+        // padding-left, so the two indents were stacking and the text sat 8px
+        // right of its own DESCRIPTION header. Doubled here to win it back.
+        padding-left: 0;
+        text-align: left;
+        text-overflow: clip;
+        white-space: normal;
+        word-break: break-word;
       }
 
       .description,
       .status {
-        color: $elv-color-text-lighter;
-        font-size: $elv-font-m;
+        color: var(--elv-ink-faint);
+        // font-size: $elv-font-m;
+        font-size: 12.5px;
+      }
+
+      // Dates and counts are quantities, not identifiers — UI face, with
+      // tabular figures so the column still lines up.
+      .status {
+        font-variant-numeric: tabular-nums;
       }
     }
   }
@@ -347,6 +471,8 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
   }
 
   .grid-listing-element {
+    border: 1px solid var(--elv-line);
+    border-radius: var(--elv-radius-card);
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
@@ -354,33 +480,58 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
     max-width: $listing-grid-icon-width;
     min-height: $listing-grid-height;
     min-width: $listing-grid-icon-width;
-    outline: 1px solid $elv-color-lightgray;
+    overflow: hidden;
     position: relative;
 
+    &:hover {
+      border-color: var(--elv-accent-line);
+      box-shadow: var(--elv-shadow);
+    }
+
+    // The shared .icon-container above caps itself at 30px, which is the table
+    // row's height. In a 9rem card that leaves the glyph as a strip across the
+    // top with the info panel immediately under it and no air between them.
+    .icon-container {
+      border: 0;
+      border-radius: 0;
+      flex: 1 1 auto;
+      max-height: none;
+      padding: 12px 0;
+
+      &.svg-icon-container svg { // sass-lint:disable-line force-element-nesting
+        max-height: 52px;
+      }
+    }
+
     .listing-info {
-      background-color: $elv-color-black;
-      bottom: 0;
-      color: $elv-color-text-white;
+      background-color: var(--elv-bg-surface);
+      border-top: 1px solid var(--elv-line);
+      // bottom: 0;
+      color: var(--elv-ink);
       display: flex;
+      flex: none;
       flex-direction: column;
       height: auto;
       justify-content: flex-end;
-      left: 0;
+      // left: 0;
       max-width: $listing-grid-icon-width;
       min-width: $listing-grid-icon-width;
-      opacity: 0.7;
+      opacity: 1;
       padding: $elv-spacing-xs;
-      position: absolute;
-      text-align: center;
+      // position: absolute;
+      // Absolute made sense while this was a translucent scrim lying over a
+      // fetched display image. It is an opaque footer now, so it belongs in the
+      // card's flow, where the icon above it can be given room rather than
+      // being covered by it.
+      position: static;
+      // text-align: center;
+      text-align: left;
       word-break: break-all;
-      z-index: 10;
+      // z-index: 10;
     }
 
-    &:hover {
-      .listing-info {
-        opacity: 0.9;
-      }
-    }
+    // &:hover { .listing-info { opacity: 0.9; } }  — replaced by the border
+    // and shadow above.
 
     .title {
       @include elv-ellipsis;

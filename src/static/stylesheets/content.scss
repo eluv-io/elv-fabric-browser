@@ -7,13 +7,37 @@
     margin: $elv-spacing-s 0;
   }
 
+  // Same margin layout.scss now applies to every page — kept here because the
+  // padding reset is still this container's own.
   .page-header-container {
     margin: $elv-spacing-s 0 0;
     padding: 0;
   }
 
+  // `flex: 1 1 auto` alone left this 533px tall in an 850px viewport, which is
+  // not enough for what the player puts in it: the video rendered 766×319 and
+  // the options column beside it ran past the bottom edge and was clipped. The
+  // frame is passed fixedDimensions, so the app cannot size itself and this is
+  // the only place its height is decided.
+  //
+  // Proportional rather than a vh share, so it holds up on any screen: `vh`
+  // here means a share of *this app's* frame, not the window, and
+  // .main-content-container caps its scroller at 80vh — so a vh height would
+  // compete with the toolbar and tabs above it for that same capped space and
+  // push the page into a scroll. An aspect ratio takes its cue from the width
+  // the window actually gives us, with a floor for narrow ones.
   .display-frame {
-    flex: 1 1 auto;
+    aspect-ratio: 16 / 10; // sass-lint:disable-line no-misspelled-properties
+    flex: 0 0 auto;
+    min-height: 520px;
+  }
+
+  &.display-view {
+    padding-bottom: 24px;
+
+    .page-content {
+      padding-bottom: 0;
+    }
   }
 }
 
@@ -22,14 +46,19 @@
 }
 
 .auth-token {
-  @include elv-ellipsis;
+  // @include elv-ellipsis;  — the token was truncated with no way to see it
+  font-family: var(--elv-font-mono);
+  font-size: 12.5px;
   margin-bottom: 5px;
+  word-break: break-all;
 }
 
 .auth-token-expiration {
-  color: $elv-color-text-light;
-  font-size: 14px;
-  font-style: italic;
+  color: var(--elv-ink-faint);
+  font-family: var(--elv-font-mono);
+  font-size: 11.5px;
+  // font-style: italic;
+  margin-top: 5px;
 }
 
 .video-player {
@@ -61,8 +90,160 @@
   }
 }
 
+// The JSON viewer paints its keys, literals and expand buttons from the
+// compiled light palette. Selecting them here lets them follow the scheme
+// without touching elv-components-js. Class doubled because JSONField pulls in
+// traversable-json.scss, which style-loader injects after app.scss.
+.-elv-traversable-json.-elv-traversable-json { // sass-lint:disable-line force-element-nesting
+  label {
+    color: var(--elv-ink);
+    font-family: var(--elv-font-mono);
+    font-weight: 500;
+  }
+
+  // Literals stay neutral — amber and teal mean state elsewhere in this app,
+  // and syntax highlighting would spend them on something that has none.
+  .-elv-literal {
+    color: var(--elv-ink-muted);
+    font-family: var(--elv-font-mono);
+  }
+
+  .-elv-expand-button,
+  button {
+    color: var(--elv-ink-faint);
+
+    &:hover {
+      color: var(--elv-accent);
+    }
+  }
+
+  // A triangle belongs to the key and turns
+  // when it opens, and the ▼ becomes a chip that names its scope.
+  .-elv-json-entry {
+    margin-top: 1px;
+
+    & > label {
+      align-items: center;
+      border-radius: 4px;
+      display: inline-flex;
+      gap: 7px; // sass-lint:disable-line no-misspelled-properties
+      padding: 2px 7px 2px 4px;
+      transition: background 100ms ease, color 100ms ease;
+
+      // Drawn from borders rather than set as a glyph, so it cannot fall back
+      // to a different shape in a font that lacks the character.
+      &::before {
+        border-color: transparent transparent transparent currentColor;
+        border-style: solid;
+        border-width: 3.5px 0 3.5px 5px;
+        color: var(--elv-ink-faint);
+        content: "";
+        flex: none;
+        height: 0;
+        transition: transform 120ms ease;
+        width: 0;
+      }
+
+      // The component writes its open state into the title attribute
+      // ("Expand foo" / "Collapse foo"), which is the only place a stylesheet
+      // can read it from without forking elv-components-js.
+      &[title^="Collapse"] {
+        color: var(--elv-accent);
+
+        &::before {
+          color: var(--elv-accent);
+          transform: rotate(90deg);
+        }
+      }
+
+      &:hover {
+        background: var(--elv-bg-raised);
+      }
+    }
+  }
+
+  // A leaf has no level to open — it has a value, and the component hides that
+  // value until the key is clicked. A dot rather than a triangle says this is
+  // not a branch; the ellipsis says there is something behind it.
+  .-elv-json-entry-literal > label {
+    // Quieter than the branch triangle it stands in for: it is only saying
+    // "nothing opens here", so it should not compete with the keys.
+    // The token is scheme-aware,
+    // so it dims by the same amount in light and dark.
+    &::before {
+      background: var(--elv-ink-faint);
+      border: 0;
+      border-radius: 50%;
+      height: 2.5px;
+      margin: 0 1px;
+      opacity: .7;
+      width: 2.5px;
+    }
+
+    &[title^="Expand"] {
+      &::after {
+        color: var(--elv-ink-faint);
+        content: "…";
+        font-family: var(--elv-font-ui);
+      }
+    }
+  }
+
+  // Depth was the other thing the tree never showed: indentation alone leaves
+  // you counting pixels. One guide per level makes the nesting readable.
+  .-elv-indented {
+    border-left: 1px solid var(--elv-line);
+  }
+
+  // Same act as the key beside it, applied to everything underneath — so it
+  // states its scope instead of being a second arrow pointing somewhere else.
+  // It disappears once the subtree is fully open, which is the component's own
+  // behaviour and worth keeping: it only offers itself when it has work to do.
+  .-elv-expand-button {
+    background: var(--elv-bg-subtle);
+    border: 1px solid var(--elv-line);
+    border-radius: 20px;
+    color: var(--elv-ink-faint);
+    // The button's own text is the ▼ character; zeroing it lets ::after carry
+    // the label without editing the shared component.
+    font-size: 0;
+    height: 16px;
+    letter-spacing: .06em;
+    min-width: 0;
+    padding: 0 7px;
+    text-transform: uppercase;
+    vertical-align: middle;
+    width: auto;
+
+    &::after {
+      content: "all";
+      font-family: var(--elv-font-ui);
+      font-size: 8.5px;
+      font-weight: 600;
+    }
+
+    &:hover {
+      background: var(--elv-accent-soft);
+      border-color: var(--elv-accent-line);
+      color: var(--elv-accent);
+    }
+
+    // Set explicitly because the rules above give this button a box: without
+    // it, `hidden` (which the component sets once everything below is open)
+    // would lose to them.
+    &[hidden] {
+      display: none;
+    }
+  }
+}
+
+// The contained app paints its own document, so this rule only owns the frame's
+// edge — but that edge was a light literal, which drew a pale rectangle around
+// the panel in the dark scheme.
 .app-frame {
-  border: 1px solid $elv-color-lightergray;
+  background-color: var(--elv-bg-surface);
+  border: 1px solid var(--elv-line);
+  border-radius: var(--elv-radius-panel);
   display: block;
   flex: 1 1 auto;
   width: 100%;
@@ -77,10 +258,12 @@
   margin-bottom: 10px;
 
   &.version-visible {
-    border-bottom: 1px solid $elv-color-lightgray;
-    border-top: 1px solid $elv-color-lightgray;
-    margin: 30px 0;
-    padding: 30px 0;
+    // The accent rail on the open disclosure already groups a version, so the
+    // enclosing rules were doubling up.
+    border-bottom: 0;
+    border-top: 0;
+    margin: 8px 0;
+    padding: 0;
   }
 }
 
@@ -97,13 +280,28 @@
   }
 }
 
+// Section-scoped action, aligned to the content edge rather than sitting in the
+// value column behind an empty label.
+.version-actions {
+  align-items: center;
+  display: flex;
+  padding: 14px 0 2px;
+}
+
 .part-info {
+  border-bottom: 1px solid var(--elv-line);
   margin-bottom: $elv-spacing-s;
+  padding-bottom: $elv-spacing-xs;
+
+  &:last-child {
+    border-bottom: 0;
+  }
 }
 
 .download-progress {
-  color: $elv-color-text-lighter;
+  color: var(--elv-accent);
   display: flex;
+  font-variant-numeric: tabular-nums;
   width: 100%;
 
   progress {
@@ -112,10 +310,38 @@
   }
 }
 
+// Permission level as a chip beside the select, so a restricted object reads
+// at a glance while scanning. The select keeps its exact options.
+.visibility-badge {
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 500;
+  margin-left: $elv-spacing-xs;
+  padding: 1px 10px;
+  white-space: nowrap;
+
+  &.restricted {
+    background: var(--elv-amber-soft);
+    border-color: var(--elv-amber-line);
+    color: var(--elv-amber);
+  }
+
+  &.open {
+    background: var(--elv-teal-soft);
+    color: var(--elv-teal);
+  }
+}
+
 pre,
-.-elv-traversable-json {
-  background-color: $elv-color-lightestgray;
-  border: 1px solid $elv-color-lightgray;
+.-elv-traversable-json.-elv-traversable-json { // sass-lint:disable-line force-element-nesting
+  background-color: var(--elv-bg-subtle);
+  border: 0;
+  border-radius: 8px;
+  color: var(--elv-ink-muted);
+  font-family: var(--elv-font-mono);
   margin: $elv-spacing-s 0;
   padding: $elv-spacing-xs $elv-spacing-s;
   word-break: break-all;
@@ -237,9 +463,15 @@ pre,
 
 .keys-table {
   .header-rows {
-    background-color: $elv-color-lightgray;
+    background-color: transparent;
+    border-bottom: 1px solid var(--elv-line);
+    color: var(--elv-ink-faint);
+    font-family: var(--elv-font-mono);
+    font-size: 10px;
     font-weight: 500;
+    letter-spacing: .1em;
     padding-bottom: 10px;
+    text-transform: uppercase;
   }
 
   .header-rows,
@@ -266,3 +498,70 @@ pre,
   }
 }
 
+
+// Parts as a table rather than four stacked LabelledFields per part. Shares the
+// Encryption Keys treatment above so both read as one pattern, but with one
+// element per row so each can carry a divider.
+.parts-table {
+  max-width: 1000px;
+
+  .header-rows,
+  .table-row {
+    align-items: center;
+    display: grid;
+    gap: 10px; // sass-lint:disable-line no-misspelled-properties
+    grid-template-columns: minmax(0, 2fr) minmax(0, 5fr) 110px 150px;
+    padding: 6px 10px;
+  }
+
+  .header-rows {
+    border-bottom: 1px solid var(--elv-line);
+    color: var(--elv-ink-faint);
+    font-family: var(--elv-font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+  }
+
+  .table-row {
+    border-bottom: 1px solid var(--elv-line);
+
+    &:last-child {
+      border-bottom: 0;
+    }
+
+    &:hover {
+      background-color: var(--elv-bg-subtle);
+    }
+  }
+
+  .table-cell {
+    min-width: 0;
+    padding: 3px;
+  }
+
+  // Hashes are identifiers, so monospace, but a full one would push the row
+  // wide — truncated with the whole value on hover.
+  .cropped-text {
+    @include elv-ellipsis;
+    font-size: 12px;
+  }
+
+  // A size is a quantity, not an identifier: UI face, tabular figures so the
+  // column lines up.
+  .size-cell {
+    font-variant-numeric: tabular-nums;
+    justify-self: end;
+    white-space: nowrap;
+  }
+
+  .download-cell {
+    justify-self: end;
+
+    .-elv-button {
+      min-width: 0;
+      padding: 3px 12px;
+    }
+  }
+}

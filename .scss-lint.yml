@@ -2,6 +2,7 @@ files:
   include: "src/static/stylesheets/*.scss"
   ignore:
     - "src/static/stylesheets/fonts.scss"
+    - "src/static/stylesheets/color-scheme.scss"
 rules:
   class-name-format:
   - 2

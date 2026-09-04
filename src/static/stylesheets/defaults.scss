@@ -1,6 +1,144 @@
 @import "~elv-components-js/src/stylesheets/defaults";
 @import "~elv-components-js/src/stylesheets/buttons";
 
+// The library sets the face on html/body from $elv-font-default. Override on
+// the same elements rather than with a universal selector, so anything that
+// asks for monospace still gets it.
+html,
+body {
+  font-family: var(--elv-font-ui);
+}
+
+.monospace,
+code,
+pre {
+  font-family: var(--elv-font-mono);
+}
+
+// Buttons. Geometry stays close to the library's (min-width 7.5rem, near
+// square); only the fill assignment and radius change. Manage, More Options
+// and Search stay filled and Back stays outlined, as they are today.
+//
+// The class is doubled to raise specificity. elv-components-js components each
+// `import` their own stylesheet (Action.js line 1 pulls in buttons.scss), so
+// style-loader injects the library's rules as separate <style> tags *after*
+// app.scss. At equal specificity the later tag wins, and a plain .-elv-button
+// override silently loses. Same reason labels.scss doubles .labelled-field.
+.-elv-button.-elv-button { // sass-lint:disable-line force-element-nesting
+  // The library fills this with
+  // linear-gradient(175deg, $elv-color-mediumblue, lighten($elv-color-mediumblue, 7%)).
+  @include elv-button-colors(
+    var(--elv-accent),
+    var(--elv-accent-deep),
+    var(--elv-on-accent),
+    var(--elv-on-accent),
+    var(--elv-accent),
+    var(--elv-accent-deep)
+  );
+  // The library sets border-radius: 0 here.
+  border-radius: var(--elv-radius-control);
+  font-family: var(--elv-font-ui);
+
+  &:focus {
+    box-shadow: none;
+    outline: 2px solid var(--elv-accent);
+    outline-offset: 2px;
+  }
+
+  &.secondary {
+    @include elv-button-colors(
+      var(--elv-bg-surface),
+      var(--elv-bg-subtle),
+      var(--elv-ink),
+      var(--elv-ink),
+      var(--elv-line-strong),
+      var(--elv-ink-faint)
+    );
+  }
+
+  &.tertiary {
+    @include elv-button-colors(
+      var(--elv-bg-surface),
+      var(--elv-bg-subtle),
+      var(--elv-ink-muted),
+      var(--elv-ink),
+      var(--elv-line),
+      var(--elv-line-strong)
+    );
+  }
+
+  // Outlined, filling only on hover — as today, where danger was a white
+  // button with a dark border rather than a solid red one.
+  &.danger {
+    @include elv-button-colors(
+      var(--elv-bg-surface),
+      var(--elv-rose),
+      var(--elv-rose),
+      var(--elv-on-accent),
+      var(--elv-rose),
+      var(--elv-rose)
+    );
+  }
+}
+
+// Tabs: underline rather than the library's folder-tab boxes.
+// Doubled for the same reason as .-elv-button above: Tabs.js imports
+// tabs.scss, so the library's rules are injected after app.scss.
+.-elv-tab-container.-elv-tab-container { // sass-lint:disable-line force-element-nesting
+  border-bottom: 1px solid var(--elv-line);
+  // Merged up from the standalone rule further down this file, which sass-lint
+  // flags as a mergeable duplicate. Original left commented in place.
+  min-height: 2.35rem;
+
+  .-elv-tab {
+    border: 0;
+    border-bottom: 2px solid transparent;
+    border-radius: var(--elv-radius-panel) var(--elv-radius-panel) 0 0;
+    color: var(--elv-ink-faint);
+    font-weight: 500;
+    margin-bottom: -1px;
+
+    &:hover {
+      background-color: var(--elv-bg-subtle);
+      color: var(--elv-ink);
+    }
+
+    &.selected {
+      border: 0;
+      border-bottom: 2px solid var(--elv-accent);
+      color: var(--elv-accent);
+      font-weight: 600;
+    }
+  }
+
+  &.secondary {
+    background: var(--elv-bg-subtle);
+    border: 1px solid var(--elv-line);
+    border-radius: var(--elv-radius-panel);
+    display: inline-flex;
+    padding: 2px;
+    width: auto;
+
+    .-elv-tab {
+      border: 0;
+      border-radius: 4px;
+      min-width: 0;
+      padding: 4px 14px;
+
+      &:last-child {
+        border: 0;
+      }
+
+      &.selected {
+        background: var(--elv-bg-surface);
+        border: 0;
+        box-shadow: var(--elv-shadow);
+        color: var(--elv-ink);
+      }
+    }
+  }
+}
+
 .app-version {
   display: none;
 }
@@ -69,10 +207,11 @@
   }
 
   .more-options-menu {
-    background-color: $elv-color-bg-white;
-    border-radius: 0;
-    box-shadow: 0 8px 10px 1px $elv-color-shadow-gray, 0 3px 14px 3px $elv-color-shadow-gray, 0 4px 15px 0 $elv-color-shadow-gray;
-    min-width: 133px;
+    background-color: var(--elv-bg-surface);
+    border: 1px solid var(--elv-line);
+    border-radius: var(--elv-radius-card);
+    box-shadow: var(--elv-shadow-menu);
+    min-width: 188px;
     opacity: 0;
     position: absolute;
     transition: opacity 100ms linear;
@@ -113,24 +252,35 @@
       display: flex;
     }
 
+    // A menu row is a <button> when the action runs code and an <a> when it
+    // navigates, and only the buttons were coloured here. Colouring the
+    // class both tags share puts the hierarchy back the right way up in light and dark modes.
     .list-item {
+      color: var(--elv-ink);
+
       &-danger {
+        // Rose is this app's destructive colour and reads in both schemes.
         &:not(:active):hover { // sass-lint:disable-line force-pseudo-nesting
-          background-color: $elv-color-darkergray;
-          border: 1px solid $elv-color-darkergray;
-          color: $elv-color-text-white;
+          background-color: var(--elv-rose-soft);
+          border: 1px solid var(--elv-rose-soft);
+          color: var(--elv-rose);
         }
       }
 
       &:hover,
       &:focus-visible {
-        background-color: $elv-color-lightergray;
+        background-color: var(--elv-bg-subtle);
       }
 
-      &:disabled {
-        color: $elv-color-mediumgray;
+      // Disabled has to read as unavailable at a glance.
+      // The link form is included because Action ignores
+      // `disabled` on an <a> entirely — the app marks those with a class.
+      &:disabled,
+      &.list-item-disabled-link {
+        color: var(--elv-ink-faint);
         cursor: not-allowed;
         font-weight: normal;
+        opacity: .7;
 
         &:hover {
           background: none;
@@ -138,7 +288,7 @@
       }
 
       &.list-divider {
-        border-top: 1px solid $elv-color-gray;
+        border-top: 1px solid var(--elv-line);
         margin-top: 5px;
       }
     }
@@ -147,7 +297,9 @@
       &.list-item {
         background: none;
         border: 0;
-        color: $elv-color-darkgray;
+        // color moved up to .list-item so buttons and links match. Left here it
+        // outranked the shared rule — `button.list-item` beats `.list-item` —
+        // and the two halves of the menu stayed different colours.
         font: inherit;
         outline: none;
       }
@@ -166,24 +318,25 @@
     margin-right: $elv-spacing-xs;
 
     svg {
-      stroke: $elv-color-mediumgray;
+      stroke: var(--elv-ink-faint);
 
       &:hover {
-        stroke: $elv-color-darkgray;
+        stroke: var(--elv-ink);
       }
     }
   }
 }
 
 .help-text {
-  color: $elv-color-text-lighter;
+  color: var(--elv-ink-faint);
   font-size: $elv-font-s;
   margin-left: $elv-spacing-xxs;
 }
 
-.-elv-tab-container {
-  min-height: 2.35rem;
-}
+// Moved into the .-elv-tab-container rule near the top of this file.
+// .-elv-tab-container {
+//   min-height: 2.35rem;
+// }
 
 .form-page {
   margin-top: $elv-spacing-m;
@@ -202,10 +355,35 @@
 }
 
 select {
-  background-color: $elv-color-white;
+  background-color: var(--elv-bg-input);
+  border: 1px solid var(--elv-line-strong);
+  border-radius: var(--elv-radius-control);
+  color: var(--elv-ink);
 
   &:disabled {
     pointer-events: none;
+  }
+}
+
+input,
+textarea {
+  background-color: var(--elv-bg-input);
+  border-color: var(--elv-line-strong);
+  border-radius: var(--elv-radius-control);
+  color: var(--elv-ink);
+
+  &::placeholder {
+    color: var(--elv-ink-faint);
+  }
+}
+
+input,
+select,
+textarea {
+  &:focus {
+    border-color: var(--elv-accent);
+    box-shadow: 0 0 0 3px var(--elv-accent-soft);
+    outline: none;
   }
 }
 

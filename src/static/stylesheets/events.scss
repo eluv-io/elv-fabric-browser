@@ -101,9 +101,11 @@
     justify-content: space-between;
     margin-bottom: $elv-spacing-xs;
 
+    // A block number is an identifier — it gets pasted into the From/To
+    // fields — so it stays monospace.
     .info {
-      color: $elv-color-text-light;
-      font-family: $elv-font-monospace;
+      color: var(--elv-ink-faint);
+      font-family: var(--elv-font-mono);
       font-size: $elv-font-s;
     }
   }
@@ -120,19 +122,21 @@
 }
 
 .events-raw-text {
-  font-family: $elv-font-monospace;
+  font-family: var(--elv-font-mono);
   font-size: $elv-font-s;
 }
 
 .event {
-  border: 1px solid $elv-color-darkgray;
+  border: 1px solid var(--elv-line);
+  border-radius: var(--elv-radius-card);
   font-size: $elv-font-m;
-  margin-bottom: $elv-spacing-m;
+  margin-bottom: $elv-spacing-s;
   padding: $elv-spacing-s;
 }
 
 .log {
-  border: 1px solid $elv-color-gray;
+  border: 1px solid var(--elv-line);
+  border-radius: var(--elv-radius-panel);
   margin-bottom: $elv-spacing-xs;
   padding: $elv-spacing-s;
 
@@ -145,15 +149,20 @@
       width: 175px;
     }
 
+    // Transaction hashes, object IDs and contract addresses — identifiers, so
+    // they keep the monospace face. They were truncated at 50vw with no way to
+    // see the rest; they wrap now.
     .value {
-      @include elv-ellipsis;
-      font-family: $elv-font-monospace;
-      font-size: $elv-font-s;
-      max-width: 50vw;
+      // @include elv-ellipsis;
+      font-family: var(--elv-font-mono);
+      font-size: 12px;
+      max-width: 900px;
+      word-break: break-all;
     }
   }
 
   .section-label {
+    color: var(--elv-ink);
     font-size: $elv-font-m;
     font-weight: 600;
     margin: $elv-spacing-s 0 $elv-spacing-xxs;

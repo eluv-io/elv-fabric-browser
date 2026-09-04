@@ -1,0 +1,100 @@
+// Disclosure control — see components/components/ToggleSection.js for why the
+// previous button-in-a-labelled-field was replaced.
+//
+// Leading chevron, not trailing: .more-options-container in defaults.scss keeps
+// a trailing caret, and a menu and a disclosure should not look alike.
+
+.toggle-section {
+  .toggle-section-header {
+    align-items: center;
+    background: none;
+    border: 0;
+    border-radius: var(--elv-radius-panel);
+    cursor: pointer;
+    display: flex;
+    font-family: var(--elv-font-ui);
+    gap: 10px; // sass-lint:disable-line no-misspelled-properties
+    padding: 10px 12px;
+    text-align: left;
+    transition: background 120ms ease;
+    width: 100%;
+
+    &:hover {
+      background: var(--elv-bg-subtle);
+    }
+
+    // Open is a soft tint, never a fill. Solid fill stays reserved for actions
+    // that change something, which is what keeps Delete reading as dangerous.
+    &[aria-expanded="true"] {
+      background: var(--elv-accent-soft);
+
+      .toggle-section-chevron {
+        color: var(--elv-accent);
+        transform: rotate(90deg);
+      }
+
+      .toggle-section-label {
+        color: var(--elv-accent);
+      }
+
+      .toggle-section-badge {
+        background: none;
+        border-color: var(--elv-accent-line);
+        color: var(--elv-accent);
+      }
+    }
+  }
+
+  // stroke must be handed back to currentColor: the library's .-elv-icon sets
+  // it to a literal, and that beats the SVG's own stroke="currentColor".
+  .toggle-section-chevron {
+    color: var(--elv-ink-faint);
+    flex: none;
+    height: 16px;
+    stroke: currentColor;
+    transition: transform 150ms cubic-bezier(.3, 0, .2, 1), color 120ms ease;
+    width: 16px;
+  }
+
+  .toggle-section-label {
+    color: var(--elv-ink);
+    flex: 1 1 auto;
+    // These name the four sections of the page, so they carry more weight than
+    // a field label and sit a step above it rather than level with it.
+    font-size: 15px;
+    font-weight: 500;
+    min-width: 0;
+  }
+
+  // A count so the cost of opening is known before it is paid — Parts in
+  // particular fetches on expand.
+  .toggle-section-badge {
+    background: var(--elv-bg-subtle);
+    border: 1px solid var(--elv-line);
+    border-radius: 20px;
+    color: var(--elv-ink-faint);
+    flex: none;
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    padding: 1px 9px;
+  }
+
+  // The rail is what makes four levels of nesting readable.
+  .children-wrapper {
+    &:not([hidden]) {
+      border-left: 2px solid var(--elv-accent-line);
+      margin: 2px 0 12px 19px;
+      padding-left: 18px;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toggle-section {
+    .toggle-section-header,
+    .toggle-section-chevron {
+      transition: none;
+    }
+  }
+}

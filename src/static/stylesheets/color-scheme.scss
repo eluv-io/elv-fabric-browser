@@ -1,0 +1,220 @@
+/* Colour scheme — the visual half of the ElvCore propagation contract.
+
+src/utils/ColorScheme.js stamps data-color-scheme="light" | "dark" on <html>
+from whatever core reports. This file is what that attribute drives.
+
+WHY CUSTOM PROPERTIES AND NOT THE EXISTING VARIABLES
+
+Everything else in this app, and all of elv-components-js, colours itself from
+Sass variables ($elv-color-bg-white and friends). Those are resolved at compile
+time and baked into the output, so they cannot answer to an attribute that is
+only known at runtime. A runtime scheme needs a runtime token, which means CSS
+custom properties.
+
+Rewriting the shared palette in terms of custom properties would make the whole
+app follow the scheme at once, but $elv-color-* values are also passed through
+Sass colour functions (lighten, darken, rgba) in elv-components-js, and those
+cannot take a var(). It would also change the rendering of every other app that
+depends on that library. Both are out of scope here.
+
+So this file overrides surfaces rather than the palette: the ground, the chrome
+and the common content containers, which is what forms the visible seam against
+core.
+
+Each app-level partial now colours from the tokens defined here, and
+overrides the library's rules on import order rather than by editing them. The
+token set below therefore grew past surfaces into accent, state, type and
+radii, and the light values are the restyle's own rather than mirrors of
+$elv-color-*.
+
+What still paints from the compiled palette is whatever elv-components-js draws
+internally and this app never selects — those follow only when the shared
+library moves to tokens.
+
+Imported last in app.scss: these selectors are matched in specificity by the
+library's own rules, so they win on order.
+*/
+
+:root {
+  // Light values were mirrors of the compiled palette while this file only
+  // closed the seam against core. The restyle owns the light scheme now, so
+  // they carry the new neutral ramp instead. Previous values kept inline.
+  // --elv-bg-page: #{$elv-color-bg-white};
+  --elv-bg-page: #fbfbfc;
+  // --elv-bg-chrome: #{$elv-color-bg-light-dark};
+  --elv-bg-chrome: #fff;
+  // --elv-bg-surface: #{$elv-color-bg-white};
+  --elv-bg-surface: #fff;
+  // --elv-bg-subtle: #{$elv-color-lightestgray};
+  --elv-bg-subtle: #f4f4f7;
+  // --elv-bg-input: #{$elv-color-white};
+  --elv-bg-input: #fff;
+  --elv-bg-raised: #ececf1;
+  // --elv-ink: #{$elv-color-text-dark};
+  --elv-ink: #15151a;
+  // --elv-ink-muted: #{$elv-color-text-light};
+  --elv-ink-muted: #45454f;
+  --elv-ink-faint: #6b6b78;
+  // --elv-line: #{$elv-color-lightgray};
+  --elv-line: #e5e5ea;
+  --elv-line-strong: #d4d4dc;
+
+  // Kept separate from --elv-ink so the light scheme stays exactly as it was:
+  // the navbar's idle links are $elv-color-darkgray, which is a step away from
+  // the body text colour and not worth changing here.
+  // --elv-nav-ink: #{$elv-color-darkgray};
+  --elv-nav-ink: #45454f;
+  // --elv-nav-ink-active: #{$elv-color-text-dark};
+  --elv-nav-ink-active: #15151a;
+  // --elv-nav-hover: #{$elv-color-lightergray};
+  --elv-nav-hover: #f4f4f7;
+
+  // Accent. Replaces $elv-color-mediumblue (#1b73e8), which measures 4.50:1 on
+  // white — AA by nothing — and 4.32:1 on the page ground, where it fails.
+  // Indigo is 6.29 and 6.03, and 6.29 for white-on-fill.
+  --elv-accent: #4f46e5;
+  --elv-accent-deep: #4338ca;
+  --elv-accent-soft: #eeedfc;
+  --elv-accent-line: #c7c4f6;
+  --elv-on-accent: #fff;
+
+  // State only — never decoration, and never JSON syntax highlighting.
+  --elv-amber: #b45309;
+  --elv-amber-soft: #fdf3e3;
+  --elv-amber-line: #f0dcbb;
+  --elv-teal: #0f766e;
+  --elv-teal-soft: #e3f3f1;
+  --elv-rose: #be123c;
+  --elv-rose-soft: #fcebef;
+
+  --elv-shadow: 0 1px 2px rgba(21, 21, 40, .05), 0 1px 3px rgba(21, 21, 40, .04);
+  --elv-shadow-menu: 0 6px 20px rgba(21, 21, 40, .12), 0 2px 6px rgba(21, 21, 40, .07);
+
+  // Type. Monospace marks an identifier — something copied or verified
+  // character by character. Quantities merely read (counts, dates, sizes) stay
+  // in the UI face with tabular-nums.
+  --elv-font-ui: Inter, "Helvetica Neue", helvetica, arial, sans-serif;
+  --elv-font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", consolas, menlo, monospace;
+
+  --elv-radius-control: 3px;
+  --elv-radius-panel: 6px;
+  --elv-radius-card: 10px;
+}
+
+/* Tuned against core's dark tokens rather than derived from the light values.
+   The ground matches core's --bg-page so the frame boundary disappears; the
+   rest steps up from it the way core's surfaces do. */
+:root[data-color-scheme="dark"] {
+  --elv-bg-page: #0f1118;
+  --elv-bg-chrome: #171a23;
+  --elv-bg-surface: #171a23;
+  --elv-bg-subtle: #1e222e;
+  --elv-bg-input: #1e222e;
+  --elv-bg-raised: #262c3a;
+  --elv-ink: #e9ebf3;
+  --elv-ink-muted: #a3aabe;
+  --elv-ink-faint: #7d8598;
+  --elv-line: #2a2f3d;
+  --elv-line-strong: #39404f;
+
+  // Indigo 300 rather than an inverted 600: saturated blues vibrate against a
+  // near-black ground. This is 8.9:1 on --elv-bg-surface.
+  --elv-accent: #a5b4fc;
+  --elv-accent-deep: #c7d2fe;
+  --elv-accent-soft: #1d2142;
+  --elv-accent-line: #3a4173;
+  --elv-on-accent: #15151a;
+
+  --elv-amber: #fbbf24;
+  --elv-amber-soft: #2a2113;
+  --elv-amber-line: #4a3a1c;
+  --elv-teal: #5eead4;
+  --elv-teal-soft: #0e2a26;
+  --elv-rose: #fda4af;
+  --elv-rose-soft: #2e1620;
+
+  --elv-shadow: 0 1px 2px rgba(0, 0, 0, .45), 0 1px 3px rgba(0, 0, 0, .35);
+  --elv-shadow-menu: 0 6px 20px rgba(0, 0, 0, .55), 0 2px 6px rgba(0, 0, 0, .4);
+
+  // The navbar keeps its own text colours in the light scheme ($elv-color-
+  // darkgray idle, $elv-color-text-dark active). Carried into dark unchanged
+  // those land at 2.31:1 and 1.08:1 against the dark navbar — the active item,
+  // the one that most needs to read, becomes the least legible thing on it.
+  // These are 7.4:1 and 14.5:1.
+  --elv-nav-ink: #a3aabe;
+  --elv-nav-ink-active: #e9ebf3;
+  --elv-nav-hover: #272c3b;
+
+  color-scheme: dark;
+}
+
+html,
+body {
+  background-color: var(--elv-bg-page);
+  color: var(--elv-ink);
+}
+
+.app,
+.app-container,
+.view-container {
+  background-color: var(--elv-bg-page);
+}
+
+.navbar-container {
+  background: var(--elv-bg-chrome);
+}
+
+.navbar-links-container {
+  .navbar-link {
+    color: var(--elv-nav-ink);
+
+    &:hover {
+      background: var(--elv-nav-hover);
+    }
+
+    // Active is a neutral ground with the accent carried on the icon alone —
+    // as it reads today (bold text, coloured icon) rather than a filled pill.
+    &.active {
+      background: var(--elv-nav-hover);
+      color: var(--elv-nav-ink-active);
+
+      .navbar-link-icon {
+        color: var(--elv-accent);
+      }
+    }
+  }
+
+  // These are Feather icons drawn with stroke="currentColor", but the library's
+  // .-elv-icon sets `stroke` to a literal, and a CSS declaration beats a
+  // presentation attribute. Without this the icons paint $elv-color-darkgray in
+  // both schemes — dark grey on the dark navbar. Handing stroke back to
+  // currentColor lets --elv-nav-ink actually drive them.
+  .navbar-link-icon {
+    color: var(--elv-nav-ink);
+    stroke: currentColor;
+  }
+}
+
+.main-content-container {
+  background-color: var(--elv-bg-page);
+  color: var(--elv-ink);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: var(--elv-ink);
+}
+
+.help-text {
+  color: var(--elv-ink-muted);
+}
+
+input,
+select,
+textarea {
+  background-color: var(--elv-bg-input);
+  border-color: var(--elv-line);
+  color: var(--elv-ink);
+}

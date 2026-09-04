@@ -7,26 +7,53 @@
     margin: $elv-spacing-m 0 $elv-spacing-s;
   }
 
+  // Section markers ("Latest Version", "Parts") competed with the page title at
+  // 1rem normal. As a quiet uppercase rule they separate without shouting.
   h3 {
-    font-size: $elv-font-l;
-    margin: $elv-spacing-m 0 $elv-spacing-s;
+    align-items: center;
+    color: var(--elv-ink-faint);
+    display: flex;
+    font-family: var(--elv-font-mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    gap: 12px; // sass-lint:disable-line no-misspelled-properties
+    letter-spacing: .12em;
+    margin: $elv-spacing-m 0 $elv-spacing-xs;
+    text-transform: uppercase;
+
+    &::after {
+      background: var(--elv-line);
+      content: "";
+      flex: 1 1 auto;
+      height: 1px;
+    }
   }
 
   .labelled-field {
-    align-items: center;
+    align-items: flex-start;
+    // Rows carried no divider and 0.25rem of vertical padding, so twelve of
+    // them read as one grey block. A hairline and a little more room make the
+    // page scannable without changing what is in it.
+    border-bottom: 1px solid var(--elv-line);
     display: flex;
     max-width: 100%;
     min-height: 1.8em;
-    padding: $elv-spacing-xxs $elv-spacing-s $elv-spacing-xxs 0;
+    padding: 9px $elv-spacing-s 9px 0;
+
+    &:last-child {
+      border-bottom: 0;
+    }
 
     &.align-top {
       align-items: flex-start;
     }
 
     label {
-      color: $elv-color-text-light;
+      color: var(--elv-ink-faint);
       display: flex;
-      min-width: 150px;
+      font-size: 14px;
+      font-weight: 500;
+      min-width: 180px;
 
       &.wide {
         min-width: 250px;
@@ -76,7 +103,12 @@
     }
 
     .inline-link {
-      color: $elv-color-mediumblue;
+      color: var(--elv-accent);
+
+      &:hover {
+        text-decoration: underline;
+        text-underline-offset: 2px; // sass-lint:disable-line no-misspelled-properties
+      }
     }
 
     .comma-separated-list {
@@ -101,7 +133,13 @@
     & > .copyable > div {
       @include elv-ellipsis;
       flex-grow: 1;
-      max-width: 525px;
+      // Hashes are 70+ characters and were silently truncated at this width
+      // with no way to see the rest. They wrap now.
+      max-width: 900px;
+      overflow: visible;
+      text-overflow: clip;
+      white-space: normal;
+      word-break: break-word;
     }
 
     & > div > button {
