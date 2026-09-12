@@ -3,7 +3,6 @@ $grid-listing-width: 150px;
 $table-listing-width: 95px;
 
 $listing-row-height: 4.25rem;
-// $listing-icon-width: calc(#{$listing-row-height} * 16 / 9);
 $listing-icon-width: 46px;
 
 $listing-item-fr: 3.1fr;
@@ -238,7 +237,6 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
       border-bottom: 1px solid var(--elv-line);
       border-radius: var(--elv-radius-panel);
       display: grid;
-      // grid-template-columns: $listing-icon-width 4fr 2fr 1fr;
       grid-template-columns: $listing-icon-width minmax(0, $listing-item-fr) minmax(0, $listing-description-fr) minmax(0, $listing-status-fr);
       // margin-bottom: $elv-spacing-ss;  — folded into the row height above
       max-height: $listing-row-height;
@@ -246,16 +244,13 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
       width: 100%;
 
       &.listing-row-no-icon {
-        // grid-template-columns: 4fr 2fr 1fr;
         grid-template-columns: minmax(0, $listing-item-fr) minmax(0, $listing-description-fr) minmax(0, $listing-status-fr);
       }
 
       &.listing-row-no-status {
-        // grid-template-columns: $listing-icon-width 2fr 1fr;
         grid-template-columns: $listing-icon-width minmax(0, $listing-item-fr) minmax(0, $listing-description-fr);
 
         &.listing-row-no-icon {
-          // grid-template-columns: 2fr 1fr;
           grid-template-columns: minmax(0, $listing-item-fr) minmax(0, $listing-description-fr);
         }
       }
@@ -317,7 +312,6 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
         // The icon box fills its grid track, so the gap to the title has to
         // come from this side. 0 put the title hard against the icon border.
         &.title-cell {
-          // padding-left: 0;
           padding-left: 12px;
         }
 
@@ -406,7 +400,6 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
         color: var(--elv-ink-faint);
         cursor: text;
         font-family: var(--elv-font-mono);
-        // font-size: $elv-font-m;
         font-size: 11.5px;
         gap: $elv-spacing-xxs;
         user-select: text;
@@ -415,7 +408,6 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
       .description {
         height: auto;
         overflow-y: hidden;
-        // padding: $elv-spacing-xs;
         // Vertical padding came out of the two lines the row can now hold, so
         // it is spent on a right gutter instead — the left one comes from the
         // grid cell.
@@ -451,7 +443,6 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
       .description,
       .status {
         color: var(--elv-ink-faint);
-        // font-size: $elv-font-m;
         font-size: 12.5px;
       }
 
@@ -506,32 +497,20 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
     .listing-info {
       background-color: var(--elv-bg-surface);
       border-top: 1px solid var(--elv-line);
-      // bottom: 0;
       color: var(--elv-ink);
       display: flex;
       flex: none;
       flex-direction: column;
       height: auto;
       justify-content: flex-end;
-      // left: 0;
       max-width: $listing-grid-icon-width;
       min-width: $listing-grid-icon-width;
       opacity: 1;
       padding: $elv-spacing-xs;
-      // position: absolute;
-      // Absolute made sense while this was a translucent scrim lying over a
-      // fetched display image. It is an opaque footer now, so it belongs in the
-      // card's flow, where the icon above it can be given room rather than
-      // being covered by it.
       position: static;
-      // text-align: center;
       text-align: left;
       word-break: break-all;
-      // z-index: 10;
     }
-
-    // &:hover { .listing-info { opacity: 0.9; } }  — replaced by the border
-    // and shadow above.
 
     .title {
       @include elv-ellipsis;

@@ -34,7 +34,7 @@ const ATTRIBUTE = "data-color-scheme";
 // rather than trusted onto the document.
 const Normalize = scheme => SCHEMES.includes(scheme) ? scheme : DEFAULT_SCHEME;
 
-// This app is a host as well as a guest: the Display tab embeds a display app
+// Fabric Browser is a host as well as a guest: the Display tab embeds a display app
 // in a frame of its own, and that app has exactly the problem this file exists
 // to solve — it cannot see our scheme, and its own media query reports the OS.
 // Offering it the same two halves core offers us costs almost nothing and is
@@ -74,20 +74,6 @@ const PULL_TIMEOUT = 5000;
 
 const PullColorScheme = async () => {
   const timeout = new Promise((resolve) => setTimeout(() => resolve(undefined), PULL_TIMEOUT));
-
-  // FrameClient.AwaitMessage resolves with `message.response`, so SendMessage
-  // hands back the scheme string itself, not an envelope containing it.
-  //
-  //   .then(({response}) => response)
-  //
-  // destructured `response` off a *string*, which is undefined — so the pull
-  // silently returned nothing and the app stayed in DEFAULT_SCHEME. Nothing
-  // corrected it afterwards either: the push only fires on a *change*, and a
-  // viewer whose scheme is already right when the frame opens never produces
-  // one. That is why dark only took hold after toggling away and back.
-  //
-  // Core's own contract comment documents the enveloped form, so both shapes
-  // are accepted here rather than betting on one.
   const request = Fabric.client.SendMessage({
     options: {operation: "GetColorScheme"}
   }).then(result => typeof result === "string" ? result : result?.response);

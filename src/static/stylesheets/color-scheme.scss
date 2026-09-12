@@ -3,70 +3,30 @@
 src/utils/ColorScheme.js stamps data-color-scheme="light" | "dark" on <html>
 from whatever core reports. This file is what that attribute drives.
 
-WHY CUSTOM PROPERTIES AND NOT THE EXISTING VARIABLES
-
-Everything else in this app, and all of elv-components-js, colours itself from
-Sass variables ($elv-color-bg-white and friends). Those are resolved at compile
-time and baked into the output, so they cannot answer to an attribute that is
-only known at runtime. A runtime scheme needs a runtime token, which means CSS
-custom properties.
-
-Rewriting the shared palette in terms of custom properties would make the whole
-app follow the scheme at once, but $elv-color-* values are also passed through
-Sass colour functions (lighten, darken, rgba) in elv-components-js, and those
-cannot take a var(). It would also change the rendering of every other app that
-depends on that library. Both are out of scope here.
-
-So this file overrides surfaces rather than the palette: the ground, the chrome
-and the common content containers, which is what forms the visible seam against
-core.
-
-Each app-level partial now colours from the tokens defined here, and
-overrides the library's rules on import order rather than by editing them. The
-token set below therefore grew past surfaces into accent, state, type and
-radii, and the light values are the restyle's own rather than mirrors of
-$elv-color-*.
-
-What still paints from the compiled palette is whatever elv-components-js draws
-internally and this app never selects — those follow only when the shared
-library moves to tokens.
-
 Imported last in app.scss: these selectors are matched in specificity by the
-library's own rules, so they win on order.
-*/
+library's own rules, so they win on order. */
 
 :root {
   // Light values were mirrors of the compiled palette while this file only
   // closed the seam against core. The restyle owns the light scheme now, so
-  // they carry the new neutral ramp instead. Previous values kept inline.
-  // --elv-bg-page: #{$elv-color-bg-white};
+  // they carry the new neutral ramp instead.
   --elv-bg-page: #fbfbfc;
-  // --elv-bg-chrome: #{$elv-color-bg-light-dark};
   --elv-bg-chrome: #fff;
-  // --elv-bg-surface: #{$elv-color-bg-white};
   --elv-bg-surface: #fff;
-  // --elv-bg-subtle: #{$elv-color-lightestgray};
   --elv-bg-subtle: #f4f4f7;
-  // --elv-bg-input: #{$elv-color-white};
   --elv-bg-input: #fff;
   --elv-bg-raised: #ececf1;
-  // --elv-ink: #{$elv-color-text-dark};
   --elv-ink: #15151a;
-  // --elv-ink-muted: #{$elv-color-text-light};
   --elv-ink-muted: #45454f;
   --elv-ink-faint: #6b6b78;
-  // --elv-line: #{$elv-color-lightgray};
   --elv-line: #e5e5ea;
   --elv-line-strong: #d4d4dc;
 
   // Kept separate from --elv-ink so the light scheme stays exactly as it was:
   // the navbar's idle links are $elv-color-darkgray, which is a step away from
   // the body text colour and not worth changing here.
-  // --elv-nav-ink: #{$elv-color-darkgray};
   --elv-nav-ink: #45454f;
-  // --elv-nav-ink-active: #{$elv-color-text-dark};
   --elv-nav-ink-active: #15151a;
-  // --elv-nav-hover: #{$elv-color-lightergray};
   --elv-nav-hover: #f4f4f7;
 
   // Accent. Replaces $elv-color-mediumblue (#1b73e8), which measures 4.50:1 on

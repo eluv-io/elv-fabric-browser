@@ -4,16 +4,12 @@
 }
 
 .navbar-links-container {
-  // margin-top: $elv-spacing-xs;
   margin-top: 14px;
   padding: 0 6px 0 10px;
 
   .navbar-link-container {
     display: block;
-    // height: 45px;
     height: 36px;
-    // text-align: center;
-    // margin-bottom: 1.5px;
     // Items sat flush against each other; 1.5px separated them without
     // stretching the rail. With the larger type below they can afford to
     // breathe properly.
@@ -24,24 +20,16 @@
 
   .navbar-link {
     border-radius: 5px;
-    // color: $elv-color-darkgray;  — now in color-scheme.scss, so it follows
+    // color, background, active now in color-scheme.scss, so it follows
     // the scheme rather than being baked light.
-    // font-size: 0.9rem;
     font-size: 15px;
     font-weight: 500;
-    // padding: 0 $elv-spacing-ss;
     padding: 0 9px;
-
-    // &:hover { background: $elv-color-lightergray; }  — see color-scheme.scss
 
     &.active,
     &:hover {
-      // font-weight: bold;
       font-weight: 600;
     }
-
-    // &.active { color: $elv-color-text-dark; i { color: $elv-color-mediumblue; } }
-    // Both moved to color-scheme.scss for the same reason.
   }
 
   .navbar-link,
@@ -53,13 +41,9 @@
   }
 
   .navbar-link-icon {
-    // color: $elv-color-darkergray;  — now in color-scheme.scss
     display: inline-block;
-    // height: 20px;
     height: 18px;
-    // margin-right: $elv-spacing-xs;
     margin-right: 10px;
-    // width: 20px;
     width: 18px;
   }
 

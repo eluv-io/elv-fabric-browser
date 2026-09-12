@@ -45,7 +45,6 @@ body,
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  // padding: $elv-spacing-s $elv-spacing-m;
   // Less gutter against the rail than against the open right edge — the rail
   // already provides an edge on that side.
   padding: 22px 28px 90px 20px;
@@ -53,7 +52,6 @@ body,
   width: 100%;
 
   .page-header-container {
-    // margin: $elv-spacing-m 0;
     // The header now sits the same way on every page: a gap above it that
     // separates it from the toolbar, and nothing below.
     margin: $elv-spacing-s 0 0;

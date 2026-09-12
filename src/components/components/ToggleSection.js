@@ -28,16 +28,6 @@ const ToggleSection = ({label, children, className="", toggleOpen=false}) => {
     </div>
   );
 };
-
-Previously rendered an Action. The open state filled solid blue, the treatment reserved for primary actions, and
-nothing tied the revealed content to the trigger. There was no aria-expanded.
-
-Now: the whole row is the target, a leading chevron rotates to carry the state,
-and an accent rail runs down the open body so nesting stays readable at depth
-(Previous Versions > Version N > Metadata). Leading chevron is deliberate —
-More Options keeps a trailing caret, so a menu and a disclosure stop looking
-alike. `badge` is optional and takes a count where one is known cheaply; Parts
-loads lazily and has nothing to report until it is open, so it passes none.
 */
 
 const ToggleSection = ({label, children, badge, className="", toggleOpen=false}) => {
