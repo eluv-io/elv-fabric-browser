@@ -46,6 +46,17 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
         max-width: 200px;
       }
 
+      .select-filter-notice {
+        color: $elv-color-mediumred;
+        flex-shrink: 1;
+        font-size: $elv-font-s;
+        line-height: 1.2;
+        margin-left: $elv-spacing-xs;
+        max-height: 100%;
+        max-width: 260px;
+        overflow: hidden;
+      }
+
       input,
       select {
         border: 1px solid $elv-color-lightgray;

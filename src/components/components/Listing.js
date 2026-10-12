@@ -284,6 +284,12 @@ class Listing extends React.Component {
         <div className="controls right-controls">
           <input className="filter" placeholder="Filter" value={this.state.filter} onChange={this.Filter} />
           { this.SelectFilter() }
+          {
+            this.props.selectFilterNotice ?
+              <div className="select-filter-notice" title={this.props.selectFilterNotice}>
+                { this.props.selectFilterNotice }
+              </div> : null
+          }
           { switchViewButton }
           <LoadingElement loadingClassname="loading-action" loading={this.state.status.loading} loadingIcon="rotate" >
             <IconButton
@@ -361,6 +367,7 @@ Listing.propTypes = {
   filter: PropTypes.string,
   count: PropTypes.number,
   selectFilterLabel: PropTypes.string,
+  selectFilterNotice: PropTypes.string,
   selectFilterOptions: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)),
   RenderContent: PropTypes.func.isRequired,
   LoadContent: PropTypes.func.isRequired

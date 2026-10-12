@@ -359,13 +359,18 @@ class LibraryStore {
       return;
     }
 
-    const {objects, count, cacheId} = yield Cancelable(
+    const {objects, count, cacheId, notice} = yield Cancelable(
       params.cancelable,
-      async () => await Fabric.ListContentObjects({libraryId, params})
+      async () => await Fabric.ListContentObjects({
+        libraryId,
+        tenantId: this.libraries[libraryId]?.tenantId,
+        params
+      })
     );
 
     this.libraries[libraryId].objects = objects;
     this.libraries[libraryId].objectsCount = count;
+    this.libraries[libraryId].listingNotice = notice;
     this.libraries[libraryId].retrievedAt = Date.now();
     this.libraries[libraryId].cacheId = cacheId;
     this.libraries[libraryId].listingParams = {
