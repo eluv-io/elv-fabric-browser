@@ -20,14 +20,6 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
     width: 100%;
   }
 
-  .select-filter-notice {
-    color: $elv-color-mediumred;
-    font-size: $elv-font-s;
-    margin-bottom: $elv-spacing-xs;
-    margin-right: calc(#{$elv-spacing-xs} + 2 * #{$elv-spacing-xxs});
-    text-align: right;
-  }
-
   .listing-actions {
     display: flex;
     height: 50px;
@@ -52,6 +44,26 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
 
       select {
         max-width: 200px;
+      }
+
+      .select-filter {
+        display: flex;
+        flex-basis: 100px;
+        flex-grow: 1;
+        flex-shrink: 1;
+        height: 100%;
+        max-width: 200px;
+        position: relative;
+      }
+
+      .select-filter-notice {
+        color: $elv-color-mediumred;
+        font-size: $elv-font-s;
+        margin-top: $elv-spacing-xxs;
+        position: absolute;
+        right: 0;
+        top: 100%;
+        white-space: nowrap;
       }
 
       input,

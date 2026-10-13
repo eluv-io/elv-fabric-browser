@@ -150,15 +150,21 @@ class Listing extends React.Component {
     );
 
     return (
-      <select
-        name="selectFilter"
-        value={this.state.selectFilter}
-        title={this.props.selectFilterLabel}
-        aria-label={this.props.selectFilterLabel}
-        onChange={this.ChangeSelectFilter}
-      >
-        {options}
-      </select>
+      <div className="select-filter">
+        <select
+          name="selectFilter"
+          value={this.state.selectFilter}
+          title={this.props.selectFilterLabel}
+          aria-label={this.props.selectFilterLabel}
+          onChange={this.ChangeSelectFilter}
+        >
+          {options}
+        </select>
+        {
+          this.props.selectFilterNotice ?
+            <div className="select-filter-notice">{ this.props.selectFilterNotice }</div> : null
+        }
+      </div>
     );
   }
 
@@ -334,10 +340,6 @@ class Listing extends React.Component {
     return (
       <div key={`listing-${this.props.pageId}`} className={`listing ${this.props.className || ""}`}>
         { this.Actions() }
-        {
-          this.props.selectFilterNotice ?
-            <div className="select-filter-notice">{ this.props.selectFilterNotice }</div> : null
-        }
         <LoadingElement loading={this.state.status.loading} loadingClassname="loading" loadingIcon="rotate">
           { this.Count() }
           <ListingView
