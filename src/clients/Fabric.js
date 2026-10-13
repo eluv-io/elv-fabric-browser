@@ -685,14 +685,17 @@ const Fabric = {
     let useTenantQuery = sortField === "modified";
     if(useTenantQuery && params.filter) {
       useTenantQuery = false;
-      notice = "Filtering isn't available with Last modified - showing matches sorted by name";
+      notice = "Last Modified isn't available while filtering by name -- using name order";
+    }
+
+    tenantId = (tenantId || "").replace(/"/g, "");
+    if(useTenantQuery && !tenantId) {
+      useTenantQuery = false;
+      notice = "Last Modified isn't available due to this library not being linked to a tenant -- using name order";
     }
 
     if(useTenantQuery) {
       try {
-        tenantId = (tenantId || "").replace(/"/g, "") ||
-          await client.ContentObjectTenantId({objectId: libraryId.replace("ilib", "iq__")});
-
         const response = await client.TenantContent({
           tenantId,
           filter: [`lib:eq:${libraryId}`],
@@ -733,8 +736,8 @@ const Fabric = {
 
         useTenantQuery = false;
         notice = error.status === 403 ?
-          "Last modified needs tenant admin or content admin access - sorted by name instead" :
-          "Last modified failed (details in the browser console) - sorted by name instead";
+          "Last Modified isn't available due to missing admin rights in this library's tenant -- using name order" :
+          "Last Modified isn't available due to an error (see browser console) -- using name order";
       }
     }
 
