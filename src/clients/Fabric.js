@@ -347,7 +347,7 @@ const Fabric = {
         contractAddress: client.utils.HashToAddress(libraryId),
         methodName: "getMeta",
         methodArgs: [
-          "_ELV_TENANT_ID"  // not legacy "_tenantId", for libraries it holds the tenant admin
+          "_ELV_TENANT_ID"  // not legacy "_tenantId"
         ]
       })
     ]);
