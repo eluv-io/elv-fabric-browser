@@ -774,7 +774,14 @@ const Fabric = {
     }
 
     contents = contents || [];
-    const count = paging.items;
+    let count = paging.items;
+
+    // lib:eq filter also matches the library's own iq__ form of the library ID -- don't count it
+    const unfilteredCount = contents.length;
+    contents = contents.filter(object => !client.utils.EqualHash(libraryId, object.id));
+    if(count && contents.length < unfilteredCount) {
+      count -= 1;
+    }
     const cacheId = paging.cache_id;
 
     let objects = {};
