@@ -1,7 +1,10 @@
 /*
- * Raw fabric API requests that elv-client-js has no method for: the /qlibs/<id>/q listing with options
- * ContentObjects() can't send (sort_descending without sort_by), and per-object metadata reads with the
- * library-scoped token (no per-object chain calls). Used by Fabric.ListContentObjects.
+ * FabricApiRequest - a GET to any fabric path, authorized with the library's token
+ *
+ * for the two library listing requests elv-client-js can't make, used by Fabric.ListContentObjects:
+ *   - /qlibs/<id>/q listings: ContentObjects() can't ask for descending order without a sort field
+ *   - each row's name/description for "Last modified": ContentObjectMetadata() would do per-object chain lookups
+ *     and object-level authorization
  */
 
 import UrlJoin from "url-join";
