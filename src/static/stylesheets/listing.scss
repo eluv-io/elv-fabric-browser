@@ -24,8 +24,8 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
     color: $elv-color-mediumred;
     font-size: $elv-font-s;
     margin-bottom: $elv-spacing-xs;
+    margin-right: calc(#{$elv-spacing-xs} + 2 * #{$elv-spacing-xxs});
     text-align: right;
-    width: 100%;
   }
 
   .listing-actions {
