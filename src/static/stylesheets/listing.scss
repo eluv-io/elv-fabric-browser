@@ -20,6 +20,14 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
     width: 100%;
   }
 
+  .select-filter-notice {
+    color: $elv-color-mediumred;
+    font-size: $elv-font-s;
+    margin-bottom: $elv-spacing-xs;
+    text-align: right;
+    width: 100%;
+  }
+
   .listing-actions {
     display: flex;
     height: 50px;
@@ -44,17 +52,6 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
 
       select {
         max-width: 200px;
-      }
-
-      .select-filter-notice {
-        color: $elv-color-mediumred;
-        flex-shrink: 1;
-        font-size: $elv-font-s;
-        line-height: 1.2;
-        margin-left: $elv-spacing-xs;
-        max-height: 100%;
-        max-width: 260px;
-        overflow: hidden;
       }
 
       input,

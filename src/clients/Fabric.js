@@ -685,7 +685,7 @@ const Fabric = {
     let useTenantQuery = sortField === "modified";
     if(useTenantQuery && params.filter) {
       useTenantQuery = false;
-      notice = "Filtering is not supported when sorting by last modified - showing matches sorted by name instead";
+      notice = "Filtering isn't available with Last modified - showing matches sorted by name";
     }
 
     if(useTenantQuery) {
@@ -733,8 +733,8 @@ const Fabric = {
 
         useTenantQuery = false;
         notice = error.status === 403 ?
-          "Sorting by last modified requires tenant admin or content admin group; sorting by name instead" :
-          "Sorting by last modified failed; sorting by name instead";
+          "Last modified needs tenant admin or content admin access - sorted by name instead" :
+          "Last modified failed (details in the browser console) - sorted by name instead";
       }
     }
 

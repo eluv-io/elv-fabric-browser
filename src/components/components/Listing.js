@@ -284,12 +284,6 @@ class Listing extends React.Component {
         <div className="controls right-controls">
           <input className="filter" placeholder="Filter" value={this.state.filter} onChange={this.Filter} />
           { this.SelectFilter() }
-          {
-            this.props.selectFilterNotice ?
-              <div className="select-filter-notice" title={this.props.selectFilterNotice}>
-                { this.props.selectFilterNotice }
-              </div> : null
-          }
           { switchViewButton }
           <LoadingElement loadingClassname="loading-action" loading={this.state.status.loading} loadingIcon="rotate" >
             <IconButton
@@ -340,6 +334,10 @@ class Listing extends React.Component {
     return (
       <div key={`listing-${this.props.pageId}`} className={`listing ${this.props.className || ""}`}>
         { this.Actions() }
+        {
+          this.props.selectFilterNotice ?
+            <div className="select-filter-notice">{ this.props.selectFilterNotice }</div> : null
+        }
         <LoadingElement loading={this.state.status.loading} loadingClassname="loading" loadingIcon="rotate">
           { this.Count() }
           <ListingView
