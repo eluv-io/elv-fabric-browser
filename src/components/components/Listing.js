@@ -26,7 +26,7 @@ class Listing extends React.Component {
     super(props);
 
     // Load saved settings
-    const savedOptions = ListingOptions[props.pageId] || {display: "list", perPage: 10};
+    const savedOptions = ListingOptions[props.pageId] || {display: "list", perPage: 100};
     ListingOptions[props.pageId] = savedOptions;
 
     this.state = {

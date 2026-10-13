@@ -685,13 +685,13 @@ const Fabric = {
     let useTenantQuery = sortField === "modified";
     if(useTenantQuery && params.filter) {
       useTenantQuery = false;
-      notice = "Last Modified isn't available while filtering by name -- using name order";
+      notice = "Last Modified isn't available while filtering by name -- using Name order";
     }
 
     tenantId = (tenantId || "").replace(/"/g, "");
     if(useTenantQuery && !tenantId) {
       useTenantQuery = false;
-      notice = "Last Modified isn't available due to this library not being linked to a tenant -- using name order";
+      notice = "Last Modified isn't available due to this library not being linked to a tenant -- using Name order";
     }
 
     if(useTenantQuery) {
@@ -736,8 +736,8 @@ const Fabric = {
 
         useTenantQuery = false;
         notice = error.status === 403 ?
-          "Last Modified isn't available due to missing admin rights in this library's tenant -- using name order" :
-          "Last Modified isn't available due to an error (see browser console) -- using name order";
+          "Last Modified isn't available due to missing admin rights in this library's tenant -- using Name order" :
+          "Last Modified isn't available due to an error (see browser console) -- using Name order";
       }
     }
 
