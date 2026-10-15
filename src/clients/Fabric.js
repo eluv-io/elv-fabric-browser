@@ -2,6 +2,7 @@ import { FrameClient } from "@eluvio/elv-client-js/src/FrameClient";
 import UrlJoin from "url-join";
 import {EqualAddress, FormatAddress, LROStatus} from "../utils/Helpers";
 import Utils from "@eluvio/elv-client-js/src/Utils";
+import {FabricApiRequest} from "./FabricRequests";
 const Fetch = typeof fetch !== "undefined" ? fetch : require("node-fetch").default;
 
 let client = new FrameClient({
@@ -346,7 +347,7 @@ const Fabric = {
         contractAddress: client.utils.HashToAddress(libraryId),
         methodName: "getMeta",
         methodArgs: [
-          "_tenantId"
+          "_ELV_TENANT_ID"  // not legacy "_tenantId"
         ]
       })
     ]);
@@ -665,30 +666,122 @@ const Fabric = {
     return (await client.AccessType({id: objectId})) === "object";
   },
 
+  // Library object listing sort orders, as "<field>-<asc|desc>"
+  //   name:     /qlibs/<id>/q sorted by /public/name
+  //   id:       /qlibs/<id>/q sorted by object ID
+  //   modified: tenant content query API, sorted by latest version time in the fabric index
+  //
+  // Tenant content query can't filter on metadata, so a name filter in "modified" order falls back to name-sorted.
+  // Failures return "notice" for showing to the user.
+  //
   // Make sure not to call anything requiring content object authorization
-  ListContentObjects: async ({libraryId, params}) => {
-    const filterOptions = {
-      select: ["name", "image", "description", "public/name", "public/description", "public/image"],
-      sort: "/public/name",
-      limit: params.perPage
-    };
+  ListContentObjects: async ({libraryId, tenantId, params}) => {
+    const select = ["name", "description", "public/name", "public/description"];
+    const [sortField, sortOrder] = (params.selectFilter || "name-asc").split("-");
+    const descending = sortOrder === "desc";
+    const start = params.page ? (params.page - 1) * params.perPage : 0;
 
-    if(params.page) {
-      filterOptions.start = (params.page - 1) * params.perPage;
+    let contents, paging, notice;
+    let useTenantQuery = sortField === "modified";
+    if(useTenantQuery && params.filter) {
+      useTenantQuery = false;
+      notice = "Last Modified isn't available while filtering by name -- using Name order";
     }
 
-    if(params.filter) {
-      filterOptions.filter = {key: "/public/name", type: "cnt", filter: params.filter};
+    tenantId = (tenantId || "").replace(/"/g, "");
+    if(useTenantQuery && !tenantId) {
+      useTenantQuery = false;
+      notice = "Last Modified isn't available due to this library not being linked to a tenant -- using Name order";
     }
 
-    if(params.cacheId) {
-      filterOptions.cacheId = params.cacheId;
+    if(useTenantQuery) {
+      try {
+        const response = await client.TenantContent({
+          tenantId,
+          filter: [`lib:eq:${libraryId}`],
+          include: "none",
+          sortDescending: descending || undefined,
+          start,
+          limit: params.perPage
+        });
+
+        const versions = response.versions || [];
+
+        // Fetch "select" metadata in parallel, without resolving links like /qlibs/<id>/q does
+        await client.utils.LimitedMap(
+          Fabric.concurrencyLimit,
+          versions,
+          async version => {
+            try {
+              version.meta = await FabricApiRequest({
+                client,
+                libraryId,
+                path: UrlJoin("qlibs", libraryId, "q", version.id, "meta"),
+                queryParams: {select, resolve: false}
+              });
+            } catch(error) {
+              // eslint-disable-next-line no-console
+              console.error(`Failed to load metadata for ${version.id}`, error);
+              version.meta = {};
+            }
+          }
+        );
+
+        // The tenant query returns one entry per object (its latest version) - reshape to match /qlibs/<id>/q
+        contents = versions.map(version => ({id: version.id, versions: [version]}));
+        paging = response.paging || {};
+      } catch(error) {
+        // eslint-disable-next-line no-console
+        console.error("Tenant content query failed - falling back to name-sorted listing", error);
+
+        useTenantQuery = false;
+        notice = error.status === 403 ?
+          "Last Modified isn't available due to missing admin rights in this library's tenant -- using Name order" :
+          "Last Modified isn't available due to an error (see browser console) -- using Name order";
+      }
     }
 
-    let {contents, paging} = await client.ContentObjects({libraryId, filterOptions});
+    if(!useTenantQuery) {
+      const queryParams = {
+        select,
+        start,
+        limit: params.perPage
+      };
+
+      if(sortField !== "id") {
+        queryParams.sort_by = "/public/name";
+      }
+
+      // A "modified" sort that fell back to this listing is shown in ascending name order
+      if(descending && sortField !== "modified") {
+        queryParams.sort_descending = true;
+      }
+
+      if(params.filter) {
+        queryParams.filter = `/public/name:co:${params.filter}`;
+      }
+
+      if(params.cacheId) {
+        queryParams.cache_id = params.cacheId;
+      }
+
+      ({contents, paging} = await FabricApiRequest({
+        client,
+        libraryId,
+        path: UrlJoin("qlibs", libraryId, "q"),
+        queryParams
+      }));
+    }
 
     contents = contents || [];
-    const count = paging.items;
+    let count = paging.items;
+
+    // lib:eq filter also matches the library's own iq__ form of the library ID -- don't count it
+    const unfilteredCount = contents.length;
+    contents = contents.filter(object => !client.utils.EqualHash(libraryId, object.id));
+    if(count && (!params.filter || contents.length < unfilteredCount)) {
+      count -= 1;
+    }
     const cacheId = paging.cache_id;
 
     let objects = {};
@@ -718,6 +811,7 @@ const Fabric = {
             ...latestVersion,
             id: object.id,
             objectId: object.id,
+            listIndex: contents.indexOf(object),
             hash: object.hash,
             type: object.type,
             name: (publicMeta.name || meta.name || "").toString(),
@@ -739,7 +833,8 @@ const Fabric = {
     return {
       objects,
       cacheId,
-      count
+      count,
+      notice
     };
   },
 
@@ -2020,15 +2115,19 @@ const Fabric = {
         } catch(error) {}
 
         let tenantIdMeta;
-        try {
-          tenantIdMeta = await client.CallContractMethod({
-            contractAddress,
-            methodName: "getMeta",
-            methodArgs: ["_tenantId"]
-          });
-        } catch(error) {
-          // eslint-disable-next-line no-console
-          console.error("Failed to get tenant ID.", error);
+        for(const key of ["_ELV_TENANT_ID", "_tenantId"]) {
+          try {
+            tenantIdMeta = await client.CallContractMethod({
+              contractAddress,
+              methodName: "getMeta",
+              methodArgs: [key]
+            });
+          } catch(error) {
+            // eslint-disable-next-line no-console
+            console.error("Failed to get tenant ID", error);
+          }
+
+          if(tenantIdMeta && client.utils.FromHex(tenantIdMeta)) { break; }
         }
 
         if(tenantIdMeta) {
@@ -2072,6 +2171,10 @@ const Fabric = {
                 "description"
               ]
             }) || {};
+          }
+
+          if(!tenantId && metadata.tenantContractId) {
+            tenantId = metadata.tenantContractId;
           }
 
           if(isOwner) {

@@ -26,7 +26,7 @@ class Listing extends React.Component {
     super(props);
 
     // Load saved settings
-    const savedOptions = ListingOptions[props.pageId] || {display: "list", perPage: 10};
+    const savedOptions = ListingOptions[props.pageId] || {display: "list", perPage: 100};
     ListingOptions[props.pageId] = savedOptions;
 
     this.state = {
@@ -150,15 +150,21 @@ class Listing extends React.Component {
     );
 
     return (
-      <select
-        name="selectFilter"
-        value={this.state.selectFilter}
-        title={this.props.selectFilterLabel}
-        aria-label={this.props.selectFilterLabel}
-        onChange={this.ChangeSelectFilter}
-      >
-        {options}
-      </select>
+      <div className="select-filter">
+        <select
+          name="selectFilter"
+          value={this.state.selectFilter}
+          title={this.props.selectFilterLabel}
+          aria-label={this.props.selectFilterLabel}
+          onChange={this.ChangeSelectFilter}
+        >
+          {options}
+        </select>
+        {
+          this.props.selectFilterNotice ?
+            <div className="select-filter-notice">{ this.props.selectFilterNotice }</div> : null
+        }
+      </div>
     );
   }
 
@@ -361,6 +367,7 @@ Listing.propTypes = {
   filter: PropTypes.string,
   count: PropTypes.number,
   selectFilterLabel: PropTypes.string,
+  selectFilterNotice: PropTypes.string,
   selectFilterOptions: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)),
   RenderContent: PropTypes.func.isRequired,
   LoadContent: PropTypes.func.isRequired

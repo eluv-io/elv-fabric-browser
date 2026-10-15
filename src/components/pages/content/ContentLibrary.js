@@ -215,7 +215,7 @@ class ContentLibrary extends React.Component {
 
         return {
           id: objectId,
-          sortKey: (object.name || "zz").toLowerCase(),
+          listIndex: object.listIndex,
           title: object.name || objectId,
           subtitle: object.name ? objectId : undefined,
           description: object.description,
@@ -225,7 +225,8 @@ class ContentLibrary extends React.Component {
         };
       });
 
-    return objects.sort((a, b) => a.sortKey.toLowerCase() > b.sortKey.toLowerCase() ? 1 : -1);
+    // keep the order the fabric returned - sorting is done server-side according to the selected sort order
+    return objects.sort((a, b) => a.listIndex - b.listIndex);
   }
 
   ObjectListing() {
@@ -237,6 +238,16 @@ class ContentLibrary extends React.Component {
         page={this.props.libraryStore.library.listingParams.page}
         filter={this.props.libraryStore.library.listingParams.filter}
         count={this.props.libraryStore.library.objectsCount}
+        selectFilterLabel="Sort order"
+        selectFilterNotice={this.props.libraryStore.library.listingNotice}
+        selectFilterOptions={[
+          ["Name A–Z", "name-asc"],
+          ["Name Z–A", "name-desc"],
+          ["Last modified (newest)", "modified-desc"],
+          ["Last modified (oldest)", "modified-asc"],
+          ["Object ID (asc)", "id-asc"],
+          ["Object ID (desc)", "id-desc"]
+        ]}
         LoadContent={async ({action, params}) => {
           // When reloading or filtering, clear listing cache
           if(action !== Listing.ACTIONS.reload && action !== Listing.ACTIONS.filter) {
