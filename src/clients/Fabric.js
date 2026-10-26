@@ -795,15 +795,6 @@ const Fabric = {
 
           const latestVersion = object.versions[0];
 
-          let accessInfo;
-          try {
-            accessInfo = await Fabric.GetAccessInfo({objectId: object.id});
-          } catch(error) {
-            // ignore
-          }
-
-          const status = await Fabric.GetContentObjectStatus({libraryId, objectId: object.id});
-
           const meta = latestVersion.meta || {};
           const publicMeta = meta.public || {};
           objects[object.id] = {
@@ -816,8 +807,7 @@ const Fabric = {
             type: object.type,
             name: (publicMeta.name || meta.name || "").toString(),
             description: publicMeta.description || meta.description,
-            accessInfo,
-            confirmedAt: status?.status_details?.confirmed?.at,
+            confirmedAt: undefined,
             isContentLibraryObject: client.utils.EqualHash(libraryId, object.id),
             contractAddress: client.utils.HashToAddress(object.id)
           };
