@@ -2,7 +2,6 @@ import { FrameClient } from "@eluvio/elv-client-js/src/FrameClient";
 import UrlJoin from "url-join";
 import {EqualAddress, FormatAddress, LROStatus} from "../utils/Helpers";
 import Utils from "@eluvio/elv-client-js/src/Utils";
-import {FabricApiRequest} from "./FabricRequests";
 const Fetch = typeof fetch !== "undefined" ? fetch : require("node-fetch").default;
 
 let client = new FrameClient({
@@ -713,12 +712,9 @@ const Fabric = {
           versions,
           async version => {
             try {
-              version.meta = await FabricApiRequest({
-                client,
-                libraryId,
-                path: UrlJoin("qlibs", libraryId, "q", version.id, "meta"),
-                queryParams: {select, resolve: false}
-              });
+              const url = new URL(await client.FabricUrl({libraryId, queryParams: {select, resolve: false}}));
+              url.pathname = UrlJoin(url.pathname, "q", version.id, "meta");
+              version.meta = await (await fetch(url)).json();
             } catch(error) {
               // eslint-disable-next-line no-console
               console.error(`Failed to load metadata for ${version.id}`, error);
@@ -765,12 +761,13 @@ const Fabric = {
         queryParams.cache_id = params.cacheId;
       }
 
-      ({contents, paging} = await FabricApiRequest({
-        client,
-        libraryId,
-        path: UrlJoin("qlibs", libraryId, "q"),
-        queryParams
-      }));
+      const url = new URL(await client.FabricUrl({libraryId, queryParams}));
+      url.pathname = UrlJoin(url.pathname, "q");
+      const response = await fetch(url);
+      if(!response.ok) {
+        throw Error(`Failed to list library contents (${response.status}): ${await response.text()}`);
+      }
+      ({contents, paging} = await response.json());
     }
 
     contents = contents || [];
