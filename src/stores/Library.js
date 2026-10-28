@@ -372,7 +372,30 @@ class LibraryStore {
       ...params,
       cacheId
     };
+
+    this.LoadObjectStatuses({libraryId});
   });
+
+  @action.bound
+  LoadObjectStatuses = flow(function * ({libraryId}) {
+    const objects = this.libraries[libraryId].objects;
+
+    yield Fabric.utils.LimitedMap(
+      Fabric.concurrencyLimit,
+      Object.keys(objects),
+      async objectId => {
+        const status = await Fabric.GetContentObjectStatus({libraryId, objectId});
+        this.SetObjectConfirmedAt({libraryId, objects, objectId, confirmedAt: status?.status_details?.confirmed?.at});
+      }
+    );
+  });
+
+  @action.bound
+  SetObjectConfirmedAt({libraryId, objects, objectId, confirmedAt}) {
+    if(this.libraries[libraryId]?.objects !== objects || !objects[objectId]) { return; }
+
+    objects[objectId].confirmedAt = confirmedAt;
+  }
 
   @action.bound
   ClearLibraryCache({libraryId, keepParams=false}) {
