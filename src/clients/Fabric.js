@@ -690,7 +690,7 @@ const Fabric = {
     contents = contents || [];
     let count = paging.items;
 
-    // The library listing also includes the library's own iq__ object -- don't list or count it
+    // library listing also includes the library's own iq__ -- don't list or count it
     const unfilteredCount = contents.length;
     contents = contents.filter(object => !client.utils.EqualHash(libraryId, object.id));
     if(count && (!params.filter || contents.length < unfilteredCount)) {
