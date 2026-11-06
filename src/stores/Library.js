@@ -361,7 +361,11 @@ class LibraryStore {
 
     const {objects, count, cacheId} = yield Cancelable(
       params.cancelable,
-      async () => await Fabric.ListContentObjects({libraryId, params})
+      async () => await Fabric.ListContentObjects({
+        libraryId,
+        libraryName: this.libraries[libraryId]?.publicMeta?.name,
+        params
+      })
     );
 
     this.libraries[libraryId].objects = objects;

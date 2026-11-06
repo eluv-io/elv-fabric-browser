@@ -666,7 +666,7 @@ const Fabric = {
   },
 
   // Make sure not to call anything requiring content object authorization
-  ListContentObjects: async ({libraryId, params}) => {
+  ListContentObjects: async ({libraryId, libraryName, params}) => {
     const filterOptions = {
       select: ["name", "image", "description", "public/name", "public/description", "public/image"],
       sort: "/public/name",
@@ -693,8 +693,10 @@ const Fabric = {
     // library listing also includes the library's own iq__ -- don't list or count it
     const unfilteredCount = contents.length;
     contents = contents.filter(object => !client.utils.EqualHash(libraryId, object.id));
-    if(count && (!params.filter || contents.length < unfilteredCount)) {
-      count -= 1;
+    const libraryObjectCounted = !params.filter || contents.length < unfilteredCount ||
+      (libraryName || "").toLowerCase().includes(params.filter.toLowerCase());
+    if(count && libraryObjectCounted) {
+      count = Math.max(0, count - 1);
     }
     const cacheId = paging.cache_id;
 
