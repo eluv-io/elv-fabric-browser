@@ -24,25 +24,11 @@ class ListingItem extends React.Component {
 
   AsTableRow() {
     let className = "listing-row";
-
-    const title = this.props.link ?
-      <Link className="title" to={this.props.link} title={this.props.title} aria-label={this.props.title} tabIndex={-1}>
-        {this.props.title}
-      </Link> :
-      <div className="title" title={this.props.title} tabIndex={-1}>
-        {this.props.title}
-      </div>;
-
     let elements = [
-      <div key={`listing-title-${this.props.id}`} className="title-cell">
-        { title }
-        {
-          this.props.subtitle ?
-            <div className="title-subtitle" tabIndex={-1}>
-              <span className="cropped-text">{this.props.subtitle}</span>
-            </div> :
-            null
-        }
+      <div key={`listing-title-${this.props.id}`} title={this.props.title}>
+        <div className="title cropped-text" tabIndex={-1}>
+          {this.props.title}
+        </div>
       </div>,
       <div key={`listing-description-${this.props.id}`} title={this.props.description}>
         <div className="description cropped-text" tabIndex={-1}>
@@ -82,11 +68,24 @@ class ListingItem extends React.Component {
       );
     }
 
-    return (
-      <div className={className}>
-        { elements }
-      </div>
-    );
+    if(this.props.link) {
+      return (
+        <Link
+          title={this.props.title}
+          to={this.props.link}
+          aria-label={this.props.title}
+          className={className}
+        >
+          { elements }
+        </Link>
+      );
+    } else {
+      return (
+        <div title={this.props.title} aria-label={this.props.title} className={className}>
+          { elements }
+        </div>
+      );
+    }
   }
 
   AsGridElement() {
@@ -146,7 +145,6 @@ class ListingItem extends React.Component {
 ListingItem.propTypes = {
   id: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
-  subtitle: PropTypes.string,
   description: PropTypes.string,
   status: PropTypes.oneOfType([
     PropTypes.string,
@@ -172,14 +170,6 @@ class Listing extends React.Component {
     if(this.props.display === "list") {
       return (
         <div className={`table-listing ${this.props.noLink ? "auto-cursor" : ""}`}>
-          <div
-            className={`listing-row listing-header ${this.props.noIcon ? "listing-row-no-icon" : ""} ${this.props.noStatus ? "listing-row-no-status" : ""}`}
-          >
-            { !this.props.noIcon ? <div /> : null }
-            <div className="title-cell">Item</div>
-            <div>Description</div>
-            { !this.props.noStatus ? <div className="status">Last Update</div> : null }
-          </div>
           { content.map(item =>
             <ListingItem
               key={item.id}

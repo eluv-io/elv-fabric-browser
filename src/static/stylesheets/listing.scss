@@ -2,7 +2,7 @@ $aspect-ratio: 0.75; // 4/3
 $grid-listing-width: 150px;
 $table-listing-width: 95px;
 
-$listing-row-height: 4.25rem;
+$listing-row-height: 4.5rem;
 $listing-icon-width: calc(#{$listing-row-height} * 16 / 9);
 
 $listing-grid-height: 9rem;
@@ -174,7 +174,6 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
     flex-direction: column;
     height: 100%;
     justify-content: center;
-    padding: 0;
     width: 100%;
 
     &:not(.svg-icon-container) {
@@ -193,16 +192,12 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
     svg {
       background-color: transparent;
     }
-
-    &.svg-icon-container svg {
-      max-height: 85%;
-      max-width: 85%;
-    }
   }
 
   // Table view
   .table-listing {
     @include elv-no-select;
+    cursor: pointer;
     width: 100%;
 
     &.auto-cursor {
@@ -212,21 +207,21 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
 
     .listing-row {
       display: grid;
-      grid-template-columns: $listing-icon-width 4fr 2fr 1fr;
-      margin-bottom: $elv-spacing-ss;
+      grid-template-columns: $listing-icon-width 3fr 3fr 1fr;
+      margin-bottom: 3px;
       max-height: $listing-row-height;
       min-height: $listing-row-height;
       width: 100%;
 
       &.listing-row-no-icon {
-        grid-template-columns: 4fr 2fr 1fr;
+        grid-template-columns: 3fr 3fr 1fr;
       }
 
       &.listing-row-no-status {
-        grid-template-columns: $listing-icon-width 2fr 1fr;
+        grid-template-columns: $listing-icon-width 1fr 1fr;
 
         &.listing-row-no-icon {
-          grid-template-columns: 2fr 1fr;
+          grid-template-columns: 1fr 1fr;
         }
       }
 
@@ -234,107 +229,30 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
         background-color: $elv-color-bg-light-dark;
       }
 
-      &.listing-header {
-        color: $elv-color-text-lighter;
-        font-size: $elv-font-s;
-        margin-bottom: $elv-spacing-xs;
-        min-height: auto;
-        text-transform: uppercase;
-
-        &:hover {
-          background-color: transparent;
-        }
-
-        div {
-          height: auto;
-        }
-
-        .title-cell {
-          padding-left: $elv-spacing-xs;
-        }
-      }
-
       div {
         align-items: center;
         display: flex;
         height: $listing-row-height;
         max-height: $listing-row-height;
-        min-width: 0;
 
         &:not(.icon-container) {
           padding-left: $elv-spacing-xs;
         }
-
-        &.title-cell {
-          padding-left: 0;
-        }
-
-        &.title-subtitle {
-          padding-left: $elv-spacing-xxs;
-        }
-
-        &.cropped-text {
-          display: block;
-        }
-      }
-
-      .cropped-text {
-        @include elv-ellipsis;
-        min-width: 0;
-      }
-
-      .title-cell {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 4px;
-        justify-content: center;
-        overflow: hidden;
-
-        .title,
-        .title-subtitle {
-          height: auto;
-          max-height: none;
-          width: 100%;
-        }
-
-        .title {
-          -webkit-box-orient: vertical;
-          -webkit-line-clamp: 2;
-          color: inherit;
-          display: -webkit-box;
-          font-size: 18px;
-          line-clamp: 2;
-          line-height: 1.25;
-          overflow: hidden;
-          overflow-wrap: break-word;
-          padding-left: 2px;
-          white-space: normal;
-        }
-
-        a.title {
-          cursor: pointer;
-        }
-      }
-
-      .title-subtitle {
-        color: $elv-color-text-lighter;
-        cursor: text;
-        font-size: $elv-font-m;
-        gap: $elv-spacing-xxs;
-        user-select: text;
       }
 
       .description {
-        height: auto;
         overflow-y: hidden;
         padding: $elv-spacing-xs;
-        width: 100%;
       }
 
       .description,
       .status {
         color: $elv-color-text-lighter;
         font-size: $elv-font-m;
+      }
+
+      .status {
+        justify-content: center;
       }
     }
   }
