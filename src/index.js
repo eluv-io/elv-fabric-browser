@@ -8,7 +8,6 @@ import UrlJoin from "url-join";
 import "./utils/StringExtensions";
 import "elv-components-js/src/utils/LimitedMap";
 
-import ScrollToTop from "./router/ScrollToTop";
 import NavigationBar from "./components/NavigationBar";
 import Notifications from "./components/Notifications";
 import Routes from "./router";
@@ -28,13 +27,11 @@ const App = () => {
       <Provider {...Stores}>
         <div className="app-container">
           <HashRouter>
-            <ScrollToTop>
-              <div className="view-container">
-                <NavigationBar />
-                <Notifications />
-                <Routes />
-              </div>
-            </ScrollToTop>
+            <div className="view-container">
+              <NavigationBar />
+              <Notifications />
+              <Routes />
+            </div>
           </HashRouter>
         </div>
       </Provider>

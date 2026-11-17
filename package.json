@@ -19,13 +19,6 @@
     "fix-js": "npm run lint-js -- --fix",
     "fix-scss": "./node_modules/sass-lint-auto-fix/dist/index.js"
   },
-  "pre-commit": {
-    "run": [
-      "lint",
-      "build",
-      "add-build"
-    ]
-  },
   "browserslist": [
     "> 1%",
     "last 2 versions"

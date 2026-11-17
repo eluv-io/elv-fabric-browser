@@ -12,7 +12,7 @@ import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
 import {Action, Confirm, Form, IconButton, ImageIcon, LoadingElement, Modal, Tabs, ToolTip} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
-import {AccessChargeDisplay, AddressToHash, HashToAddress, Percentage} from "../../../utils/Helpers";
+import {AddressToHash, HashToAddress, Percentage} from "../../../utils/Helpers";
 import {inject, observer} from "mobx-react";
 import ToggleSection from "../../components/ToggleSection";
 import JSONField from "../../components/JSONField";
@@ -718,7 +718,7 @@ class ContentObject extends React.Component {
     if(object.accessInfo) {
       accessCharge = (
         <LabelledField label="Access charge">
-          { AccessChargeDisplay(object.accessInfo.accessCharge) }
+          { object.accessInfo.accessCharge }
         </LabelledField>
       );
     }

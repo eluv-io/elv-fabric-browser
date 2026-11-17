@@ -1,7 +1,5 @@
-import React from "react";
 import Utils from "@eluvio/elv-client-js/src/Utils";
 import BigNumber from "bignumber.js";
-import {Balance} from "elv-components-js";
 
 // Traverse through a hashmap without throwing errors on undefined keys
 // If any keys undefined, returns undefined
@@ -86,20 +84,6 @@ export const LROStatus = async ({client, libraryId, objectId, metadata}) => {
 
 export const Percentage = (done, total) => {
   return total > 0 ? `${(done * 100 / total).toFixed(1)}%` : "100.0%";
-};
-
-export const AccessChargeDisplay = (accessCharge) => {
-  if(!accessCharge) { return; }
-
-  accessCharge = Utils.ToBigNumber(accessCharge).toNumber();
-
-  if(accessCharge <= 0) { return; }
-
-  if(accessCharge > 2 ** 150) {
-    return "Not Accessible";
-  }
-
-  return <Balance balance={accessCharge} />;
 };
 
 export const ParseBytes32 = (bytes32String) => {
