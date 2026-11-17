@@ -1,20 +1,22 @@
-import {observable, action} from "mobx";
+import {observable, action, makeAutoObservable} from "mobx";
 import {FormatAddress} from "../utils/Helpers";
 import UrlJoin from "url-join";
 import Fabric from "../clients/Fabric";
 
 class RouterStore {
-  @observable path;
+  path;
 
-  @observable libraryId;
-  @observable objectId;
-  @observable contractAddress;
+  libraryId;
+  objectId;
+  contractAddress;
 
   constructor(rootStore) {
+    makeAutoObservable(this);
+
     this.rootStore = rootStore;
   }
 
-  @action.bound
+
   UpdateRoute(match) {
     this.path = match.url;
     this.libraryId = match.params.libraryId;

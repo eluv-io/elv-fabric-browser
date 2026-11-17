@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import AsyncComponent from "./AsyncComponent";
 import {observer} from "mobx-react";
-import {objectStore} from "../../stores";
+import {objectStore} from "@/stores/index";
 import {diffJson} from "diff";
 import {IconButton} from "elv-components-js";
 
@@ -131,4 +131,4 @@ const Diff = observer(({json, diff}) => {
   );
 });
 
-export default Diff;
+export default observer(Diff);

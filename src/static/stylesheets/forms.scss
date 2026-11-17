@@ -1,13 +1,9 @@
-@import "~elv-components-js/src/stylesheets/forms";
-
 form {
-  @include elv-form;
-
   &.app-form {
     display: flex;
     flex-direction: column;
     min-height: 90vh;
-    padding-bottom: $elv-spacing-m;
+    padding-bottom: var(--spacing-m);
     width: 80rem;
 
     &.app-form-fullscreen {
@@ -18,25 +14,25 @@ form {
   }
 
   .app-form-fieldset {
-    border: 1px solid $elv-color-gray;
+    border: 1px solid var(--color-gray);
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    padding: 0 $elv-spacing-l $elv-spacing-l;
+    padding: 0 var(--spacing-l var(--spacing-l));
   }
 
   .fullscreen-button {
     position: absolute;
-    right: $elv-spacing-xs;
-    top: $elv-spacing-xs;
+    right: var(--spacing-xs);
+    top: var(--spacing-xs);
 
     svg {
-      stroke: $elv-color-mediumgray;
+      stroke: var(--color-mediumgray);
     }
 
     &:hover {
       svg {
-        stroke: $elv-color-darkergray;
+        stroke: var(--color-darkergray);
       }
     }
   }
@@ -52,12 +48,12 @@ form {
   .list {
     display: flex;
     flex-direction: column;
-    margin-top: $elv-spacing-xs;
+    margin-top: var(--spacing-xs);
     width: 100%;
 
     .list-item {
       align-items: center;
-      margin-bottom: $elv-spacing-xs;
+      margin-bottom: var(--spacing-xs);
       position: relative;
 
       input {
@@ -76,16 +72,16 @@ form {
   }
 
   h4 {
-    font-size: $elv-font-l;
+    font-size: var(--font-l);
     font-weight: 500;
-    margin: $elv-spacing-s 0;
+    margin: var(--spacing-s 0);
     text-align: center;
   }
 
   .section-separator {
-    border-bottom: 1px solid $elv-color-lightgray;
-    margin-bottom: $elv-spacing-l;
-    padding-top: $elv-spacing-xs;
+    border-bottom: 1px solid var(--color-lightgray);
+    margin-bottom: var(--spacing-l);
+    padding-top: var(--spacing-xs);
   }
 
   @media only screen and (max-width: 1000px) {
@@ -97,11 +93,11 @@ form {
         flex-direction: column;
 
         label {
-          margin-bottom: $elv-spacing-xxs;
+          margin-bottom: var(--spacing-xxs);
         }
 
         * {
-          margin-bottom: $elv-spacing-s;
+          margin-bottom: var(--spacing-s);
         }
       }
     }
@@ -127,9 +123,9 @@ form {
   margin-bottom: 1rem;
 
   .radio-helper-text {
-    color: $elv-color-text-lighter;
-    font-size: $elv-font-m;
-    margin-top: $elv-spacing-xxs;
+    color: var(--color-text-lighter);
+    font-size: var(--font-m);
+    margin-top: var(--spacing-xxs);
   }
 }
 
@@ -149,15 +145,15 @@ fieldset {
 button {
   &.oauth-group-icon {
     input + & {
-      margin-left: $elv-spacing-xxs;
+      margin-left: var(--spacing-xxs);
     }
 
     svg {
-      stroke: $elv-color-mediumgray;
-      width: $elv-spacing-m;
+      stroke: var(--color-mediumgray);
+      width: var(--spacing-m);
 
       &:hover {
-        stroke: $elv-color-darkgray;
+        stroke: var(--color-darkgray);
       }
     }
   }

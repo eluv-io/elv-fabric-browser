@@ -4,9 +4,10 @@ import {PageHeader} from "../../components/Page";
 import {LabelledField} from "../../components/LabelledField";
 import {Action, Form, Modal} from "elv-components-js";
 import FileUploadWidget from "../../components/FileUploadWidget";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import AsyncComponent from "../../components/AsyncComponent";
 import ActionsToolbar from "../../components/ActionsToolbar";
+import {libraryStore, objectStore} from "@/stores/index";
 
 const appNames = {
   "asset-manager": "Asset Manager",
@@ -14,9 +15,6 @@ const appNames = {
   "stream-sample": "Stream Sample"
 };
 
-@inject("libraryStore")
-@inject("objectStore")
-@observer
 class ContentApps extends React.Component {
   constructor(props) {
     super(props);
@@ -32,9 +30,9 @@ class ContentApps extends React.Component {
   }
 
   async HandleSubmit() {
-    await this.props.objectStore.UpdateApps({
-      libraryId: this.props.objectStore.libraryId,
-      objectId: this.props.objectStore.objectId,
+    await objectStore.UpdateApps({
+      libraryId: objectStore.libraryId,
+      objectId: objectStore.objectId,
       apps: this.state.apps
     });
   }
@@ -161,9 +159,9 @@ class ContentApps extends React.Component {
   }
 
   PageContent() {
-    const header = this.props.objectStore.object.isContentType ?
-      "Content Types > " + this.props.objectStore.object.name :
-      this.props.libraryStore.library.name + " > " + this.props.objectStore.object.name;
+    const header = objectStore.object.isContentType ?
+      "Content Types > " + objectStore.object.name :
+      libraryStore.library.name + " > " + this.props.objectStore.object.name;
 
     return (
       <div className="page-container contracts-page-container">
@@ -205,17 +203,17 @@ class ContentApps extends React.Component {
         key={`apps-page-${this.state.pageVersion}`}
         Load={
           async () => {
-            await this.props.libraryStore.ContentLibrary({
-              libraryId: this.props.objectStore.libraryId,
+            await libraryStore.ContentLibrary({
+              libraryId: objectStore.libraryId,
             });
 
-            await this.props.objectStore.ContentObject({
-              libraryId: this.props.objectStore.libraryId,
-              objectId: this.props.objectStore.objectId
+            await objectStore.ContentObject({
+              libraryId: objectStore.libraryId,
+              objectId: objectStore.objectId
             });
 
             let apps = {};
-            const meta = this.props.objectStore.object.meta;
+            const meta = objectStore.object.meta;
             this.AppRoles().map(role => {
               const app = (meta.public || {})[`eluv.${role}App`] || meta[`eluv.${role}App`];
 
@@ -248,4 +246,4 @@ class ContentApps extends React.Component {
   }
 }
 
-export default ContentApps;
+export default observer(ContentApps);

@@ -9,15 +9,14 @@ import {PageHeader} from "../../components/Page";
 import {Confirm, IconButton, LoadingElement, Tabs} from "elv-components-js";
 import Listing from "../../components/Listing";
 import RemoveIcon from "../../../static/icons/close.svg";
-import {inject, observer} from "mobx-react";
 import AsyncComponent from "elv-components-js/src/components/AsyncComponent";
 import JSONField from "../../components/JSONField";
 import ToggleSection from "../../components/ToggleSection";
 import ContentObjectGroups from "../content/ContentObjectGroups";
 import ActionsToolbar from "../../components/ActionsToolbar";
+import {observer} from "mobx-react";
+import {groupStore} from "@/stores/index";
 
-@inject("groupStore")
-@observer
 class AccessGroup extends React.Component {
   constructor(props) {
     super(props);
@@ -39,8 +38,8 @@ class AccessGroup extends React.Component {
     await Confirm({
       message: "Are you sure you want to delete this access group?",
       onConfirm: async () => {
-        await this.props.groupStore.RemoveAccessGroup({
-          address: this.props.groupStore.contractAddress
+        await groupStore.RemoveAccessGroup({
+          address: groupStore.contractAddress
         });
 
         this.setState({redirect: true});
@@ -53,8 +52,8 @@ class AccessGroup extends React.Component {
 
     await Confirm({
       message: `Are you sure you want to remove this ${manager ? "manager" : "member"} from the group?`,
-      onConfirm: async () => await this.props.groupStore.RemoveAccessGroupMember({
-        contractAddress: this.props.groupStore.contractAddress,
+      onConfirm: async () => await groupStore.RemoveAccessGroupMember({
+        contractAddress: groupStore.contractAddress,
         memberAddress,
         manager
       })
@@ -69,8 +68,8 @@ class AccessGroup extends React.Component {
     await Confirm({
       message: "Are you sure you want to leave this group?",
       onConfirm: async () => {
-        await this.props.groupStore.LeaveAccessGroup({
-          contractAddress: this.props.groupStore.contractAddress
+        await groupStore.LeaveAccessGroup({
+          contractAddress: groupStore.contractAddress
         });
 
         this.setState({redirect: true});
@@ -80,15 +79,15 @@ class AccessGroup extends React.Component {
 
   AccessGroupMembers() {
     const members = this.state.view === "managers" ?
-      this.props.groupStore.accessGroup.managers :
-      this.props.groupStore.accessGroup.members;
+      groupStore.accessGroup.managers :
+      groupStore.accessGroup.members;
 
     if(!members) { return []; }
 
     const memberInfo = Object.values(members).map(member => {
       const canRemove = (
-        this.props.groupStore.accessGroup.isManager ||
-        this.props.groupStore.accessGroup.isOwner
+        groupStore.accessGroup.isManager ||
+        groupStore.accessGroup.isOwner
       );
 
       return {
@@ -97,7 +96,7 @@ class AccessGroup extends React.Component {
         key: `${this.state.view}-${member.address}`,
         title: member.name,
         description: member.address,
-        status: (this.state.view === "members" || this.props.groupStore.accessGroup.isOwner) ? (
+        status: (this.state.view === "members" || groupStore.accessGroup.isOwner) ? (
           <div className="listing-action-icon">
             <IconButton
               icon={RemoveIcon}
@@ -117,8 +116,8 @@ class AccessGroup extends React.Component {
 
   AccessGroupMembersListing() {
     const count = this.state.view === "managers" ?
-      this.props.groupStore.accessGroup.managersCount :
-      this.props.groupStore.accessGroup.membersCount;
+      groupStore.accessGroup.managersCount :
+      groupStore.accessGroup.membersCount;
 
     return (
       <Listing
@@ -133,8 +132,8 @@ class AccessGroup extends React.Component {
         paginate={true}
         count={count}
         LoadContent={async ({params}) => {
-          await this.props.groupStore.ListAccessGroupMembers({
-            contractAddress: this.props.groupStore.contractAddress,
+          await groupStore.ListAccessGroupMembers({
+            contractAddress: groupStore.contractAddress,
             showManagers: this.state.view === "managers",
             params
           });
@@ -161,21 +160,21 @@ class AccessGroup extends React.Component {
           {
             label: "Manage",
             type: "link",
-            hidden: !this.props.groupStore.accessGroup.isOwner,
+            hidden: !groupStore.accessGroup.isOwner,
             path: UrlJoin(this.props.match.url, "edit"),
           },
           {
             label: "Add Member",
             type: "link",
-            hidden: !(this.props.groupStore.accessGroup.isManager || this.props.groupStore.accessGroup.isOwner),
+            hidden: !(groupStore.accessGroup.isManager || this.props.groupStore.accessGroup.isOwner),
             path: UrlJoin(this.props.match.url, "add-member")
           },
           {
             label: "Leave Group",
             type: "button",
-            hidden: this.props.groupStore.accessGroup.isOwner ||
+            hidden: groupStore.accessGroup.isOwner ||
               !(
-                this.props.groupStore.accessGroup.isManager
+                groupStore.accessGroup.isManager
               ),
             onClick: () => this.LeaveAccessGroup(),
             className: "danger"
@@ -183,7 +182,7 @@ class AccessGroup extends React.Component {
           {
             label: "Delete",
             type: "button",
-            hidden: (true || !this.props.groupStore.accessGroup.isOwner),
+            hidden: (true || !groupStore.accessGroup.isOwner),
             onClick: () => this.DeleteAccessGroup(),
             className: "danger"
           }
@@ -197,7 +196,7 @@ class AccessGroup extends React.Component {
       return <Redirect push to={Path.dirname(this.props.match.url)}/>;
     }
 
-    const group = this.props.groupStore.accessGroup;
+    const group = groupStore.accessGroup;
 
     const ownerText = group.ownerName ?
       <span>{group.ownerName}<span className="help-text">({group.owner})</span></span> :
@@ -251,13 +250,13 @@ class AccessGroup extends React.Component {
         <LabelledField label="Permissions">
           <LoadingElement loading={this.state.permissionChanging} loadingClassname="visibility-info-loading">
             <select
-              value={this.props.groupStore.accessGroup.visibility}
-              disabled={!this.props.groupStore.accessGroup.isManager && !this.props.groupStore.accessGroup.isOwner}
+              value={groupStore.accessGroup.visibility}
+              disabled={!groupStore.accessGroup.isManager && !this.props.groupStore.accessGroup.isOwner}
               onChange={
                 async event => {
                   this.setState({permissionChanging: true});
                   try {
-                    await this.props.groupStore.SetGroupVisibility({
+                    await groupStore.SetGroupVisibility({
                       visibility: event.target.value
                     });
 
@@ -281,10 +280,10 @@ class AccessGroup extends React.Component {
       pageContent = (
         <ContentObjectGroups
           currentPage="accessGroup"
-          showGroupPermissionsButton={this.props.groupStore.accessGroup.isManager || this.props.groupStore.accessGroup.isOwner}
+          showGroupPermissionsButton={groupStore.accessGroup.isManager || this.props.groupStore.accessGroup.isOwner}
           LoadGroupPermissions={async () => {
-            await this.props.groupStore.AccessGroupGroupPermissions({contractAddress: this.props.groupStore.contractAddress});
-            await this.props.groupStore.SetInheritedGroupAccess();
+            await groupStore.AccessGroupGroupPermissions({contractAddress: this.props.groupStore.contractAddress});
+            await groupStore.SetInheritedGroupAccess();
           }}
         />
       );
@@ -319,10 +318,10 @@ class AccessGroup extends React.Component {
             </div>
             {
               (
-                this.props.groupStore.accessGroup.isOwner ||
-                this.props.groupStore.accessGroup.isManager ||
-                this.props.groupStore.accessGroup.isMember ||
-                this.props.groupStore.accessGroup.hasAccess
+                groupStore.accessGroup.isOwner ||
+                groupStore.accessGroup.isManager ||
+                groupStore.accessGroup.isMember ||
+                groupStore.accessGroup.hasAccess
               ) &&
               <>
                 <Tabs
@@ -348,19 +347,19 @@ class AccessGroup extends React.Component {
       <AsyncComponent
         Load={
           async () => {
-            await this.props.groupStore.AccessGroup({
-              contractAddress: this.props.groupStore.contractAddress
+            await groupStore.AccessGroup({
+              contractAddress: groupStore.contractAddress
             });
 
-            await this.props.groupStore.AccessGroupGroupPermissions({contractAddress: this.props.groupStore.contractAddress});
-            await this.props.groupStore.SetInheritedGroupAccess();
+            await groupStore.AccessGroupGroupPermissions({contractAddress: this.props.groupStore.contractAddress});
+            await groupStore.SetInheritedGroupAccess();
 
             if(
-              this.props.groupStore.accessGroup.visibility === 0 &&
-              !this.props.groupStore.accessGroup.hasAccess &&
-              !this.props.groupStore.accessGroup.isMember &&
-              !this.props.groupStore.accessGroup.isOwner &&
-              !this.props.groupStore.accessGroup.isManager
+              groupStore.accessGroup.visibility === 0 &&
+              !groupStore.accessGroup.hasAccess &&
+              !groupStore.accessGroup.isMember &&
+              !groupStore.accessGroup.isOwner &&
+              !groupStore.accessGroup.isManager
             ) {
               throw Error("Forbidden");
             }
@@ -372,4 +371,4 @@ class AccessGroup extends React.Component {
   }
 }
 
-export default AccessGroup;
+export default observer(AccessGroup);

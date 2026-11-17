@@ -3,11 +3,11 @@ import UrlJoin from "url-join";
 import TypeIcon from "../../../static/icons/content.svg";
 import {PageHeader} from "../../components/Page";
 import Listing from "../../components/Listing";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import ActionsToolbar from "../../components/ActionsToolbar";
 
-@inject("typeStore")
-@observer
+import {typeStore} from "@/stores/index";
+
 class ContentTypes extends React.Component {
   constructor(props) {
     super(props);
@@ -19,10 +19,10 @@ class ContentTypes extends React.Component {
   }
 
   ContentTypes() {
-    if(!this.props.typeStore.types) { return []; }
+    if(!typeStore.types) { return []; }
 
-    const types = Object.keys(this.props.typeStore.types).sort().map(typeId => {
-      const type = this.props.typeStore.types[typeId];
+    const types = Object.keys(typeStore.types).sort().map(typeId => {
+      const type = typeStore.types[typeId];
 
       return {
         id: typeId,
@@ -55,10 +55,10 @@ class ContentTypes extends React.Component {
             <Listing
               pageId="ContentTypes"
               paginate={true}
-              count={this.props.typeStore.count}
+              count={typeStore.count}
               LoadContent={
                 async ({params}) => {
-                  await this.props.typeStore.ListContentTypes({params});
+                  await typeStore.ListContentTypes({params});
                   this.setState({listingVersion: this.state.listingVersion + 1});
                 }
               }
@@ -71,4 +71,4 @@ class ContentTypes extends React.Component {
   }
 }
 
-export default ContentTypes;
+export default observer(ContentTypes);

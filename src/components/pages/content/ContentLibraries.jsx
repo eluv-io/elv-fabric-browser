@@ -3,11 +3,10 @@ import UrlJoin from "url-join";
 import LibraryIcon from "../../../static/icons/content.svg";
 import {PageHeader} from "../../components/Page";
 import Listing from "../../components/Listing";
-import {inject, observer} from "mobx-react";
 import ActionsToolbar from "../../components/ActionsToolbar";
+import {libraryStore} from "@/stores/index";
+import {observer} from "mobx-react";
 
-@inject("libraryStore")
-@observer
 class ContentLibraries extends React.Component {
   constructor(props) {
     super(props);
@@ -16,10 +15,10 @@ class ContentLibraries extends React.Component {
   }
 
   ContentLibraries() {
-    if(!this.props.libraryStore.libraries) { return []; }
+    if(!libraryStore.libraries) { return []; }
 
-    const libraries = Object.keys(this.props.libraryStore.libraries).sort().map(libraryId => {
-      const library = this.props.libraryStore.libraries[libraryId];
+    const libraries = Object.keys(libraryStore.libraries).sort().map(libraryId => {
+      const library = libraryStore.libraries[libraryId];
 
       return {
         id: libraryId,
@@ -54,8 +53,8 @@ class ContentLibraries extends React.Component {
             <Listing
               pageId="ContentLibraries"
               paginate={true}
-              count={this.props.libraryStore.count}
-              LoadContent={this.props.libraryStore.ListContentLibraries}
+              count={libraryStore.count}
+              LoadContent={libraryStore.ListContentLibraries}
               RenderContent={this.ContentLibraries}
             />
           </div>
@@ -65,4 +64,4 @@ class ContentLibraries extends React.Component {
   }
 }
 
-export default ContentLibraries;
+export default observer(ContentLibraries);

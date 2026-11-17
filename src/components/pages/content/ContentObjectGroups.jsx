@@ -1,15 +1,15 @@
 import React from "react";
 import {Action, AsyncComponent, Confirm, IconButton, Tabs} from "elv-components-js";
 import Listing from "../../components/Listing";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import PropTypes from "prop-types";
 
 import ContentObjectGroupForm from "./ContentObjectGroupForm";
 import RemoveIcon from "../../../static/icons/close.svg";
 
-@inject("objectStore")
-@inject("groupStore")
-@observer
+import {objectStore} from "@/stores/index";
+import {groupStore} from "@/stores/index";
+
 class ContentObjectGroups extends React.Component {
   constructor(props) {
     super(props);
@@ -33,7 +33,7 @@ class ContentObjectGroups extends React.Component {
     const page = filterOptions.params.page;
     const perPage = filterOptions.params.perPage;
 
-    const groupsObject = (this.props.currentPage === "contentObject" ? (this.props.objectStore.objectGroupPermissions || {}) : this.props.groupStore.accessGroup.groupPermissions || {});
+    const groupsObject = (currentPage === "contentObject" ? (this.props.objectStore.objectGroupPermissions || {}) : this.props.groupStore.accessGroup.groupPermissions || {});
     let groups = Object
       .values(groupsObject)
       .filter(group => group.permissions.includes(this.state.view))
@@ -52,7 +52,7 @@ class ContentObjectGroups extends React.Component {
     let itemText;
     if(this.props.currentPage === "accessGroup") {
       itemText = "group";
-    } else if(this.props.objectStore.object.isContentType) {
+    } else if(objectStore.object.isContentType) {
       itemText = "content type";
     } else {
       itemText = "object";
@@ -61,8 +61,8 @@ class ContentObjectGroups extends React.Component {
     await Confirm({
       message: `Are you sure you want to remove this group's permissions on this ${itemText}?`,
       onConfirm: async () => {
-        await this.props.objectStore.RemoveContentObjectGroupPermission({
-          objectId: this.props.objectStore.objectId,
+        await objectStore.RemoveContentObjectGroupPermission({
+          objectId: objectStore.objectId,
           groupAddress,
           permission: this.state.view
         });
@@ -77,7 +77,7 @@ class ContentObjectGroups extends React.Component {
   }
 
   AccessGroups() {
-    const editCondition = this.props.currentPage === "contentObject" ? this.props.objectStore.object.canEdit : this.props.groupStore.accessGroup.isManager;
+    const editCondition = currentPage === "contentObject" ? this.props.objectStore.object.canEdit : this.props.groupStore.accessGroup.isManager;
     const groupsInfo = this.FilterGroups(this.state.filterOptions).map(group => {
       return {
         id: group.address,
@@ -107,7 +107,7 @@ class ContentObjectGroups extends React.Component {
   render() {
     const GroupCount = () => {
       return Object
-        .values(this.props.currentPage === "contentObject" ? (this.props.objectStore.objectGroupPermissions || {}) : this.props.groupStore.accessGroup.groupPermissions || {})
+        .values(currentPage === "contentObject" ? (this.props.objectStore.objectGroupPermissions || {}) : this.props.groupStore.accessGroup.groupPermissions || {})
         .filter(group => group.permissions.includes(this.state.view))
         .length;
     };
@@ -138,7 +138,7 @@ class ContentObjectGroups extends React.Component {
       <AsyncComponent
         Load={async () => {
           if(this.props.currentPage !== "accessGroup") {
-            await this.props.groupStore.ListAccessGroups({
+            await groupStore.ListAccessGroups({
               params: {},
               publicOnly: true
             });
@@ -196,4 +196,4 @@ ContentObjectGroups.propTypes = {
   currentPage: PropTypes.string.isRequired
 };
 
-export default ContentObjectGroups;
+export default observer(ContentObjectGroups);

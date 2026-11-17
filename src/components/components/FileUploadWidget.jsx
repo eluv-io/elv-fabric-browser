@@ -100,4 +100,4 @@ FileUploadWidget.propTypes = {
   OnCancel: PropTypes.func
 };
 
-export default FileUploadWidget;
+export default observer(FileUploadWidget);

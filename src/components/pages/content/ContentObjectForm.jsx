@@ -2,7 +2,7 @@ import React from "react";
 import UrlJoin from "url-join";
 import Path from "path";
 import {BrowseWidget, Form, JsonInput, LoadingElement, Tabs} from "elv-components-js";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import AsyncComponent from "../../components/AsyncComponent";
 import {Redirect} from "react-router";
 import {toJS} from "mobx";
@@ -11,10 +11,10 @@ import AppFrame from "../../components/AppFrame";
 import ActionsToolbar from "../../components/ActionsToolbar";
 import SearchConfiguration from "./SearchConfiguration";
 
-@inject("libraryStore")
-@inject("objectStore")
-@inject("typeStore")
-@observer
+import {libraryStore} from "@/stores/index";
+import {objectStore} from "@/stores/index";
+import {typeStore} from "@/stores/index";
+
 class ContentObjectForm extends React.Component {
   constructor(props) {
     super(props);
@@ -56,9 +56,9 @@ class ContentObjectForm extends React.Component {
   }
 
   async HandleSubmit() {
-    const objectId = await this.props.objectStore.UpdateContentObject({
-      libraryId: this.props.libraryStore.libraryId,
-      objectId: this.props.objectStore.objectId,
+    const objectId = await objectStore.UpdateContentObject({
+      libraryId: libraryStore.libraryId,
+      objectId: objectStore.objectId,
       type: this.state.type,
       name: this.state.name,
       description: this.state.description,
@@ -89,7 +89,7 @@ class ContentObjectForm extends React.Component {
   }
 
   Types() {
-    const currentType = this.props.objectStore.object && this.props.objectStore.object.typeInfo && this.props.objectStore.object.typeInfo.hash;
+    const currentType = objectStore.object && this.props.objectStore.object.typeInfo && this.props.objectStore.object.typeInfo.hash;
 
     if(currentType && !this.state.types[currentType]) {
       const currentTypeId = Fabric.utils.DecodeVersionHash(currentType).objectId;
@@ -104,7 +104,7 @@ class ContentObjectForm extends React.Component {
       this.state.types[currentType] = {
         id: currentTypeId,
         hash: currentType,
-        name: `${this.props.objectStore.object.typeInfo.name || currentType} (current)`
+        name: `${objectStore.object.typeInfo.name || currentType} (current)`
       };
     }
 
@@ -115,7 +115,7 @@ class ContentObjectForm extends React.Component {
     return (
       <React.Fragment>
         <label htmlFor="type">Type</label>
-        <LoadingElement loading={!this.props.typeStore.typesLoaded}>
+        <LoadingElement loading={!typeStore.typesLoaded}>
           <select name="type" value={this.state.type} onChange={this.HandleInputChange}>
             { options }
           </select>
@@ -187,10 +187,10 @@ class ContentObjectForm extends React.Component {
   AppFrame() {
     const queryParams = {
       contentSpaceId: Fabric.contentSpaceId,
-      libraryId: this.props.objectStore.libraryId,
-      objectId: this.props.objectStore.objectId,
-      versionHash: this.props.objectStore.object.hash,
-      type: this.props.objectStore.object.type,
+      libraryId: objectStore.libraryId,
+      objectId: objectStore.objectId,
+      versionHash: objectStore.object.hash,
+      type: objectStore.object.type,
       action: "manage"
     };
 
@@ -262,11 +262,11 @@ class ContentObjectForm extends React.Component {
 
             // Don't wait for types
             const LoadTypes = async () => {
-              await this.props.typeStore.ContentTypes();
+              await typeStore.ContentTypes();
 
               // Wait for library load to complete
               let waited = 0;
-              while(!this.props.libraryStore.library) {
+              while(!libraryStore.library) {
                 if(waited > 5000) { return; }
 
                 await new Promise(resolve => setTimeout(resolve, 250));
@@ -274,7 +274,7 @@ class ContentObjectForm extends React.Component {
               }
 
               let allowedTypes = {};
-              Object.values(this.props.libraryStore.library.types).forEach(type => allowedTypes[type.hash] = type);
+              Object.values(libraryStore.library.types).forEach(type => allowedTypes[type.hash] = type);
 
               let initialType = "";
               let types = {};
@@ -285,7 +285,7 @@ class ContentObjectForm extends React.Component {
                 types = allowedTypes;
               } else {
                 // No allowed types specified on library - all types allowed
-                Object.values(this.props.typeStore.allTypes).forEach(type => types[type.hash] = type);
+                Object.values(typeStore.allTypes).forEach(type => types[type.hash] = type);
                 types[""] = { name: "<None>", hash: "" };
               }
 
@@ -295,24 +295,24 @@ class ContentObjectForm extends React.Component {
             LoadTypes();
 
             loadTasks.push(
-              async () => await this.props.libraryStore.ContentLibrary({
-                libraryId: this.props.objectStore.libraryId
+              async () => await libraryStore.ContentLibrary({
+                libraryId: objectStore.libraryId
               })
             );
 
-            if(this.props.objectStore.objectId) {
+            if(objectStore.objectId) {
               loadTasks.push(
-                async () => await this.props.objectStore.ContentObject({
-                  libraryId: this.props.objectStore.libraryId,
-                  objectId: this.props.objectStore.objectId
+                async () => await objectStore.ContentObject({
+                  libraryId: objectStore.libraryId,
+                  objectId: objectStore.objectId
                 })
               );
             }
 
             await Promise.all(loadTasks.map(async task => await task()));
 
-            if(this.props.objectStore.objectId) {
-              const object = this.props.objectStore.object;
+            if(objectStore.objectId) {
+              const object = objectStore.object;
               const meta = {...toJS(object.meta)};
               const publicMetadata = JSON.stringify(meta.public || {}, null, 2);
               delete meta.public;
@@ -349,4 +349,4 @@ class ContentObjectForm extends React.Component {
   }
 }
 
-export default ContentObjectForm;
+export default observer(ContentObjectForm);

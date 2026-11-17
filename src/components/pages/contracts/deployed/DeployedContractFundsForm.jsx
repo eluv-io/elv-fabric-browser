@@ -3,11 +3,11 @@ import Path from "path";
 import {Form} from "elv-components-js";
 import AsyncComponent from "../../../components/AsyncComponent";
 import {PageHeader} from "../../../components/Page";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import ActionsToolbar from "../../../components/ActionsToolbar";
 
-@inject("contractStore")
-@observer
+import {contractStore} from "@/stores/index";
+
 class DeployedContractFundsForm extends React.Component {
   constructor(props) {
     super(props);
@@ -28,7 +28,7 @@ class DeployedContractFundsForm extends React.Component {
   }
 
   async HandleSubmit() {
-    await this.props.contractStore.SendFunds({
+    await contractStore.SendFunds({
       recipient: this.state.contract.contractAddress,
       ether: this.state.amount
     });
@@ -74,7 +74,7 @@ class DeployedContractFundsForm extends React.Component {
         Load={
           async () => {
             this.setState({
-              contract: await this.props.contractStore.DeployedContractInfo()
+              contract: await contractStore.DeployedContractInfo()
             });
           }
         }
@@ -84,4 +84,4 @@ class DeployedContractFundsForm extends React.Component {
   }
 }
 
-export default DeployedContractFundsForm;
+export default observer(DeployedContractFundsForm);

@@ -1,13 +1,15 @@
 import Fabric from "../clients/Fabric";
-import {action, flow, observable, runInAction, toJS} from "mobx";
+import {action, flow, makeAutoObservable, observable, runInAction, toJS} from "mobx";
 import {FormatAddress} from "../utils/Helpers";
 
 class EventsStore {
-  @observable events = [];
-  @observable contractEvents = {};
-  @observable contractNames = {};
+  events = [];
+  contractEvents = {};
+  contractNames = {};
 
   constructor(rootStore) {
+    makeAutoObservable(this);
+
     this.rootStore = rootStore;
   }
 
@@ -18,7 +20,7 @@ class EventsStore {
     return Object.values(uniqueBlocks).sort((a, b) => a[0].blockNumber < b[0].blockNumber ? 1 : -1);
   }
 
-  @action.bound
+
   async ContractNames(contractAddresses) {
     // Reduce to unique addresses
     contractAddresses = [...new Set(contractAddresses)].filter(address => address);
@@ -35,7 +37,7 @@ class EventsStore {
     );
   }
 
-  @action.bound
+
   ContractEvents = flow(function * ({contractAddress, abi, fromBlock=0, toBlock, clear=false}) {
     abi = toJS(abi);
 
@@ -51,12 +53,12 @@ class EventsStore {
     yield this.ContractNames([contractAddress]);
   });
 
-  @action.bound
+
   ClearContractEvents({contractAddress}) {
     this.contractEvents[contractAddress] = [];
   }
 
-  @action.bound
+
   Events = flow(function * ({toBlock, fromBlock}) {
     if(fromBlock > toBlock) {
       return;
@@ -126,12 +128,12 @@ class EventsStore {
     }
   });
 
-  @action.bound
+
   ClearEvents() {
     this.events = [];
   }
 
-  @action.bound
+
   async BlockNumber() {
     return await Fabric.GetBlockNumber();
   }

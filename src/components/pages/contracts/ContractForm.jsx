@@ -4,11 +4,11 @@ import {Form} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
 import Path from "path";
 import UrlJoin from "url-join";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import ActionsToolbar from "../../components/ActionsToolbar";
 
-@inject("contractStore")
-@observer
+import {contractStore} from "@/stores/index";
+
 class ContractForm extends React.Component {
   constructor(props) {
     super(props);
@@ -37,10 +37,10 @@ class ContractForm extends React.Component {
   }
 
   SwitchContract(contractName) {
-    if(!this.props.contractStore.compiledContracts) { return; }
+    if(!contractStore.compiledContracts) { return; }
 
     const formattedName = contractName.split(":").slice(-1)[0];
-    const contract = this.props.contractStore.compiledContracts[contractName];
+    const contract = contractStore.compiledContracts[contractName];
 
     this.setState({
       name: formattedName,
@@ -52,7 +52,7 @@ class ContractForm extends React.Component {
   }
 
   async HandleSubmit() {
-    await this.props.contractStore.SaveContract({
+    await contractStore.SaveContract({
       name: this.state.name,
       oldContractName: this.state.contractName || this.state.name,
       description: this.state.description,
@@ -62,7 +62,7 @@ class ContractForm extends React.Component {
   }
 
   AvailableContracts() {
-    const options = Object.keys(this.props.contractStore.compiledContracts).map(contract => {
+    const options = Object.keys(contractStore.compiledContracts).map(contract => {
       return <option key={contract} value={contract}>{contract}</option>;
     });
 
@@ -85,13 +85,13 @@ class ContractForm extends React.Component {
   PageContent() {
     if(this.state.createForm) {
       // Ensure contract data is set from compilation
-      if(!this.props.contractStore.compiledContracts) {
+      if(!contractStore.compiledContracts) {
         return <Redirect to={Path.dirname(this.props.match.url)}/>;
       }
     }
 
     let backPath = Path.dirname(this.props.match.url);
-    if(this.props.contractStore.contract) {
+    if(contractStore.contract) {
       backPath = UrlJoin(Path.dirname(Path.dirname(this.props.match.url)), this.state.name);
     }
 
@@ -134,14 +134,14 @@ class ContractForm extends React.Component {
       <AsyncComponent
         Load={
           async () => {
-            await this.props.contractStore.ListContracts({params: {paginate: false}});
-            await this.props.contractStore.ListDeployedContracts({params: {paginate: false}});
+            await contractStore.ListContracts({params: {paginate: false}});
+            await contractStore.ListDeployedContracts({params: {paginate: false}});
 
-            const contract = this.props.contractStore.contract || {};
+            const contract = contractStore.contract || {};
 
             // Keep redirect path synchronized with name changes
             this.setState({
-              createForm: !this.props.contractStore.contract,
+              createForm: !contractStore.contract,
               contract,
               contractName: contract.name,
               name: contract.name || "",
@@ -150,8 +150,8 @@ class ContractForm extends React.Component {
               bytecode: contract.bytecode || ""
             });
 
-            if(this.state.createForm && this.props.contractStore.compiledContracts) {
-              const firstContractName = Object.keys(this.props.contractStore.compiledContracts)[0];
+            if(this.state.createForm && contractStore.compiledContracts) {
+              const firstContractName = Object.keys(contractStore.compiledContracts)[0];
               this.SwitchContract(firstContractName);
             }
           }
@@ -162,4 +162,4 @@ class ContractForm extends React.Component {
   }
 }
 
-export default ContractForm;
+export default observer(ContractForm);

@@ -10,7 +10,7 @@ import {Action, Confirm, IconButton, Tabs} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
 
 import Listing from "../../components/Listing";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import RefreshIcon from "../../../static/icons/refresh.svg";
 import ToggleSection from "../../components/ToggleSection";
 import JSONField from "../../components/JSONField";
@@ -21,10 +21,10 @@ import ActionsToolbar from "../../components/ActionsToolbar";
 import {DateTime} from "luxon";
 import RemoveIcon from "../../../static/icons/close.svg";
 
-@inject("libraryStore")
-@inject("groupStore")
-@inject("objectStore")
-@observer
+import {libraryStore} from "@/stores/index";
+import {groupStore} from "@/stores/index";
+import {objectStore} from "@/stores/index";
+
 class ContentLibrary extends React.Component {
   constructor(props) {
     super(props);
@@ -46,7 +46,7 @@ class ContentLibrary extends React.Component {
   }
 
   LibraryContentTypes() {
-    const types = this.props.libraryStore.library.types;
+    const types = libraryStore.library.types;
 
     const contentTypesCount = Object.keys(types).length;
 
@@ -80,8 +80,8 @@ class ContentLibrary extends React.Component {
     await Confirm({
       message: "Are you sure you want to remove this group's permissions on this library?",
       onConfirm: async () => {
-        await this.props.libraryStore.RemoveContentLibraryGroupPermission({
-          libraryId: this.props.libraryStore.libraryId,
+        await libraryStore.RemoveContentLibraryGroupPermission({
+          libraryId: libraryStore.libraryId,
           groupAddress,
           type: this.state.groupsView
         });
@@ -96,13 +96,13 @@ class ContentLibrary extends React.Component {
   }
 
   AccessGroups() {
-    const groups = this.props.libraryStore.library[`${this.state.groupsView}Groups`];
+    const groups = libraryStore.library[`${this.state.groupsView}Groups`];
 
     if(!groups) { return []; }
 
     const groupsInfo = Object.keys(groups).map(address => {
       const group = groups[address];
-      const status = this.props.libraryStore.library.isManager ?
+      const status = libraryStore.library.isManager ?
         (
           <div className="listing-action-icon">
             <IconButton
@@ -132,12 +132,12 @@ class ContentLibrary extends React.Component {
     return (
       <AsyncComponent
         Load={async () => {
-          await this.props.groupStore.ListAccessGroups({params: {}});
+          await groupStore.ListAccessGroups({params: {}});
         }}
         render={() => (
           <React.Fragment>
             {
-              this.state.loaded && this.props.libraryStore.library.isManager &&
+              this.state.loaded && libraryStore.library.isManager &&
                 <>
                   <div>
                     <Action onClick={() => this.setState({showGroupForm: true})}>
@@ -168,15 +168,15 @@ class ContentLibrary extends React.Component {
               noIcon={true}
               noLink={true}
               paginate={true}
-              count={this.props.libraryStore.library[`${type}GroupsCount`] || 0}
+              count={libraryStore.library[`${type}GroupsCount`] || 0}
               LoadContent={async ({params}) => {
-                await this.props.libraryStore.ListLibraryGroups({
-                  libraryId: this.props.libraryStore.libraryId,
+                await libraryStore.ListLibraryGroups({
+                  libraryId: libraryStore.libraryId,
                   type: this.state.groupsView,
                   params
                 });
-                await this.props.libraryStore.ContentLibraryUserPermissions({libraryId: this.props.libraryStore.libraryId});
-                await this.props.libraryStore.ContentLibraryGroupPermissions({libraryId:this.props.libraryStore.libraryId});
+                await libraryStore.ContentLibraryUserPermissions({libraryId: this.props.libraryStore.libraryId});
+                await libraryStore.ContentLibraryGroupPermissions({libraryId:this.props.libraryStore.libraryId});
 
                 this.setState({listingVersion: this.state.listingVersion + 1, loaded: true});
               }}
@@ -186,9 +186,9 @@ class ContentLibrary extends React.Component {
               this.state.showGroupForm ?
                 <ContentLibraryGroupForm
                   LoadGroups={async () => {
-                    await this.props.libraryStore.ContentLibraryGroupPermissions({libraryId: this.props.libraryStore.libraryId});
-                    await this.props.libraryStore.ListLibraryGroups({
-                      libraryId: this.props.libraryStore.libraryId,
+                    await libraryStore.ContentLibraryGroupPermissions({libraryId: this.props.libraryStore.libraryId});
+                    await libraryStore.ListLibraryGroups({
+                      libraryId: libraryStore.libraryId,
                       type: this.state.groupsView,
                       params: {}
                     });
@@ -204,12 +204,12 @@ class ContentLibrary extends React.Component {
   }
 
   ContentObjects() {
-    if(!this.props.libraryStore.library.objects) { return []; }
+    if(!libraryStore.library.objects) { return []; }
 
-    const objects = Object.keys(this.props.libraryStore.library.objects)
-      .filter(objectId => !this.props.libraryStore.library.objects[objectId].isContentLibraryObject)
+    const objects = Object.keys(libraryStore.library.objects)
+      .filter(objectId => !libraryStore.library.objects[objectId].isContentLibraryObject)
       .map(objectId => {
-        const object = this.props.libraryStore.library.objects[objectId];
+        const object = libraryStore.library.objects[objectId];
 
         const confirmedAt = object.confirmedAt && DateTime.fromISO(object.confirmedAt);
 
@@ -234,17 +234,17 @@ class ContentLibrary extends React.Component {
         key={`library-objects-view-${this.state.objectListingVersion}`}
         pageId="ContentObjects"
         paginate={true}
-        page={this.props.libraryStore.library.listingParams.page}
-        filter={this.props.libraryStore.library.listingParams.filter}
-        count={this.props.libraryStore.library.objectsCount}
+        page={libraryStore.library.listingParams.page}
+        filter={libraryStore.library.listingParams.filter}
+        count={libraryStore.library.objectsCount}
         LoadContent={async ({action, params}) => {
           // When reloading or filtering, clear listing cache
           if(action !== Listing.ACTIONS.reload && action !== Listing.ACTIONS.filter) {
-            params.cacheId = this.props.libraryStore.library.listingParams.cacheId;
+            params.cacheId = libraryStore.library.listingParams.cacheId;
           }
 
-          await this.props.libraryStore.ListContentObjects({
-            libraryId: this.props.libraryStore.libraryId,
+          await libraryStore.ListContentObjects({
+            libraryId: libraryStore.libraryId,
             params
           });
 
@@ -256,13 +256,13 @@ class ContentLibrary extends React.Component {
   }
 
   LibraryInfo() {
-    const library = this.props.libraryStore.library;
+    const library = libraryStore.library;
 
     const description = <ClippedText className="object-description" text={library.description} />;
     const libraryObjectPath = UrlJoin(this.props.match.url, library.libraryObjectId);
 
-    //const count = this.props.count.objects[this.props.libraryStore.libraryId];
-    const count = this.props.libraryStore.library.objectsCount;
+    //const count = count.objects[this.props.libraryStore.libraryId];
+    const count = libraryStore.library.objectsCount;
     const objectCount = count || count === 0 ?
       <LabelledField label="Content Objects" value={count} /> : null;
 
@@ -283,7 +283,7 @@ class ContentLibrary extends React.Component {
         <br />
 
         <LabelledField label="Library ID">
-          { this.props.libraryStore.libraryId }
+          { libraryStore.libraryId }
         </LabelledField>
 
         <LabelledField label={"Library Object"}>
@@ -340,7 +340,7 @@ class ContentLibrary extends React.Component {
             icon: RefreshIcon,
             label: "Refresh",
             onClick: () => {
-              this.props.libraryStore.ClearLibraryCache({libraryId: this.props.libraryStore.libraryId});
+              libraryStore.ClearLibraryCache({libraryId: this.props.libraryStore.libraryId});
               this.setState({pageVersion: this.state.pageVersion + 1});
             }
           }
@@ -355,25 +355,25 @@ class ContentLibrary extends React.Component {
           {
             label: "Manage",
             type: "link",
-            hidden: !(this.props.libraryStore.library.isOwner || this.props.libraryStore.library.isManager),
+            hidden: !(libraryStore.library.isOwner || this.props.libraryStore.library.isManager),
             path: UrlJoin(this.props.match.url, "edit"),
           },
           {
             label: "Types",
             type: "link",
-            hidden: !this.props.libraryStore.library.isOwner,
+            hidden: !libraryStore.library.isOwner,
             path: UrlJoin(this.props.match.url, "types")
           },
           {
-            label: this.props.libraryStore.library.isContentSpaceLibrary ? "New Content Type" : "Create",
+            label: libraryStore.library.isContentSpaceLibrary ? "New Content Type" : "Create",
             type: "link",
-            hidden: !this.props.libraryStore.library.canContribute,
+            hidden: !libraryStore.library.canContribute,
             path: UrlJoin(this.props.match.url, "create")
           },
           {
             label: "Create From Existing",
             type: "button",
-            hidden: this.props.libraryStore.library.isContentSpaceLibrary || !(this.props.libraryStore.library.isManager && this.props.libraryStore.library.canContribute),
+            hidden: libraryStore.library.isContentSpaceLibrary || !(this.props.libraryStore.library.isManager && this.props.libraryStore.library.canContribute),
             onClick: () => this.setState({showCopyObjectModal: true})
           }
         ]}
@@ -392,9 +392,9 @@ class ContentLibrary extends React.Component {
   }
 
   CopyObject = async (object) => {
-    const originalObject = object.name ? object : this.props.objectStore.object;
+    const originalObject = object.name ? object : objectStore.object;
 
-    const {id} = await this.props.objectStore.CopyContentObject({
+    const {id} = await objectStore.CopyContentObject({
       libraryId: object.libraryId,
       originalVersionHash: originalObject.versionHash || originalObject.hash,
       options: {
@@ -432,8 +432,8 @@ class ContentLibrary extends React.Component {
       <div className="page-container contents-page-container">
         { this.Actions() }
         <PageHeader
-          header={this.props.libraryStore.library.name}
-          subHeader={this.props.libraryStore.library.description}
+          header={libraryStore.library.name}
+          subHeader={libraryStore.library.description}
         />
         { tabs }
         <div className="page-content-container">
@@ -447,7 +447,7 @@ class ContentLibrary extends React.Component {
               Close={() =>  this.setState({showCopyObjectModal: false})}
               Select={selection => this.CopyObject(selection)}
               DisableObjectCallback={async ({objectId, libraryId}) => {
-                const hasPermission = await this.props.objectStore.CopyObjectPermission({
+                const hasPermission = await objectStore.CopyObjectPermission({
                   libraryId,
                   objectId
                 });
@@ -467,8 +467,8 @@ class ContentLibrary extends React.Component {
       <AsyncComponent
         key={`library-page-${this.state.pageVersion}`}
         Load={
-          async () => await this.props.libraryStore.ContentLibrary({
-            libraryId: this.props.libraryStore.libraryId
+          async () => await libraryStore.ContentLibrary({
+            libraryId: libraryStore.libraryId
           })
         }
         render={this.PageContent}
@@ -477,4 +477,4 @@ class ContentLibrary extends React.Component {
   }
 }
 
-export default ContentLibrary;
+export default observer(ContentLibrary);

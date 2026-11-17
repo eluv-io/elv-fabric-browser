@@ -1,8 +1,8 @@
 import Fabric from "../clients/Fabric";
-import {action, computed, flow, observable} from "mobx";
+import {action, computed, flow, makeAutoObservable, observable} from "mobx";
 import {DownloadFromUrl, FileInfo} from "../utils/Files";
 import UrlJoin from "url-join";
-import {ParseInputJson} from "elv-components-js";
+import {ParseInputJson} from "@/utils/Helpers";
 import Path from "path";
 import {AddressToHash, EqualAddress} from "../utils/Helpers";
 const Fetch = typeof fetch !== "undefined" ? fetch : require("node-fetch").default;
@@ -10,41 +10,47 @@ const Fetch = typeof fetch !== "undefined" ? fetch : require("node-fetch").defau
 const concurrentUploads = 3;
 
 class ObjectStore {
-  @observable writeTokens = {};
+  objects = {};
+  versions = {};
+  writeTokens = {};
 
-  @computed get libraryId() {
+  get libraryId() {
     return this.rootStore.routerStore.libraryId;
   }
 
-  @computed get objectId() {
+  get objectId() {
     return this.rootStore.routerStore.objectId ||
       this.rootStore.routerStore.contractAddress && Fabric.utils.AddressToObjectId(this.rootStore.routerStore.contractAddress);
   }
 
-  @computed get object() {
+  get object() {
     return this.objects[this.objectId];
   }
 
-  @computed get objectGroupPermissions() {
+  get objectGroupPermissions() {
     const object = this.objects[this.objectId];
     // eslint-disable-next-line no-unused-vars
 
     return object ? object.groupPermissions : undefined;
   }
 
-  @computed get currentAccountAddress() {
+  get currentAccountAddress() {
     return this.rootStore.currentAccountAddress;
   }
 
   constructor(rootStore) {
-    this.rootStore = rootStore;
+    makeAutoObservable(
+      this,
+      {
+        objects: false,
+        versions: false
+      }
+    );
 
-    // Don't store objects in observable, it's very slow for large amounts of meta
-    this.objects = {};
-    this.versions = {};
+    this.rootStore = rootStore;
   }
 
-  @action.bound
+
   ContentObject = flow(function * ({libraryId, objectId, refresh=false}) {
     const object = yield Fabric.GetContentObject({libraryId, objectId, refresh});
 
@@ -52,19 +58,19 @@ class ObjectStore {
     this.versions[object.hash] = object;
   });
 
-  @action.bound
+
   ContentObjectVersions = flow(function * ({libraryId, objectId}) {
     this.objects[objectId].versions = yield Fabric.GetContentObjectVersions({libraryId, objectId});
   });
 
-  @action.bound
+
   ContentObjectVersion = flow(function * ({versionHash}) {
     if(this.versions[versionHash]) { return; }
 
     this.versions[versionHash] = yield Fabric.GetContentObjectVersion({versionHash});
   });
 
-  @action.bound
+
   ContentObjectParts = flow(function * ({versionHash}) {
     if(this.versions[versionHash] && this.versions[versionHash].parts) { return; }
 
@@ -74,17 +80,17 @@ class ObjectStore {
     this.versions[versionHash].parts = yield Fabric.ListParts({versionHash});
   });
 
-  @action.bound
+
   ContentObjectPermissions = flow(function * ({libraryId, objectId}) {
     this.objects[objectId].permissions = yield Fabric.GetContentObjectPermissions({libraryId, objectId});
   });
 
-  @action.bound
+
   ContentObjectGroupPermissions = flow(function * ({objectId}) {
     this.objects[objectId].groupPermissions = yield Fabric.GetContentObjectGroupPermissions({objectId});
   });
 
-  @action.bound
+
   ContentObjectUserPermissions = flow(function * ({libraryId, objectId}) {
     const isContentLibraryObject = client.utils.EqualHash(libraryId, objectId);
     const isContentType = libraryId === Fabric.contentSpaceLibraryId && !isContentLibraryObject;
@@ -95,7 +101,7 @@ class ObjectStore {
     Object.keys(response).forEach(permission => this.objects[objectId][permission] = response[permission]);
   });
 
-  @action.bound
+
   AddContentAdminsGroupPermissions = flow(function * ({objectId}) {
     try {
       // Automatically add permissions for content admins group
@@ -113,7 +119,7 @@ class ObjectStore {
     }
   });
 
-  @action.bound
+
   UpdateContentObject = flow(function * ({
     libraryId,
     objectId,
@@ -195,7 +201,7 @@ class ObjectStore {
     return objectId;
   });
 
-  @action.bound
+
   DeleteContentObject = flow(function * ({libraryId, objectId}) {
     yield Fabric.DeleteContentObject({libraryId, objectId});
 
@@ -208,7 +214,7 @@ class ObjectStore {
     this.rootStore.libraryStore.ClearLibraryCache({libraryId, keepParams: true});
   });
 
-  @action.bound
+
   DeleteContentObjectVersion = flow(function * ({libraryId, objectId, versionHash}) {
     yield Fabric.DeleteContentVersion({libraryId, objectId, versionHash});
 
@@ -223,7 +229,7 @@ class ObjectStore {
     this.rootStore.libraryStore.ClearLibraryCache({libraryId, keepParams: true});
   });
 
-  @action.bound
+
   EditContentObject = flow(function * ({libraryId, objectId, action=""}) {
     const object = this.objects[objectId];
 
@@ -258,7 +264,7 @@ class ObjectStore {
     return this.writeTokens[objectId];
   });
 
-  @action.bound
+
   CopyObjectPermission = flow(function * ({libraryId, objectId}) {
     // Determine if owner
     const owner = Fabric.utils.FormatAddress(
@@ -287,7 +293,7 @@ class ObjectStore {
     }
   });
 
-  @action.bound CopyContentObject = flow(function * ({libraryId, originalVersionHash, options={}}) {
+   CopyContentObject = flow(function * ({libraryId, originalVersionHash, options={}}) {
     const response = yield Fabric.CopyContentObject({libraryId, originalVersionHash, options});
 
     yield this.AddContentAdminsGroupPermissions({objectId: response.id});
@@ -300,7 +306,7 @@ class ObjectStore {
     return response;
   });
 
-  @action.bound
+
   FinalizeContentObject = flow(function * ({libraryId, objectId}) {
     const object = this.objects[objectId];
 
@@ -327,12 +333,12 @@ class ObjectStore {
     return response;
   });
 
-  @action.bound
+
   DiscardWriteToken({objectId}) {
     delete this.writeTokens[objectId];
   }
 
-  @action.bound
+
   UpdateMetadata = flow(function * ({libraryId, objectId, metadataSubtree="/", metadata}) {
     const writeToken = yield this.EditContentObject({libraryId, objectId, action: "Update metadata"});
 
@@ -355,7 +361,7 @@ class ObjectStore {
     });
   });
 
-@action.bound
+
 ReplaceMetadata = flow(function * ({
   libraryId,
   objectId,
@@ -372,7 +378,7 @@ ReplaceMetadata = flow(function * ({
   });
 });
 
-@action.bound
+
 MergeMetadata = flow(function * ({
   libraryId,
   objectId,
@@ -389,7 +395,7 @@ MergeMetadata = flow(function * ({
   });
 })
 
-  @action.bound
+
   EditAndFinalizeContentObject = flow(function * ({
     libraryId,
     objectId,
@@ -410,7 +416,7 @@ MergeMetadata = flow(function * ({
     });
   });
 
-  @action.bound
+
   DeleteMetadata = flow(function * ({libraryId, objectId, metadataSubtree="/"}) {
     const writeToken = yield this.EditContentObject({libraryId, objectId});
 
@@ -432,7 +438,7 @@ MergeMetadata = flow(function * ({
     });
   });
 
-  @action.bound
+
   UploadFiles = flow(function * ({libraryId, objectId, path, fileList, encrypt, callback}) {
     const writeToken = yield this.EditContentObject({libraryId, objectId, action: "Upload files"});
 
@@ -457,7 +463,7 @@ MergeMetadata = flow(function * ({
     return await Fabric.FileUrl({libraryId, objectId, writeToken, filePath});
   }
 
-  @action.bound
+
   SetPermission = flow(function * ({objectId, permission}) {
     this.rootStore.notificationStore.ClearMessage();
 
@@ -493,7 +499,7 @@ MergeMetadata = flow(function * ({
     }
   }
 
-  @action.bound
+
   CreateDirectory = flow(function * ({libraryId, objectId, directory}) {
     const writeToken = yield this.EditContentObject({libraryId, objectId, action: `Create directory '${directory.replace("./", "")}'`});
 
@@ -511,7 +517,7 @@ MergeMetadata = flow(function * ({
     });
   });
 
-  @action.bound
+
   DeleteFiles = flow(function * ({libraryId, objectId, filePaths}) {
     const writeToken = yield this.EditContentObject({libraryId, objectId, action: `Delete file '${filePaths[0]}'`});
 
@@ -533,7 +539,7 @@ MergeMetadata = flow(function * ({
     return await Fabric.FileUrl({libraryId, objectId, versionHash, filePath});
   }
 
-  @action.bound
+
   UploadParts = flow(function * ({libraryId, objectId, files, encrypt=false, callback}) {
     let parts = {};
     const contentDraft = yield Fabric.EditContentObject({libraryId, objectId});
@@ -604,7 +610,7 @@ MergeMetadata = flow(function * ({
     return window.URL.createObjectURL(new Blob(chunks));
   }
 
-  @action.bound
+
   FinalizeABRMezzanine = flow(function * ({libraryId, objectId}) {
     yield Fabric.FinalizeABRMezzanine({libraryId, objectId});
 
@@ -613,7 +619,7 @@ MergeMetadata = flow(function * ({
     });
   });
 
-  @action.bound
+
   RemoveContentObjectGroupPermission = flow(function * ({objectId, groupAddress, permission}) {
     yield Fabric.RemoveContentObjectGroupPermission({
       objectId,
@@ -627,7 +633,7 @@ MergeMetadata = flow(function * ({
     });
   });
 
-  @action.bound
+
   UpdateContentObjectGroupPermissions = flow(function * ({
     objectId,
     groupAddress,
@@ -656,7 +662,7 @@ MergeMetadata = flow(function * ({
     }
   });
 
-  @action.bound
+
   UpdateApps = flow(function * ({libraryId, objectId, apps}) {
     yield Fabric.EditAndFinalizeContentObject({
       libraryId,
@@ -739,7 +745,7 @@ MergeMetadata = flow(function * ({
     });
   });
 
-  @action.bound
+
   PerformSearch = flow(function * ({
     libraryId,
     objectId,
@@ -775,7 +781,7 @@ MergeMetadata = flow(function * ({
     return yield client.utils.ResponseToJson(yield Fetch(url));
   });
 
-  @action.bound
+
   SetSearchNodes = flow(function * ({libraryId, objectId}) {
     const version = yield Fabric.GetContentObjectMetadata({
       libraryId,
@@ -800,7 +806,7 @@ MergeMetadata = flow(function * ({
     }
   })
 
-  @action.bound
+
   UpdateIndex = flow(function * ({
     libraryId,
     objectId,
@@ -911,7 +917,7 @@ MergeMetadata = flow(function * ({
     });
   });
 
-  @action.bound
+
   PublishContentObject = flow(function * ({objectId}) {
     yield Fabric.PublishContentObject({objectId});
 
@@ -921,7 +927,7 @@ MergeMetadata = flow(function * ({
     });
   });
 
-  @action.bound
+
   CreateNonOwnerCap = flow(function * ({libraryId, objectId, publicKey, label}) {
     yield Fabric.CreateNonOwnerCap({
       libraryId,
@@ -940,7 +946,7 @@ MergeMetadata = flow(function * ({
     });
   });
 
-  @action.bound
+
   DeleteOwnerCap = flow(function * ({libraryId, objectId, address}) {
     const {writeToken} = yield Fabric.EditContentObject({libraryId, objectId});
 
@@ -975,7 +981,7 @@ MergeMetadata = flow(function * ({
     });
   });
 
-  @action.bound
+
   GetContentObjectMetadata = flow(function * ({
     libraryId,
     objectId,
@@ -992,7 +998,7 @@ MergeMetadata = flow(function * ({
     });
   });
 
-  @action.bound
+
   LatestVersionHash = flow(function * ({objectId, versionHash}) {
     if(!objectId) objectId = Fabric.utils.DecodeVersionHash(versionHash).objectId;
 

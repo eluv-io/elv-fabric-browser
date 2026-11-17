@@ -3,17 +3,17 @@ import UrlJoin from "url-join";
 import Path from "path";
 import {BrowseWidget, Form, JsonInput, Maybe} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import ActionsToolbar from "../../components/ActionsToolbar";
 
-@inject("typeStore")
-@observer
+import {typeStore} from "@/stores/index";
+
 class ContentTypeForm extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      createForm: !this.props.typeStore.typeId,
+      createForm: !typeStore.typeId,
       name: "",
       description: "",
       metadata: "",
@@ -41,11 +41,11 @@ class ContentTypeForm extends React.Component {
 
   async HandleSubmit() {
     const Method = this.state.createForm ?
-      this.props.typeStore.CreateContentType :
-      this.props.typeStore.UpdateContentType;
+      typeStore.CreateContentType :
+      typeStore.UpdateContentType;
 
     const typeId = await Method({
-      typeId: this.props.typeStore.typeId,
+      typeId: typeStore.typeId,
       name: this.state.name,
       description: this.state.description,
       metadata: this.state.metadata,
@@ -137,14 +137,14 @@ class ContentTypeForm extends React.Component {
         Load={
           async () => {
             if(!this.state.createForm) {
-              await this.props.typeStore.ContentType({
-                typeId: this.props.typeStore.typeId
+              await typeStore.ContentType({
+                typeId: typeStore.typeId
               });
 
               this.setState({
-                name: this.props.typeStore.type.name,
-                description: this.props.typeStore.type.description,
-                metadata: JSON.stringify(this.props.typeStore.type.meta, null, 2)
+                name: typeStore.type.name,
+                description: typeStore.type.description,
+                metadata: JSON.stringify(typeStore.type.meta, null, 2)
               });
             }
           }
@@ -155,4 +155,4 @@ class ContentTypeForm extends React.Component {
   }
 }
 
-export default ContentTypeForm;
+export default observer(ContentTypeForm);

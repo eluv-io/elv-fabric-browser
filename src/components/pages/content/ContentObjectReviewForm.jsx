@@ -5,11 +5,11 @@ import AsyncComponent from "../../components/AsyncComponent";
 import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
 import {Redirect} from "react-router";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import ActionsToolbar from "../../components/ActionsToolbar";
 
-@inject("objectStore")
-@observer
+import {objectStore} from "@/stores/index";
+
 class ContentObjectReviewForm extends React.Component {
   constructor(props) {
     super(props);
@@ -32,9 +32,9 @@ class ContentObjectReviewForm extends React.Component {
   }
 
   async HandleSubmit() {
-    await this.props.objectStore.ReviewContentObject({
-      libraryId: this.props.objectStore.libraryId,
-      objectId: this.props.objectStore.objectId,
+    await objectStore.ReviewContentObject({
+      libraryId: objectStore.libraryId,
+      objectId: objectStore.objectId,
       approve: this.state.approve,
       note: this.state.note
     });
@@ -47,9 +47,9 @@ class ContentObjectReviewForm extends React.Component {
   ReviewAppFrame(legend) {
     const queryParams = {
       contentSpaceId: Fabric.contentSpaceId,
-      libraryId: this.props.objectStore.libraryId,
-      objectId: this.props.objectStore.objectId,
-      type: this.props.objectStore.object.type,
+      libraryId: objectStore.libraryId,
+      objectId: objectStore.objectId,
+      type: objectStore.object.type,
       action: "review"
     };
 
@@ -84,7 +84,7 @@ class ContentObjectReviewForm extends React.Component {
       return <Redirect push to={Path.dirname(this.props.match.url)} />;
     }
 
-    const legend = `Review "${this.props.objectStore.object.name}"`;
+    const legend = `Review "${objectStore.object.name}"`;
 
     if(this.state.reviewAppUrl) {
       return this.ReviewAppFrame(legend);
@@ -133,14 +133,14 @@ class ContentObjectReviewForm extends React.Component {
       <AsyncComponent
         Load={
           async () => {
-            await this.props.objectStore.ContentObject({
-              libraryId: this.props.objectStore.libraryId,
-              objectId: this.props.objectStore.objectId
+            await objectStore.ContentObject({
+              libraryId: objectStore.libraryId,
+              objectId: objectStore.objectId
             });
 
             this.setState({
-              reviewAppUrl: this.props.objectStore.object.reviewAppUrl ||
-                (this.props.objectStore.object.typeInfo && this.props.objectStore.object.typeInfo.reviewAppUrl)
+              reviewAppUrl: objectStore.object.reviewAppUrl ||
+                (objectStore.object.typeInfo && this.props.objectStore.object.typeInfo.reviewAppUrl)
             });
           }
         }
@@ -150,4 +150,4 @@ class ContentObjectReviewForm extends React.Component {
   }
 }
 
-export default ContentObjectReviewForm;
+export default observer(ContentObjectReviewForm);

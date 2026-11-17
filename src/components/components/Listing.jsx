@@ -6,12 +6,12 @@ import ListIcon from "../../static/icons/list.svg";
 import RefreshIcon from "../../static/icons/refresh.svg";
 import ListingView from "./ListingView";
 import {CancelableEvents, isCancelledPromiseError} from "browser-cancelable-events";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 
 let ListingOptions = {};
 
-@inject("libraryStore")
-@observer
+import {libraryStore} from "@/stores/index";
+
 class Listing extends React.Component {
 
   // Include intent when calling provided load method
@@ -366,4 +366,4 @@ Listing.propTypes = {
   LoadContent: PropTypes.func.isRequired
 };
 
-export default Listing;
+export default observer(Listing);

@@ -1,17 +1,19 @@
-import {flow, computed, observable} from "mobx";
+import {flow, computed, observable, makeAutoObservable} from "mobx";
 import Utils from "@eluvio/elv-client-js/src/Utils";
 
 class ContentStore {
   OBJECTS_PER_PAGE = 50;
 
-  @observable libraries = undefined;
+  libraries = undefined;
   contentTypesPromise = undefined;
 
-  @computed get client() {
+  get client() {
     return this.rootStore.client;
   }
 
   constructor(rootStore) {
+    makeAutoObservable(this);
+
     this.rootStore = rootStore;
   }
 

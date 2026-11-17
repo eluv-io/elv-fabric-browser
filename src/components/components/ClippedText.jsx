@@ -40,4 +40,4 @@ ClippedText.propTypes = {
   text: PropTypes.string
 };
 
-export default ClippedText;
+export default observer(ClippedText);

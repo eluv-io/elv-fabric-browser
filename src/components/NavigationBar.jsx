@@ -1,16 +1,16 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link } from "wouter";
 
 import ContentIcon from "../static/icons/content.svg";
 import GroupsIcon from "../static/icons/groups.svg";
 import ContentTypeIcon from "../static/icons/content_types.svg";
 import ContractsIcon from "../static/icons/contracts.svg";
 import EventsIcon from "../static/icons/logs.svg";
-import {ImageIcon} from "elv-components-js";
-import {inject, observer} from "mobx-react";
+import ImageIcon from "@/components/components/ImageIcon";
+import {observer} from "mobx-react";
 
-@inject("routeStore")
-@observer
+import {routeStore} from "@/stores/index";
+
 class NavigationBar extends React.Component {
   static Links() {
     return [
@@ -44,7 +44,7 @@ class NavigationBar extends React.Component {
   }
 
   NavLink({linkInfo}) {
-    const basePath = (this.props.routeStore.path || "").split("/")[1];
+    const basePath = (routeStore.path || "").split("/")[1];
     let active = linkInfo.rootPath && !basePath || basePath === linkInfo.link;
     return (
       <div key={"navbar-link-" + linkInfo.link} className="navbar-link-container">
@@ -73,4 +73,4 @@ class NavigationBar extends React.Component {
   }
 }
 
-export default NavigationBar;
+export default observer(NavigationBar);

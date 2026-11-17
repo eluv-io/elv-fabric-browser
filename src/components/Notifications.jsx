@@ -1,11 +1,11 @@
 import React from "react";
-import {IconButton} from "elv-components-js";
 import CloseIcon from "../static/icons/close.svg";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import {reaction} from "mobx";
 
-@inject("notificationStore")
-@observer
+import {notificationStore} from "@/stores/index";
+import ImageIcon from "@/components/components/ImageIcon";
+
 class Notifications extends React.Component {
   constructor(props) {
     super(props);
@@ -20,8 +20,8 @@ class Notifications extends React.Component {
     this.setState({
       DisposeReaction: reaction(
         () => ({
-          notification: this.props.notificationStore.notification,
-          error: this.props.notificationStore.error
+          notification: notificationStore.notification,
+          error: notificationStore.error
         }),
         () => this.setState({notificationVersion: this.state.notificationVersion + 1})
       )
@@ -37,21 +37,22 @@ class Notifications extends React.Component {
   render() {
     const key = `notification-${this.state.notificationVersion}`;
 
-    if(this.props.notificationStore.error) {
+    if(notificationStore.error) {
       return (
         <div className="notification-container" key={key}>
           <div className="notification-message-container error-message-container">
-            <span>{ this.props.notificationStore.error }</span>
-            <IconButton icon={CloseIcon} label="clear-notification" onClick={this.props.notificationStore.ClearMessage} className="clear-notification" />
+            <span>{ notificationStore.error }</span>
+            <button title="clear-notification" onClick={notificationStore.ClearMessage} className="clear-notification">
+              <ImageIcon icon={CloseIcon} />
+            </button>
           </div>
         </div>
       );
-    } else if(this.props.notificationStore.notification) {
+    } else if(notificationStore.notification) {
       return (
         <div className="notification-container" key={key}>
           <div className="notification-message-container">
-            <span>{ this.props.notificationStore.notification }</span>
-            <IconButton icon={CloseIcon} label="clear-notification" onClick={this.props.notificationStore.ClearMessage} className="clear-notification" />
+            <span>{ notificationStore.notification }</span>
           </div>
         </div>
       );
@@ -63,4 +64,4 @@ class Notifications extends React.Component {
   }
 }
 
-export default Notifications;
+export default observer(Notifications);

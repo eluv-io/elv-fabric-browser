@@ -16,4 +16,4 @@ class EventsPage extends React.Component {
   }
 }
 
-export default EventsPage;
+export default observer(EventsPage);

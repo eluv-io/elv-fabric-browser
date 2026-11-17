@@ -1,26 +1,28 @@
 import Fabric from "../clients/Fabric";
-import {action, computed, flow, observable} from "mobx";
+import {action, computed, flow, makeAutoObservable, observable} from "mobx";
 import {FormatAddress} from "../utils/Helpers";
 import {Cancelable} from "../utils/Cancelable";
-import {ParseInputJson} from "elv-components-js";
+import {ParseInputJson} from "@/utils/Helpers";
 
 class GroupStore {
-  @observable accessGroups = {};
-  @observable accessGroupsCount = 0;
+  accessGroups = {};
+  accessGroupsCount = 0;
 
-  @computed get contractAddress() {
+  get contractAddress() {
     return this.rootStore.routerStore.contractAddress;
   }
 
-  @computed get accessGroup() {
+  get accessGroup() {
     return this.accessGroups[this.contractAddress];
   }
 
   constructor(rootStore) {
+    makeAutoObservable(this);
+
     this.rootStore = rootStore;
   }
 
-  @action.bound
+
   ListAccessGroups = flow(function * ({params, publicOnly=true}) {
     const {accessGroups, count} = yield Cancelable(
       params.cancelable,
@@ -31,17 +33,17 @@ class GroupStore {
     this.accessGroupsCount = count;
   });
 
-  @action.bound
+
   AccessGroup = flow(function * ({contractAddress}) {
     this.accessGroups[contractAddress] = yield Fabric.GetAccessGroup({contractAddress});
   });
 
-  @action.bound
+
   AccessGroupGroupPermissions = flow(function * ({contractAddress}) {
     this.accessGroups[contractAddress].groupPermissions = yield Fabric.GetContentObjectGroupPermissions({objectId: Fabric.utils.AddressToObjectId(contractAddress)});
   });
 
-  @action.bound
+
   SaveAccessGroup = flow(function * ({
     name,
     description,
@@ -137,7 +139,7 @@ class GroupStore {
     return FormatAddress(address);
   });
 
-  @action.bound
+
   RemoveAccessGroup = flow(function * ({address}) {
     yield Fabric.DeleteAccessGroup({address});
 
@@ -147,7 +149,7 @@ class GroupStore {
     });
   });
 
-  @action.bound
+
   ListAccessGroupMembers = flow(function * ({contractAddress, showManagers=false, params}) {
     const {members, count} = yield Fabric.ListAccessGroupMembers({contractAddress, showManagers, params});
 
@@ -160,7 +162,7 @@ class GroupStore {
     }
   });
 
-  @action.bound
+
   async IsSameTenant({userAddress}) {
     try {
       const walletAddress = await Fabric.client.userProfileClient.UserWalletAddress({address: userAddress});
@@ -174,7 +176,7 @@ class GroupStore {
     }
   }
 
-  @action.bound
+
   AddAccessGroupMember = flow(function * ({contractAddress, memberAddress, manager=false}) {
     if(manager) {
       yield Fabric.AddAccessGroupManager({contractAddress, memberAddress});
@@ -188,7 +190,7 @@ class GroupStore {
     });
   });
 
-  @action.bound
+
   RemoveAccessGroupMember = flow(function * ({contractAddress, memberAddress, manager=false}) {
     if(manager) {
       yield Fabric.RemoveAccessGroupManager({contractAddress, memberAddress});
@@ -202,7 +204,7 @@ class GroupStore {
     });
   });
 
-  @action.bound
+
   LeaveAccessGroup = flow(function * ({contractAddress}) {
     const manager = this.accessGroup.isManager;
     const member = (this.accessGroup.members || {}).hasOwnProperty(Fabric.currentAccountAddress);
@@ -219,7 +221,7 @@ class GroupStore {
     });
   });
 
-  @action.bound
+
   SetInheritedGroupAccess = flow(function * () {
     let groupPermission = false;
     for(let i = 0; i < Object.keys(this.accessGroup.groupPermissions || {}).length; i++) {
@@ -238,7 +240,7 @@ class GroupStore {
     this.accessGroups[this.contractAddress].hasAccess = groupPermission;
   });
 
-  @action.bound
+
   SetGroupVisibility = flow(function * ({visibility}) {
     yield Fabric.SetGroupVisibility({
       contractAddress: this.contractAddress,

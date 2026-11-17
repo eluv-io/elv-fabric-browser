@@ -22,7 +22,7 @@ import {
   Modal,
   ToolTip
 } from "elv-components-js";
-import {objectStore} from "../../../stores";
+import {objectStore} from "@/stores/index";
 import {ContentBrowserModal} from "../../components/ContentBrowser";
 import JSONField from "../../components/JSONField";
 import ToggleSection from "../../components/ToggleSection";
@@ -789,4 +789,4 @@ const SearchConfiguration = observer((props) => {
   );
 });
 
-export default withRouter(SearchConfiguration);
+export default observer(withRouter(SearchConfiguration));

@@ -2,18 +2,18 @@ import React from "react";
 import UrlJoin from "url-join";
 import Path from "path";
 import {Form, IconButton} from "elv-components-js";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import AsyncComponent from "../../components/AsyncComponent";
 import JsonTextArea from "elv-components-js/src/components/JsonInput";
 import {toJS} from "mobx";
+import {groupStore} from "@/stores/index";
 import Fabric from "../../../clients/Fabric";
 
 import AddIcon from "../../../static/icons/plus-square.svg";
 import RemoveIcon from "../../../static/icons/minus-square.svg";
 import ActionsToolbar from "../../components/ActionsToolbar";
 
-@inject("groupStore")
-@observer
+
 class AccessGroupForm extends React.Component {
   constructor(props) {
     super(props);
@@ -43,8 +43,8 @@ class AccessGroupForm extends React.Component {
   }
 
   async HandleSubmit() {
-    const contractAddress = await this.props.groupStore.SaveAccessGroup({
-      address: this.props.groupStore.contractAddress,
+    const contractAddress = await groupStore.SaveAccessGroup({
+      address: groupStore.contractAddress,
       name: this.state.name,
       description: this.state.description,
       metadata: this.state.metadata,
@@ -205,11 +205,11 @@ class AccessGroupForm extends React.Component {
         Load={
           async () => {
             if(!this.state.createForm) {
-              await this.props.groupStore.AccessGroup({
-                contractAddress: this.props.groupStore.contractAddress
+              await groupStore.AccessGroup({
+                contractAddress: groupStore.contractAddress
               });
 
-              const group = this.props.groupStore.accessGroup;
+              const group = groupStore.accessGroup;
               const oauthGroups = (group.oauthInfo && group.oauthInfo.claims && toJS(group.oauthInfo.claims.groups)) || [];
 
 
@@ -238,4 +238,4 @@ class AccessGroupForm extends React.Component {
   }
 }
 
-export default AccessGroupForm;
+export default observer(AccessGroupForm);

@@ -2,12 +2,12 @@ import React from "react";
 import UrlJoin from "url-join";
 import Path from "path";
 import {BrowseWidget, Form, JsonInput} from "elv-components-js";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import AsyncComponent from "../../components/AsyncComponent";
 import ActionsToolbar from "../../components/ActionsToolbar";
 
-@inject("libraryStore")
-@observer
+import {libraryStore} from "@/stores/index";
+
 class ContentLibraryForm extends React.Component {
   constructor(props) {
     super(props);
@@ -45,11 +45,11 @@ class ContentLibraryForm extends React.Component {
 
   async HandleSubmit() {
     const Method = this.state.createForm ?
-      this.props.libraryStore.CreateContentLibrary :
-      this.props.libraryStore.UpdateContentLibrary;
+      libraryStore.CreateContentLibrary :
+      libraryStore.UpdateContentLibrary;
 
     const libraryId = await Method({
-      libraryId: this.props.libraryStore.libraryId,
+      libraryId: libraryStore.libraryId,
       name: this.state.name,
       description: this.state.description,
       publicMetadata: this.state.publicMetadata,
@@ -155,21 +155,21 @@ class ContentLibraryForm extends React.Component {
           async () => {
             if(this.state.createForm) {
               this.setState({
-                kmsId: await this.props.libraryStore.DefaultKMSId() || "",
-                tenantId: await this.props.libraryStore.DefaultTenantId() || ""
+                kmsId: await libraryStore.DefaultKMSId() || "",
+                tenantId: await libraryStore.DefaultTenantId() || ""
               });
             } else {
-              await this.props.libraryStore.ContentLibrary({
-                libraryId: this.props.libraryStore.libraryId
+              await libraryStore.ContentLibrary({
+                libraryId: libraryStore.libraryId
               });
 
               this.setState({
-                name: this.props.libraryStore.library.name || "",
-                description: this.props.libraryStore.library.description || "",
-                publicMetadata: JSON.stringify(this.props.libraryStore.library.publicMeta, null, 2) || "",
-                privateMetadata: JSON.stringify(this.props.libraryStore.library.privateMeta, null, 2) || "",
-                kmsId: this.props.libraryStore.library.kmsId || "",
-                tenantId: await this.props.libraryStore.DefaultTenantId() || ""
+                name: libraryStore.library.name || "",
+                description: libraryStore.library.description || "",
+                publicMetadata: JSON.stringify(libraryStore.library.publicMeta, null, 2) || "",
+                privateMetadata: JSON.stringify(libraryStore.library.privateMeta, null, 2) || "",
+                kmsId: libraryStore.library.kmsId || "",
+                tenantId: await libraryStore.DefaultTenantId() || ""
               });
             }
           }
@@ -180,4 +180,4 @@ class ContentLibraryForm extends React.Component {
   }
 }
 
-export default ContentLibraryForm;
+export default observer(ContentLibraryForm);

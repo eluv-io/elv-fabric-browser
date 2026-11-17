@@ -3,11 +3,11 @@ import UrlJoin from "url-join";
 import {PageHeader} from "../../components/Page";
 import {Tabs} from "elv-components-js";
 import Listing from "../../components/Listing";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import ActionsToolbar from "../../components/ActionsToolbar";
 
-@inject("contractStore")
-@observer
+import {contractStore} from "@/stores/index";
+
 class Contracts extends React.Component {
   constructor(props) {
     super(props);
@@ -54,14 +54,14 @@ class Contracts extends React.Component {
           className="compact"
           pageId="Contracts"
           paginate={true}
-          count={this.props.contractStore.contractsCount}
+          count={contractStore.contractsCount}
           LoadContent={
             async ({params}) => {
-              await this.props.contractStore.ListContracts({params});
+              await contractStore.ListContracts({params});
               this.setState({listingVersion: this.state.listingVersion + 1});
             }
           }
-          RenderContent={() => this.Contracts(this.props.contractStore.contracts)}
+          RenderContent={() => this.Contracts(contractStore.contracts)}
           noIcon={true}
         />
       );
@@ -71,14 +71,14 @@ class Contracts extends React.Component {
           key="deployed-contracts-listing"
           pageId="Contracts"
           paginate={true}
-          count={this.props.contractStore.deployedContractsCount}
+          count={contractStore.deployedContractsCount}
           LoadContent={
             async ({params}) => {
-              await this.props.contractStore.ListDeployedContracts({params});
+              await contractStore.ListDeployedContracts({params});
               this.setState({listingVersion: this.state.listingVersion + 1});
             }
           }
-          RenderContent={() => this.Contracts(this.props.contractStore.deployedContracts)}
+          RenderContent={() => this.Contracts(contractStore.deployedContracts)}
           noIcon={true}
         />
       );
@@ -126,4 +126,4 @@ class Contracts extends React.Component {
   }
 }
 
-export default Contracts;
+export default observer(Contracts);

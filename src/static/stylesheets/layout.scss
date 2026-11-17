@@ -45,19 +45,21 @@ body,
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  padding: $elv-spacing-s $elv-spacing-m;
+  padding: var(--spacing-s var(--spacing-m));
   position: relative;
   width: 100%;
 
   .page-header-container {
-    margin: $elv-spacing-m 0;
+    margin: var(--spacing-m 0);
 
     .page-subheader {
-      @include elv-ellipsis;
-      color: $elv-color-text-light;
+      overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;;
+      color: var(--color-text-light);
 
-      font-size: $elv-font-m;
-      margin-top: $elv-spacing-xxs;
+      font-size: var(--font-m);
+      margin-top: var(--spacing-xxs);
       width: 70vw;
     }
   }
@@ -72,7 +74,7 @@ body,
 }
 
 .page-content {
-  padding-bottom: $elv-spacing-l;
+  padding-bottom: var(--spacing-l);
 
   &.no-padding {
     padding: 0;
@@ -95,8 +97,8 @@ body,
   width: 100%;
 
   .error-message {
-    color: $elv-color-mediumred;
-    margin: $elv-spacing-m 0;
+    color: var(--color-mediumred);
+    margin: var(--spacing-m 0);
   }
 
   .actions-container {

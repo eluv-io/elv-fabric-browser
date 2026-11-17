@@ -5,10 +5,10 @@ import {Action, LoadingElement, IconButton, onEnterPressed} from "elv-components
 
 import WatchIcon from "../../static/icons/eye.svg";
 import StopWatchingIcon from "../../static/icons/eye-off.svg";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 
-@inject("eventsStore")
-@observer
+import {eventsStore} from "@/stores/index";
+
 class Events extends React.Component {
   constructor(props) {
     super(props);
@@ -43,9 +43,9 @@ class Events extends React.Component {
 
     // Clear logs to free up memory
     if(this.props.contractAddress) {
-      this.props.eventsStore.ClearContractEvents({contractAddress: this.props.contractAddress});
+      eventsStore.ClearContractEvents({contractAddress: this.props.contractAddress});
     } else {
-      this.props.eventsStore.ClearEvents();
+      eventsStore.ClearEvents();
     }
   }
 
@@ -127,7 +127,7 @@ class Events extends React.Component {
       this.CancelWatch();
     }
 
-    const latestBlock = await this.props.eventsStore.BlockNumber();
+    const latestBlock = await eventsStore.BlockNumber();
 
     if(!toBlock || toBlock > latestBlock) {
       toBlock = latestBlock;
@@ -151,7 +151,7 @@ class Events extends React.Component {
 
     if(this.props.contractAddress) {
       // Contract events
-      await this.props.eventsStore.ContractEvents({
+      await eventsStore.ContractEvents({
         contractAddress: this.props.contractAddress,
         abi: this.props.abi,
         fromBlock,
@@ -160,7 +160,7 @@ class Events extends React.Component {
       });
     } else {
       // All events
-      await this.props.eventsStore.Events({
+      await eventsStore.Events({
         fromBlock,
         toBlock,
         clear
@@ -256,8 +256,8 @@ class Events extends React.Component {
 
   render() {
     const events = this.props.contractAddress ?
-      (this.props.eventsStore.contractEvents[this.props.contractAddress] || []) :
-      this.props.eventsStore.events;
+      (eventsStore.contractEvents[this.props.contractAddress] || []) :
+      eventsStore.events;
 
     return (
       <div className="events page-content-container">
@@ -280,4 +280,4 @@ Events.propTypes = {
   abi: PropTypes.array
 };
 
-export default Events;
+export default observer(Events);

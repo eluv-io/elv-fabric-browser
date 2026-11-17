@@ -1,9 +1,10 @@
 import React, {useEffect, useState} from "react";
-import {contentStore, objectStore} from "../../stores";
+import {contentStore, objectStore} from "@/stores/index";
 import {observer} from "mobx-react";
 
 import SearchIcon from "../../static/icons/search.svg";
-import {Modal, onEnterPressed, ImageIcon, AsyncComponent, Action, LoadingElement, Confirm} from "elv-components-js";
+import {Modal, onEnterPressed, AsyncComponent, Action, LoadingElement, Confirm} from "elv-components-js";
+import ImageIcon from "@/components/components/ImageIcon";
 
 const ContentLookup = ({Select}) => {
   const [value, setValue] = useState("");
@@ -361,4 +362,4 @@ export const ContentBrowserModal = (args) => {
   );
 };
 
-export default ContentBrowser;
+export default observer(ContentBrowser);

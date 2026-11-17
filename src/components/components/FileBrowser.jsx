@@ -3,13 +3,12 @@ import PropTypes from "prop-types";
 import PrettyBytes from "pretty-bytes";
 import UrlJoin from "url-join";
 import Path from "path";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 
 import {
   Action,
   Modal,
   IconButton,
-  ImageIcon,
   Confirm,
   BallClipRotate,
   PreviewIcon,
@@ -17,6 +16,7 @@ import {
   AsyncCopy,
   Maybe
 } from "elv-components-js";
+import ImageIcon from "@/components/components/ImageIcon";
 import FileUploadWidget from "./FileUploadWidget";
 
 import DirectoryIcon from "../../static/icons/directory.svg";
@@ -94,8 +94,8 @@ const ImagePreview = ({encrypted, GetFileUrl, fileName}) => {
   );
 };
 
-@inject("objectStore")
-@observer
+import {objectStore} from "@/stores/index";
+
 class FileBrowser extends React.Component {
   constructor(props) {
     super(props);
@@ -114,9 +114,9 @@ class FileBrowser extends React.Component {
   }
 
   async UploadFiles({path, fileList, encrypt, callback}) {
-    await this.props.objectStore.UploadFiles({
-      libraryId: this.props.objectStore.libraryId,
-      objectId: this.props.objectStore.objectId,
+    await objectStore.UploadFiles({
+      libraryId: objectStore.libraryId,
+      objectId: objectStore.objectId,
       path,
       fileList,
       encrypt,
@@ -130,9 +130,9 @@ class FileBrowser extends React.Component {
     await Confirm({
       message: `Are you sure you want to delete this ${directory ? "directory" : "file"}?`,
       onConfirm: async () => {
-        await this.props.objectStore.DeleteFiles({
-          libraryId: this.props.objectStore.libraryId,
-          objectId: this.props.objectStore.objectId,
+        await objectStore.DeleteFiles({
+          libraryId: objectStore.libraryId,
+          objectId: objectStore.objectId,
           filePaths: [UrlJoin(this.state.path, item).replace("./", "")]
         });
 
@@ -144,7 +144,7 @@ class FileBrowser extends React.Component {
   }
 
   CurrentDirectory() {
-    let files = this.props.objectStore.object.meta.files || {};
+    let files = objectStore.object.meta.files || {};
 
     if(this.state.path === ".") {
       return files;
@@ -168,7 +168,7 @@ class FileBrowser extends React.Component {
   }
 
   IsImage(name) {
-    const mimeTypes = this.props.objectStore.object.meta["mime-types"] || {};
+    const mimeTypes = objectStore.object.meta["mime-types"] || {};
     const extension = name.split(".").pop();
     const mimeType = mimeTypes[extension] || "";
     const isImage =
@@ -404,7 +404,7 @@ class FileBrowser extends React.Component {
         />
       );
     }
-    
+
     return (
       <div className="file-browser" key={`file-browser-${this.state.version}`}>
         { this.UploadModal() }
@@ -445,4 +445,4 @@ FileBrowser.propTypes = {
   Reload: PropTypes.func
 };
 
-export default FileBrowser;
+export default observer(FileBrowser);

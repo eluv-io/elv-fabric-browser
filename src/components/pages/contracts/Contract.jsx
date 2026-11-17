@@ -6,12 +6,12 @@ import ClippedText from "../../components/ClippedText";
 import {Redirect} from "react-router";
 import {PageHeader} from "../../components/Page";
 import {Action, Confirm} from "elv-components-js";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import AsyncComponent from "../../components/AsyncComponent";
 import ActionsToolbar from "../../components/ActionsToolbar";
 
-@inject("contractStore")
-@observer
+import {contractStore} from "@/stores/index";
+
 class Contract extends React.Component {
   constructor(props) {
     super(props);
@@ -49,8 +49,8 @@ class Contract extends React.Component {
     await Confirm({
       message: "Are you sure you want to remove this contract?",
       onConfirm: async () => {
-        await this.props.contractStore.RemoveContract({
-          name: this.props.contractStore.contractName
+        await contractStore.RemoveContract({
+          name: contractStore.contractName
         });
 
         this.setState({deleted: true});
@@ -83,11 +83,11 @@ class Contract extends React.Component {
       return <Redirect push to={Path.dirname(this.props.match.url)}/>;
     }
 
-    const description = <ClippedText className="object-description" text={this.props.contractStore.contract.description} />;
-    const abiDisplayInfo = this.state.visibleMethods["__abi"] ? <pre>{JSON.stringify(this.props.contractStore.contract.abi, null, 2)}</pre> : null;
-    const bytecodeDisplayInfo = this.state.visibleMethods["__bytecode"] ? <pre>{this.props.contractStore.contract.bytecode}</pre> : null;
+    const description = <ClippedText className="object-description" text={contractStore.contract.description} />;
+    const abiDisplayInfo = this.state.visibleMethods["__abi"] ? <pre>{JSON.stringify(contractStore.contract.abi, null, 2)}</pre> : null;
+    const bytecodeDisplayInfo = this.state.visibleMethods["__bytecode"] ? <pre>{contractStore.contract.bytecode}</pre> : null;
 
-    const abi = this.props.contractStore.contract.abi || [];
+    const abi = contractStore.contract.abi || [];
     const contractElements = Object.values(abi);
     const contractConstructor = contractElements.filter(element => element.type === "constructor");
     const contractEvents = contractElements.filter(element => element.type === "event");
@@ -125,7 +125,7 @@ class Contract extends React.Component {
             }
           ]}
         />
-        <PageHeader header={this.props.contractStore.contractName} />
+        <PageHeader header={contractStore.contractName} />
         <div className="page-content-container">
           <div className="page-content">
             <div className="label-box">
@@ -166,7 +166,7 @@ class Contract extends React.Component {
       <AsyncComponent
         Load={
           async () => {
-            await this.props.contractStore.ListContracts({params: {paginate: false}});
+            await contractStore.ListContracts({params: {paginate: false}});
           }
         }
         render={this.PageContent}
@@ -175,4 +175,4 @@ class Contract extends React.Component {
   }
 }
 
-export default Contract;
+export default observer(Contract);

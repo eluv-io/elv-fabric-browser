@@ -2,12 +2,12 @@ import React from "react";
 import Path from "path";
 import {BrowseWidget, Form} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import {Percentage} from "../../../utils/Helpers";
 import ActionsToolbar from "../../components/ActionsToolbar";
 
-@inject("objectStore")
-@observer
+import {objectStore} from "@/stores/index";
+
 class ContentObjectPartsForm extends React.Component {
   constructor(props) {
     super(props);
@@ -40,9 +40,9 @@ class ContentObjectPartsForm extends React.Component {
       );
     };
 
-    await this.props.objectStore.UploadParts({
-      libraryId: this.props.objectStore.libraryId,
-      objectId: this.props.objectStore.objectId,
+    await objectStore.UploadParts({
+      libraryId: objectStore.libraryId,
+      objectId: objectStore.objectId,
       files: this.state.files,
       encrypt: this.state.encrypt,
       callback
@@ -64,7 +64,7 @@ class ContentObjectPartsForm extends React.Component {
           ]}
         />
         <Form
-          legend={`Upload parts to ${this.props.objectStore.object.meta.name || this.props.objectStore.objectId}`}
+          legend={`Upload parts to ${objectStore.object.meta.name || this.props.objectStore.objectId}`}
           redirectPath={Path.dirname(this.props.match.url)}
           cancelPath={Path.dirname(this.props.match.url)}
           className="small-form form-page"
@@ -99,9 +99,9 @@ class ContentObjectPartsForm extends React.Component {
       <AsyncComponent
         Load={
           async () => {
-            await this.props.objectStore.ContentObject({
-              libraryId: this.props.objectStore.libraryId,
-              objectId: this.props.objectStore.objectId
+            await objectStore.ContentObject({
+              libraryId: objectStore.libraryId,
+              objectId: objectStore.objectId
             });
           }
         }
@@ -111,4 +111,4 @@ class ContentObjectPartsForm extends React.Component {
   }
 }
 
-export default ContentObjectPartsForm;
+export default observer(ContentObjectPartsForm);

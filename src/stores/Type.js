@@ -1,28 +1,31 @@
-import {observable, action, flow, computed} from "mobx";
+import {observable, action, flow, computed, makeAutoObservable} from "mobx";
 import Fabric from "../clients/Fabric";
-import {ParseInputJson} from "elv-components-js";
+import {ParseInputJson} from "@/utils/Helpers";
+
 import {Cancelable} from "../utils/Cancelable";
 
 class TypeStore {
-  @observable typesLoaded = false;
-  @observable allTypes = {};
-  @observable types = {};
-  @observable count = 0;
+  typesLoaded = false;
+  allTypes = {};
+  types = {};
+  count = 0;
 
-  @computed get type() {
+  get type() {
     const typeId = this.rootStore.routerStore.objectId;
     return this.types[typeId];
   }
 
-  @computed get typeId() {
+  get typeId() {
     return this.rootStore.routerStore.objectId;
   }
 
   constructor(rootStore) {
+    makeAutoObservable(this);
+
     this.rootStore = rootStore;
   }
 
-  @action.bound
+
   ListContentTypes = flow(function * ({params}) {
     this.types = {};
     const {types, count} = yield Cancelable(
@@ -34,19 +37,19 @@ class TypeStore {
     this.count = count;
   });
 
-  @action.bound
+
   ContentTypes = flow(function * () {
     this.allTypes = (yield Fabric.ListContentTypes({params: {perPage: 1000, skipOwner: true}})).types;
 
     this.typesLoaded = true;
   });
 
-  @action.bound
+
   ContentType = flow(function * ({typeId}) {
     this.types[typeId] = yield Fabric.GetContentObject({libraryId: Fabric.contentSpaceLibraryId, objectId: typeId});
   });
 
-  @action.bound
+
   CreateContentType = flow(function * ({name, description, metadata, bitcode}) {
     try {
       metadata = ParseInputJson(metadata);
@@ -77,7 +80,7 @@ class TypeStore {
     return typeId;
   });
 
-  @action.bound
+
   UpdateContentType = flow(function * ({typeId, name, description, bitcode, metadata, commitMessage}) {
     try {
       metadata = ParseInputJson(metadata);

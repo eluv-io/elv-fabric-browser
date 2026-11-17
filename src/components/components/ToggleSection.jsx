@@ -26,4 +26,4 @@ const ToggleSection = ({label, children, className="", toggleOpen=false}) => {
   );
 };
 
-export default ToggleSection;
+export default observer(ToggleSection);

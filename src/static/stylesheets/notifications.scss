@@ -1,22 +1,22 @@
 .notification-container {
-  font-size: $elv-font-m;
+  font-size: var(--font-m);
   position: relative;
 
   .notification-message-container {
     animation: FadeInOut 5s linear;
     animation-fill-mode: forwards;
-    background: $elv-color-mediumblue;
-    color: $elv-color-text-white;
+    background: var(--color-mediumblue);
+    color: var(--color-text-white);
     opacity: 0;
 
     svg {
-      stroke: $elv-color-white;
+      stroke: var(--color-white);
     }
   }
 
   .error-message-container {
-    background: $elv-color-mediumred;
-    color: $elv-color-text-white;
+    background: var(--color-mediumred);
+    color: var(--color-text-white);
   }
 
   .notification-message-container,
@@ -38,7 +38,7 @@
     cursor: pointer;
     display: flex;
     height: auto;
-    margin-right: $elv-spacing-ss;
+    margin-right: var(--spacing-ss);
     width: 20px;
   }
 }

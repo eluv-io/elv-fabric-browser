@@ -5,8 +5,8 @@
 
   .app-header {
     align-items: center;
-    background: $elv-color-white;
-    border-bottom: 1px solid $elv-color-lightgray;
+    background: var(--color-white);
+    border-bottom: 1px solid var(--color-lightgray);
     display: flex;
     height: 4rem;
     justify-content: space-around;
@@ -42,7 +42,7 @@
       width: 100%;
 
       .form-separator {
-        background: $elv-color-lightgray;
+        background: var(--color-lightgray);
         height: 1px;
         margin: 2.5rem auto;
         width: 90%;
@@ -70,7 +70,7 @@
         margin-bottom: 0.25rem;
 
         & > input {
-          border: 1px solid $elv-color-gray;
+          border: 1px solid var(--color-gray);
           max-width: 35rem;
           min-width: 35rem;
         }
@@ -134,17 +134,17 @@
           max-width: 1rem;
           min-height: 1rem;
           min-width: 1rem;
-          stroke: $elv-color-text-light;
+          stroke: var(--color-text-light);
         }
       }
 
       label {
-        color: $elv-color-text-light;
+        color: var(--color-text-light);
       }
 
       .selected-item {
         align-items: center;
-        border: 1px solid $elv-color-lightgray;
+        border: 1px solid var(--color-lightgray);
         display: flex;
         justify-content: space-between;
         margin-bottom: 0.5rem;
@@ -191,11 +191,11 @@
     position: relative;
 
     &.even {
-      box-shadow: inset 0 0 0 1px $elv-color-lightgray;
+      box-shadow: inset 0 0 0 1px var(--color-lightgray);
     }
 
     &.odd {
-      background-color: $elv-color-lightestgray;
+      background-color: var(--color-lightestgray);
     }
 
     .actions {
@@ -218,7 +218,7 @@
         max-width: 70%;
         min-height: 12rem;
         min-width: 70%;
-        padding: $elv-spacing-m 0;
+        padding: var(--spacing-m 0);
       }
     }
 
@@ -254,7 +254,7 @@
 
   .search-box-label {
     align-items: center;
-    color: $elv-color-darkgray;
+    color: var(--color-darkgray);
     display: flex;
     gap: 0.5rem; // sass-lint:disable-line no-misspelled-properties
     margin-bottom: 0.5rem;
@@ -272,9 +272,9 @@
 
 .hint-tooltip {
   &.search-hint {
-    background-color: $elv-color-darkergray;
-    color: $elv-color-text-white;
-    font-size: $elv-font-m;
+    background-color: var(--color-darkergray);
+    color: var(--color-text-white);
+    font-size: var(--font-m);
     max-width: 45rem;
     opacity: 100%;
     text-align: left;

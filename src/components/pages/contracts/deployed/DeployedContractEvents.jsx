@@ -3,12 +3,12 @@ import Path from "path";
 import {PageHeader} from "../../../components/Page";
 import Events from "../../../components/Events";
 import {AsyncComponent} from "elv-components-js";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import ActionsToolbar from "../../../components/ActionsToolbar";
 
-@inject("contractStore")
-@inject("eventsStore")
-@observer
+import {contractStore} from "@/stores/index";
+import {eventsStore} from "@/stores/index";
+
 class DeployedContractEvents extends React.Component {
   constructor(props) {
     super(props);
@@ -31,16 +31,16 @@ class DeployedContractEvents extends React.Component {
           ]}
         />
         <PageHeader
-          header={this.props.contractStore.contract.name}
-          subHeader={this.props.contractStore.contract.description}
+          header={contractStore.contract.name}
+          subHeader={contractStore.contract.description}
         />
         <div className="page-content-container">
           <div className="page-content">
             <div className="label-box">
               <div className="contract-events">
                 <Events
-                  contractAddress={this.props.contractStore.contractAddress}
-                  abi={this.props.contractStore.contract.abi}
+                  contractAddress={contractStore.contractAddress}
+                  abi={contractStore.contract.abi}
                 />
               </div>
             </div>
@@ -55,7 +55,7 @@ class DeployedContractEvents extends React.Component {
       <AsyncComponent
         Load={
           async () => {
-            await this.props.contractStore.DeployedContractInfo();
+            await contractStore.DeployedContractInfo();
           }
         }
         render={this.PageContent}
@@ -64,4 +64,4 @@ class DeployedContractEvents extends React.Component {
   }
 }
 
-export default DeployedContractEvents;
+export default observer(DeployedContractEvents);

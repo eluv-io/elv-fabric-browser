@@ -10,7 +10,7 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
 
 .listing {
   $table-listing-height: calc(#{$table-listing-width} * #{$aspect-ratio});
-  margin-bottom: $elv-spacing-m;
+  margin-bottom: var(--spacing-m);
 
   .loading {
     align-items: center;
@@ -32,7 +32,7 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
       flex-grow: 1;
       flex-shrink: 1;
       height: 35px;
-      margin-right: $elv-spacing-xs;
+      margin-right: var(--spacing-xs);
 
       &.right-controls {
         justify-content: flex-end;
@@ -48,7 +48,7 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
 
       input,
       select {
-        border: 1px solid $elv-color-lightgray;
+        border: 1px solid var(--color-lightgray);
         flex-basis: 100px;
         flex-grow: 1;
         flex-shrink: 1;
@@ -67,7 +67,7 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
       height: 100%;
 
       li {
-        border: 1px solid $elv-color-lightgray;
+        border: 1px solid var(--color-lightgray);
         border-right: 0;
         height: 100%;
 
@@ -77,22 +77,22 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
           border: 0;
           cursor: pointer;
           display: flex;
-          font-size: $elv-font-m;
+          font-size: var(--font-m);
           height: 100%;
           justify-content: center;
           margin: 0;
           min-width: 2.5em;
 
           &:hover {
-            background: $elv-color-lightgray;
+            background: var(--color-lightgray);
           }
 
           &:active {
-            background: $elv-color-lightergray;
+            background: var(--color-lightergray);
           }
 
           &:disabled {
-            color: $elv-color-text-dark;
+            color: var(--color-text-dark);
             font-weight: bold;
 
             &:hover,
@@ -102,14 +102,14 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
             }
 
             &.selected {
-              background: $elv-color-lightestgray;
+              background: var(--color-lightestgray);
             }
           }
         }
 
         .text-button {
           &:disabled {
-            color: $elv-color-mediumgray;
+            color: var(--color-mediumgray);
             font-weight: normal;
 
             &:hover,
@@ -121,20 +121,20 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
         }
 
         &:last-child {
-          border-right: 1px solid $elv-color-lightgray;
+          border-right: 1px solid var(--color-lightgray);
         }
       }
     }
 
     .per-page-controls {
       flex-grow: 0;
-      margin-left: $elv-spacing-xs;
+      margin-left: var(--spacing-xs);
       min-width: 4em;
     }
 
     .listing-action {
-      margin: 0 $elv-spacing-xxs;
-      padding: $elv-spacing-xxs;
+      margin: 0 var(--spacing-xxs);
+      padding: var(--spacing-xxs);
 
       i {
         height: 25px;
@@ -147,24 +147,22 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
     }
 
     .filter {
-      font-size: $elv-font-l;
+      font-size: var(--font-l);
       height: 30px;
-      margin-right: $elv-spacing-xs;
-      padding: 0 $elv-spacing-xs;
+      margin-right: var(--spacing-xs);
+      padding: 0 var(--spacing-xs);
     }
   }
 
   .listing-count {
-    @include elv-no-select;
-
-    color: $elv-color-text-lighter;
+    color: var(--color-text-lighter);
     display: flex;
     justify-content: center;
-    margin: $elv-spacing-xs 0 $elv-spacing-s;
+    margin: var(--spacing-xs 0 var(--spacing-s));
   }
 
   .listing-empty {
-    margin-top: $elv-spacing-xl;
+    margin-top: var(--spacing-xl);
   }
 
   .icon-container {
@@ -178,7 +176,7 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
     width: 100%;
 
     &:not(.svg-icon-container) {
-      background-color: $elv-color-bg-black;
+      background-color: var(--color-bg-black);
     }
 
     img,
@@ -202,7 +200,6 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
 
   // Table view
   .table-listing {
-    @include elv-no-select;
     width: 100%;
 
     &.auto-cursor {
@@ -213,7 +210,7 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
     .listing-row {
       display: grid;
       grid-template-columns: $listing-icon-width 4fr 2fr 1fr;
-      margin-bottom: $elv-spacing-ss;
+      margin-bottom: var(--spacing-ss);
       max-height: $listing-row-height;
       min-height: $listing-row-height;
       width: 100%;
@@ -231,13 +228,13 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
       }
 
       &:hover {
-        background-color: $elv-color-bg-light-dark;
+        background-color: var(--color-bg-light-dark);
       }
 
       &.listing-header {
-        color: $elv-color-text-lighter;
-        font-size: $elv-font-s;
-        margin-bottom: $elv-spacing-xs;
+        color: var(--color-text-lighter);
+        font-size: var(--font-s);
+        margin-bottom: var(--spacing-xs);
         min-height: auto;
         text-transform: uppercase;
 
@@ -250,7 +247,7 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
         }
 
         .title-cell {
-          padding-left: $elv-spacing-xs;
+          padding-left: var(--spacing-xs);
         }
       }
 
@@ -262,7 +259,7 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
         min-width: 0;
 
         &:not(.icon-container) {
-          padding-left: $elv-spacing-xs;
+          padding-left: var(--spacing-xs);
         }
 
         &.title-cell {
@@ -270,7 +267,7 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
         }
 
         &.title-subtitle {
-          padding-left: $elv-spacing-xxs;
+          padding-left: var(--spacing-xxs);
         }
 
         &.cropped-text {
@@ -279,7 +276,9 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
       }
 
       .cropped-text {
-        @include elv-ellipsis;
+        overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;;
         min-width: 0;
       }
 
@@ -317,24 +316,24 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
       }
 
       .title-subtitle {
-        color: $elv-color-text-lighter;
+        color: var(--color-text-lighter);
         cursor: text;
-        font-size: $elv-font-m;
-        gap: $elv-spacing-xxs;
+        font-size: var(--font-m);
+        gap: var(--spacing-xxs);
         user-select: text;
       }
 
       .description {
         height: auto;
         overflow-y: hidden;
-        padding: $elv-spacing-xs;
+        padding: var(--spacing-xs);
         width: 100%;
       }
 
       .description,
       .status {
-        color: $elv-color-text-lighter;
-        font-size: $elv-font-m;
+        color: var(--color-text-lighter);
+        font-size: var(--font-m);
       }
     }
   }
@@ -342,7 +341,7 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
   // Grid view
   .grid-listing {
     display: grid;
-    grid-gap: $elv-spacing-s;
+    grid-gap: var(--spacing-s);
     grid-template-columns: repeat(auto-fill, $listing-grid-icon-width);
   }
 
@@ -354,13 +353,13 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
     max-width: $listing-grid-icon-width;
     min-height: $listing-grid-height;
     min-width: $listing-grid-icon-width;
-    outline: 1px solid $elv-color-lightgray;
+    outline: 1px solid var(--color-lightgray);
     position: relative;
 
     .listing-info {
-      background-color: $elv-color-black;
+      background-color: var(--color-black);
       bottom: 0;
-      color: $elv-color-text-white;
+      color: var(--color-text-white);
       display: flex;
       flex-direction: column;
       height: auto;
@@ -369,7 +368,7 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
       max-width: $listing-grid-icon-width;
       min-width: $listing-grid-icon-width;
       opacity: 0.7;
-      padding: $elv-spacing-xs;
+      padding: var(--spacing-xs);
       position: absolute;
       text-align: center;
       word-break: break-all;
@@ -383,13 +382,17 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
     }
 
     .title {
-      @include elv-ellipsis;
+      overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;;
     }
 
     .status,
     .description {
-      @include elv-ellipsis;
-      font-size: $elv-font-s;
+      overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;;
+      font-size: var(--font-s);
     }
   }
 
@@ -401,7 +404,7 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
     align-items: center;
     display: flex;
     justify-content: flex-end;
-    padding-right: $elv-spacing-s;
+    padding-right: var(--spacing-s);
 
     button {
       height: 25px;

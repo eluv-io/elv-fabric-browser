@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from "react";
 import {Action, IconButton} from "elv-components-js";
 import ContentLookup from "./ContentLookup";
-import {objectStore} from "../../stores";
+import {objectStore} from "@/stores/index";
 import {observer} from "mobx-react";
 
 const ActionsToolbar = observer(({actions, iconActions, SaveDraft, showContentLookup=true}) => {
@@ -138,4 +138,4 @@ const ActionsToolbar = observer(({actions, iconActions, SaveDraft, showContentLo
   );
 });
 
-export default ActionsToolbar;
+export default observer(ActionsToolbar);

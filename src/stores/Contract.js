@@ -1,38 +1,37 @@
 import Fabric from "../clients/Fabric";
-import {action, computed, flow, observable, toJS} from "mobx";
+import {action, computed, flow, makeAutoObservable, observable, toJS} from "mobx";
 import {ContractTypes, DetermineContractInterface} from "../utils/Contracts";
-import {ParseInputJson} from "elv-components-js";
-import {FormatAddress} from "../utils/Helpers";
+import {ParseInputJson, FormatAddress} from "@/utils/Helpers";
 import UrlJoin from "url-join";
 
 // eslint-disable-next-line no-unused-vars
-import BrowserSolc from "browser-solc";
+//import BrowserSolc from "browser-solc";
 import {Cancelable} from "../utils/Cancelable";
 
 class ContractStore {
-  @observable contractAddress;
+  contractAddress;
 
-  @observable contracts = {};
-  @observable contractsCount;
+  contracts = {};
+  contractsCount;
 
-  @observable deployedContracts = {};
-  @observable deployedContractsCount;
+  deployedContracts = {};
+  deployedContractsCount;
 
-  @observable compiledContracts;
+  compiledContracts;
 
-  @computed get contractName() {
+  get contractName() {
     return this.rootStore.routerStore.contractName;
   }
 
-  @computed get libraryId() {
+  get libraryId() {
     return this.rootStore.routerStore.libraryId;
   }
 
-  @computed get objectId() {
+  get objectId() {
     return this.rootStore.routerStore.objectId;
   }
 
-  @computed get contract() {
+  get contract() {
     if(this.contractName) {
       return this.contracts[this.contractName];
     }
@@ -41,10 +40,12 @@ class ContractStore {
   }
 
   constructor(rootStore) {
+    makeAutoObservable(this);
+
     this.rootStore = rootStore;
   }
 
-  @action.bound
+
   ListContracts = flow(function * ({params}) {
     const {contracts, count} = yield Cancelable(
       params.cancelable,
@@ -55,7 +56,7 @@ class ContractStore {
     this.contractsCount = count;
   });
 
-  @action.bound
+
   ListDeployedContracts = flow(function * ({params}) {
     const {contracts, count} = yield Cancelable(
       params.cancelable,
@@ -66,7 +67,7 @@ class ContractStore {
     this.deployedContractsCount = count;
   });
 
-  @action.bound
+
   RemoveContract = flow(function * ({name}) {
     yield Fabric.RemoveContract({name});
 
@@ -76,7 +77,7 @@ class ContractStore {
     });
   });
 
-  @action.bound
+
   RemoveDeployedContract = flow(function * ({address}) {
     yield Fabric.RemoveDeployedContract({address});
 
@@ -86,7 +87,7 @@ class ContractStore {
     });
   });
 
-  @action.bound
+
   DeployedContractInfo = flow(function * () {
     const contractAddressParam = this.rootStore.routerStore.contractAddress;
 
@@ -191,13 +192,15 @@ class ContractStore {
     return contract;
   });
 
-  @action.bound
+
   CompileContracts = flow(function * (contractFiles)  {
     let sources = {};
     for(const file of contractFiles) {
       sources[file.name] = yield new Response(file).text();
     }
 
+    throw Error("Unimplemented");
+    /*
     this.compiledContracts = yield new Promise((resolve, reject) => {
       window.BrowserSolc.loadVersion("soljson-v0.4.24+commit.e67f0147.js", (compiler) => {
         const output = compiler.compile({sources}, 1);
@@ -228,9 +231,11 @@ class ContractStore {
         }
       });
     });
+
+     */
   });
 
-  @action.bound
+
   SaveContract = flow(function * ({name, oldContractName, description, abi, bytecode}) {
     if(typeof abi === "string") {
       try {
@@ -259,7 +264,7 @@ class ContractStore {
     });
   });
 
-  @action.bound
+
   WatchContract = flow(function * ({name, address, description, abi}) {
     address = FormatAddress(address);
 
@@ -292,7 +297,7 @@ class ContractStore {
     });
   });
 
-  @action.bound
+
   DeployContract = flow(function * ({contractName, contractDescription, abi, bytecode, inputs, funds}) {
     try {
       const owner = yield Fabric.CurrentAccountAddress();
@@ -349,7 +354,7 @@ class ContractStore {
     }
   });
 
-  @action.bound
+
   SetCustomContract = flow(function * ({
     libraryId,
     objectId,
@@ -450,7 +455,7 @@ class ContractStore {
     return FormatAddress(address);
   });
 
-  @action.bound
+
   CallContractMethod = flow(function * ({contractAddress, abi, methodName, methodArgs, value=0}) {
     if(!abi) {
       abi = yield Fabric.ContractAbi({contractAddress});
@@ -516,7 +521,7 @@ class ContractStore {
     return await Fabric.GetBalance({address: contractAddress});
   }
 
-  @action.bound
+
   SendFunds = flow(function * ({recipient, ether}) {
     yield Fabric.SendFunds({recipient, ether});
 

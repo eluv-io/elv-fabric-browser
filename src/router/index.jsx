@@ -1,7 +1,7 @@
 import React from "react";
 import {Route, Switch} from "react-router";
 import Fabric from "../clients/Fabric";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import {reaction} from "mobx";
 
 import {ErrorHandler} from "elv-components-js";
@@ -40,9 +40,9 @@ import DeployedContractEventsPage from "../components/pages/contracts/deployed/D
 import EventsPage from "../components/pages/events/Events";
 import { Redirect, withRouter } from "react-router";
 
-@inject("notificationStore")
-@inject("routeStore")
-@observer
+import {notificationStore} from "@/stores/index";
+import {routeStore} from "@/stores/index";
+
 // Update app state and notify Core whenever route changes
 class WatchedRouteClass extends React.Component {
   async componentDidMount() {
@@ -52,7 +52,7 @@ class WatchedRouteClass extends React.Component {
           match: JSON.stringify(this.props.match)
         }),
         async () => {
-          await this.props.routeStore.UpdateRoute(
+          await routeStore.UpdateRoute(
             this.props.computedMatch
           );
 
@@ -64,7 +64,7 @@ class WatchedRouteClass extends React.Component {
     });
 
     // Initial load
-    await this.props.routeStore.UpdateRoute(
+    await routeStore.UpdateRoute(
       this.props.computedMatch
     );
   }

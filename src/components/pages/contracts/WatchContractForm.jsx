@@ -2,11 +2,11 @@ import React from "react";
 import UrlJoin from "url-join";
 import Path from "path";
 import {Form, JsonInput} from "elv-components-js";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import ActionsToolbar from "../../components/ActionsToolbar";
 
-@inject("contractStore")
-@observer
+import {contractStore} from "@/stores/index";
+
 class WatchContractForm extends React.Component {
   constructor(props) {
     super(props);
@@ -29,7 +29,7 @@ class WatchContractForm extends React.Component {
   }
 
   async HandleSubmit() {
-    await this.props.contractStore.WatchContract({
+    await contractStore.WatchContract({
       name: this.state.name,
       description: this.state.description,
       address: this.state.address,
@@ -90,4 +90,4 @@ class WatchContractForm extends React.Component {
   }
 }
 
-export default WatchContractForm;
+export default observer(WatchContractForm);

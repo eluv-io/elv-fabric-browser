@@ -2,11 +2,10 @@ import React from "react";
 import {BrowseWidget, Form, JsonInput, RadioSelect} from "elv-components-js";
 import UrlJoin from "url-join";
 import Path from "path";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import ActionsToolbar from "../../components/ActionsToolbar";
+import {contractStore} from "@/stores/index";
 
-@inject("contractStore")
-@observer
 class CompileContractForm extends React.Component {
   constructor(props) {
     super(props);
@@ -44,7 +43,7 @@ class CompileContractForm extends React.Component {
   async HandleSubmit() {
     if(this.state.compileFromSource) {
       try {
-        await this.props.contractStore.CompileContracts(this.state.files);
+        await contractStore.CompileContracts(this.state.files);
       } catch(errors) {
         this.setState({
           errors
@@ -53,7 +52,7 @@ class CompileContractForm extends React.Component {
         throw "Compilation Error";
       }
     } else {
-      await this.props.contractStore.SaveContract({
+      await contractStore.SaveContract({
         name: this.state.name,
         description: this.state.description,
         abi: this.state.abi,
@@ -164,4 +163,4 @@ class CompileContractForm extends React.Component {
   }
 }
 
-export default CompileContractForm;
+export default observer(CompileContractForm);

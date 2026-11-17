@@ -1,6 +1,3 @@
-$elv-diff-add-color: rgba($elv-color-green, 0.4);
-$elv-diff-delete-color: rgba($elv-color-red, 0.4);
-
 .clipped-text {
   cursor: pointer;
   position: relative;
@@ -40,7 +37,7 @@ $elv-diff-delete-color: rgba($elv-color-red, 0.4);
     }
 
     &.show-more {
-      background-image: linear-gradient(to bottom, transparent, transparent, transparent, $elv-color-bg-white);
+      background-image: linear-gradient(to bottom, transparent, transparent, transparent, var(--color-bg-white));
     }
   }
 }
@@ -48,16 +45,19 @@ $elv-diff-delete-color: rgba($elv-color-red, 0.4);
 .copyable {
   .copy-icon {
     height: 1.2em;
-    margin-left: $elv-spacing-xs;
+    margin-left: var(--spacing-xs);
     width: 1.2em;
   }
 }
 
 .diff-block {
+  --diff-add-color: rgba(var(--color-green), 0.4);
+  --diff-delete-color: rgba(var(--color-red), 0.4);
+
   max-height: 90vh;
 
   .part-addition {
-    background-color: $elv-diff-add-color;
+    background-color: var(--diff-add-color);
     position: relative;
 
     &::before {
@@ -68,7 +68,7 @@ $elv-diff-delete-color: rgba($elv-color-red, 0.4);
   }
 
   .part-deletion {
-    background-color: $elv-diff-delete-color;
+    background-color: var(--diff-delete-color);
     position: relative;
 
     &::before {
@@ -93,7 +93,7 @@ $elv-diff-delete-color: rgba($elv-color-red, 0.4);
   .actions-container {
     display: flex;
     flex-direction: column;
-    margin-left: $elv-spacing-s;
-    margin-top: $elv-spacing-s;
+    margin-left: var(--spacing-s);
+    margin-top: var(--spacing-s);
   }
 }

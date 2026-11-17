@@ -3,11 +3,10 @@ import UrlJoin from "url-join";
 import AccessGroupIcon from "../../../static/icons/groups.svg";
 import {PageHeader} from "../../components/Page";
 import Listing from "../../components/Listing";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import ActionsToolbar from "../../components/ActionsToolbar";
+import {groupStore} from "@/stores/index";
 
-@inject("groupStore")
-@observer
 class AccessGroups extends React.Component {
   constructor(props) {
     super(props);
@@ -19,9 +18,9 @@ class AccessGroups extends React.Component {
   }
 
   AccessGroups() {
-    if(!this.props.groupStore.accessGroups) { return []; }
+    if(!groupStore.accessGroups) { return []; }
 
-    return Object.values(this.props.groupStore.accessGroups).map(accessGroup => {
+    return Object.values(groupStore.accessGroups).map(accessGroup => {
       return {
         id: accessGroup.address,
         title: accessGroup.name,
@@ -39,10 +38,10 @@ class AccessGroups extends React.Component {
         className="compact"
         pageId="AccessGroups"
         paginate={true}
-        count={this.props.groupStore.accessGroupsCount}
+        count={groupStore.accessGroupsCount}
         LoadContent={
           async ({params}) => {
-            await this.props.groupStore.ListAccessGroups({params});
+            await groupStore.ListAccessGroups({params});
             this.setState({listingVersion: this.state.listingVersion + 1});
           }
         }
@@ -74,4 +73,4 @@ class AccessGroups extends React.Component {
   }
 }
 
-export default AccessGroups;
+export default observer(AccessGroups);

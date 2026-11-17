@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
-import {Copy, ImageIcon} from "elv-components-js";
+import {Copy} from "elv-components-js";
+import ImageIcon from "@/components/components/ImageIcon";
 import CopyIcon from "../../static/icons/clipboard.svg";
 
 export const Copyable = ({copy, children, className}) => {

@@ -1,25 +1,25 @@
 .upload-widget {
-  padding: $elv-spacing-s;
+  padding: var(--spacing-s);
 }
 
 .file-browser-table {
   .file-browser-row {
-    border: 1px solid $elv-color-gray;
+    border: 1px solid var(--color-gray);
     display: grid;
     grid-template-columns: 3rem minmax(5rem, 4fr) minmax(6rem, 1fr) 10rem;
-    height: $elv-spacing-ml;
+    height: var(--spacing-ml);
 
     &:not(:last-child) {
       border-bottom: 0;
     }
 
     &:hover {
-      background-color: $elv-color-lightergray;
+      background-color: var(--color-lightergray);
     }
 
     svg {
-      height: $elv-font-xxl;
-      width: $elv-font-xxl;
+      height: var(--font-xxl);
+      width: var(--font-xxl);
     }
 
     & > div {
@@ -28,19 +28,21 @@
       justify-content: center;
 
       & > div {
-        @include elv-ellipsis;
+        overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;;
       }
     }
 
     button > svg {
       &:hover {
-        background-color: $elv-color-gray;
+        background-color: var(--color-gray);
         border-radius: 5px;
       }
     }
 
     .encrypted-file-icon {
-      fill: $elv-color-darkgray;
+      fill: var(--color-darkgray);
       stroke: transparent;
     }
 
@@ -48,7 +50,7 @@
     .directory-cell,
     .item-name-cell {
       justify-content: flex-start;
-      padding-left: $elv-spacing-xs;
+      padding-left: var(--spacing-xs);
     }
 
     .directory-cell {
@@ -63,7 +65,7 @@
       justify-content: flex-end;
 
       & > * {
-        padding-right: $elv-spacing-xs;
+        padding-right: var(--spacing-xs);
       }
     }
 
@@ -75,8 +77,8 @@
         margin: 0;
 
         & > div {
-          height: $elv-font-xxl;
-          width: $elv-font-xxl;
+          height: var(--font-xxl);
+          width: var(--font-xxl);
         }
       }
     }
@@ -99,8 +101,8 @@
       justify-content: flex-end;
 
       button {
-        font-size: $elv-font-s;
-        margin-right: $elv-spacing-s;
+        font-size: var(--font-s);
+        margin-right: var(--spacing-s);
         min-width: 8rem;
       }
     }
@@ -109,7 +111,7 @@
   .file-browser-row-empty {
     align-items: center;
     display: flex;
-    height: $elv-spacing-xl;
+    height: var(--spacing-xl);
     justify-content: center;
   }
 }

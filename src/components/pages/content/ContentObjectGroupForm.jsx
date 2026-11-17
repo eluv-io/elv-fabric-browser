@@ -1,11 +1,11 @@
 import React from "react";
 import {AsyncComponent, Form, Modal} from "elv-components-js";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import Fabric from "../../../clients/Fabric";
 
-@inject("objectStore")
-@inject("groupStore")
-@observer
+import {objectStore} from "@/stores/index";
+import {groupStore} from "@/stores/index";
+
 class ContentObjectGroupForm extends React.Component {
   constructor(props) {
     super(props);
@@ -23,7 +23,7 @@ class ContentObjectGroupForm extends React.Component {
   }
 
   HandleGroupChange(event) {
-    const permissions = (this.props.objectStore.objectGroupPermissions[event.target.value] || {}).permissions || [];
+    const permissions = (objectStore.objectGroupPermissions[event.target.value] || {}).permissions || [];
 
     this.setState({
       groupAddress: event.target.value,
@@ -34,8 +34,8 @@ class ContentObjectGroupForm extends React.Component {
   }
 
   async HandleSubmit() {
-    await this.props.objectStore.UpdateContentObjectGroupPermissions({
-      objectId: this.props.objectStore.objectId,
+    await objectStore.UpdateContentObjectGroupPermissions({
+      objectId: objectStore.objectId,
       groupAddress: this.state.groupAddress,
       see: this.state.see,
       access: this.state.access,
@@ -68,7 +68,7 @@ class ContentObjectGroupForm extends React.Component {
         <input
           name="groupAddress"
           value={this.state.groupAddress}
-          disabled={Object.keys(this.props.groupStore.accessGroups).includes(this.state.groupAddress)}
+          disabled={Object.keys(groupStore.accessGroups).includes(this.state.groupAddress)}
           onChange={event => this.setState({groupAddress: event.target.value})}
         />
       </React.Fragment>
@@ -84,8 +84,8 @@ class ContentObjectGroupForm extends React.Component {
         <AsyncComponent
           Load={
             async () => {
-              await this.props.objectStore.ContentObject({objectId: this.props.objectStore.objectId});
-              await this.props.objectStore.ContentObjectGroupPermissions({objectId: this.props.objectStore.objectId});
+              await objectStore.ContentObject({objectId: this.props.objectStore.objectId});
+              await objectStore.ContentObjectGroupPermissions({objectId: this.props.objectStore.objectId});
 
               const initialGroupAddress = this.FilteredGroups()[0] && this.FilteredGroups()[0].address;
 
@@ -96,7 +96,7 @@ class ContentObjectGroupForm extends React.Component {
           }
           render={() => (
             <Form
-              legend={`Manage access group permissions for '${this.props.objectStore.object ? this.props.objectStore.object.name : this.props.objectStore.objectId}'`}
+              legend={`Manage access group permissions for '${objectStore.object ? this.props.objectStore.object.name : this.props.objectStore.objectId}'`}
               OnCancel={this.props.CloseModal}
               OnSubmit={this.HandleSubmit}
               OnComplete={this.props.CloseModal}
@@ -139,8 +139,8 @@ class ContentObjectGroupForm extends React.Component {
   }
 
   FilteredGroups() {
-    const contractAddress = Fabric.utils.HashToAddress(this.props.objectStore.objectId);
-    return Object.values(this.props.groupStore.accessGroups)
+    const contractAddress = Fabric.utils.HashToAddress(objectStore.objectId);
+    return Object.values(groupStore.accessGroups)
       .filter(group => !Fabric.utils.EqualAddress(group.address, contractAddress));
   }
 
@@ -149,4 +149,4 @@ class ContentObjectGroupForm extends React.Component {
   }
 }
 
-export default ContentObjectGroupForm;
+export default observer(ContentObjectGroupForm);

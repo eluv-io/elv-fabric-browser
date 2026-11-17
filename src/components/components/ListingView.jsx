@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import {ImageIcon} from "elv-components-js";
+import ImageIcon from "@/components/components/ImageIcon";
 import {Redirect} from "react-router";
 import {Link} from "react-router-dom";
 import {observer} from "mobx-react";
@@ -8,7 +8,7 @@ import Fabric from "../../clients/Fabric";
 
 const IMAGE_HEIGHT = 300;
 
-@observer
+
 class ListingItem extends React.Component {
   constructor(props) {
     super(props);
@@ -157,7 +157,7 @@ ListingItem.propTypes = {
   noIcon: PropTypes.bool
 };
 
-@observer
+
 class Listing extends React.Component {
   render() {
     if(!this.props.count || this.props.count === 0) {
@@ -217,4 +217,4 @@ Listing.propTypes = {
   noLink: PropTypes.bool
 };
 
-export default Listing;
+export default observer(Listing);

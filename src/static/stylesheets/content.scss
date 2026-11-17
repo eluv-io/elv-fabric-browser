@@ -4,11 +4,11 @@
   position: relative;
 
   .-elv-tab-container {
-    margin: $elv-spacing-s 0;
+    margin: var(--spacing-s 0);
   }
 
   .page-header-container {
-    margin: $elv-spacing-s 0 0;
+    margin: var(--spacing-s 0 0);
     padding: 0;
   }
 
@@ -22,12 +22,14 @@
 }
 
 .auth-token {
-  @include elv-ellipsis;
+  overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;;
   margin-bottom: 5px;
 }
 
 .auth-token-expiration {
-  color: $elv-color-text-light;
+  color: var(--color-text-light);
   font-size: 14px;
   font-style: italic;
 }
@@ -62,7 +64,7 @@
 }
 
 .app-frame {
-  border: 1px solid $elv-color-lightergray;
+  border: 1px solid var(--color-lightergray);
   display: block;
   flex: 1 1 auto;
   width: 100%;
@@ -77,8 +79,8 @@
   margin-bottom: 10px;
 
   &.version-visible {
-    border-bottom: 1px solid $elv-color-lightgray;
-    border-top: 1px solid $elv-color-lightgray;
+    border-bottom: 1px solid var(--color-lightgray);
+    border-top: 1px solid var(--color-lightgray);
     margin: 30px 0;
     padding: 30px 0;
   }
@@ -98,26 +100,26 @@
 }
 
 .part-info {
-  margin-bottom: $elv-spacing-s;
+  margin-bottom: var(--spacing-s);
 }
 
 .download-progress {
-  color: $elv-color-text-lighter;
+  color: var(--color-text-lighter);
   display: flex;
   width: 100%;
 
   progress {
     flex-grow: 1;
-    margin-right: $elv-spacing-xs;
+    margin-right: var(--spacing-xs);
   }
 }
 
 pre,
 .-elv-traversable-json {
-  background-color: $elv-color-lightestgray;
-  border: 1px solid $elv-color-lightgray;
-  margin: $elv-spacing-s 0;
-  padding: $elv-spacing-xs $elv-spacing-s;
+  background-color: var(--color-lightestgray);
+  border: 1px solid var(--color-lightgray);
+  margin: var(--spacing-s 0);
+  padding: var(--spacing-xs var(--spacing-s));
   word-break: break-all;
 }
 
@@ -130,7 +132,7 @@ pre,
     }
 
     .form-actions {
-      margin-top: $elv-spacing-xl;
+      margin-top: var(--spacing-xl);
     }
   }
 }
@@ -156,8 +158,8 @@ pre,
     align-self: flex-start;
     cursor: pointer;
     height: auto;
-    margin-left: $elv-spacing-xxs;
-    width: $elv-font-l;
+    margin-left: var(--spacing-xxs);
+    width: var(--font-l);
   }
 
   select {
@@ -165,23 +167,23 @@ pre,
   }
 
   .visibility-info-loading {
-    height: $elv-spacing-l;
-    width: $elv-spacing-l;
+    height: var(--spacing-l);
+    width: var(--spacing-l);
 
     .la-ball-spin-clockwise {
-      height: $elv-spacing-m;
-      width: $elv-spacing-m;
+      height: var(--spacing-m);
+      width: var(--spacing-m);
     }
   }
 }
 
 .visibility-tooltip {
   &.-elv-tooltip {
-    background-color: $elv-color-bg-white;
+    background-color: var(--color-bg-white);
     flex-direction: column;
-    font-size: $elv-font-l;
+    font-size: var(--font-l);
     max-width: 35rem;
-    padding: $elv-spacing-xs $elv-spacing-s;
+    padding: var(--spacing-xs var(--spacing-s));
     text-align: left;
     width: auto;
   }
@@ -205,9 +207,9 @@ pre,
   display: inline-flex;
 
   input {
-    font-size: $elv-font-m;
+    font-size: var(--font-m);
     height: 100%;
-    margin-right: $elv-spacing-xs;
+    margin-right: var(--spacing-xs);
     width: 20rem;
   }
 }
@@ -217,7 +219,7 @@ pre,
   width: auto;
 
   &.object-form-tabs {
-    margin: 0 0 $elv-spacing-s;
+    margin: 0 0 var(--spacing-s);
   }
 }
 
@@ -237,7 +239,7 @@ pre,
 
 .keys-table {
   .header-rows {
-    background-color: $elv-color-lightgray;
+    background-color: var(--color-lightgray);
     font-weight: 500;
     padding-bottom: 10px;
   }

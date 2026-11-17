@@ -1,12 +1,12 @@
 import React from "react";
 import {Form} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import {Modal} from "elv-components-js";
 
-@inject("libraryStore")
-@inject("groupStore")
-@observer
+import {libraryStore} from "@/stores/index";
+import {groupStore} from "@/stores/index";
+
 class ContentLibraryGroupForm extends React.Component {
   constructor(props) {
     super(props);
@@ -22,7 +22,7 @@ class ContentLibraryGroupForm extends React.Component {
   }
 
   HandleGroupChange(event) {
-    const permissions = this.props.libraryStore.library.groupPermissions[event.target.value] || {};
+    const permissions = libraryStore.library.groupPermissions[event.target.value] || {};
 
     this.setState({
       groupAddress: event.target.value,
@@ -33,8 +33,8 @@ class ContentLibraryGroupForm extends React.Component {
   }
 
   async HandleSubmit() {
-    await this.props.libraryStore.UpdateContentLibraryGroup({
-      libraryId: this.props.libraryStore.libraryId,
+    await libraryStore.UpdateContentLibraryGroup({
+      libraryId: libraryStore.libraryId,
       groupAddress: this.state.groupAddress,
       accessor: this.state.selectedPermission === "VIEW",
       manage: this.state.selectedPermission === "MANAGE",
@@ -45,7 +45,7 @@ class ContentLibraryGroupForm extends React.Component {
   }
 
   Groups() {
-    let options = Object.values(this.props.groupStore.accessGroups).map(group =>
+    let options = Object.values(groupStore.accessGroups).map(group =>
       <option key={`group-${group.address}`} value={group.address}>{ group.name }</option>
     );
 
@@ -67,7 +67,7 @@ class ContentLibraryGroupForm extends React.Component {
         <input
           name="groupAddress"
           value={this.state.groupAddress}
-          disabled={Object.keys(this.props.groupStore.accessGroups).includes(this.state.groupAddress)}
+          disabled={Object.keys(groupStore.accessGroups).includes(this.state.groupAddress)}
           onChange={event => this.setState({groupAddress: event.target.value})}
         />
       </React.Fragment>
@@ -83,7 +83,7 @@ class ContentLibraryGroupForm extends React.Component {
         <AsyncComponent
           Load={
             async () => {
-              const initialGroupAddress = Object.keys(this.props.groupStore.accessGroups)[0];
+              const initialGroupAddress = Object.keys(groupStore.accessGroups)[0];
 
               if(initialGroupAddress) {
                 this.HandleGroupChange({target: {value: initialGroupAddress}});
@@ -92,7 +92,7 @@ class ContentLibraryGroupForm extends React.Component {
           }
           render={() => (
             <Form
-              legend={`Manage access group permissions for '${this.props.libraryStore.library.name || this.props.libraryStore.libraryId}'`}
+              legend={`Manage access group permissions for '${libraryStore.library.name || this.props.libraryStore.libraryId}'`}
               OnCancel={this.props.CloseModal}
               OnComplete={this.props.CloseModal}
               OnSubmit={this.HandleSubmit}
@@ -161,4 +161,4 @@ class ContentLibraryGroupForm extends React.Component {
   }
 }
 
-export default ContentLibraryGroupForm;
+export default observer(ContentLibraryGroupForm);

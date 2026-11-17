@@ -2,14 +2,15 @@ import React from "react";
 import PropTypes from "prop-types";
 import {FormatAddress, ParseBytes32} from "../../utils/Helpers";
 import Fabric from "../../clients/Fabric";
-import {Balance, Copy, ImageIcon} from "elv-components-js";
-import {inject, observer} from "mobx-react";
+import {Balance, Copy} from "elv-components-js";
+import ImageIcon from "@/components/components/ImageIcon";
+import {observer} from "mobx-react";
 import {Tabs} from "elv-components-js";
 
 import ClipboardIcon from "../../static/icons/clipboard.svg";
 
-@inject("eventsStore")
-@observer
+import {eventsStore} from "@/stores/index";
+
 class EventLogs extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -69,7 +70,7 @@ class EventLogs extends React.PureComponent {
   }
 
   Id(log) {
-    let contractName = this.props.eventsStore.contractNames[FormatAddress(log.address)];
+    let contractName = eventsStore.contractNames[FormatAddress(log.address)];
     if(!contractName || contractName === "Unknown") {
       contractName = log.contract;
     }
@@ -133,7 +134,7 @@ class EventLogs extends React.PureComponent {
   }
 
   ParsedLog(log) {
-    let contractName = this.props.eventsStore.contractNames[FormatAddress(log.address)];
+    let contractName = eventsStore.contractNames[FormatAddress(log.address)];
     if(!contractName || contractName === "Unknown") {
       contractName = log.contract;
     }
@@ -211,7 +212,7 @@ class EventLogs extends React.PureComponent {
       const blockNumber = event && event[0] ? event[0].blockNumber : "unknown";
 
       const logs = event.map(log => {
-        let contractName = this.props.eventsStore.contractNames[FormatAddress(log.address)];
+        let contractName = eventsStore.contractNames[FormatAddress(log.address)];
         if(!contractName || contractName === "Unknown") {
           contractName = log.contract;
         }
@@ -280,7 +281,7 @@ class EventLogs extends React.PureComponent {
           (log.from || "").toLowerCase().includes(filter) ||
           (log.contractAddress || "").toLowerCase().includes(filter) ||
           (
-            (this.props.eventsStore.contractNames[FormatAddress(log.address)] || "")
+            (eventsStore.contractNames[FormatAddress(log.address)] || "")
               .toLowerCase().includes(filter)
           )
         )
@@ -336,4 +337,4 @@ EventLogs.propTypes = {
   scrollToBottom: PropTypes.bool
 };
 
-export default EventLogs;
+export default observer(EventLogs);

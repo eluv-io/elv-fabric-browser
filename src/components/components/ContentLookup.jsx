@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import {Action, onEnterPressed} from "elv-components-js";
 import {observer} from "mobx-react";
-import {libraryStore} from "../../stores";
+import {libraryStore} from "@/stores/index";
 import {Redirect} from "react-router";
 
 const ContentLookup = observer(() => {
@@ -36,4 +36,4 @@ const ContentLookup = observer(() => {
   );
 });
 
-export default ContentLookup;
+export default observer(ContentLookup);

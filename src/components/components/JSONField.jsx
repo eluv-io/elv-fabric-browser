@@ -75,4 +75,4 @@ const JSONField = ({json, diffJson, DiffComponent}) => {
   );
 };
 
-export default JSONField;
+export default observer(JSONField);

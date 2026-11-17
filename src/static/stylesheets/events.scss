@@ -14,7 +14,7 @@
   .event-controls {
     display: flex;
     height: 32px;
-    margin-bottom: $elv-spacing-s;
+    margin-bottom: var(--spacing-s);
     width: 100%;
 
     .control-group {
@@ -32,16 +32,16 @@
       }
 
       label {
-        margin-right: $elv-spacing-xs;
+        margin-right: var(--spacing-xs);
       }
 
       input,
       button {
-        font-size: $elv-font-m;
+        font-size: var(--font-m);
         height: 100%;
 
         &:not(:last-child) {
-          margin-right: $elv-spacing-xs;
+          margin-right: var(--spacing-xs);
         }
 
         &:not(.watch-icon) {
@@ -51,8 +51,8 @@
 
         &.event-filter {
           flex-grow: 1;
-          font-size: $elv-font-l;
-          margin-right: $elv-spacing-s;
+          font-size: var(--font-l);
+          margin-right: var(--spacing-s);
         }
       }
     }
@@ -68,7 +68,7 @@
 
       &:hover {
         svg {
-          color: $elv-color-mediumgray;
+          color: var(--color-mediumgray);
         }
       }
     }
@@ -78,7 +78,7 @@
     height: 70vh;
     max-height: 75vh;
     overflow-y: auto;
-    padding: $elv-spacing-s $elv-spacing-xs $elv-spacing-s 0;
+    padding: var(--spacing-s var(--spacing-xs) var(--spacing-s) 0);
   }
 
   .filter-loading {
@@ -88,7 +88,7 @@
   .load-more {
     display: flex;
     justify-content: center;
-    margin-top: $elv-spacing-s;
+    margin-top: var(--spacing-s);
     width: 100%;
   }
 }
@@ -99,12 +99,12 @@
     align-items: center;
     display: flex;
     justify-content: space-between;
-    margin-bottom: $elv-spacing-xs;
+    margin-bottom: var(--spacing-xs);
 
     .info {
-      color: $elv-color-text-light;
-      font-family: $elv-font-monospace;
-      font-size: $elv-font-s;
+      color: var(--color-text-light);
+      font-family: var(--font-monospace);
+      font-size: var(--font-s);
     }
   }
 }
@@ -115,26 +115,26 @@
 
 .events-copy-button {
   position: absolute;
-  right: $elv-spacing-s;
-  top: $elv-spacing-s;
+  right: var(--spacing-s);
+  top: var(--spacing-s);
 }
 
 .events-raw-text {
-  font-family: $elv-font-monospace;
-  font-size: $elv-font-s;
+  font-family: var(--font-monospace);
+  font-size: var(--font-s);
 }
 
 .event {
-  border: 1px solid $elv-color-darkgray;
-  font-size: $elv-font-m;
-  margin-bottom: $elv-spacing-m;
-  padding: $elv-spacing-s;
+  border: 1px solid var(--color-darkgray);
+  font-size: var(--font-m);
+  margin-bottom: var(--spacing-m);
+  padding: var(--spacing-s);
 }
 
 .log {
-  border: 1px solid $elv-color-gray;
-  margin-bottom: $elv-spacing-xs;
-  padding: $elv-spacing-s;
+  border: 1px solid var(--color-gray);
+  margin-bottom: var(--spacing-xs);
+  padding: var(--spacing-s);
 
   .labelled-field {
     display: flex;
@@ -146,26 +146,28 @@
     }
 
     .value {
-      @include elv-ellipsis;
-      font-family: $elv-font-monospace;
-      font-size: $elv-font-s;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-family: var(--font-monospace);
+      font-size: var(--font-s);
       max-width: 50vw;
     }
   }
 
   .section-label {
-    font-size: $elv-font-m;
+    font-size: var(--font-m);
     font-weight: 600;
-    margin: $elv-spacing-s 0 $elv-spacing-xxs;
+    margin: var(--spacing-s 0 var(--spacing-xxs));
   }
 }
 
 @keyframes watch-pulse {
   from {
-    stroke: $elv-color-lightblue;
+    stroke: var(--color-lightblue);
   }
 
   to {
-    stroke: $elv-color-darkblue;
+    stroke: var(--color-darkblue);
   }
 }

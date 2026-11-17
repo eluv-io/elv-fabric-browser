@@ -1,0 +1,76 @@
+:root {
+  /* Fonts */
+  --font-default: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-monospace: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+
+  --font-xxs: 0.5rem;
+  --font-xs: 0.6rem;
+  --font-s: 0.7rem;
+  --font-m: 0.8rem;
+  --font-l: 1rem;
+  --font-xl: 1.2rem;
+  --font-xxl: 1.4rem;
+
+  /* Spacing */
+  --spacing-xxs: 0.25rem;
+  --spacing-mxs: 0.33rem;
+  --spacing-xs: 0.5rem;
+  --spacing-ss: 0.75rem;
+  --spacing-s: 1rem;
+  --spacing-m: 1.5rem;
+  --spacing-l: 2rem;
+  --spacing-ml: 2.5rem;
+  --spacing-xl: 4rem;
+  --spacing-xxl: 8rem;
+
+  /* Colors */
+  --color-black: #000;
+  --color-darkergray: #444;
+  --color-darkgray: #555;
+  --color-mediumgray: #aaa;
+  --color-gray: #ccc;
+  --color-lightgray: #ddd;
+  --color-lightergray: #eee;
+  --color-lightestgray: #f5f5f5;
+  --color-white: #fff;
+
+  --color-palered: #955;
+  --color-mediumred: #a33;
+  --color-red: #f33;
+
+  --color-green: #3d3;
+  --color-mediumgreen: #393;
+
+  --color-text-white: #fff;
+  --color-text-lightest: #acacac;
+  --color-text-lighter: #8c8c8c;
+  --color-text-light: #6c6c6c;
+  --color-text-dark: #222;
+  --color-text-black: #000;
+
+  --color-bg-white: #fff;
+  --color-bg-light: #fafafa;
+  --color-bg-light-dark: #f5f5f5;
+  --color-bg-dark: #333;
+  --color-bg-black: #000;
+
+  --color-bg-modal: rgba(0, 0, 0, 0.3);
+
+  --color-lighterblue: #60dfff;
+  --color-lightblue: #0fafff;
+  --color-mediumblue: #1b73e8;
+  --color-darkblue: #003c7e;
+
+  --color-shadow-gray: rgba(161, 161, 161, 0.5);
+
+  --color-gradient-lightblue: linear-gradient(to right, var(--color-lightblue), var(--color-lighterblue));
+  --color-gradient-mediumblue: linear-gradient(to right, var(--color-mediumblue), var(--color-lightblue));
+  --color-gradient-darkblue: linear-gradient(to right, var(--color-darkblue), var(--color-mediumblue));
+
+  --color-action-primary: var(--color-mediumblue);
+  --color-action-secondary: var(--color-gray);
+  --color-action-tertiary: var(--color-white);
+  --color-action-delete: var(--color-mediumred);
+  --color-action-disabled: var(--color-lightergray);
+
+}

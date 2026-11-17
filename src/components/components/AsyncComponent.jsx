@@ -6,7 +6,7 @@ import PropTypes from "prop-types";
 import {BallSpin, ErrorHandler} from "elv-components-js";
 import {observer} from "mobx-react";
 
-@observer
+
 class AsyncComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -70,4 +70,4 @@ AsyncComponent.propTypes = {
   children: PropTypes.node
 };
 
-export default ErrorHandler(AsyncComponent);
+export default observer(ErrorHandler(AsyncComponent));

@@ -1,4 +1,4 @@
-import {configure, observable, action, flow} from "mobx";
+import {configure, observable, action, flow, makeAutoObservable} from "mobx";
 import {FrameClient} from "@eluvio/elv-client-js/src/FrameClient";
 
 import LibraryStore from "./Library";
@@ -17,10 +17,12 @@ configure({
 });
 
 class RootStore {
-  @observable client;
-  @observable currentAccountAddress;
+  client;
+  currentAccountAddress;
 
   constructor() {
+    makeAutoObservable(this);
+
     this.InitializeClient();
 
     this.contractStore = new ContractsStore(this);
@@ -34,7 +36,7 @@ class RootStore {
     this.contentStore = new ContentStore(this);
   }
 
-  @action.bound
+
   InitializeClient = flow(function * () {
     this.client = new FrameClient({
       target: window.parent,

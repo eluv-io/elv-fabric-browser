@@ -4,11 +4,11 @@ import Path from "path";
 import Fabric from "../../../clients/Fabric";
 import {Form, JsonInput, RadioSelect} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import ActionsToolbar from "../../components/ActionsToolbar";
 
-@inject("contractStore")
-@observer
+import {contractStore} from "@/stores/index";
+
 class DeployContractForm extends React.Component {
   constructor(props) {
     super(props);
@@ -27,7 +27,7 @@ class DeployContractForm extends React.Component {
       funds: 0,
       redirectPath,
       // If object ID exists in route, this form is for deploying a custom content object contract
-      isContentObjectContract: !!(this.props.contractStore.objectId),
+      isContentObjectContract: !!(contractStore.objectId),
       isContentTypeContract,
       selectedContract: selectedContractParam,
       fixedContract,
@@ -46,8 +46,8 @@ class DeployContractForm extends React.Component {
 
   Contracts() {
     return this.state.contractSource === "saved" ?
-      this.props.contractStore.contracts :
-      this.props.contractStore.deployedContracts;
+      contractStore.contracts :
+      contractStore.deployedContracts;
   }
 
   HandleInputChange(event) {
@@ -97,7 +97,7 @@ class DeployContractForm extends React.Component {
 
     if(this.state.contractSource === "deployed") {
       this.setState({
-        balance: this.props.contractStore.GetContractBalance({contractAddress: contract.address})
+        balance: contractStore.GetContractBalance({contractAddress: contract.address})
       });
     }
   }
@@ -125,9 +125,9 @@ class DeployContractForm extends React.Component {
 
     let contractAddress;
     if(this.state.isContentObjectContract) {
-      contractAddress = await this.props.contractStore.SetCustomContract({
-        libraryId: this.props.contractStore.libraryId,
-        objectId: this.props.contractStore.objectId,
+      contractAddress = await contractStore.SetCustomContract({
+        libraryId: contractStore.libraryId,
+        objectId: contractStore.objectId,
         contractName: this.state.selectedContract,
         contractDescription: contract.description,
         address: contract.address,
@@ -138,7 +138,7 @@ class DeployContractForm extends React.Component {
         funds: this.state.funds
       });
     } else {
-      contractAddress = await this.props.contractStore.DeployContract({
+      contractAddress = await contractStore.DeployContract({
         contractName: this.state.name,
         contractDescription: this.state.description,
         abi: contract.abi,
@@ -349,18 +349,18 @@ class DeployContractForm extends React.Component {
       <AsyncComponent
         Load={
           async () => {
-            await this.props.contractStore.ListContracts({params: {paginate: false}});
-            await this.props.contractStore.ListDeployedContracts({params: {paginate: false}});
+            await contractStore.ListContracts({params: {paginate: false}});
+            await contractStore.ListDeployedContracts({params: {paginate: false}});
 
             let selectedContract = this.state.selectedContract;
             let contractSource = "saved";
             if(!selectedContract) {
-              if(Object.keys(this.props.contractStore.contracts).length > 0) {
+              if(Object.keys(contractStore.contracts).length > 0) {
                 // Initialize selected contract to be the first saved contract
-                selectedContract = Object.keys(this.props.contractStore.contracts)[0];
-              } else if(Object.keys(this.props.contractStore.deployedContracts).length > 0) {
+                selectedContract = Object.keys(contractStore.contracts)[0];
+              } else if(Object.keys(contractStore.deployedContracts).length > 0) {
                 // Initialize selected contract to be the first deployed contract
-                selectedContract = Object.keys(this.props.contractStore.deployedContracts)[0];
+                selectedContract = Object.keys(contractStore.deployedContracts)[0];
                 contractSource = "deployed";
               }
             }
@@ -377,4 +377,4 @@ class DeployContractForm extends React.Component {
   }
 }
 
-export default DeployContractForm;
+export default observer(DeployContractForm);

@@ -3,12 +3,12 @@ import Path from "path";
 import {Action, Form, IconButton} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
 import DeleteIcon from "../../../static/icons/trash.svg";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import ActionsToolbar from "../../components/ActionsToolbar";
 
-@inject("libraryStore")
-@inject("typeStore")
-@observer
+import {libraryStore} from "@/stores/index";
+import {typeStore} from "@/stores/index";
+
 class ContentLibraryTypesForm extends React.Component {
   constructor(props) {
     super(props);
@@ -55,14 +55,14 @@ class ContentLibraryTypesForm extends React.Component {
   }
 
   async HandleSubmit() {
-    await this.props.libraryStore.UpdateContentLibraryTypes({
-      libraryId: this.props.libraryStore.libraryId,
+    await libraryStore.UpdateContentLibraryTypes({
+      libraryId: libraryStore.libraryId,
       typeIds: this.state.selectedTypeIds
     });
   }
 
   AvailableTypes() {
-    return Object.values(this.props.typeStore.allTypes)
+    return Object.values(typeStore.allTypes)
       .filter(type => !this.state.selectedTypeIds.includes(type.id))
       .sort((a, b) => (a.name || `zzz${a.hash}`).toLowerCase() < (b.name || `zzz${b.hash}`).toLowerCase() ? -1 : 1);
   }
@@ -101,7 +101,7 @@ class ContentLibraryTypesForm extends React.Component {
     if(this.state.selectedTypeIds.length === 0) { return null; }
 
     return this.state.selectedTypeIds.map(typeId => {
-      const type = Object.values(this.props.typeStore.allTypes).find(type => type.id === typeId);
+      const type = Object.values(typeStore.allTypes).find(type => type.id === typeId);
 
       return (
         <div className="list-item" key={"added-type-" + type.id}>
@@ -155,15 +155,15 @@ class ContentLibraryTypesForm extends React.Component {
       <AsyncComponent
         Load={
           async () => {
-            await this.props.libraryStore.ContentLibrary({
-              libraryId: this.props.libraryStore.libraryId
+            await libraryStore.ContentLibrary({
+              libraryId: libraryStore.libraryId
             });
 
-            await this.props.typeStore.ContentTypes();
+            await typeStore.ContentTypes();
 
             this.setState({
-              selectedTypeId: Object.keys(this.props.typeStore.allTypes)[0],
-              selectedTypeIds: Object.values(this.props.libraryStore.library.types).map(type => type.id)
+              selectedTypeId: Object.keys(typeStore.allTypes)[0],
+              selectedTypeIds: Object.values(libraryStore.library.types).map(type => type.id)
             });
           }
         }
@@ -173,4 +173,4 @@ class ContentLibraryTypesForm extends React.Component {
   }
 }
 
-export default ContentLibraryTypesForm;
+export default observer(ContentLibraryTypesForm);

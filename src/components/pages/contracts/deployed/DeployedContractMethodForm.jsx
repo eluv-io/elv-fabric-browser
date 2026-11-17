@@ -4,12 +4,12 @@ import PropTypes from "prop-types";
 import {Bytes32ToUtf8} from "../../../../utils/Helpers";
 import EventLogs from "../../../components/EventLogs";
 import {Form} from "elv-components-js";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import {toJS} from "mobx";
 import {ContractTypes} from "../../../../utils/Contracts";
 
-@inject("contractStore")
-@observer
+import {contractStore} from "@/stores/index";
+
 class DeployedContractMethodForm extends React.Component {
   constructor(props) {
     super(props);
@@ -83,12 +83,12 @@ class DeployedContractMethodForm extends React.Component {
 
     // Only specify ABI for unknown contracts
     const abi = [ContractTypes.customObject, ContractTypes.unknown]
-      .includes(this.props.contractStore.contract.type) ?
-      this.props.contractStore.contract.abi :
+      .includes(contractStore.contract.type) ?
+      contractStore.contract.abi :
       undefined;
 
-    const methodResults = await this.props.contractStore.CallContractMethod({
-      contractAddress: this.props.contractStore.contractAddress,
+    const methodResults = await contractStore.CallContractMethod({
+      contractAddress: contractStore.contractAddress,
       abi,
       methodName: this.state.method,
       methodArgs,
@@ -271,4 +271,4 @@ DeployedContractMethodForm.propTypes = {
   contract: PropTypes.object.isRequired
 };
 
-export default DeployedContractMethodForm;
+export default observer(DeployedContractMethodForm);

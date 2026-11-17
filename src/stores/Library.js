@@ -1,22 +1,24 @@
-import {observable, action, flow, computed} from "mobx";
+import {observable, action, flow, computed, makeAutoObservable} from "mobx";
 import Fabric from "../clients/Fabric";
-import {ParseInputJson} from "elv-components-js";
+import {ParseInputJson} from "@/utils/Helpers";
 import {Cancelable} from "../utils/Cancelable";
 
 class LibraryStore {
-  @observable libraries = {};
-  @observable count = 0;
+  libraries = {};
+  count = 0;
 
-  @computed get library() {
+  get library() {
     const libraryId = this.rootStore.routerStore.libraryId;
     return this.libraries[libraryId];
   }
 
-  @computed get libraryId() {
+  get libraryId() {
     return this.rootStore.routerStore.libraryId;
   }
 
   constructor(rootStore) {
+    makeAutoObservable(this);
+
     this.rootStore = rootStore;
   }
 
@@ -28,7 +30,7 @@ class LibraryStore {
     return await Fabric.DefaultTenantId();
   }
 
-  @action.bound
+
   ListContentLibraries = flow(function * ({params}) {
     let { libraries, count } = yield Cancelable(
       params.cancelable,
@@ -39,7 +41,7 @@ class LibraryStore {
     this.count = count;
   });
 
-  @action.bound
+
   ContentLibrary = flow(function * ({libraryId}) {
     // Preserve listing params
     const {listingParams} = this.libraries[libraryId] || {};
@@ -53,7 +55,7 @@ class LibraryStore {
     yield this.ContentLibraryUserPermissions({libraryId});
   });
 
-  @action.bound
+
   ContentLibraryUserPermissions = flow(function * ({libraryId}) {
     const response = yield Fabric.ContentLibraryUserPermissions({
       libraryId,
@@ -63,7 +65,7 @@ class LibraryStore {
     Object.keys(response).forEach(permission => this.libraries[libraryId][permission] = response[permission]);
   });
 
-  @action.bound
+
   CreateContentLibrary = flow(function * ({name, description, publicMetadata, privateMetadata, image, kmsId, tenantId}) {
     try {
       privateMetadata = ParseInputJson(privateMetadata);
@@ -120,7 +122,7 @@ class LibraryStore {
     return libraryId;
   });
 
-  @action.bound
+
   UpdateContentLibrary = flow(function * ({libraryId, name, description, publicMetadata, privateMetadata, image}) {
     try {
       privateMetadata = ParseInputJson(privateMetadata);
@@ -177,7 +179,7 @@ class LibraryStore {
     return libraryId;
   });
 
-  @action.bound
+
   ListLibraryTypes = flow(function * ({libraryId}) {
     const types = yield Fabric.ListLibraryContentTypes({libraryId});
 
@@ -187,7 +189,7 @@ class LibraryStore {
     };
   });
 
-  @action.bound
+
   UpdateContentLibraryTypes = flow(function * ({libraryId, typeIds=[]}) {
     const currentTypeIds = Object.values(yield Fabric.ListLibraryContentTypes({libraryId}))
       .map(type => type.id);
@@ -216,7 +218,7 @@ class LibraryStore {
     });
   });
 
-  @action.bound
+
   ListLibraryGroups = flow(function * ({libraryId, type, params}) {
     const { accessGroups, count } = yield Fabric.ListContentLibraryGroups({libraryId, type, params});
 
@@ -224,7 +226,7 @@ class LibraryStore {
     this.libraries[libraryId][`${type}GroupsCount`] = count;
   });
 
-  @action.bound
+
   ContentLibraryGroupPermissions = flow(function * ({libraryId}) {
     let permissions = {};
 
@@ -257,7 +259,7 @@ class LibraryStore {
     this.libraries[libraryId].groupPermissions = permissions;
   });
 
-  @action.bound
+
   RemoveContentLibraryGroupPermission = flow(function * ({libraryId, groupAddress, type}) {
     if(type === "contributor") {
       // Remove access before deleting since this is manually added
@@ -285,7 +287,7 @@ class LibraryStore {
     });
   });
 
-  @action.bound
+
   UpdateContentLibraryGroup = flow(function * ({
     libraryId,
     groupAddress,
@@ -341,7 +343,7 @@ class LibraryStore {
     });
   });
 
-  @action.bound
+
   ListContentObjects = flow(function * ({libraryId, params={}}) {
     let previousParams = { ...(this.libraries[libraryId]?.listingParams || {}) };
     delete previousParams.cancelable;
@@ -380,7 +382,7 @@ class LibraryStore {
     this.LoadObjectStatuses({libraryId});
   });
 
-  @action.bound
+
   LoadObjectStatuses = flow(function * ({libraryId}) {
     const objects = this.libraries[libraryId].objects;
 
@@ -394,14 +396,14 @@ class LibraryStore {
     );
   });
 
-  @action.bound
+
   SetObjectConfirmedAt({libraryId, objects, objectId, confirmedAt}) {
     if(this.libraries[libraryId]?.objects !== objects || !objects[objectId]) { return; }
 
     objects[objectId].confirmedAt = confirmedAt;
   }
 
-  @action.bound
+
   ClearLibraryCache({libraryId, keepParams=false}) {
     if(!this.libraries[libraryId]) { return; }
 

@@ -1,10 +1,10 @@
 .navbar-container {
-  background: $elv-color-bg-light-dark;
+  background: var(--color-bg-light-dark);
   z-index: 99;
 }
 
 .navbar-links-container {
-  margin-top: $elv-spacing-xs;
+  margin-top: var(--spacing-xs);
 
   .navbar-link-container {
     display: block;
@@ -14,12 +14,12 @@
   }
 
   .navbar-link {
-    color: $elv-color-darkgray;
+    color: var(--color-darkgray);
     font-size: 0.9rem;
-    padding: 0 $elv-spacing-ss;
+    padding: 0 var(--spacing-ss);
 
     &:hover {
-      background: $elv-color-lightergray;
+      background: var(--color-lightergray);
     }
 
     &.active,
@@ -28,10 +28,10 @@
     }
 
     &.active {
-      color: $elv-color-text-dark;
+      color: var(--color-text-dark);
 
       i {
-        color: $elv-color-mediumblue;
+        color: var(--color-mediumblue);
       }
     }
   }
@@ -45,10 +45,10 @@
   }
 
   .navbar-link-icon {
-    color: $elv-color-darkergray;
+    color: var(--color-darkergray);
     display: inline-block;
     height: 20px;
-    margin-right: $elv-spacing-xs;
+    margin-right: var(--spacing-xs);
     width: 20px;
   }
 

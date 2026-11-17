@@ -8,8 +8,8 @@ from the core app, which owns user account information and keys
 import React from "react";
 import Fabric from "../../clients/Fabric";
 import PropTypes from "prop-types";
-import URI from "urijs";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
+import {notificationStore} from "@/stores/index";
 
 // Ensure error objects can be properly serialized in messages
 if(!("toJSON" in Error.prototype)) {
@@ -127,8 +127,6 @@ const IFrame = React.forwardRef(
   (props, appRef) => <IFrameBase appRef={appRef} {...props} />
 );
 
-@inject("notificationStore")
-@observer
 class AppFrame extends React.Component {
   constructor(props) {
     super(props);
@@ -150,9 +148,9 @@ class AppFrame extends React.Component {
     // Inject any query parameters into the given URL
     let appUrl = this.props.appUrl;
     if(this.props.queryParams) {
-      const parsedUrl = URI(appUrl);
+      const parsedUrl = new URL(appUrl);
       Object.keys(this.props.queryParams).forEach(key => {
-        parsedUrl.addSearch(key, this.props.queryParams[key]);
+        parsedUrl.searchParams.set(key, this.props.queryParams[key]);
       });
       appUrl = parsedUrl.toString();
     }
@@ -214,7 +212,7 @@ class AppFrame extends React.Component {
           if(this.props.onComplete) { await this.props.onComplete(); }
 
           if(event.data.message) {
-            this.props.notificationStore.SetNotificationMessage({
+            notificationStore.SetNotificationMessage({
               message: event.data.message
             });
           }
@@ -267,4 +265,4 @@ AppFrame.propTypes = {
   fixedDimensions: PropTypes.bool
 };
 
-export default AppFrame;
+export default observer(AppFrame);

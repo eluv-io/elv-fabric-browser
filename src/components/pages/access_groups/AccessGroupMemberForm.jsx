@@ -1,12 +1,11 @@
 import React from "react";
 import Path from "path";
 import {Confirm, Form} from "elv-components-js";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import {AsyncComponent} from "elv-components-js";
 import ActionsToolbar from "../../components/ActionsToolbar";
+import {groupStore} from "@/stores/index";
 
-@inject("groupStore")
-@observer
 class AccessGroupMemberForm extends React.Component {
   constructor(props) {
     super(props);
@@ -28,7 +27,7 @@ class AccessGroupMemberForm extends React.Component {
   }
 
   async HandleSubmit() {
-    if(!(await this.props.groupStore.IsSameTenant({userAddress: this.state.memberAddress}))) {
+    if(!(await groupStore.IsSameTenant({userAddress: this.state.memberAddress}))) {
       let rejected = false;
       await Confirm({
         message: "Warning: This user is associated with a different tenancy. Are you sure you want to add them to this group?",
@@ -40,8 +39,8 @@ class AccessGroupMemberForm extends React.Component {
       }
     }
 
-    await this.props.groupStore.AddAccessGroupMember({
-      contractAddress: this.props.groupStore.contractAddress,
+    await groupStore.AddAccessGroupMember({
+      contractAddress: groupStore.contractAddress,
       memberAddress: this.state.memberAddress,
       manager: this.state.manager
     });
@@ -64,7 +63,7 @@ class AccessGroupMemberForm extends React.Component {
           ]}
         />
         <Form
-          legend={`Add member to '${this.props.groupStore.accessGroup.name}'`}
+          legend={`Add member to '${groupStore.accessGroup.name}'`}
           redirectPath={backPath}
           cancelPath={backPath}
           OnSubmit={this.HandleSubmit}
@@ -75,7 +74,7 @@ class AccessGroupMemberForm extends React.Component {
             <input name="memberAddress" value={this.state.memberAddress} onChange={this.HandleInputChange} />
 
             {
-              this.props.groupStore.accessGroup.isOwner &&
+              groupStore.accessGroup.isOwner &&
               <>
                 <label htmlFor="manager">Manager</label>
                 <input
@@ -97,7 +96,7 @@ class AccessGroupMemberForm extends React.Component {
       <AsyncComponent
         Load={
           async () => {
-            await this.props.groupStore.AccessGroup({contractAddress: this.props.groupStore.contractAddress});
+            await groupStore.AccessGroup({contractAddress: this.props.groupStore.contractAddress});
           }
         }
         render={this.PageContent}
@@ -106,4 +105,4 @@ class AccessGroupMemberForm extends React.Component {
   }
 }
 
-export default AccessGroupMemberForm;
+export default observer(AccessGroupMemberForm);

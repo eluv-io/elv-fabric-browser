@@ -10,12 +10,14 @@ import {DownloadFromUrl} from "../../../utils/Files";
 import FileBrowser from "../../components/FileBrowser";
 import AppFrame from "../../components/AppFrame";
 import Fabric from "../../../clients/Fabric";
-import {Action, Confirm, Form, IconButton, ImageIcon, LoadingElement, Modal, Tabs, ToolTip} from "elv-components-js";
+import {Action, Confirm, Form, IconButton, LoadingElement, Modal, Tabs, ToolTip} from "elv-components-js";
+import ImageIcon from "@/components/components/ImageIcon";
 import AsyncComponent from "../../components/AsyncComponent";
 import {AddressToHash, HashToAddress, Percentage} from "../../../utils/Helpers";
-import {inject, observer} from "mobx-react";
+import {observer} from "mobx-react";
 import ToggleSection from "../../components/ToggleSection";
 import JSONField from "../../components/JSONField";
+// TODO: Remove luxon dep
 import {DateTime} from "luxon";
 import ContentObjectGroups from "./ContentObjectGroups";
 
@@ -62,9 +64,9 @@ const DownloadPart = ({libraryId, objectId, versionHash, partHash, partName, Dow
   return progress ? downloadProgress : downloadButton;
 };
 
-@inject("libraryStore")
-@inject("objectStore")
-@observer
+import {libraryStore} from "@/stores/index";
+import {objectStore} from "@/stores/index";
+
 class ContentObject extends React.Component {
   constructor(props) {
     super(props);
@@ -99,16 +101,16 @@ class ContentObject extends React.Component {
   async componentDidMount() {
     this.mounted = true;
 
-    const token = await this.props.objectStore.rootStore.client.CreateSignedToken({
-      libraryId: this.props.objectStore.libraryId,
-      objectId: this.props.objectStore.objectId,
+    const token = await objectStore.rootStore.client.CreateSignedToken({
+      libraryId: objectStore.libraryId,
+      objectId: objectStore.objectId,
       duration: 7 * 24 * 60 * 60 * 1000
     });
 
     this.setState({
       editorSignedToken: token,
       editorSignedTokenExpiration: new Date(
-        this.props.objectStore.rootStore.client.utils.DecodeSignedToken(token).payload.exp
+        objectStore.rootStore.client.utils.DecodeSignedToken(token).payload.exp
       ).toLocaleString()
     });
 
@@ -127,8 +129,8 @@ class ContentObject extends React.Component {
     await Confirm({
       message: confirmationMessage,
       onConfirm: async () => {
-        await this.props.objectStore.PublishContentObject({
-          objectId: this.props.objectStore.objectId
+        await objectStore.PublishContentObject({
+          objectId: objectStore.objectId
         });
 
         this.setState({pageVersion: this.state.pageVersion + 1});
@@ -140,9 +142,9 @@ class ContentObject extends React.Component {
     await Confirm({
       message: "Are you sure you want to save changes to this content object?",
       onConfirm: async () => {
-        await this.props.objectStore.FinalizeContentObject({
-          libraryId: this.props.objectStore.libraryId,
-          objectId: this.props.objectStore.objectId
+        await objectStore.FinalizeContentObject({
+          libraryId: objectStore.libraryId,
+          objectId: objectStore.objectId
         });
 
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -156,9 +158,9 @@ class ContentObject extends React.Component {
     await Confirm({
       message: "Are you sure you want to finalize this content object?",
       onConfirm: async () => {
-        await this.props.objectStore.FinalizeABRMezzanine({
-          libraryId: this.props.objectStore.libraryId,
-          objectId: this.props.objectStore.objectId
+        await objectStore.FinalizeABRMezzanine({
+          libraryId: objectStore.libraryId,
+          objectId: objectStore.objectId
         });
 
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -172,9 +174,9 @@ class ContentObject extends React.Component {
     await Confirm({
       message: "Are you sure you want to delete this content object?",
       onConfirm: async () => {
-        await this.props.objectStore.DeleteContentObject({
-          libraryId: this.props.objectStore.libraryId,
-          objectId: this.props.objectStore.objectId
+        await objectStore.DeleteContentObject({
+          libraryId: objectStore.libraryId,
+          objectId: objectStore.objectId
         });
 
         this.setState({deleted: true});
@@ -186,9 +188,9 @@ class ContentObject extends React.Component {
     await Confirm({
       message: "Are you sure you want to delete this encryption key?",
       onConfirm: async () => {
-        await this.props.objectStore.DeleteOwnerCap({
-          libraryId: this.props.objectStore.libraryId,
-          objectId: this.props.objectStore.objectId,
+        await objectStore.DeleteOwnerCap({
+          libraryId: objectStore.libraryId,
+          objectId: objectStore.objectId,
           address
         });
 
@@ -198,9 +200,9 @@ class ContentObject extends React.Component {
   }
 
   async UpdateMetadata({metadataSubtree="/", metadata}) {
-    await this.props.objectStore.UpdateMetadata({
-      libraryId: this.props.objectStore.libraryId,
-      objectId: this.props.objectStore.objectId,
+    await objectStore.UpdateMetadata({
+      libraryId: objectStore.libraryId,
+      objectId: objectStore.objectId,
       metadataSubtree,
       metadata
     });
@@ -208,15 +210,15 @@ class ContentObject extends React.Component {
 
   DeleteVersionButton(versionHash) {
     // Don't allow deleting of last version
-    if(this.props.objectStore.object.versionCount <= 0) { return null; }
+    if(objectStore.object.versionCount <= 0) { return null; }
 
     const DeleteVersion = async () => {
       await Confirm({
         message: "Are you sure you want to delete this content version?",
         onConfirm: async () => {
-          await this.props.objectStore.DeleteContentObjectVersion({
-            libraryId: this.props.objectStore.libraryId,
-            objectId: this.props.objectStore.objectId,
+          await objectStore.DeleteContentObjectVersion({
+            libraryId: objectStore.libraryId,
+            objectId: objectStore.objectId,
             versionHash
           });
 
@@ -236,7 +238,7 @@ class ContentObject extends React.Component {
   }
 
   LROStatus() {
-    const statuses = this.props.objectStore.object.lroStatus;
+    const statuses = objectStore.object.lroStatus;
 
     if(!statuses || statuses.length === 0) { return; }
 
@@ -261,7 +263,7 @@ class ContentObject extends React.Component {
             <LabelledField label={offeringKey}>
               Finished
             </LabelledField>
-            <LabelledField hidden={!this.props.objectStore.object.canEdit}>
+            <LabelledField hidden={!objectStore.object.canEdit}>
               <Action onClick={this.FinalizeABRMezzanine}>
                 Finalize
               </Action>
@@ -297,7 +299,7 @@ class ContentObject extends React.Component {
   ObjectParts(version) {
     if(!version || !version.parts || version.parts.length === 0) { return null; }
 
-    let partNames = this.props.objectStore.object.meta["eluv-fb.parts"] || {};
+    let partNames = objectStore.object.meta["eluv-fb.parts"] || {};
     let names = {};
     Object.keys(partNames).forEach(name => {
       names[partNames[name]] = name;
@@ -305,12 +307,12 @@ class ContentObject extends React.Component {
 
     const parts = (version.parts.map((part, partNumber) => {
       const download = <DownloadPart
-        libraryId={this.props.objectStore.libraryId}
-        objectId={this.props.objectStore.objectId}
+        libraryId={objectStore.libraryId}
+        objectId={objectStore.objectId}
         versionHash={version.hash}
         partHash={part.hash}
         partName={names[part.hash]}
-        DownloadMethod={this.props.objectStore.DownloadPart}
+        DownloadMethod={objectStore.DownloadPart}
       />;
 
       const name = names[part.hash] ? <LabelledField label="Name" value={names[part.hash]}/> : null;
@@ -342,7 +344,7 @@ class ContentObject extends React.Component {
   }
 
   CommitInfo(versionHash) {
-    const version = this.props.objectStore.versions[versionHash];
+    const version = objectStore.versions[versionHash];
 
     if(!version.meta || !version.meta.commit || typeof version.meta.commit !== "object") { return null; }
 
@@ -372,12 +374,12 @@ class ContentObject extends React.Component {
   }
 
   ObjectVersion({versionHash, latestVersion=false}) {
-    let version = this.props.objectStore.object;
-    let hasPreviousVersion = this.props.objectStore.object.versionCount > 0;
+    let version = objectStore.object;
+    let hasPreviousVersion = objectStore.object.versionCount > 0;
 
     if(!latestVersion) {
-      version = this.props.objectStore.versions[versionHash];
-      hasPreviousVersion = ((this.props.objectStore.object.versions || []).findIndex(storeVersion => storeVersion === (versionHash)) !== (this.props.objectStore.object.versions || []).length - 1);
+      version = objectStore.versions[versionHash];
+      hasPreviousVersion = ((objectStore.object.versions || []).findIndex(storeVersion => storeVersion === (versionHash)) !== (this.props.objectStore.object.versions || []).length - 1);
     }
 
     if(!version) { return null; }
@@ -422,9 +424,9 @@ class ContentObject extends React.Component {
                         <AsyncComponent
                           Load={
                             async () => {
-                              await this.props.objectStore.ContentObjectVersions({
-                                libraryId: this.props.objectStore.libraryId,
-                                objectId: this.props.objectStore.objectId
+                              await objectStore.ContentObjectVersions({
+                                libraryId: objectStore.libraryId,
+                                objectId: objectStore.objectId
                               });
                             }
                           }
@@ -442,7 +444,7 @@ class ContentObject extends React.Component {
             <AsyncComponent
               Load={
                 async () => {
-                  await this.props.objectStore.ContentObjectParts({
+                  await objectStore.ContentObjectParts({
                     versionHash
                   });
                 }
@@ -465,7 +467,7 @@ class ContentObject extends React.Component {
 
           <br/>
 
-          <LabelledField hidden={!this.props.objectStore.object.isOwner}>
+          <LabelledField hidden={!objectStore.object.isOwner}>
             { this.DeleteVersionButton(versionHash) }
           </LabelledField>
         </div>
@@ -474,11 +476,11 @@ class ContentObject extends React.Component {
   }
 
   PreviousVersions() {
-    if(this.props.objectStore.object.versions.length < 2) { return null; }
+    if(objectStore.object.versions.length < 2) { return null; }
 
     return (
-      this.props.objectStore.object.versions.slice(1).map((versionHash, i) => {
-        const versionNumber = (i+1 - this.props.objectStore.object.versions.length) * -1;
+      objectStore.object.versions.slice(1).map((versionHash, i) => {
+        const versionNumber = (i+1 - objectStore.object.versions.length) * -1;
 
         return (
           <ToggleSection
@@ -490,7 +492,7 @@ class ContentObject extends React.Component {
             <AsyncComponent
               Load={
                 async () => {
-                  await this.props.objectStore.ContentObjectVersion({
+                  await objectStore.ContentObjectVersion({
                     versionHash
                   });
                 }
@@ -508,13 +510,13 @@ class ContentObject extends React.Component {
     contractInfo.push(
       <LabelledField key="contract-address" label="Contract Address">
         <Link className="inline-link" to={UrlJoin(this.props.match.url, "contract")}>
-          { this.props.objectStore.object.contractAddress }
+          { objectStore.object.contractAddress }
         </Link>
       </LabelledField>
     );
 
-    if(!this.props.objectStore.object.isContentLibraryObject && this.props.objectStore.object.customContractAddress) {
-      const customContractAddress = this.props.objectStore.object.customContractAddress;
+    if(!objectStore.object.isContentLibraryObject && this.props.objectStore.object.customContractAddress) {
+      const customContractAddress = objectStore.object.customContractAddress;
 
       contractInfo.push(
         <LabelledField key={"contract-" + customContractAddress} label="Custom Contract">
@@ -529,7 +531,7 @@ class ContentObject extends React.Component {
   }
 
   Permissions() {
-    if(!this.props.objectStore.object.isNormalObject) { return; }
+    if(!objectStore.object.isNormalObject) { return; }
 
     const infoIcon = (
       <ToolTip className="visibility-tooltip"
@@ -549,8 +551,8 @@ class ContentObject extends React.Component {
       </ToolTip>
     );
 
-    let info = <div>{ Fabric.permissionLevels[this.props.objectStore.object.permission].short }</div>;
-    if(this.props.objectStore.object.canEdit) {
+    let info = <div>{ Fabric.permissionLevels[objectStore.object.permission].short }</div>;
+    if(objectStore.object.canEdit) {
       const options = Object.keys(Fabric.permissionLevels).map(permission =>
         <option key={`visibility-option-${permission}`} value={permission}>{ Fabric.permissionLevels[permission].short }</option>
       );
@@ -558,13 +560,13 @@ class ContentObject extends React.Component {
       info = (
         <LoadingElement loading={this.state.permissionChanging} loadingClassname="visibility-info-loading">
           <select
-            value={this.props.objectStore.object.permission}
+            value={objectStore.object.permission}
             onChange={
               async event => {
                 this.setState({permissionChanging: true});
                 try {
-                  await this.props.objectStore.SetPermission({
-                    objectId: this.props.objectStore.objectId,
+                  await objectStore.SetPermission({
+                    objectId: objectStore.objectId,
                     permission: event.target.value
                   });
 
@@ -603,13 +605,13 @@ class ContentObject extends React.Component {
     return (
       <Modal closable={true} OnClickOutside={CloseModal}>
         <Form
-          legend={`Create encryption key for ${this.props.objectStore.object?.name}`}
+          legend={`Create encryption key for ${objectStore.object?.name}`}
           OnComplete={CloseModal}
           OnCancel={CloseModal}
           OnSubmit={async () => {
-            await this.props.objectStore.CreateNonOwnerCap({
-              libraryId: this.props.objectStore.libraryId,
-              objectId: this.props.objectStore.objectId,
+            await objectStore.CreateNonOwnerCap({
+              libraryId: objectStore.libraryId,
+              objectId: objectStore.objectId,
               publicKey: this.state.newNonOwnerCapPublicKey,
               label: this.state.newNonOwnerCapLabel
             });
@@ -638,7 +640,7 @@ class ContentObject extends React.Component {
 
   OwnerCapsSection = () => {
     let addCapsButton;
-    if(this.props.objectStore.object.isOwner) {
+    if(objectStore.object.isOwner) {
       addCapsButton = (
         <LabelledField>
           <Action
@@ -652,12 +654,12 @@ class ContentObject extends React.Component {
       );
     }
 
-    const capKeys = Object.keys(this.props.objectStore.object.meta || {}).filter(key => key.startsWith("eluv.caps.iusr")).map(capKey => {
+    const capKeys = Object.keys(objectStore.object.meta || {}).filter(key => key.startsWith("eluv.caps.iusr")).map(capKey => {
       const hash = capKey.split("eluv.caps.")[1];
       return HashToAddress(hash);
     });
 
-    const caps = this.props.objectStore.object.meta.owner_caps || {};
+    const caps = objectStore.object.meta.owner_caps || {};
 
     return (
       <div className="non-owner-caps-container">
@@ -689,7 +691,7 @@ class ContentObject extends React.Component {
                           <IconButton
                             title="Delete this key"
                             icon={DeleteIcon}
-                            disabled={!this.props.objectStore.object.isOwner || isOwnerKey}
+                            disabled={!objectStore.object.isOwner || isOwnerKey}
                             onClick={(event) => {
                               event.stopPropagation();
                               this.DeleteCap(capAddress);
@@ -712,7 +714,7 @@ class ContentObject extends React.Component {
   }
 
   ObjectInfo() {
-    const object = this.props.objectStore.object;
+    const object = objectStore.object;
 
     let accessCharge;
     if(object.accessInfo) {
@@ -741,9 +743,9 @@ class ContentObject extends React.Component {
       >
         <AsyncComponent
           Load={
-            async () => await this.props.objectStore.ContentObjectVersions({
-              libraryId: this.props.objectStore.libraryId,
-              objectId: this.props.objectStore.objectId
+            async () => await objectStore.ContentObjectVersions({
+              libraryId: objectStore.libraryId,
+              objectId: objectStore.objectId
             })
           }
           render={() => (
@@ -775,8 +777,8 @@ class ContentObject extends React.Component {
         <br />
 
         <LabelledField label="Library ID" hidden={object.isContentType}>
-          <Link className="inline-link" to={UrlJoin("/content", this.props.objectStore.libraryId)} >
-            { this.props.objectStore.libraryId}
+          <Link className="inline-link" to={UrlJoin("/content", objectStore.libraryId)} >
+            { objectStore.libraryId}
           </Link>
         </LabelledField>
 
@@ -825,8 +827,8 @@ class ContentObject extends React.Component {
   }
 
   Actions() {
-    const userCapKey = `eluv.caps.iusr${AddressToHash(this.props.objectStore.currentAccountAddress)}`;
-    const hasUserCap = !!(this.props.objectStore.object.meta && this.props.objectStore.object.meta[userCapKey]);
+    const userCapKey = `eluv.caps.iusr${AddressToHash(objectStore.currentAccountAddress)}`;
+    const hasUserCap = !!(objectStore.object.meta && this.props.objectStore.object.meta[userCapKey]);
 
     return (
       <ActionsToolbar
@@ -843,48 +845,48 @@ class ContentObject extends React.Component {
           {
             label: "Back",
             type: "link",
-            path: this.props.objectStore.object.isTenantObject ? "/content" : Path.dirname(this.props.match.url),
+            path: objectStore.object.isTenantObject ? "/content" : Path.dirname(this.props.match.url),
             className: "secondary"
           },
           {
             label: "Manage",
             type: "link",
-            hidden: !this.props.objectStore.object.canEdit,
+            hidden: !objectStore.object.canEdit,
             path: UrlJoin(this.props.match.url, "edit"),
           },
           {
             label: "Custom Contract",
             type: "link",
-            hidden: !this.props.objectStore.object.canEdit || this.props.objectStore.object.customContractAddress || !(this.props.objectStore.object.isNormalObject || this.props.objectStore.object.isContentType),
+            hidden: !objectStore.object.canEdit || this.props.objectStore.object.customContractAddress || !(this.props.objectStore.object.isNormalObject || this.props.objectStore.object.isContentType),
             path: UrlJoin(this.props.match.url, "deploy"),
           },
           {
             label: "Upload Parts",
             type: "link",
-            hidden: !this.props.objectStore.object.canEdit,
+            hidden: !objectStore.object.canEdit,
             path: UrlJoin(this.props.match.url, "upload")
           },
           {
             label: "Apps",
             type: "link",
-            hidden: !this.props.objectStore.object.canEdit,
+            hidden: !objectStore.object.canEdit,
             path: UrlJoin(this.props.match.url, "apps")
           },
           {
             label: "Copy",
             type: "button",
-            hidden: !this.props.objectStore.object.canEdit,
-            disabled: !(this.props.objectStore.object.isOwner || hasUserCap),
+            hidden: !objectStore.object.canEdit,
+            disabled: !(objectStore.object.isOwner || hasUserCap),
             onClick: () => this.setState({showCopyObjectModal: true}),
-            title: !(this.props.objectStore.object.isOwner || hasUserCap) ? "You don't have the key" : undefined
+            title: !(objectStore.object.isOwner || hasUserCap) ? "You don't have the key" : undefined
           },
           {
             label: "Delete",
             type: "button",
             hidden: (
-              this.props.objectStore.object.isContentLibraryObject ||
-              (this.props.objectStore.object.isV3 && !this.props.libraryStore.library || !!this.props.libraryStore.library && !this.props.libraryStore.library.isManager) ||
-              (!this.props.objectStore.object.isV3 && !this.props.objectStore.object.isOwner)
+              objectStore.object.isContentLibraryObject ||
+              (objectStore.object.isV3 && !this.props.libraryStore.library || !!this.props.libraryStore.library && !this.props.libraryStore.library.isManager) ||
+              (!objectStore.object.isV3 && !this.props.objectStore.object.isOwner)
             ),
             onClick: () => this.DeleteContentObject(),
             className: "danger",
@@ -900,10 +902,10 @@ class ContentObject extends React.Component {
 
     const queryParams = {
       contentSpaceId: Fabric.contentSpaceId,
-      libraryId: this.props.objectStore.libraryId,
-      objectId: this.props.objectStore.objectId,
-      versionHash: this.props.objectStore.object.hash,
-      type: this.props.objectStore.type ? this.props.objectStore.type.hash : "",
+      libraryId: objectStore.libraryId,
+      objectId: objectStore.objectId,
+      versionHash: objectStore.object.hash,
+      type: objectStore.type ? this.props.objectStore.type.hash : "",
       action: "display"
     };
 
@@ -927,10 +929,10 @@ class ContentObject extends React.Component {
     ];
 
     if(
-      !this.props.objectStore.object.isContentType &&
+      !objectStore.object.isContentType &&
       this.state.displayAppUrl ||
-      (this.props.objectStore.object.meta &&
-      this.props.objectStore.object.meta.hasOwnProperty("offerings"))
+      (objectStore.object.meta &&
+      objectStore.object.meta.hasOwnProperty("offerings"))
     ) {
       tabOptions.unshift(["Display", "display"]);
     }
@@ -945,9 +947,9 @@ class ContentObject extends React.Component {
   }
 
   CopyObject = async (object) => {
-    const originalObject = object.versionHash ? object : this.props.objectStore.object;
+    const originalObject = object.versionHash ? object : objectStore.object;
 
-    const {id, qlib_id} = await this.props.objectStore.CopyContentObject({
+    const {id, qlib_id} = await objectStore.CopyContentObject({
       libraryId: object.libraryId,
       originalVersionHash: originalObject.versionHash || originalObject.hash,
       options: {
@@ -977,14 +979,14 @@ class ContentObject extends React.Component {
     }
 
     let header;
-    if(this.props.objectStore.object.isTenantObject) {
+    if(objectStore.object.isTenantObject) {
       header = "Tenant Object";
-    } else if(this.props.objectStore.object.isContentLibraryObject) {
-      header = this.props.libraryStore.library?.name + " > Library Object";
-    } else if(this.props.objectStore.object.isContentType) {
-      header = "Content Types > " + this.props.objectStore.object?.name;
+    } else if(objectStore.object.isContentLibraryObject) {
+      header = libraryStore.library?.name + " > Library Object";
+    } else if(objectStore.object.isContentType) {
+      header = "Content Types > " + objectStore.object?.name;
     } else {
-      header = (this.props.libraryStore.library ? this.props.libraryStore.library.name : this.props.objectStore.libraryId) + " > " + this.props.objectStore.object.name;
+      header = (libraryStore.library ? this.props.libraryStore.library.name : this.props.objectStore.libraryId) + " > " + this.props.objectStore.object.name;
     }
 
     let pageContent;
@@ -994,13 +996,13 @@ class ContentObject extends React.Component {
       pageContent = (
         <ContentObjectGroups
           currentPage="contentObject"
-          showGroupPermissionsButton={this.props.objectStore.object.isOwner || (this.props.objectStore.object.isNormalObject && this.props.objectStore.object.permission !== "owner" && this.props.objectStore.object.canEdit)}
+          showGroupPermissionsButton={objectStore.object.isOwner || (this.props.objectStore.object.isNormalObject && this.props.objectStore.object.permission !== "owner" && this.props.objectStore.object.canEdit)}
           RefreshCallback={() => this.setState({refresh: true, pageVersion: this.state.pageVersion + 1})}
           LoadGroupPermissions={async () => {
-            await this.props.objectStore.ContentObjectGroupPermissions({objectId: this.props.objectStore.objectId});
-            await this.props.objectStore.ContentObjectUserPermissions({
-              objectId: this.props.objectStore.objectId,
-              libraryId: this.props.objectStore.libraryId
+            await objectStore.ContentObjectGroupPermissions({objectId: this.props.objectStore.objectId});
+            await objectStore.ContentObjectUserPermissions({
+              objectId: objectStore.objectId,
+              libraryId: objectStore.libraryId
             });
           }}
         />
@@ -1015,31 +1017,31 @@ class ContentObject extends React.Component {
       pageContent = (
         <div className="object-files">
           <FileBrowser
-            GetFileUrl={async ({filePath}) => await this.props.objectStore.GetFileUrl({
-              libraryId: this.props.objectStore.libraryId,
-              objectId: this.props.objectStore.objectId,
-              writeToken: this.props.objectStore.writeTokens[this.props.objectStore.objectId],
+            GetFileUrl={async ({filePath}) => await objectStore.GetFileUrl({
+              libraryId: objectStore.libraryId,
+              objectId: objectStore.objectId,
+              writeToken: objectStore.writeTokens[this.props.objectStore.objectId],
               filePath
             })}
             DownloadFile={async ({filePath, callback}) => {
-              await this.props.objectStore.DownloadFile({
-                libraryId: this.props.objectStore.libraryId,
-                objectId: this.props.objectStore.objectId,
-                writeToken: this.props.objectStore.writeTokens[this.props.objectStore.objectId],
+              await objectStore.DownloadFile({
+                libraryId: objectStore.libraryId,
+                objectId: objectStore.objectId,
+                writeToken: objectStore.writeTokens[this.props.objectStore.objectId],
                 filePath,
                 callback
               });
             }}
-            DownloadUrl={async ({filePath}) => await this.props.objectStore.DownloadUrl({
-              libraryId: this.props.objectStore.libraryId,
-              objectId: this.props.objectStore.objectId,
-              writeToken: this.props.objectStore.writeTokens[this.props.objectStore.objectId],
+            DownloadUrl={async ({filePath}) => await objectStore.DownloadUrl({
+              libraryId: objectStore.libraryId,
+              objectId: objectStore.objectId,
+              writeToken: objectStore.writeTokens[this.props.objectStore.objectId],
               filePath,
             })}
-            CreateDirectory={async ({directory}) => await this.props.objectStore.CreateDirectory({
-              libraryId: this.props.objectStore.libraryId,
-              objectId: this.props.objectStore.objectId,
-              writeToken: this.props.objectStore.writeTokens[this.props.objectStore.objectId],
+            CreateDirectory={async ({directory}) => await objectStore.CreateDirectory({
+              libraryId: objectStore.libraryId,
+              objectId: objectStore.objectId,
+              writeToken: objectStore.writeTokens[this.props.objectStore.objectId],
               directory
             })}
           />
@@ -1051,12 +1053,12 @@ class ContentObject extends React.Component {
       <div className="page-container content-page-container">
         <Prompt
           message={"Are you sure you want to navigate away from this page? You have unsaved changes that will be lost."}
-          when={!!this.props.objectStore.writeTokens[this.props.objectStore.objectId]}
+          when={!!objectStore.writeTokens[this.props.objectStore.objectId]}
         />
 
         { this.Actions() }
 
-        <PageHeader header={header} subHeader={this.props.objectStore.object.description} />
+        <PageHeader header={header} subHeader={objectStore.object.description} />
 
         { this.Tabs() }
 
@@ -1088,7 +1090,7 @@ class ContentObject extends React.Component {
 
     if(!urlVersionHash) { return; }
 
-    if(urlVersionHash === this.props.objectStore.object.hash) {
+    if(urlVersionHash === objectStore.object.hash) {
       this.setState({currentVersionToggled: true});
     } else {
       this.setState({prevVersionsToggled: true});
@@ -1101,11 +1103,11 @@ class ContentObject extends React.Component {
         key={`object-page-${this.state.pageVersion}`}
         Load={
           async () => {
-            this.props.objectStore.DiscardWriteToken({objectId: this.props.objectStore.objectId});
+            objectStore.DiscardWriteToken({objectId: this.props.objectStore.objectId});
 
             try {
-              await this.props.libraryStore.ContentLibrary({
-                libraryId: this.props.objectStore.libraryId
+              await libraryStore.ContentLibrary({
+                libraryId: objectStore.libraryId
               });
             } catch(error) {
               // eslint-disable-next-line no-console
@@ -1113,9 +1115,9 @@ class ContentObject extends React.Component {
             }
 
             try {
-              await this.props.objectStore.ContentObject({
-                libraryId: this.props.objectStore.libraryId,
-                objectId: this.props.objectStore.objectId,
+              await objectStore.ContentObject({
+                libraryId: objectStore.libraryId,
+                objectId: objectStore.objectId,
                 refresh: this.state.refresh
               });
             } catch(error) {
@@ -1125,9 +1127,9 @@ class ContentObject extends React.Component {
             }
 
             try {
-              await this.props.objectStore.ContentObjectUserPermissions({
-                objectId: this.props.objectStore.objectId,
-                libraryId: this.props.objectStore.libraryId
+              await objectStore.ContentObjectUserPermissions({
+                objectId: objectStore.objectId,
+                libraryId: objectStore.libraryId
               });
             } catch(error) {
               // eslint-disable-next-line no-console
@@ -1138,8 +1140,8 @@ class ContentObject extends React.Component {
 
             this.setState({
               displayAppUrl:
-                this.props.objectStore.object.displayAppUrl ||
-                (this.props.objectStore.object.typeInfo || {}).displayAppUrl,
+                objectStore.object.displayAppUrl ||
+                (objectStore.object.typeInfo || {}).displayAppUrl,
               refresh: false
             });
           }
@@ -1150,4 +1152,4 @@ class ContentObject extends React.Component {
   }
 }
 
-export default ContentObject;
+export default observer(ContentObject);

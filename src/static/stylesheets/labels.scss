@@ -2,14 +2,14 @@
   width: 100%;
 
   h2 {
-    font-size: $elv-font-xl;
+    font-size: var(--font-xl);
     font-weight: 400;
-    margin: $elv-spacing-m 0 $elv-spacing-s;
+    margin: var(--spacing-m 0 var(--spacing-s));
   }
 
   h3 {
-    font-size: $elv-font-l;
-    margin: $elv-spacing-m 0 $elv-spacing-s;
+    font-size: var(--font-l);
+    margin: var(--spacing-m 0 var(--spacing-s));
   }
 
   .labelled-field {
@@ -17,14 +17,14 @@
     display: flex;
     max-width: 100%;
     min-height: 1.8em;
-    padding: $elv-spacing-xxs $elv-spacing-s $elv-spacing-xxs 0;
+    padding: var(--spacing-xxs var(--spacing-s) var(--spacing-xxs) 0);
 
     &.align-top {
       align-items: flex-start;
     }
 
     label {
-      color: $elv-color-text-light;
+      color: var(--color-text-light);
       display: flex;
       min-width: 150px;
 
@@ -47,17 +47,17 @@
 
       input,
       textarea {
-        font-size: $elv-font-l;
+        font-size: var(--font-l);
         min-width: 250px;
       }
 
       input {
-        height: $elv-spacing-l;
+        height: var(--spacing-l);
       }
 
       textarea {
         height: 20rem;
-        padding: $elv-spacing-xxs;
+        padding: var(--spacing-xxs);
         width: 100%;
       }
     }
@@ -76,7 +76,7 @@
     }
 
     .inline-link {
-      color: $elv-color-mediumblue;
+      color: var(--color-mediumblue);
     }
 
     .comma-separated-list {
@@ -84,9 +84,9 @@
 
       * {
         &::after {
-          color: $elv-color-text-dark;
+          color: var(--color-text-dark);
           content: ",";
-          margin-right: $elv-spacing-xs;
+          margin-right: var(--spacing-xs);
         }
 
         &:last-child {
@@ -99,13 +99,15 @@
 
     & > div,
     & > .copyable > div {
-      @include elv-ellipsis;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
       flex-grow: 1;
       max-width: 525px;
     }
 
     & > div > button {
-      margin-bottom: $elv-spacing-xxs;
+      margin-bottom: var(--spacing-xxs);
     }
 
     & > span {
@@ -116,18 +118,18 @@
     // Increase specificity
     &.labelled-field {
       button {
-        font-size: $elv-font-s;
+        font-size: var(--font-s);
         width: 200px;
       }
     }
   }
 
   .indented {
-    padding-left: $elv-spacing-m;
+    padding-left: var(--spacing-m);
   }
 
   pre {
-    margin-top: $elv-spacing-s;
+    margin-top: var(--spacing-s);
     max-width: 75vw;
     white-space: pre-wrap;
 

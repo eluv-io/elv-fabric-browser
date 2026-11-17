@@ -1,36 +1,37 @@
-import {action, observable} from "mobx";
+import {makeAutoObservable} from "mobx";
 
 class NotificationStore {
-  @observable notification;
-  @observable error;
-  @observable redirect = false;
+  notification;
+  error;
+  redirect = false;
 
   constructor(rootStore) {
+    makeAutoObservable(this);
+
     this.rootStore = rootStore;
   }
 
-  @action.bound
   SetNotificationMessage({message, redirect=false}) {
     this.notification = message;
     this.error = "";
     this.redirect = redirect;
   }
 
-  @action.bound
+
   SetErrorMessage({message, redirect=false}) {
     this.notification = "";
     this.error = message;
     this.redirect = redirect;
   }
 
-  @action.bound
+
   ClearMessage() {
     this.notification = "";
     this.error = "";
     this.redirect = false;
   }
 
-  @action.bound
+
   ChangeRoute() {
     if(this.redirect) {
       this.redirect = false;
