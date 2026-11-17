@@ -234,7 +234,7 @@
 
   .index-button {
     &:disabled {
-      opacity: 40%;
+      opacity: 0.4;
       pointer-events: none;
     }
   }
@@ -256,7 +256,7 @@
     align-items: center;
     color: var(--color-darkgray);
     display: flex;
-    gap: 0.5rem; // sass-lint:disable-line no-misspelled-properties
+    gap: 0.5rem;
     margin-bottom: 0.5rem;
 
     .hint-icon {
@@ -276,7 +276,7 @@
     color: var(--color-text-white);
     font-size: var(--font-m);
     max-width: 45rem;
-    opacity: 100%;
+    opacity: 1;
     text-align: left;
     white-space: pre-wrap;
   }

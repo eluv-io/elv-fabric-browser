@@ -1,9 +1,7 @@
-// sass-lint:disable function-name-format
-
 .-elv-modal {
   &.content-browser-modal {
     .-elv-modal-content {
-      max-width: MIN(90vw, 1000px);
+      max-width: min(90vw, 1000px);
       width: 100%;
     }
   }
@@ -16,7 +14,7 @@
     height: calc(100vh - 100px);
     max-width: 1000px;
     padding: 20px 40px 40px;
-    width: MIN(100vw, 100%);
+    width: min(100vw, 100%);
   }
 }
 
@@ -69,7 +67,7 @@
       min-height: 50px;
       padding: 15px 20px;
 
-      &:not(.list-header):not(:disabled):hover { // sass-lint:disable-line force-pseudo-nesting
+      &:not(.list-header, :disabled):hover {
         border-left: 3px solid var(--color-mediumblue);
       }
 
@@ -79,7 +77,6 @@
     }
 
     &-item {
-
       &:nth-child(odd) {
         background-color: var(--color-lightestgray);
       }
@@ -146,7 +143,6 @@ white-space: nowrap;;
     overflow: hidden;
 text-overflow: ellipsis;
 white-space: nowrap;;
-
     font-size: 20px;
     font-weight: 300;
     text-align: center;

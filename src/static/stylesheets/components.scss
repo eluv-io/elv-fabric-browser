@@ -8,7 +8,6 @@
   }
 
   &.show {
-    // sass-lint:disable no-important
     max-height: 100% !important;
   }
 
@@ -51,8 +50,8 @@
 }
 
 .diff-block {
-  --diff-add-color: rgba(var(--color-green), 0.4);
-  --diff-delete-color: rgba(var(--color-red), 0.4);
+  --diff-add-color: rgb(var(--color-green) 0.4);
+  --diff-delete-color: rgb(var(--color-red) 0.4);
 
   max-height: 90vh;
 

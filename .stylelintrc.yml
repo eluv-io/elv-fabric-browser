@@ -1,0 +1,9 @@
+files:
+  include: "src/static/stylesheets/*.scss"
+  ignore:
+    - "src/static/stylesheets/variables.scss"
+    - "src/static/stylesheets/fonts.scss"
+    - "src/static/stylesheets/reset.scss"
+extends:
+  - "stylelint-config-standard"
+  - "stylelint-config-standard-scss"

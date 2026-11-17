@@ -248,7 +248,7 @@ pre,
   .body-rows {
     align-items: center;
     display: grid;
-    gap: 10px; // sass-lint:disable-line no-misspelled-properties
+    gap: 10px;
     grid-template-columns: 2fr 140px 4fr 50px;
     padding: 5px 10px;
 

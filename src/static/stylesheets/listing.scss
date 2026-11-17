@@ -1,15 +1,14 @@
-$aspect-ratio: 0.75; // 4/3
+$aspect-ratio: 0.75;
 $grid-listing-width: 150px;
 $table-listing-width: 95px;
-
 $listing-row-height: 4.25rem;
 $listing-icon-width: calc(#{$listing-row-height} * 16 / 9);
-
 $listing-grid-height: 9rem;
 $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
 
 .listing {
   $table-listing-height: calc(#{$table-listing-width} * #{$aspect-ratio});
+
   margin-bottom: var(--spacing-m);
 
   .loading {
@@ -49,9 +48,7 @@ $listing-grid-icon-width: calc(#{$listing-grid-height} * 16 / 9);
       input,
       select {
         border: 1px solid var(--color-lightgray);
-        flex-basis: 100px;
-        flex-grow: 1;
-        flex-shrink: 1;
+        flex: 1 1 100px;
         height: 100%;
         width: auto;
 
