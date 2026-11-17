@@ -24,11 +24,15 @@
   ],
   "dependencies": {
     "@eluvio/elv-client-js": "^4.2.46",
+    "@mantine/core": "^9.8.1",
+    "@mantine/hooks": "^9.8.1",
+    "@mantine/modals": "^9.8.1",
     "bignumber.js": "^8.1.1",
     "browser-cancelable-events": "^1.0.1",
     "browser-solc": "^1.0.0",
     "diff": "^5.0.0",
     "luxon": "^1.25.0",
+    "mantine-datatable": "^9.8.1",
     "mobx": "^7.1.7",
     "mobx-react": "^10.0.4",
     "node-fetch": "^2.6.7",
@@ -41,7 +45,6 @@
     "wouter": "^3.13.0"
   },
   "devDependencies": {
-    "@modyfi/vite-plugin-yaml": "^1.1.1",
     "@vitejs/plugin-react": "^6.3.0",
     "eslint": "^9.39.1",
     "eslint-plugin-react": "^7.37.5",

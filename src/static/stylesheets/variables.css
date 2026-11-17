@@ -1,0 +1,12 @@
+:root {
+  --color-text-primary: #000;
+  --color-text-secondary: #3C3C3C;
+  --color-text-tertiary: #868e96;
+  --color-text-highlight: #4489DF;
+
+
+  @keyframes fadein {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}

@@ -1,11 +1,11 @@
 import React from "react";
 import { Link } from "wouter";
 
-import ContentIcon from "../static/icons/content.svg";
-import GroupsIcon from "../static/icons/groups.svg";
-import ContentTypeIcon from "../static/icons/content_types.svg";
-import ContractsIcon from "../static/icons/contracts.svg";
-import EventsIcon from "../static/icons/logs.svg";
+import ContentIcon from "@/assets/icons/content.svg";
+import GroupsIcon from "@/assets/icons/groups.svg";
+import ContentTypeIcon from "@/assets/icons/content_types.svg";
+import ContractsIcon from "@/assets/icons/contracts.svg";
+import EventsIcon from "@/assets/icons/logs.svg";
 import ImageIcon from "@/components/components/ImageIcon";
 import {observer} from "mobx-react";
 

@@ -1,4 +1,4 @@
-import {configure, observable, action, flow, makeAutoObservable} from "mobx";
+import {configure, flow, makeAutoObservable} from "mobx";
 import {FrameClient} from "@eluvio/elv-client-js/src/FrameClient";
 
 import LibraryStore from "./Library";
@@ -35,7 +35,6 @@ class RootStore {
     this.typeStore = new TypeStore(this);
     this.contentStore = new ContentStore(this);
   }
-
 
   InitializeClient = flow(function * () {
     this.client = new FrameClient({

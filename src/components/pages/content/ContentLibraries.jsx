@@ -1,11 +1,12 @@
 import React from "react";
 import UrlJoin from "url-join";
-import LibraryIcon from "../../../static/icons/content.svg";
 import {PageHeader} from "../../components/Page";
 import Listing from "../../components/Listing";
 import ActionsToolbar from "../../components/ActionsToolbar";
 import {libraryStore} from "@/stores/index";
 import {observer} from "mobx-react";
+
+import LibraryIcon from "@/assets/icons/content.svg";
 
 class ContentLibraries extends React.Component {
   constructor(props) {

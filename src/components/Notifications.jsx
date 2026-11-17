@@ -1,5 +1,5 @@
 import React from "react";
-import CloseIcon from "../static/icons/close.svg";
+import CloseIcon from "@/assets/icons/close.svg";
 import {observer} from "mobx-react";
 import {reaction} from "mobx";
 

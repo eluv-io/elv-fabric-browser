@@ -6,10 +6,10 @@ import {observer} from "mobx-react";
 import UrlJoin from "url-join";
 import Path from "path";
 
-import AddIcon from "../../../static/icons/plus-square.svg";
-import DeleteIcon from "../../../static/icons/trash.svg";
-import QuestionMarkIcon from "../../../static/icons/help-circle.svg";
-import LinkIcon from "../../../static/icons/external-link.svg";
+import AddIcon from "@/assets/icons/plus-square.svg";
+import DeleteIcon from "@/assets/icons/trash.svg";
+import QuestionMarkIcon from "@/assets/icons/help-circle.svg";
+import LinkIcon from "@/assets/icons/external-link.svg";
 
 import {
   Action,

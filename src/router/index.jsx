@@ -1,10 +1,8 @@
-import React from "react";
-import {Route, Switch} from "react-router";
+import {useEffect, useState} from "react";
 import Fabric from "../clients/Fabric";
 import {observer} from "mobx-react";
-import {reaction} from "mobx";
-
-import {ErrorHandler} from "elv-components-js";
+import {rootStore, routeStore} from "@/stores/index";
+import {Switch, Route, Redirect, useLocation, useParams} from "wouter";
 
 import ContentLibrariesPage from "../components/pages/content/ContentLibraries";
 import ContentLibraryPage from "../components/pages/content/ContentLibrary";
@@ -38,174 +36,136 @@ import DeployedContractFundsFormPage from "../components/pages/contracts/deploye
 import DeployedContractEventsPage from "../components/pages/contracts/deployed/DeployedContractEvents";
 
 import EventsPage from "../components/pages/events/Events";
-import { Redirect, withRouter } from "react-router";
 
-import {notificationStore} from "@/stores/index";
-import {routeStore} from "@/stores/index";
+const WatchedRoute = observer(({...props}) => {
+  const params = useParams();
+  const [location] = useLocation();
 
-// Update app state and notify Core whenever route changes
-class WatchedRouteClass extends React.Component {
-  async componentDidMount() {
-    this.setState({
-      DisposeRouteReaction: reaction(
-        () => ({
-          match: JSON.stringify(this.props.match)
-        }),
-        async () => {
-          await routeStore.UpdateRoute(
-            this.props.computedMatch
-          );
+  useEffect(() => {
+    routeStore.UpdateRoute({path: location, params});
+  }, [location, params]);
 
-          this.setState({
-            routeSet: true
-          });
-        }
-      )
-    });
+  return (
+    <Route {...props} />
+  );
+});
 
-    // Initial load
-    await routeStore.UpdateRoute(
-      this.props.computedMatch
-    );
+const Router = observer(() => {
+  const [initialized, setInitialized] = useState(false);
+  useEffect(() => {
+    Fabric.Initialize()
+      .then(() => setInitialized(true));
+  }, []);
+
+  if(!initialized) {
+    return null;
   }
 
-  componentWillUnmount() {
-    if(this.state.DisposeRouteReaction) {
-      this.state.DisposeRouteReaction();
-    }
-  }
+  return (
+    <div className="main-content-container">
+      <Switch>
+        <WatchedRoute exact path="/" component={ContentLibrariesPage}/>
 
-  render() {
-    return (
-      <Route
-        exact={this.props.exact}
-        path={this.props.path}
-        component={withRouter(this.props.component)}
-      />
-    );
-  }
-}
+        { /* Access Groups */ }
 
-const WatchedRoute = withRouter(ErrorHandler(WatchedRouteClass));
+        <WatchedRoute exact path="/access-groups" component={AccessGroupsPage}/>
+        <WatchedRoute exact path="/access-groups/create" component={AccessGroupFormPage}/>
+        <WatchedRoute exact path="/access-groups/:contractAddress" component={AccessGroupPage}/>
+        <WatchedRoute exact path="/access-groups/:contractAddress/edit" component={AccessGroupFormPage}/>
+        <WatchedRoute exact path="/access-groups/:contractAddress/add-member" component={AccessGroupMemberFormPage}/>
+        <WatchedRoute exact path="/access-groups/:contractAddress/groups" component={ContentObjectGroupFormPage}/>
+        <WatchedRoute exact path="/access-groups/:contractAddress/contract" component={DeployedContractPage}/>
+        <WatchedRoute exact path="/access-groups/:contractAddress/contract/events"
+                      component={DeployedContractEventsPage}/>
+        <WatchedRoute exact path="/access-groups/:contractAddress/contract/funds"
+                      component={DeployedContractFundsFormPage}/>
 
-class Router extends React.Component {
-  constructor(props) {
-    super(props);
+        { /* Content */ }
+        { /* For most content routes, add content-types route corresponding to /content/:contentSpaceLibrary */ }
 
-    this.state = {
-      initialized: false
-    };
-  }
+        <WatchedRoute exact path="/content-types" component={ContentTypesPage}/>
 
-  async componentDidMount() {
-    await Fabric.Initialize();
+        <WatchedRoute exact path="/content" component={ContentLibrariesPage}/>
+        <WatchedRoute exact path="/content/create" component={ContentLibraryFormPage}/>
 
-    this.setState({initialized: true});
-  }
+        <WatchedRoute exact path="/content/:libraryId" component={ContentLibraryPage}/>
 
-  render() {
-    // Wait for Fabric client to initialize before rendering
-    if(!this.state.initialized) {
-      return null;
-    }
+        <WatchedRoute exact path="/content/:libraryId/edit" component={ContentLibraryFormPage}/>
 
-    return (
-      <div className="main-content-container">
-        <Switch>
-          <WatchedRoute exact path="/" component={ContentLibrariesPage}/>
+        <WatchedRoute exact path="/content/:libraryId/types" component={ContentLibraryTypesFormPage}/>
 
-          /* Access Groups */
+        <WatchedRoute exact path="/content/:libraryId/create" component={ContentObjectFormPage}/>
+        <WatchedRoute exact path="/content-types/create" component={ContentTypeFormPage}/>
 
-          <WatchedRoute exact path="/access-groups" component={AccessGroupsPage}/>
-          <WatchedRoute exact path="/access-groups/create" component={AccessGroupFormPage}/>
-          <WatchedRoute exact path="/access-groups/:contractAddress" component={AccessGroupPage}/>
-          <WatchedRoute exact path="/access-groups/:contractAddress/edit" component={AccessGroupFormPage}/>
-          <WatchedRoute exact path="/access-groups/:contractAddress/add-member" component={AccessGroupMemberFormPage}/>
-          <WatchedRoute exact path="/access-groups/:contractAddress/groups" component={ContentObjectGroupFormPage}/>
-          <WatchedRoute exact path="/access-groups/:contractAddress/contract" component={DeployedContractPage}/>
-          <WatchedRoute exact path="/access-groups/:contractAddress/contract/events" component={DeployedContractEventsPage}/>
-          <WatchedRoute exact path="/access-groups/:contractAddress/contract/funds" component={DeployedContractFundsFormPage}/>
+        <WatchedRoute exact path="/content/:libraryId/:objectId" component={ContentObjectPage}/>
+        <WatchedRoute exact path="/content-types/:objectId" component={ContentObjectPage}/>
 
-          /* Content */
-          /* For most content routes, add content-types route corresponding to /content/:contentSpaceLibrary */
+        <WatchedRoute exact path="/content/:libraryId/:objectId/edit" component={ContentObjectFormPage}/>
+        <WatchedRoute exact path="/content-types/:objectId/edit" component={ContentTypeFormPage}/>
 
-          <WatchedRoute exact path="/content-types" component={ContentTypesPage} />
+        <WatchedRoute exact path="/content/:libraryId/:objectId/review" component={ContentObjectReviewFormPage}/>
 
-          <WatchedRoute exact path="/content" component={ContentLibrariesPage}/>
-          <WatchedRoute exact path="/content/create" component={ContentLibraryFormPage}/>
+        <WatchedRoute exact path="/content/:libraryId/:objectId/upload" component={ContentObjectPartsFormPage}/>
+        <WatchedRoute exact path="/content-types/:objectId/upload" component={ContentObjectPartsFormPage}/>
 
-          <WatchedRoute exact path="/content/:libraryId" component={ContentLibraryPage}/>
+        <WatchedRoute exact path="/content/:libraryId/:objectId/groups" component={ContentObjectGroupFormPage}/>
 
-          <WatchedRoute exact path="/content/:libraryId/edit" component={ContentLibraryFormPage}/>
+        <WatchedRoute exact path="/content/:libraryId/:objectId/apps" component={ContentObjectAppsPage}/>
+        <WatchedRoute exact path="/content-types/:objectId/apps" component={ContentObjectAppsPage}/>
 
-          <WatchedRoute exact path="/content/:libraryId/types" component={ContentLibraryTypesFormPage}/>
+        <WatchedRoute exact path="/content/:libraryId/:objectId/deploy" component={DeployContractFormPage}/>
+        <WatchedRoute exact path="/content-types/:objectId/deploy" component={DeployContractFormPage}/>
 
-          <WatchedRoute exact path="/content/:libraryId/create" component={ContentObjectFormPage}/>
-          <WatchedRoute exact path="/content-types/create" component={ContentTypeFormPage} />
+        { /* Base content contract */ }
+        <WatchedRoute exact path="/content/:libraryId/:objectId/contract" component={DeployedContractPage}/>
+        <WatchedRoute exact path="/content-types/:objectId/contract" component={DeployedContractPage}/>
 
-          <WatchedRoute exact path="/content/:libraryId/:objectId" component={ContentObjectPage}/>
-          <WatchedRoute exact path="/content-types/:objectId" component={ContentObjectPage}/>
+        <WatchedRoute exact path="/content/:libraryId/:objectId/contract/events"
+                      component={DeployedContractEventsPage}/>
+        <WatchedRoute exact path="/content-types/:objectId/contract/events" component={DeployedContractEventsPage}/>
 
-          <WatchedRoute exact path="/content/:libraryId/:objectId/edit" component={ContentObjectFormPage}/>
-          <WatchedRoute exact path="/content-types/:objectId/edit" component={ContentTypeFormPage} />
+        <WatchedRoute exact path="/content/:libraryId/:objectId/contract/funds"
+                      component={DeployedContractFundsFormPage}/>
+        <WatchedRoute exact path="/content-types/:objectId/contract/funds" component={DeployedContractFundsFormPage}/>
 
-          <WatchedRoute exact path="/content/:libraryId/:objectId/review" component={ContentObjectReviewFormPage}/>
+        { /* Custom content contract */ }
+        <WatchedRoute exact path="/content/:libraryId/:objectId/custom-contract" component={DeployedContractPage}/>
+        <WatchedRoute exact path="/content-types/:objectId/custom-contract" component={DeployedContractPage}/>
 
-          <WatchedRoute exact path="/content/:libraryId/:objectId/upload" component={ContentObjectPartsFormPage}/>
-          <WatchedRoute exact path="/content-types/:objectId/upload" component={ContentObjectPartsFormPage}/>
+        <WatchedRoute exact path="/content/:libraryId/:objectId/custom-contract/events"
+                      component={DeployedContractEventsPage}/>
+        <WatchedRoute exact path="/content-types/:objectId/custom-contract/events"
+                      component={DeployedContractEventsPage}/>
 
-          <WatchedRoute exact path="/content/:libraryId/:objectId/groups" component={ContentObjectGroupFormPage} />
+        <WatchedRoute exact path="/content/:libraryId/:objectId/custom-contract/funds"
+                      component={DeployedContractFundsFormPage}/>
+        <WatchedRoute exact path="/content-types/:objectId/custom-contract/funds"
+                      component={DeployedContractFundsFormPage}/>
 
-          <WatchedRoute exact path="/content/:libraryId/:objectId/apps" component={ContentObjectAppsPage}/>
-          <WatchedRoute exact path="/content-types/:objectId/apps" component={ContentObjectAppsPage} />
+        { /* Contracts */ }
 
-          <WatchedRoute exact path="/content/:libraryId/:objectId/deploy" component={DeployContractFormPage}/>
-          <WatchedRoute exact path="/content-types/:objectId/deploy" component={DeployContractFormPage}/>
+        <WatchedRoute exact path="/contracts" component={ContractsPage}/>
+        <WatchedRoute exact path="/contracts/saved" component={ContractsPage}/>
+        <WatchedRoute exact path="/contracts/deployed" component={ContractsPage}/>
+        <WatchedRoute exact path="/contracts/compile" component={CompileContractFormPage}/>
+        <WatchedRoute exact path="/contracts/save" component={ContractFormPage}/>
+        <WatchedRoute exact path="/contracts/watch" component={WatchContractFormPage}/>
+        <WatchedRoute exact path="/contracts/deploy" component={DeployContractFormPage}/>
+        <WatchedRoute exact path="/contracts/deployed/:contractAddress" component={DeployedContractPage}/>
+        <WatchedRoute exact path="/contracts/deployed/:contractAddress/events" component={DeployedContractEventsPage}/>
+        <WatchedRoute exact path="/contracts/deployed/:contractAddress/funds"
+                      component={DeployedContractFundsFormPage}/>
+        <WatchedRoute exact path="/contracts/:contractName" component={ContractPage}/>
+        <WatchedRoute exact path="/contracts/:contractName/edit" component={ContractFormPage}/>
+        <WatchedRoute exact path="/contracts/:contractName/deploy" component={DeployContractFormPage}/>
 
-          /* Base content contract */
-          <WatchedRoute exact path="/content/:libraryId/:objectId/contract" component={DeployedContractPage}/>
-          <WatchedRoute exact path="/content-types/:objectId/contract" component={DeployedContractPage}/>
+        { /* Logs */ }
+        <WatchedRoute exact path="/events" component={EventsPage}/>
 
-          <WatchedRoute exact path="/content/:libraryId/:objectId/contract/events" component={DeployedContractEventsPage}/>
-          <WatchedRoute exact path="/content-types/:objectId/contract/events" component={DeployedContractEventsPage}/>
-
-          <WatchedRoute exact path="/content/:libraryId/:objectId/contract/funds" component={DeployedContractFundsFormPage}/>
-          <WatchedRoute exact path="/content-types/:objectId/contract/funds" component={DeployedContractFundsFormPage}/>
-
-          /* Custom content contract */
-          <WatchedRoute exact path="/content/:libraryId/:objectId/custom-contract" component={DeployedContractPage}/>
-          <WatchedRoute exact path="/content-types/:objectId/custom-contract" component={DeployedContractPage}/>
-
-          <WatchedRoute exact path="/content/:libraryId/:objectId/custom-contract/events" component={DeployedContractEventsPage}/>
-          <WatchedRoute exact path="/content-types/:objectId/custom-contract/events" component={DeployedContractEventsPage}/>
-
-          <WatchedRoute exact path="/content/:libraryId/:objectId/custom-contract/funds" component={DeployedContractFundsFormPage}/>
-          <WatchedRoute exact path="/content-types/:objectId/custom-contract/funds" component={DeployedContractFundsFormPage}/>
-
-          /* Contracts */
-
-          <WatchedRoute exact path="/contracts" component={ContractsPage}/>
-          <WatchedRoute exact path="/contracts/saved" component={ContractsPage}/>
-          <WatchedRoute exact path="/contracts/deployed" component={ContractsPage}/>
-          <WatchedRoute exact path="/contracts/compile" component={CompileContractFormPage}/>
-          <WatchedRoute exact path="/contracts/save" component={ContractFormPage}/>
-          <WatchedRoute exact path="/contracts/watch" component={WatchContractFormPage}/>
-          <WatchedRoute exact path="/contracts/deploy" component={DeployContractFormPage}/>
-          <WatchedRoute exact path="/contracts/deployed/:contractAddress" component={DeployedContractPage}/>
-          <WatchedRoute exact path="/contracts/deployed/:contractAddress/events" component={DeployedContractEventsPage}/>
-          <WatchedRoute exact path="/contracts/deployed/:contractAddress/funds" component={DeployedContractFundsFormPage}/>
-          <WatchedRoute exact path="/contracts/:contractName" component={ContractPage}/>
-          <WatchedRoute exact path="/contracts/:contractName/edit" component={ContractFormPage}/>
-          <WatchedRoute exact path="/contracts/:contractName/deploy" component={DeployContractFormPage}/>
-
-          /* Logs */
-          <WatchedRoute exact path="/events" component={EventsPage} />
-
-          <Redirect from="*" to="/content" />
-        </Switch>
-      </div>
-    );
-  }
-}
+        <Redirect from="*" to="/content"/>
+      </Switch>
+    </div>
+  );
+});
 
 export default Router;

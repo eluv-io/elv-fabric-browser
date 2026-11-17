@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import {contentStore, objectStore} from "@/stores/index";
 import {observer} from "mobx-react";
 
-import SearchIcon from "../../static/icons/search.svg";
+import SearchIcon from "@/assets/icons/search.svg";
 import {Modal, onEnterPressed, AsyncComponent, Action, LoadingElement, Confirm} from "elv-components-js";
 import ImageIcon from "@/components/components/ImageIcon";
 

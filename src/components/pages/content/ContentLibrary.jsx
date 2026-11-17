@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import UrlJoin from "url-join";
 import Path from "path";
-import ContentIcon from "../../../static/icons/content.svg";
+import ContentIcon from "@/assets/icons/content.svg";
 import {LabelledField} from "../../components/LabelledField";
 import ClippedText from "../../components/ClippedText";
 import {PageHeader} from "../../components/Page";
@@ -11,7 +11,7 @@ import AsyncComponent from "../../components/AsyncComponent";
 
 import Listing from "../../components/Listing";
 import {observer} from "mobx-react";
-import RefreshIcon from "../../../static/icons/refresh.svg";
+import RefreshIcon from "@/assets/icons/refresh.svg";
 import ToggleSection from "../../components/ToggleSection";
 import JSONField from "../../components/JSONField";
 import ContentLibraryGroupForm from "./ContentLibraryGroupForm";
@@ -19,7 +19,7 @@ import {ContentBrowserModal} from "../../components/ContentBrowser";
 import {Redirect} from "react-router";
 import ActionsToolbar from "../../components/ActionsToolbar";
 import {DateTime} from "luxon";
-import RemoveIcon from "../../../static/icons/close.svg";
+import RemoveIcon from "@/assets/icons/close.svg";
 
 import {libraryStore} from "@/stores/index";
 import {groupStore} from "@/stores/index";

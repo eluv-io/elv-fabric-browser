@@ -8,7 +8,7 @@ import {Redirect} from "react-router";
 import {PageHeader} from "../../components/Page";
 import {Confirm, IconButton, LoadingElement, Tabs} from "elv-components-js";
 import Listing from "../../components/Listing";
-import RemoveIcon from "../../../static/icons/close.svg";
+import RemoveIcon from "@/assets/icons/close.svg";
 import AsyncComponent from "elv-components-js/src/components/AsyncComponent";
 import JSONField from "../../components/JSONField";
 import ToggleSection from "../../components/ToggleSection";

@@ -1,6 +1,3 @@
-import React from "react";
-import PropTypes from "prop-types";
-
 export const PageHeader = ({header, subHeader}) => {
   if(subHeader) {
     subHeader = <h3 className="page-subheader">{subHeader}</h3>;
@@ -12,9 +9,4 @@ export const PageHeader = ({header, subHeader}) => {
       { subHeader }
     </div>
   );
-};
-
-PageHeader.propTypes = {
-  header: PropTypes.string.isRequired,
-  subHeader: PropTypes.string
 };

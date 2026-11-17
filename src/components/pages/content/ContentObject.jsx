@@ -21,9 +21,9 @@ import JSONField from "../../components/JSONField";
 import {DateTime} from "luxon";
 import ContentObjectGroups from "./ContentObjectGroups";
 
-import RefreshIcon from "../../../static/icons/refresh.svg";
-import InfoIcon from "../../../static/icons/help-circle.svg";
-import DeleteIcon from "../../../static/icons/trash.svg";
+import RefreshIcon from "@/assets/icons/refresh.svg";
+import InfoIcon from "@/assets/icons/help-circle.svg";
+import DeleteIcon from "@/assets/icons/trash.svg";
 
 import Diff from "../../components/Diff";
 import {ContentBrowserModal} from "../../components/ContentBrowser";

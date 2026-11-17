@@ -9,8 +9,8 @@ import {toJS} from "mobx";
 import {groupStore} from "@/stores/index";
 import Fabric from "../../../clients/Fabric";
 
-import AddIcon from "../../../static/icons/plus-square.svg";
-import RemoveIcon from "../../../static/icons/minus-square.svg";
+import AddIcon from "@/assets/icons/plus-square.svg";
+import RemoveIcon from "@/assets/icons/minus-square.svg";
 import ActionsToolbar from "../../components/ActionsToolbar";
 
 

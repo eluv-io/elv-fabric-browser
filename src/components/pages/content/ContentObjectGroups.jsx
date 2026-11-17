@@ -5,7 +5,7 @@ import {observer} from "mobx-react";
 import PropTypes from "prop-types";
 
 import ContentObjectGroupForm from "./ContentObjectGroupForm";
-import RemoveIcon from "../../../static/icons/close.svg";
+import RemoveIcon from "@/assets/icons/close.svg";
 
 import {objectStore} from "@/stores/index";
 import {groupStore} from "@/stores/index";

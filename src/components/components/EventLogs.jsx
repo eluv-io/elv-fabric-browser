@@ -7,7 +7,7 @@ import ImageIcon from "@/components/components/ImageIcon";
 import {observer} from "mobx-react";
 import {Tabs} from "elv-components-js";
 
-import ClipboardIcon from "../../static/icons/clipboard.svg";
+import ClipboardIcon from "@/assets/icons/clipboard.svg";
 
 import {eventsStore} from "@/stores/index";
 

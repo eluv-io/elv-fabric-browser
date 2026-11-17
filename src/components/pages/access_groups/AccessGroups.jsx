@@ -1,6 +1,6 @@
 import React from "react";
 import UrlJoin from "url-join";
-import AccessGroupIcon from "../../../static/icons/groups.svg";
+import AccessGroupIcon from "@/assets/icons/groups.svg";
 import {PageHeader} from "../../components/Page";
 import Listing from "../../components/Listing";
 import {observer} from "mobx-react";

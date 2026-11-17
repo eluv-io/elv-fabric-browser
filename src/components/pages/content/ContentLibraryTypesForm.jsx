@@ -2,7 +2,7 @@ import React from "react";
 import Path from "path";
 import {Action, Form, IconButton} from "elv-components-js";
 import AsyncComponent from "../../components/AsyncComponent";
-import DeleteIcon from "../../../static/icons/trash.svg";
+import DeleteIcon from "@/assets/icons/trash.svg";
 import {observer} from "mobx-react";
 import ActionsToolbar from "../../components/ActionsToolbar";
 

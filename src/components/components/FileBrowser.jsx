@@ -19,16 +19,16 @@ import {
 import ImageIcon from "@/components/components/ImageIcon";
 import FileUploadWidget from "./FileUploadWidget";
 
-import DirectoryIcon from "../../static/icons/directory.svg";
-import FileIcon from "../../static/icons/file.svg";
-import PictureIcon from "../../static/icons/image.svg";
-import EncryptedFileIcon from "../../static/icons/encrypted-file.svg";
-import EncryptedImageIcon from "../../static/icons/encrypted-image.svg";
-import ReferenceFileIcon from "../../static/icons/external-link.svg";
-import DownloadIcon from "../../static/icons/download.svg";
-import BackIcon from "../../static/icons/directory_back.svg";
-import LinkIcon from "../../static/icons/link.svg";
-import DeleteIcon from "../../static/icons/trash.svg";
+import DirectoryIcon from "@/assets/icons/directory.svg";
+import FileIcon from "@/assets/icons/file.svg";
+import PictureIcon from "@/assets/icons/image.svg";
+import EncryptedFileIcon from "@/assets/icons/encrypted-file.svg";
+import EncryptedImageIcon from "@/assets/icons/encrypted-image.svg";
+import ReferenceFileIcon from "@/assets/icons/external-link.svg";
+import DownloadIcon from "@/assets/icons/download.svg";
+import BackIcon from "@/assets/icons/directory_back.svg";
+import LinkIcon from "@/assets/icons/link.svg";
+import DeleteIcon from "@/assets/icons/trash.svg";
 
 
 const DownloadButton = ({name, DownloadFile, hidden}) => {

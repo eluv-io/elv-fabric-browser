@@ -1,0 +1,36 @@
+html,
+body,
+.app {
+  display: block;
+  width: 100%;
+}
+
+body {
+  --animation-fade-in: fadein;
+
+  color: #222;
+  height: 100vh;
+  scrollbar-gutter: stable both-edges;
+
+  * {
+    font-family: Inter, "Helvetica Neue", helvetica, sans-serif;
+    scrollbar-color: #AAA #FAFAFA;
+    scrollbar-width: thin;
+
+    ::-webkit-scrollbar {
+      opacity: 1;
+      width: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #eee;
+      opacity: 1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background-color: #aaa;
+      border-radius: 100px;
+      opacity: 1;
+    }
+  }
+}

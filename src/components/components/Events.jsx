@@ -3,8 +3,8 @@ import EventLogs from "./EventLogs";
 import PropTypes from "prop-types";
 import {Action, LoadingElement, IconButton, onEnterPressed} from "elv-components-js";
 
-import WatchIcon from "../../static/icons/eye.svg";
-import StopWatchingIcon from "../../static/icons/eye-off.svg";
+import WatchIcon from "@/assets/icons/eye.svg";
+import StopWatchingIcon from "@/assets/icons/eye-off.svg";
 import {observer} from "mobx-react";
 
 import {eventsStore} from "@/stores/index";

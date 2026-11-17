@@ -1,9 +1,9 @@
 import React from "react";
 import PropTypes from "prop-types";
 import {Action, LoadingElement, IconButton} from "elv-components-js";
-import GridIcon from "../../static/icons/grid.svg";
-import ListIcon from "../../static/icons/list.svg";
-import RefreshIcon from "../../static/icons/refresh.svg";
+import GridIcon from "@/assets/icons/grid.svg";
+import ListIcon from "@/assets/icons/list.svg";
+import RefreshIcon from "@/assets/icons/refresh.svg";
 import ListingView from "./ListingView";
 import {CancelableEvents, isCancelledPromiseError} from "browser-cancelable-events";
 import {observer} from "mobx-react";

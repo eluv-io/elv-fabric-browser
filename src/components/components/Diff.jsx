@@ -5,8 +5,8 @@ import {objectStore} from "@/stores/index";
 import {diffJson} from "diff";
 import {IconButton} from "elv-components-js";
 
-import UpArrow from "../../static/icons/arrow-up-circle.svg";
-import DownArrow from "../../static/icons/arrow-down-circle.svg";
+import UpArrow from "@/assets/icons/arrow-up-circle.svg";
+import DownArrow from "@/assets/icons/arrow-down-circle.svg";
 
 const GetDiffParts = ({json, diff}) => {
   typeof json === "string" ? json = JSON.parse(json || "{}") : json;

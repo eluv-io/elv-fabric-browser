@@ -1,7 +1,7 @@
 import {observable, action, makeAutoObservable} from "mobx";
 import {FormatAddress} from "../utils/Helpers";
 import UrlJoin from "url-join";
-import Fabric from "../clients/Fabric";
+import Fabric from "@/client/Fabric";
 
 class RouterStore {
   path;
@@ -16,13 +16,12 @@ class RouterStore {
     this.rootStore = rootStore;
   }
 
-
-  UpdateRoute(match) {
-    this.path = match.url;
-    this.libraryId = match.params.libraryId;
-    this.objectId = match.params.objectId;
-    this.contractName = match.params.contractName;
-    this.contractAddress = FormatAddress(match.params.contractAddress);
+  UpdateRoute({path, params}) {
+    this.path = path;
+    this.libraryId = params.libraryId;
+    this.objectId = params.objectId;
+    this.contractName = params.contractName;
+    this.contractAddress = FormatAddress(params.contractAddress);
 
     if(this.path.startsWith("/content-types")) {
       this.libraryId = Fabric.contentSpaceLibraryId;
@@ -30,7 +29,7 @@ class RouterStore {
 
     this.rootStore.notificationStore.ChangeRoute();
 
-    Fabric.SetFramePath({path: UrlJoin("#", this.path)});
+    Fabric.SetFramePath({path: UrlJoin("/", this.path)});
   }
 }
 

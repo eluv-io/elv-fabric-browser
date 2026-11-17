@@ -1,6 +1,6 @@
 import React from "react";
 import UrlJoin from "url-join";
-import TypeIcon from "../../../static/icons/content.svg";
+import TypeIcon from "@/assets/icons/content.svg";
 import {PageHeader} from "../../components/Page";
 import Listing from "../../components/Listing";
 import {observer} from "mobx-react";

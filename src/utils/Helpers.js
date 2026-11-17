@@ -1,6 +1,24 @@
 import Utils from "@eluvio/elv-client-js/src/Utils";
 import BigNumber from "bignumber.js";
 
+import SharedStyles from "@/assets/stylesheets/modules/shared.module.scss";
+
+export const JoinClassNames = (...cs) => cs.map(c => c || "").join(" ");
+
+export const CreateModuleClassMatcher = (...modules) => {
+  modules = [SharedStyles, ...modules];
+
+  return (...classes) => JoinClassNames(
+    ...(classes.map(c => {
+      return modules
+        .map(m => m?.[c])
+        .filter(c => c)
+        .join(" ");
+    }))
+  );
+};
+
+
 // Traverse through a hashmap without throwing errors on undefined keys
 // If any keys undefined, returns undefined
 export const SafeTraverse = (object, ...keys) => {
@@ -207,3 +225,4 @@ export const ParseInputJson = (metadata) => {
 
   return metadata || {};
 };
+
