@@ -46,17 +46,17 @@ class RootStore {
   });
 }
 
-const rootStore = new RootStore();
+const store = new RootStore();
 
-export const root = rootStore;
-export const contractStore = rootStore.contractStore;
-export const eventsStore = rootStore.eventsStore;
-export const groupStore = rootStore.groupStore;
-export const libraryStore = rootStore.libraryStore;
-export const notificationStore = rootStore.notificationStore;
-export const objectStore = rootStore.objectStore;
-export const routeStore = rootStore.routerStore;
-export const typeStore = rootStore.typeStore;
-export const contentStore = rootStore.contentStore;
+export const rootStore = store;
+export const contractStore = store.contractStore;
+export const eventsStore = store.eventsStore;
+export const groupStore = store.groupStore;
+export const libraryStore = store.libraryStore;
+export const notificationStore = store.notificationStore;
+export const objectStore = store.objectStore;
+export const routeStore = store.routerStore;
+export const typeStore = store.typeStore;
+export const contentStore = store.contentStore;
 
-window.rootStore = rootStore;
+window.rootStore = store;

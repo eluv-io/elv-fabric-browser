@@ -27,6 +27,7 @@ export default defineConfig(({command}) => {
         "@/assets": fileURLToPath(new URL("./src/static", import.meta.url)),
         "@/client": fileURLToPath(new URL("./src/clients", import.meta.url)),
         "@/components": fileURLToPath(new URL("./src/components", import.meta.url)),
+        "@/pages": fileURLToPath(new URL("./src/pages", import.meta.url)),
         "@/stores": fileURLToPath(new URL("./src/stores", import.meta.url)),
         "@/utils": fileURLToPath(new URL("./src/utils", import.meta.url)),
       }

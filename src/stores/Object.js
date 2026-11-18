@@ -1,10 +1,10 @@
-import Fabric from "../clients/Fabric";
+import Fabric from "@/client/Fabric";
 import {action, computed, flow, makeAutoObservable, observable} from "mobx";
-import {DownloadFromUrl, FileInfo} from "../utils/Files";
+import {DownloadFromUrl, FileInfo} from "@/utils/Files";
 import UrlJoin from "url-join";
 import {ParseInputJson} from "@/utils/Helpers";
 import Path from "path";
-import {AddressToHash, EqualAddress} from "../utils/Helpers";
+import {AddressToHash, EqualAddress} from "@/utils/Helpers";
 const Fetch = typeof fetch !== "undefined" ? fetch : require("node-fetch").default;
 
 const concurrentUploads = 3;

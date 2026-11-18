@@ -1,15 +1,17 @@
+import "@/assets/stylesheets/reset.scss";
+
 import "@mantine/core/styles.css";
 import "@/assets/stylesheets/variables.css";
 import "@/assets/stylesheets/base.scss";
 
 import {createRoot} from "react-dom/client";
-import UrlJoin from "url-join";
 import {createTheme, MantineProvider} from "@mantine/core";
+import UrlJoin from "url-join";
 
-import "./utils/StringExtensions";
+import "@/utils/StringExtensions";
 
-import NavigationBar from "./components/NavigationBar.jsx";
-import Notifications from "./components/Notifications.jsx";
+import NavigationBar from "@/components/NavigationBar.jsx";
+import Notifications from "@/components/Notifications.jsx";
 import Routes from "./Routes";
 
 const theme = createTheme({
@@ -19,17 +21,19 @@ const theme = createTheme({
 const App = () => {
   if(window.self === window.top) {
     // Not in Core frame - Redirect
-    window.location = UrlJoin(EluvioConfiguration.coreUrl, "/", window.location.hash);
+    window.location = UrlJoin(EluvioConfiguration.coreUrl, "/", window.location.pathname);
     return;
   }
 
   const root = createRoot(document.getElementById("app"));
 
   root.render(
-    <MantineProvider>
+    <MantineProvider theme={theme}>
       <NavigationBar />
+      <div className="app__content">
+        <Routes />
+      </div>
       <Notifications />
-      <Routes />
     </MantineProvider>
   );
 };

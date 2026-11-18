@@ -1,67 +1,79 @@
-import React from "react";
-import CloseIcon from "@/assets/icons/close.svg";
+import CommonStyles from "@/assets/stylesheets/modules/common.module.scss";
+
 import {observer} from "mobx-react";
-import {reaction} from "mobx";
-
 import {notificationStore} from "@/stores/index";
-import ImageIcon from "@/components/components/ImageIcon";
+import {IconButton} from "@/components/Components";
 
-class Notifications extends React.Component {
-  constructor(props) {
-    super(props);
+import CloseIcon from "@/assets/icons/x.svg";
+import {CreateModuleClassMatcher} from "@/utils/Helpers";
+import {useEffect, useState} from "react";
 
-    this.state = {
-      notificationVersion: 0
-    };
-  }
+const S = CreateModuleClassMatcher(CommonStyles);
 
-  componentDidMount() {
-    // Update key on notification update to restart fadeout animation
-    this.setState({
-      DisposeReaction: reaction(
-        () => ({
-          notification: notificationStore.notification,
-          error: notificationStore.error
-        }),
-        () => this.setState({notificationVersion: this.state.notificationVersion + 1})
-      )
-    });
-  }
+const clearDuration = 5;
+let fadeTimeout, closeTimeout;
 
-  componentWillUnmount() {
-    if(this.state.DisposeReaction) {
-      this.state.DisposeReaction();
+const Notifications = observer(() => {
+  const [closing, setClosing] = useState(false);
+  const [message, setMessage] = useState(undefined);
+  const [error, setError] = useState(undefined);
+
+  // Automatically clear messages after a few seconds, but not errors
+  useEffect(() => {
+    clearTimeout(fadeTimeout);
+
+    if(!notificationStore.notification) { return; }
+
+    fadeTimeout = setTimeout(() => {
+      notificationStore.ClearMessage();
+    }, clearDuration * 1000);
+  }, [notificationStore.notification]);
+
+  // Delay clearing message so we can fade out
+  useEffect(() => {
+    clearTimeout(closeTimeout);
+
+    if(notificationStore.notification || notificationStore.error) {
+      setClosing(false);
+      setMessage(notificationStore.notification);
+      setError(notificationStore.error);
+      return;
     }
+
+    setClosing(true);
+    closeTimeout = setTimeout(() => {
+      setClosing(false);
+      setMessage(undefined);
+      setError(undefined);
+    }, 750);
+  }, [notificationStore.notification, notificationStore.error]);
+
+  if(!message && !error) {
+    return null;
   }
 
-  render() {
-    const key = `notification-${this.state.notificationVersion}`;
+  return (
+    <div
+      className={
+        S(
+          "notification",
+          closing ? "notification--closing" : "",
+          error ? "notification--error" : "notification--message"
+        )
+      }
+    >
+      <div className={S("notification__message")}>
+        {error || message}
+      </div>
+      <IconButton
+        title="Close"
+        icon={CloseIcon}
+        size="sm"
+        onClick={() => notificationStore.ClearMessage()}
+        className={S("notification__clear")}
+      />
+    </div>
+  );
+});
 
-    if(notificationStore.error) {
-      return (
-        <div className="notification-container" key={key}>
-          <div className="notification-message-container error-message-container">
-            <span>{ notificationStore.error }</span>
-            <button title="clear-notification" onClick={notificationStore.ClearMessage} className="clear-notification">
-              <ImageIcon icon={CloseIcon} />
-            </button>
-          </div>
-        </div>
-      );
-    } else if(notificationStore.notification) {
-      return (
-        <div className="notification-container" key={key}>
-          <div className="notification-message-container">
-            <span>{ notificationStore.notification }</span>
-          </div>
-        </div>
-      );
-    } else {
-      return (
-        <div className="notification-container" />
-      );
-    }
-  }
-}
-
-export default observer(Notifications);
+export default Notifications;

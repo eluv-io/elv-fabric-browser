@@ -1,12 +1,30 @@
 :root {
-  --color-text-primary: #000;
+  --color-text-primary: #22252A;
   --color-text-secondary: #3C3C3C;
   --color-text-tertiary: #868e96;
   --color-text-highlight: #4489DF;
+  --color-text-error: #DD3333;
+  --color-icon: #6B6B6B;
+  --color-border: #f2f2f2;
 
+  --background-hover: #f0f0f0;
+  --background-active: #EBF3FC;
+  --background-disabled: #ddd;
 
-  @keyframes fadein {
-    from { opacity: 0; }
-    to { opacity: 1; }
+  --width-nav: 70px;
+  --width-notification: 600px;
+
+  --box-shadow: 5px 5px 10px rgba(0, 0, 0, 10%);
+
+  --animation-fade-in: fadein;
+}
+
+@keyframes fadein {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
   }
 }

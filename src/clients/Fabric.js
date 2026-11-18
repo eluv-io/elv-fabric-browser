@@ -1,6 +1,6 @@
 import { FrameClient } from "@eluvio/elv-client-js/src/FrameClient";
 import UrlJoin from "url-join";
-import {EqualAddress, FormatAddress, LROStatus} from "../utils/Helpers";
+import {EqualAddress, FormatAddress, LROStatus} from "@/utils/Helpers";
 import Utils from "@eluvio/elv-client-js/src/Utils";
 const Fetch = typeof fetch !== "undefined" ? fetch : require("node-fetch").default;
 

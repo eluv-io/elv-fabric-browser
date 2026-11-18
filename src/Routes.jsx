@@ -4,41 +4,42 @@ import {observer} from "mobx-react";
 import {rootStore, routeStore} from "@/stores/index";
 import {Switch, Route, Redirect, useLocation, useParams} from "wouter";
 
-import ContentLibrariesPage from "@/components/pages/content/ContentLibraries";
+import ContentLibrariesPage from "@/pages/content/ContentLibraries";
 /*
-import ContentLibraryPage from "@/components/pages/content/ContentLibrary";
-import ContentLibraryFormPage from "@/components/pages/content/ContentLibraryForm";
-import ContentLibraryTypesFormPage from "@/components/pages/content/ContentLibraryTypesForm";
+import ContentLibraryPage from "@/pages/content/ContentLibrary";
+import ContentLibraryFormPage from "@/pages/content/ContentLibraryForm";
+import ContentLibraryTypesFormPage from "@/pages/content/ContentLibraryTypesForm";
 
-import ContentTypesPage from "@/components/pages/content/ContentTypes";
-import ContentTypeFormPage from "@/components/pages/content/ContentTypeForm";
+import ContentTypesPage from "@/pages/content/ContentTypes";
+import ContentTypeFormPage from "@/pages/content/ContentTypeForm";
 
-import ContentObjectPage from "@/components/pages/content/ContentObject";
-import ContentObjectFormPage from "@/components/pages/content/ContentObjectForm";
-import ContentObjectReviewFormPage from "@/components/pages/content/ContentObjectReviewForm";
-import ContentObjectGroupFormPage from "@/components/pages/content/ContentObjectGroupForm";
-import ContentObjectPartsFormPage from "@/components/pages/content/ContentObjectPartsForm";
-import ContentObjectAppsPage from "@/components/pages/content/ContentApps";
+import ContentObjectPage from "@/pages/content/ContentObject";
+import ContentObjectFormPage from "@/pages/content/ContentObjectForm";
+import ContentObjectReviewFormPage from "@/pages/content/ContentObjectReviewForm";
+import ContentObjectGroupFormPage from "@/pages/content/ContentObjectGroupForm";
+import ContentObjectPartsFormPage from "@/pages/content/ContentObjectPartsForm";
+import ContentObjectAppsPage from "@/pages/content/ContentApps";
 
-import AccessGroupsPage from "@/components/pages/access_groups/AccessGroups";
-import AccessGroupPage from "@/components/pages/access_groups/AccessGroup";
-import AccessGroupFormPage from "@/components/pages/access_groups/AccessGroupForm";
-import AccessGroupMemberFormPage from "@/components/pages/access_groups/AccessGroupMemberForm";
+import AccessGroupsPage from "@/pages/access_groups/AccessGroups";
+import AccessGroupPage from "@/pages/access_groups/AccessGroup";
+import AccessGroupFormPage from "@/pages/access_groups/AccessGroupForm";
+import AccessGroupMemberFormPage from "@/pages/access_groups/AccessGroupMemberForm";
 
-import ContractsPage from "@/components/pages/contracts/Contracts";
-import ContractPage from "@/components/pages/contracts/Contract";
-import CompileContractFormPage from "@/components/pages/contracts/CompileContractForm";
-import ContractFormPage from "@/components/pages/contracts/ContractForm";
-import WatchContractFormPage from "@/components/pages/contracts/WatchContractForm";
-import DeployContractFormPage from "@/components/pages/contracts/DeployContractForm";
+import ContractsPage from "@/pages/contracts/Contracts";
+import ContractPage from "@/pages/contracts/Contract";
+import CompileContractFormPage from "@/pages/contracts/CompileContractForm";
+import ContractFormPage from "@/pages/contracts/ContractForm";
+import WatchContractFormPage from "@/pages/contracts/WatchContractForm";
+import DeployContractFormPage from "@/pages/contracts/DeployContractForm";
 
-import DeployedContractPage from "@/components/pages/contracts/deployed/DeployedContract";
-import DeployedContractFundsFormPage from "@/components/pages/contracts/deployed/DeployedContractFundsForm";
-import DeployedContractEventsPage from "@/components/pages/contracts/deployed/DeployedContractEvents";
+import DeployedContractPage from "@/pages/contracts/deployed/DeployedContract";
+import DeployedContractFundsFormPage from "@/pages/contracts/deployed/DeployedContractFundsForm";
+import DeployedContractEventsPage from "@/pages/contracts/deployed/DeployedContractEvents";
 
+import EventsPage from "@/pages/events/Events";
  */
 
-import EventsPage from "@/components/pages/events/Events";
+
 
 const WatchedRoute = observer(({...props}) => {
   const params = useParams();

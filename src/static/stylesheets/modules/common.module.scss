@@ -1,0 +1,56 @@
+.actions-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.content-lookup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  &__input {
+    width: 400px;
+  }
+}
+
+.notification {
+  position: fixed;
+  top: 24px;
+  box-shadow: var(--box-shadow);
+  width: var(--width-notification);
+  left: calc(var(--width-nav) + (100vw - var(--width-nav) - var(--width-notification)) / 2);
+  margin-inline: auto;
+  background-color: white;
+  border: 2px solid var(--color-text-highlight);
+  border-radius: 5px;
+  z-index: 100;
+  padding: 10px 30px 10px 15px;
+  font-size: 16px;
+  color: var(--color-text-highlight);
+  animation: var(--animation-fade-in) 0.5s ease;
+  transition: opacity 0.5s ease;
+
+  &__clear {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    color: var(--color-text-highlight);
+  }
+
+  &--error {
+    color: var(--color-text-error);
+    border: 2px solid var(--color-text-error);
+
+    .notification__clear {
+      color: var(--color-text-error);
+    }
+  }
+
+  &--closing {
+    opacity: 0;
+    pointer-events: none;
+  }
+}

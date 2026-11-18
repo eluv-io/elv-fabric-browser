@@ -3,14 +3,13 @@ body,
 .app {
   display: block;
   width: 100%;
+  min-height: 100vh;
 }
 
 body {
-  --animation-fade-in: fadein;
-
-  color: #222;
+  color: var(--color-text-primary);
   height: 100vh;
-  scrollbar-gutter: stable both-edges;
+  scrollbar-gutter: stable;
 
   * {
     font-family: Inter, "Helvetica Neue", helvetica, sans-serif;
@@ -32,5 +31,15 @@ body {
       border-radius: 100px;
       opacity: 1;
     }
+  }
+}
+
+.app {
+  display: grid;
+  grid-template-columns: var(--width-nav) 1fr;
+
+  &__content {
+    padding: 24px;
+    position: relative;
   }
 }

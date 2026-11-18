@@ -1,7 +1,7 @@
-import Fabric from "../clients/Fabric";
+import Fabric from "@/client/Fabric";
 import {action, computed, flow, makeAutoObservable, observable} from "mobx";
-import {FormatAddress} from "../utils/Helpers";
-import {Cancelable} from "../utils/Cancelable";
+import {FormatAddress} from "@/utils/Helpers";
+import {Cancelable} from "@/utils/Cancelable";
 import {ParseInputJson} from "@/utils/Helpers";
 
 class GroupStore {

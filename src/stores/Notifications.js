@@ -17,20 +17,17 @@ class NotificationStore {
     this.redirect = redirect;
   }
 
-
   SetErrorMessage({message, redirect=false}) {
     this.notification = "";
     this.error = message;
     this.redirect = redirect;
   }
 
-
   ClearMessage() {
     this.notification = "";
     this.error = "";
     this.redirect = false;
   }
-
 
   ChangeRoute() {
     if(this.redirect) {

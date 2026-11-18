@@ -1,8 +1,8 @@
 import {observable, action, flow, computed, makeAutoObservable} from "mobx";
-import Fabric from "../clients/Fabric";
+import Fabric from "@/client/Fabric";
 import {ParseInputJson} from "@/utils/Helpers";
 
-import {Cancelable} from "../utils/Cancelable";
+import {Cancelable} from "@/utils/Cancelable";
 
 class TypeStore {
   typesLoaded = false;

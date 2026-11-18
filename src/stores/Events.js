@@ -1,6 +1,6 @@
-import Fabric from "../clients/Fabric";
+import Fabric from "@/client/Fabric";
 import {action, flow, makeAutoObservable, observable, runInAction, toJS} from "mobx";
-import {FormatAddress} from "../utils/Helpers";
+import {FormatAddress} from "@/utils/Helpers";
 
 class EventsStore {
   events = [];

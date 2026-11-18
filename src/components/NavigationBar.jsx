@@ -1,76 +1,72 @@
-import React from "react";
-import { Link } from "wouter";
+import NavStyles from "@/assets/stylesheets/modules/nav.module.scss";
+
+import ImageIcon from "@/components/ImageIcon";
+import {observer} from "mobx-react";
+import {routeStore} from "@/stores/index";
+import {CreateModuleClassMatcher} from "@/utils/Helpers";
+import {Linkish} from "@/components/Components";
 
 import ContentIcon from "@/assets/icons/content.svg";
 import GroupsIcon from "@/assets/icons/groups.svg";
 import ContentTypeIcon from "@/assets/icons/content_types.svg";
 import ContractsIcon from "@/assets/icons/contracts.svg";
 import EventsIcon from "@/assets/icons/logs.svg";
-import ImageIcon from "@/components/components/ImageIcon";
-import {observer} from "mobx-react";
 
-import {routeStore} from "@/stores/index";
+const S = CreateModuleClassMatcher(NavStyles);
 
-class NavigationBar extends React.Component {
-  static Links() {
-    return [
-      {
-        link: "content",
-        text: "Content",
-        rootPath: true,
-        icon: ContentIcon
-      },
-      {
-        link: "access-groups",
-        text: "Access Groups",
-        icon: GroupsIcon
-      },
-      {
-        link: "content-types",
-        text: "Content Types",
-        icon: ContentTypeIcon
-      },
-      {
-        link: "contracts",
-        text: "Contracts",
-        icon: ContractsIcon
-      },
-      {
-        link: "events",
-        text: "Events",
-        icon: EventsIcon
-      }
-    ];
+const links = [
+  {
+    path: "/content",
+    text: "Content",
+    rootPath: true,
+    icon: ContentIcon
+  },
+  {
+    path: "/access-groups",
+    text: "Access Groups",
+    icon: GroupsIcon
+  },
+  {
+    path: "/content-types",
+    text: "Content Types",
+    icon: ContentTypeIcon
+  },
+  {
+    path: "/contracts",
+    text: "Contracts",
+    icon: ContractsIcon
+  },
+  {
+    path: "/events",
+    text: "Events",
+    icon: EventsIcon
   }
+];
 
-  NavLink({linkInfo}) {
-    const basePath = (routeStore.path || "").split("/")[1];
-    let active = linkInfo.rootPath && !basePath || basePath === linkInfo.link;
-    return (
-      <div key={"navbar-link-" + linkInfo.link} className="navbar-link-container">
-        <Link to={"/" + linkInfo.link} className={"navbar-link " + (active ? "active" : "")}>
-          <span className="navbar-link-span">
-            <ImageIcon className="navbar-link-icon" icon={linkInfo.icon} />
-            <div className="navbar-link-text">
-              {linkInfo.text}
-            </div>
-          </span>
-        </Link>
-      </div>
-    );
-  }
+const NavLink = observer(({path, text, icon}) => {
+  return (
+    <Linkish
+      to={path}
+      title={text}
+      className={S("link", routeStore.path?.startsWith(path) ? "link--active" : "")}
+    >
+      <ImageIcon className={S("link__icon")} icon={icon} />
+    </Linkish>
+  );
+});
 
-  render() {
-    return (
-      <div className="navbar-container">
-        <nav className="navbar-links-container" role="navigation">
-          {NavigationBar.Links().map((linkInfo) => {
-            return ( this.NavLink({linkInfo: linkInfo}) );
-          })}
-        </nav>
-      </div>
-    );
-  }
-}
+const NavigationBar = observer(() => {
+  return (
+    <div className={S("nav")}>
+      <nav className={S("links")} role="navigation">
+        {
+          links.map(link =>
+            <NavLink key={`link-${link.path}`} {...link} />
+          )
+        }
+      </nav>
+    </div>
+  );
+});
 
-export default observer(NavigationBar);
+export default NavigationBar;

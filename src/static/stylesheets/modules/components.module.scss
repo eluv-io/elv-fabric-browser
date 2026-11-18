@@ -1,0 +1,137 @@
+.page-header {
+  margin-bottom: 20px;
+
+  &__header {
+    font-size: 22px;
+    font-weight: 600;
+  }
+
+  &__subheader {
+    color: var(--color-text-tertiary);
+    font-size: 14px;
+  }
+}
+
+.button {
+  display: flex;
+  position: relative;
+  cursor: pointer;
+  border-radius: 5px;
+  font-weight: 600;
+  width: max-content;
+  padding-inline: 10px;
+  transition: filter 0.25s ease;
+
+  &:hover,
+  &:focus-visible {
+    filter: brightness(115%);
+  }
+
+  &:disabled {
+    filter: unset;
+    opacity: 0.7;
+    cursor: not-allowed;
+
+    &.button--icon {
+      background-color: var(--background-disabled);
+    }
+  }
+
+  &__loader {
+    opacity: 0;
+    position: absolute;
+    inset: 0 0 0 0;
+    pointer-events: none;
+  }
+
+  &__loader,
+  &__children {
+    transition: opacity 0.25s ease;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+  }
+
+  &__icon {
+    height: 100%;
+    width: 100%;
+  }
+
+  &--loading {
+    cursor: not-allowed!important;
+
+    .button__loader {
+      opacity: 1;
+    }
+
+    .button__children {
+      opacity: 0;
+    }
+  }
+
+  &--size-sm {
+    min-width: 80px;
+    font-size: 12px;
+    height: 26px;
+  }
+
+  &--size-md {
+    min-width: 120px;
+    height: 36px;
+    font-size: 14px;
+  }
+
+  &--size-lg {
+    min-width: 150px;
+    height: 46px;
+  }
+
+  &--size-icon-sm {
+    height: 26px;
+    width: 26px;
+  }
+
+  &--size-icon-md {
+    height: 36px;
+    width: 36px;
+  }
+
+  &--size-icon-lg {
+    height: 46px;
+    width: 46px;
+  }
+
+  &--primary {
+    background-color: var(--color-text-highlight);
+    border: 2px solid var(--color-text-highlight);
+    color: white;
+  }
+
+  &--outline {
+    background-color: white;
+    border: 2px solid var(--color-text-highlight);
+    color: var(--color-text-highlight);
+  }
+
+  &--icon {
+    padding: 5px;
+    color: var(--color-icon);
+  }
+}
+
+.copy-button {
+  transition: opacity 0.25s ease;
+
+  &--copied {
+    opacity: 0.5;
+  }
+}
+
+.copyable-field {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+}

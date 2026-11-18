@@ -1,4 +1,4 @@
-import Fabric from "../clients/Fabric";
+import Fabric from "@/client/Fabric";
 
 export const ContractTypes = {
   accessGroup: "accessGroup",

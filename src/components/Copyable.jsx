@@ -1,0 +1,24 @@
+import React from "react";
+import PropTypes from "prop-types";
+import {Copy} from "elv-components-js";
+import ImageIcon from "@/components/ImageIcon";
+import CopyIcon from "@/assets/icons/clipboard.svg";
+
+export const Copyable = ({copy, children, className}) => {
+  return (
+    <span className={`copyable ${className || ""}`}>
+      { children }
+      <Copy copy={copy || children}>
+        <ImageIcon className="copy-icon" icon={CopyIcon} />
+      </Copy>
+    </span>
+  );
+};
+
+Copyable.propTypes = {
+  copy: PropTypes.string.isRequired,
+  children: PropTypes.oneOfType([
+    PropTypes.node,
+    PropTypes.string
+  ]).isRequired
+};

@@ -1,5 +1,5 @@
 import {observable, action, makeAutoObservable} from "mobx";
-import {FormatAddress} from "../utils/Helpers";
+import {FormatAddress} from "@/utils/Helpers";
 import UrlJoin from "url-join";
 import Fabric from "@/client/Fabric";
 

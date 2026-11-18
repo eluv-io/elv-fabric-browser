@@ -1,12 +1,12 @@
-import Fabric from "../clients/Fabric";
+import Fabric from "@/client/Fabric";
 import {action, computed, flow, makeAutoObservable, observable, toJS} from "mobx";
-import {ContractTypes, DetermineContractInterface} from "../utils/Contracts";
+import {ContractTypes, DetermineContractInterface} from "@/utils/Contracts";
 import {ParseInputJson, FormatAddress} from "@/utils/Helpers";
 import UrlJoin from "url-join";
 
 // eslint-disable-next-line no-unused-vars
 //import BrowserSolc from "browser-solc";
-import {Cancelable} from "../utils/Cancelable";
+import {Cancelable} from "@/utils/Cancelable";
 
 class ContractStore {
   contractAddress;
