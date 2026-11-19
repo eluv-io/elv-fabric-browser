@@ -68,6 +68,7 @@ const WatchedRoute = observer(({component, ...props}) => {
 
 const Router = observer(() => {
   const [initialized, setInitialized] = useState(false);
+
   useEffect(() => {
     Fabric.Initialize()
       .then(() => setInitialized(true));

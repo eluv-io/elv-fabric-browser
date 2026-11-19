@@ -23,10 +23,11 @@ const LibrariesTable = observer(() => {
           sortable: true,
           render: record => (
             <Linkish
+              key={record.libraryId}
               to={UrlJoin("/content", record.libraryId)}
               className={S("table-item")}
             >
-              <ImageIcon icon={LibraryIcon} className={S("table-item__icon")} />
+              <div className={S("table-item__icon")}><ImageIcon icon={LibraryIcon}/></div>
               <div className={S("table-item__text")}>
                 <div className={S("table-item__text-primary")}>
                   {record.name}
@@ -36,8 +37,8 @@ const LibrariesTable = observer(() => {
                 </CopyableField>
               </div>
             </Linkish>
-        )
-      }
+          )
+        }
       ]}
     />
   );
@@ -45,7 +46,7 @@ const LibrariesTable = observer(() => {
 
 const ContentLibrariesPage = observer(() => {
   return (
-    <div className="page-container contents-page-container">
+    <div className="page-container">
       <ActionsToolbar
         actions={[
           {
@@ -55,14 +56,8 @@ const ContentLibrariesPage = observer(() => {
           }
         ]}
       />
-
       <PageHeader header="Content Libraries" />
-
-      <div className="page-content-container">
-        <div className="page-content">
-          <LibrariesTable />
-        </div>
-      </div>
+      <LibrariesTable />
     </div>
   );
 });

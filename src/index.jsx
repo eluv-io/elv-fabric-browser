@@ -7,7 +7,7 @@ import "@/assets/stylesheets/variables.css";
 import "@/assets/stylesheets/base.scss";
 
 import {createRoot} from "react-dom/client";
-import {createTheme, MantineProvider} from "@mantine/core";
+import {MantineProvider} from "@mantine/core";
 import UrlJoin from "url-join";
 
 import "@/utils/StringExtensions";
@@ -16,10 +16,37 @@ import NavigationBar from "@/components/NavigationBar.jsx";
 import Notifications from "@/components/Notifications.jsx";
 import Routes from "./Routes";
 import {ModalsProvider} from "@mantine/modals";
+import MantineTheme from "../MantineTheme";
+import {useEffect, useState} from "react";
 
-const theme = createTheme({
-  /** Put your mantine theme override here */
-});
+const AppContent = () => {
+  const [ready, setReady] = useState(false);
+
+  // Handle redirect from hash (set by core)
+  useEffect(() => {
+    if(window.location.hash) {
+      window.location.pathname = window.location.hash.replace("#", "");
+      window.location.hash = "";
+      setTimeout(() => setReady(true), 250);
+    } else {
+      setReady(true);
+    }
+  }, []);
+
+  if(!ready) {
+    return null;
+  }
+
+  return (
+    <>
+      <NavigationBar />
+      <div className="app__content">
+        <Routes />
+      </div>
+      <Notifications />
+    </>
+  );
+};
 
 const App = () => {
   if(window.self === window.top) {
@@ -31,13 +58,9 @@ const App = () => {
   const root = createRoot(document.getElementById("app"));
 
   root.render(
-    <MantineProvider theme={theme}>
+    <MantineProvider theme={MantineTheme}>
       <ModalsProvider>
-        <NavigationBar />
-        <div className="app__content">
-          <Routes />
-        </div>
-        <Notifications />
+        <AppContent />
       </ModalsProvider>
     </MantineProvider>
   );

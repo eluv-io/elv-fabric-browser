@@ -55,14 +55,8 @@ const ContentTypesPage = observer(() => {
           }
         ]}
       />
-
       <PageHeader header="Content Types" />
-
-      <div className="page-content-container">
-        <div className="page-content">
-          <ContentTypesTable />
-        </div>
-      </div>
+      <ContentTypesTable />
     </div>
   );
 });

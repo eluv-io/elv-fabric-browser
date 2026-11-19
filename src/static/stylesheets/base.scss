@@ -4,15 +4,16 @@ body,
   display: block;
   width: 100%;
   min-height: 100vh;
+  scrollbar-gutter: stable;
 }
 
 body {
-  color: var(--color-text-primary);
+  color: var(--color-text-secondary);
   height: 100vh;
   scrollbar-gutter: stable;
 
   * {
-    font-family: Inter, "Helvetica Neue", helvetica, sans-serif;
+    font-family: var(--font-family);
     scrollbar-color: #AAA #FAFAFA;
     scrollbar-width: thin;
 
@@ -47,4 +48,5 @@ body {
 
 .main-content-container {
   height: 100%;
+  max-width: var(--max-page-width);
 }

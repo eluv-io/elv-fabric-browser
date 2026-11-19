@@ -54,7 +54,7 @@ const DataTable = observer(({
 
     if(!Load) { return; }
 
-    loadTimeout = setTimeout(() => setLoading(true), 100);
+    loadTimeout = setTimeout(() => setLoading(true), 250);
 
     Load({
       page,

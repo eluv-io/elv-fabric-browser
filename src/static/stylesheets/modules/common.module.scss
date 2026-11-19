@@ -4,6 +4,25 @@
   justify-content: space-between;
   width: 100%;
   margin-bottom: 10px;
+
+  &__left,
+  &__right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__item-container {
+    padding: 0;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 7px 10px;
+    width: 100%;
+  }
 }
 
 .content-lookup {

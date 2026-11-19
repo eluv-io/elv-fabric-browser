@@ -353,6 +353,8 @@ class LibraryStore {
     delete params.cancelableEvents;
     delete params.cacheId;
 
+    console.log(previousParams, params);
+
     if(
       JSON.stringify(previousParams) === JSON.stringify(params) &&
       Date.now() - this.libraries[libraryId]?.retrievedAt < 60000

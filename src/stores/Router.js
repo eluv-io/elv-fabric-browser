@@ -17,7 +17,6 @@ class RouterStore {
   }
 
   UpdateRoute({path, params}) {
-    console.log("Update", path, params);
     this.path = path;
     this.libraryId = params.libraryId;
     this.objectId = params.objectId;

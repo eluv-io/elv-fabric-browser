@@ -1,21 +1,31 @@
+import ComponentStyles from "@/assets/stylesheets/modules/components.module.scss";
+
 import React from "react";
 import SVG from "react-inlinesvg";
+import {CreateModuleClassMatcher, JoinClassNames} from "@/utils/Helpers";
+
+const S = CreateModuleClassMatcher(ComponentStyles);
 
 const ImageIcon = ({
   icon,
   alternateIcon,
   title,
   label,
-  useLoadingIndicator=false,
-  className,
+  size,
+  className="",
   ...props
 }) => {
   const [error, setError] = React.useState(false);
-  const [loading, setLoading] = React.useState(true);
 
   label = label || title;
 
-  className = "image-icon " + (className || "");
+  className = JoinClassNames(
+    S(
+      "image-icon",
+      size ? `image-icon--size-${size}` : ""
+    ),
+    className
+  );
 
   const currentIcon = error ? alternateIcon : icon;
   const handleError = error ? undefined : () => setError(true);
@@ -29,7 +39,6 @@ const ImageIcon = ({
       <SVG alt={label} title={title} className={className} src={currentIcon} {...props} />
     );
   } else {
-    className = loading && useLoadingIndicator ? "image-icon-with-loader " + className : className;
 
     return (
       <img
@@ -37,7 +46,6 @@ const ImageIcon = ({
         alt={label}
         className={className}
         src={currentIcon}
-        onLoad={() => setLoading(false)}
         onError={handleError}
         {...props}
       />

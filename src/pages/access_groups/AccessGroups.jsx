@@ -45,7 +45,7 @@ const AccessGroupsTable = observer(() => {
 
 const AccessGroupsPage = observer(() => {
   return (
-    <div className="page-container contents-page-container">
+    <div className="page-container">
       <ActionsToolbar
         actions={[
           {
@@ -57,12 +57,7 @@ const AccessGroupsPage = observer(() => {
       />
 
       <PageHeader header="Access Groups" />
-
-      <div className="page-content-container">
-        <div className="page-content">
-          <AccessGroupsTable />
-        </div>
-      </div>
+      <AccessGroupsTable />
     </div>
   );
 });

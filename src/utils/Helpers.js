@@ -235,3 +235,44 @@ export const onEnterPressed = (fn) => {
     fn(event);
   };
 };
+
+export const FormatDate = (date) => {
+  if(!date) { return; }
+
+  try {
+    return new Date(date)
+      .toLocaleDateString(navigator.language, {month: "short", day: "numeric", year: "numeric"});
+  // eslint-disable-next-line no-unused-vars
+  } catch(error) {
+    return undefined;
+  }
+};
+
+export const ParseRat = (str) => {
+  if(str.includes("/")) {
+    const num = parseInt(str.split("/")[0]);
+    const denom = parseInt(str.split("/")[1]);
+
+    return (num / denom).toFixed(3);
+  } else {
+    return parseInt(str);
+  }
+};
+
+export const FormatDuration = (duration) => {
+  if(!duration) { return; }
+
+  duration = duration.toString();
+  if(duration.includes("/")) {
+    duration = parseInt(duration.split("/")[0]) / parseInt(duration.split("/")[1]);
+  }
+
+  let hours = Math.floor(Math.max(0, duration) / 60 / 60) % 24;
+  let minutes = Math.floor(Math.max(0, duration) / 60 % 60);
+  let seconds = Math.ceil(Math.max(duration, 0) % 60);
+
+  return [hours, minutes, seconds]
+    .map(t => (!t || isNaN(t) ? "" : t.toString()).padStart(2, "0"))
+    .join(":");
+};
+

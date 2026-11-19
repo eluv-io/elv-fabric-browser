@@ -1,7 +1,8 @@
 import { FrameClient } from "@eluvio/elv-client-js/src/FrameClient";
 import UrlJoin from "url-join";
-import {EqualAddress, FormatAddress, LROStatus} from "@/utils/Helpers";
+import {EqualAddress, FormatAddress, FormatDate, FormatDuration, LROStatus, ParseRat} from "@/utils/Helpers";
 import Utils from "@eluvio/elv-client-js/src/Utils";
+import {flow} from "mobx";
 const Fetch = typeof fetch !== "undefined" ? fetch : require("node-fetch").default;
 
 Array.prototype.limitedMap = async function(limit, f) {
@@ -23,6 +24,7 @@ const Fabric = {
   utils: client.utils,
   concurrencyLimit: 20,
   permissionLevels: client.permissionLevels,
+  _resources: {},
 
   async Initialize() {
     window.client = client;
@@ -673,11 +675,175 @@ const Fabric = {
     return (await client.AccessType({id: objectId})) === "object";
   },
 
+  ObjectDetails: flow(function * ({objectId, versionHash, publicMetadata, force}) {
+    if(!versionHash) {
+      versionHash = yield client.LatestVersionHash({objectId});
+    }
+
+    let libraryId;
+    objectId = client.utils.DecodeVersionHash(versionHash).objectId;
+
+    return yield this.LoadResource({
+      key: "objectDetails",
+      id: objectId,
+      force,
+      ttl: 60,
+      bind: this,
+      Load: flow(function * () {
+        // Try and retrieve video duration
+        let
+          metadata,
+          duration,
+          frameRate,
+          lastModified,
+          forbidden,
+          isVideo,
+          hasChannels,
+          channels,
+          hasAssets,
+          isLiveStream,
+          isLive,
+          vods;
+
+        try {
+          libraryId = yield client.ContentObjectLibraryId({objectId});
+          metadata = yield client.ContentObjectMetadata({
+            versionHash: versionHash,
+            select: [
+              "public/name",
+              "public/description",
+              "public/display_image",
+              "commit/timestamp",
+              "ground_truth/model_domain",
+              "channel/offerings/*/display_name",
+              "channel/offerings/*/updated_at",
+              "channel/offerings/*/items",
+              "assets",
+              "offerings/*/media_struct/duration_rat",
+              "offerings/*/media_struct/streams/*/rate",
+              "live_recording/status",
+              "live_recording_copies"
+            ]
+          });
+
+          hasChannels = !!metadata?.channel;
+          hasAssets = !!metadata?.assets;
+
+          if(hasChannels) {
+            channels = [];
+
+            if(metadata?.channel) {
+              channels = Object.keys(metadata?.channel?.offerings || {}).map(channelKey => {
+                const channel = metadata.channel.offerings[channelKey];
+
+                let lastModified = channel.lastUpdated || channel.updated_at;
+                if(lastModified) {
+                  lastModified = FormatDate(lastModified);
+                }
+
+                let duration;
+                if(channel.items) {
+                  try {
+                    duration = FormatDuration(
+                      channel.items.reduce((acc, item) =>
+                          acc + (ParseRat(item.slice_end_rat) - ParseRat(item.slice_start_rat)),
+                        0
+                      )
+                    );
+                  } catch(error) {
+                    console.error("Error parsing channel duration:");
+                    console.error(error);
+                  }
+                }
+
+                return {
+                  objectId,
+                  compositionKey: channelKey,
+                  label: channel.display_name || channelKey,
+                  duration,
+                  lastModifiedISO: channel.updated_at,
+                  lastModified: lastModified
+                };
+              });
+            }
+
+            channels = channels
+              .sort((a, b) => {
+                if(a.lastModifiedISO && b.lastModifiedISO) {
+                  return a.lastModifiedISO > b.lastModifiedISO ? -1 : 1;
+                } else if(a.lastModifiedISO) {
+                  return -1;
+                } else if(b.lastModifiedISO) {
+                  return 1;
+                }
+
+                return a.label?.toLowerCase() < b.label?.toLowerCase() ? -1 : 1;
+              });
+          }
+
+          lastModified = metadata?.commit?.timestamp;
+          if(lastModified) {
+            lastModified = FormatDate(lastModified);
+          }
+
+          const offering = metadata?.offerings?.default ?
+            "default" :
+            Object.keys(metadata?.offerings || {})[0];
+
+          duration = metadata?.offerings?.[offering]?.media_struct?.duration_rat;
+
+          if(duration) {
+            isVideo = true;
+            duration = FormatDuration(duration);
+          }
+
+          const videoKey = Object.keys(metadata?.offerings?.[offering]?.media_struct?.streams || {}).find(key => key.startsWith("video"));
+          if(videoKey) {
+            frameRate = metadata.offerings[offering].media_struct.streams[videoKey].rate;
+          }
+
+          isLiveStream = !!metadata?.live_recording;
+          isLive = isLiveStream && metadata.live_recording?.status?.state === "active";
+          vods = metadata.live_recording_copies;
+        } catch(error) {
+          if(error.status === 403) {
+            forbidden = true;
+          }
+        }
+
+        metadata = metadata || {public: publicMetadata};
+
+        return {
+          retrievedAt: Date.now(),
+          libraryId,
+          id: objectId,
+          objectId: objectId,
+          versionHash: versionHash,
+          name: metadata?.public?.name || objectId,
+          description: metadata?.public?.description,
+          forbidden,
+          lastModified,
+          duration,
+          frameRate,
+          isVideo,
+          hasChannels,
+          hasAssets,
+          channels,
+          isLiveStream,
+          isLive,
+          vods,
+          metadata
+        };
+      })
+    });
+  }),
+
   // Make sure not to call anything requiring content object authorization
   ListContentObjects: async ({libraryId, libraryName, params}) => {
     const filterOptions = {
-      select: ["name", "image", "description", "public/name", "public/description", "public/image"],
+      select: ["public/name"],
       sort: "/public/name",
+      sortDesc: params.sortDirection === "desc",
       limit: params.perPage
     };
 
@@ -714,25 +880,14 @@ const Fabric = {
       Fabric.concurrencyLimit,
       contents,
       async object => {
+
         try {
-          //const owner = await Fabric.GetContentObjectOwner({objectId: object.id});
-
-          const latestVersion = object.versions[0];
-
-          const meta = latestVersion.meta || {};
-          const publicMeta = meta.public || {};
           objects[object.id] = {
             // Pull latest version info up to top level
-            ...latestVersion,
-            id: object.id,
-            objectId: object.id,
-            hash: object.hash,
             type: object.type,
-            name: (publicMeta.name || meta.name || "").toString(),
-            description: publicMeta.description || meta.description,
-            confirmedAt: undefined,
             isContentLibraryObject: client.utils.EqualHash(libraryId, object.id),
-            contractAddress: client.utils.HashToAddress(object.id)
+            contractAddress: client.utils.HashToAddress(object.id),
+            ...(await Fabric.ObjectDetails({versionHash: object.versions[0].hash}))
           };
         } catch(error) {
           /* eslint-disable no-console */
@@ -2242,7 +2397,46 @@ const Fabric = {
     filteredMembers.forEach(member => members[member.address] = member);
 
     return {members, count};
-  }
+  },
+
+  // Ensure the specified load method is called only once unless forced
+  LoadResource: flow(function * ({key, id, force=false, ttl, Load, bind}) {
+    if(force || (ttl && this._resources[key]?.[id] && Date.now() - this._resources[key][id].retrievedAt > ttl * 1000)) {
+      // Force - drop all loaded content
+      this._resources[key] = {};
+    }
+
+    this._resources[key] = this._resources[key] || {};
+
+    if(force || !this._resources[key][id]) {
+      if(bind) {
+        Load = Load.bind(bind);
+      }
+
+      if(this.logTiming) {
+        this._resources[key][id] = {
+          promise: (async (...args) => {
+            let start = Date.now();
+            // eslint-disable-next-line no-console
+            console.log(`Start Timing ${key.split("-").join(" ")} - ${id}`);
+            const result = await Load(...args);
+            // eslint-disable-next-line no-console
+            console.log(`${(Date.now() - start)}ms | End Timing ${key.split("-").join(" ")} - ${id}`);
+
+            return result;
+          })(),
+          retrievedAt: Date.now()
+        };
+      } else {
+        this._resources[key][id] = {
+          promise: Load(),
+          retrievedAt: Date.now()
+        };
+      }
+    }
+
+    return yield this._resources[key][id].promise;
+  })
 };
 
 export default Fabric;

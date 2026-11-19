@@ -1,18 +1,27 @@
 :root {
+  --font-family: Inter, "Helvetica Neue", helvetica, sans-serif;
+  --font-family-monospace: Monaco, Courier, monospace;
+
   --color-text-primary: #22252A;
   --color-text-secondary: #3C3C3C;
-  --color-text-tertiary: #868e96;
+  --color-text-tertiary: #565e66;
   --color-text-highlight: #4489DF;
   --color-text-error: #DD3333;
   --color-icon: #6B6B6B;
+  --color-icon-light: #9B9B9B;
   --color-border: #f2f2f2;
+  --color-border-dark: #c9c9c9;
 
   --background-hover: #f0f0f0;
   --background-active: #EBF3FC;
   --background-disabled: #ddd;
 
+  --background-secondary: #F5F5F5;
+
   --width-nav: 70px;
   --width-notification: 600px;
+
+  --max-page-width: 1300px;
 
   --box-shadow: 5px 5px 10px rgba(0, 0, 0, 10%);
 

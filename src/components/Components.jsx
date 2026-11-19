@@ -41,24 +41,40 @@ export const Linkish = forwardRef(function Linkish({
   }
 });
 
-export const Button = observer(({onClick, loading, variant="primary", size="md", className="", children, ...props}) => {
+export const Button = observer(({
+  onClick,
+  loading,
+  variant="primary",
+  size="md",
+  className="",
+  children,
+  leftIcon,
+  rightIcon,
+  hidden,
+  ...props
+}) => {
   const [isLoading, setIsLoading] = useState(false);
+
+  if(hidden) { return null; }
 
   return (
     <Linkish
       {...props}
-      onClick={async event => {
-        if(isLoading) { return; }
+      onClick={
+        !onClick ? null :
+          async event => {
+            if(isLoading) { return; }
 
-        const loadingTimeout = setTimeout(() => setIsLoading(true), 100);
+            const loadingTimeout = setTimeout(() => setIsLoading(true), 100);
 
-        try {
-          await onClick(event);
-        } finally {
-          clearTimeout(loadingTimeout);
-          setIsLoading(false);
-        }
-      }}
+            try {
+              await onClick?.(event);
+            } finally {
+              clearTimeout(loadingTimeout);
+              setIsLoading(false);
+            }
+          }
+      }
       className={JoinClassNames(
         S(
           "button",
@@ -70,7 +86,15 @@ export const Button = observer(({onClick, loading, variant="primary", size="md",
       )}
     >
       <div className={S("button__children")}>
+        {
+          !leftIcon ? null :
+            <ImageIcon icon={leftIcon} className={S("button__inline-icon")} />
+        }
         {children}
+        {
+          !rightIcon ? null :
+            <ImageIcon icon={rightIcon} className={S("button__inline-icon")} />
+        }
       </div>
       <Loader
         color={
@@ -85,7 +109,7 @@ export const Button = observer(({onClick, loading, variant="primary", size="md",
   );
 });
 
-export const IconButton = observer(({icon, size="md", onClick, ...props}) => {
+export const IconButton = observer(({icon, size="md", onClick, variant="primary", ...props}) => {
   return (
     <Button
       {...props}
@@ -93,7 +117,7 @@ export const IconButton = observer(({icon, size="md", onClick, ...props}) => {
       variant="icon"
       onClick={onClick}
     >
-      <ImageIcon icon={icon} className={S("button__icon")} />
+      <ImageIcon icon={icon} className={S("button__icon", `button__icon--${variant}`)} />
     </Button>
   );
 });
@@ -165,6 +189,44 @@ export const CopyableField = ({children, value, className="", ...props}) => {
   );
 };
 
+export const LabelledField = ({
+  label,
+  value,
+  children,
+  copyValue,
+  alignTop=false,
+  hidden=false,
+  className=""
+}) => {
+  if(typeof label === "string" && label.length > 0) {
+    label = label + ":";
+  }
+
+  let content = <div aria-label={label} title={value}>{ children || value }</div>;
+  if(copyValue) {
+    content = <CopyableField value={copyValue}>{ content }</CopyableField>;
+  }
+
+  return (
+    <div
+      className={
+        JoinClassNames(
+          S(
+            "labelled-field",
+            hidden ? "labelled-field--hidden" : "",
+            alignTop ? "labelled-field--align-top" : ""
+          ),
+          className
+        )
+      }
+    >
+      <label htmlFor={label}>{ label }</label>
+      <span>
+        { content }
+      </span>
+    </div>
+  );
+};
 
 export const PageHeader = observer(({header, subHeader}) => {
   return (
