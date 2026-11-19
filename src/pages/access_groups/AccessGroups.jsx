@@ -1,76 +1,70 @@
-import React from "react";
 import UrlJoin from "url-join";
-import AccessGroupIcon from "@/assets/icons/groups.svg";
-import {PageHeader} from "@/components/Page";
-import Listing from "@/components/Listing";
-import {observer} from "mobx-react";
 import ActionsToolbar from "@/components/ActionsToolbar";
 import {groupStore} from "@/stores";
+import {observer} from "mobx-react";
+import {CopyableField, Linkish, PageHeader} from "@/components/Components";
+import DataTable from "@/components/DataTable";
+import ImageIcon from "@/components/ImageIcon";
+import {CreateModuleClassMatcher} from "@/utils/Helpers";
 
-class AccessGroups extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      listingVersion: 0
-    };
+import AccessGroupIcon from "@/assets/icons/groups.svg";
 
-    this.AccessGroups = this.AccessGroups.bind(this);
-  }
+const S = CreateModuleClassMatcher();
 
-  AccessGroups() {
-    if(!groupStore.accessGroups) { return []; }
-
-    return Object.values(groupStore.accessGroups).map(accessGroup => {
-      return {
-        id: accessGroup.address,
-        title: accessGroup.name,
-        description: accessGroup.description || accessGroup.address,
-        status: "",
-        icon: AccessGroupIcon,
-        link: UrlJoin(this.props.match.url, accessGroup.address)
-      };
-    });
-  }
-
-  AccessGroupsListing() {
-    return (
-      <Listing
-        className="compact"
-        pageId="AccessGroups"
-        paginate={true}
-        count={groupStore.accessGroupsCount}
-        LoadContent={
-          async ({params}) => {
-            await groupStore.ListAccessGroups({params});
-            this.setState({listingVersion: this.state.listingVersion + 1});
-          }
+const AccessGroupsTable = observer(() => {
+  return (
+    <DataTable
+      records={Object.values(groupStore.accessGroups)}
+      totalRecords={groupStore.accessGroupsCount}
+      Load={params => groupStore.ListAccessGroups({params})}
+      columns={[
+        {
+          accessor: "name",
+          sortable: true,
+          render: record => (
+            <Linkish
+              to={UrlJoin("/access-groups", record.address)}
+              className={S("table-item")}
+            >
+              <ImageIcon icon={AccessGroupIcon} className={S("table-item__icon")} />
+              <div className={S("table-item__text")}>
+                <div className={S("table-item__text-primary")}>
+                  {record.name}
+                </div>
+                <CopyableField value={record.address} className={S("table-item__text-secondary")}>
+                  {record.address}
+                </CopyableField>
+              </div>
+            </Linkish>
+          )
         }
-        RenderContent={this.AccessGroups}
-        noIcon={true}
-        noStatus={true}
-      />
-    );
-  }
+      ]}
+    />
+  );
+});
 
-  render() {
-    return (
-      <div className="page-container contents-page-container">
-        <ActionsToolbar
-          actions={[
-            {
-              label: "New Access Group",
-              type: "link",
-              path: "/access-groups/create"
-            }
-          ]}
-        />
-        <PageHeader header="Access Groups" />
+const AccessGroupsPage = observer(() => {
+  return (
+    <div className="page-container contents-page-container">
+      <ActionsToolbar
+        actions={[
+          {
+            label: "New Access Group",
+            type: "link",
+            path: "/access-groups/create"
+          }
+        ]}
+      />
+
+      <PageHeader header="Access Groups" />
+
+      <div className="page-content-container">
         <div className="page-content">
-          { this.AccessGroupsListing() }
+          <AccessGroupsTable />
         </div>
       </div>
-    );
-  }
-}
+    </div>
+  );
+});
 
-export default observer(AccessGroups);
+export default AccessGroupsPage;

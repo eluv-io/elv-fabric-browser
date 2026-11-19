@@ -1,6 +1,8 @@
 import "@/assets/stylesheets/reset.scss";
 
 import "@mantine/core/styles.css";
+import "mantine-datatable/styles.css";
+
 import "@/assets/stylesheets/variables.css";
 import "@/assets/stylesheets/base.scss";
 
@@ -13,6 +15,7 @@ import "@/utils/StringExtensions";
 import NavigationBar from "@/components/NavigationBar.jsx";
 import Notifications from "@/components/Notifications.jsx";
 import Routes from "./Routes";
+import {ModalsProvider} from "@mantine/modals";
 
 const theme = createTheme({
   /** Put your mantine theme override here */
@@ -29,11 +32,13 @@ const App = () => {
 
   root.render(
     <MantineProvider theme={theme}>
-      <NavigationBar />
-      <div className="app__content">
-        <Routes />
-      </div>
-      <Notifications />
+      <ModalsProvider>
+        <NavigationBar />
+        <div className="app__content">
+          <Routes />
+        </div>
+        <Notifications />
+      </ModalsProvider>
     </MantineProvider>
   );
 };

@@ -1,8 +1,9 @@
-import React, {useEffect, useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {LabelledField} from "./LabelledField";
-import {Action} from "elv-components-js";
+import {Button} from "@/components/Components";
+import {observer} from "mobx-react";
 
-const ToggleSection = ({label, children, className="", toggleOpen=false}) => {
+const ToggleSection = observer(({label, children, className="", toggleOpen=false}) => {
   const [show, setShow] = useState(toggleOpen);
   const ref = useRef(null);
 
@@ -15,15 +16,15 @@ const ToggleSection = ({label, children, className="", toggleOpen=false}) => {
   return (
     <div className={`formatted-data ${className || ""}`}>
       <LabelledField label={label}>
-        <Action className={"action-compact action-wide " + (show ? "" : "secondary")} onClick={() => setShow(!show)}>
+        <Button  onClick={() => setShow(!show)}>
           { `${show ? "Hide" : "Show"} ${label}` }
-        </Action>
+        </Button>
       </LabelledField>
       <div className="children-wrapper" ref={ref}>
         { show ? children : null }
       </div>
     </div>
   );
-};
+});
 
-export default observer(ToggleSection);
+export default ToggleSection;

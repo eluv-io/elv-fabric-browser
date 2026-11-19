@@ -1,6 +1,4 @@
-import React from "react";
-import {Copyable} from "./Copyable";
-import {EditableField} from "elv-components-js";
+import {CopyableField} from "@/components/Components";
 
 export const LabelledField = ({
   label,
@@ -23,19 +21,9 @@ export const LabelledField = ({
 
   let content = <div aria-label={label} title={value}>{ children || value }</div>;
   if(copyValue) {
-    content = <Copyable copy={copyValue}>{ content }</Copyable>;
+    content = <CopyableField value={copyValue}>{ content }</CopyableField>;
   } else if(editable) {
-    content = (
-      <EditableField
-        value={ children || value }
-        type={type}
-        onChange={onChange}
-        truncate={type === "textarea"}
-        lines={3}
-        className="editable-field"
-        editClassName="editing-field"
-      />
-    );
+    throw Error("editable not implemented");
   }
 
   return (

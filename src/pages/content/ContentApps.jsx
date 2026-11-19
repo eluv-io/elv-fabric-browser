@@ -161,7 +161,7 @@ class ContentApps extends React.Component {
   PageContent() {
     const header = objectStore.object.isContentType ?
       "Content Types > " + objectStore.object.name :
-      libraryStore.library.name + " > " + this.props.objectStore.object.name;
+      libraryStore.library.name + " > " + objectStore.object.name;
 
     return (
       <div className="page-container contracts-page-container">

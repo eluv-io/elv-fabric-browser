@@ -1,75 +1,70 @@
-import React from "react";
 import UrlJoin from "url-join";
-//import Listing from "@/components/Listing";
 import ActionsToolbar from "@/components/ActionsToolbar";
 import {libraryStore} from "@/stores";
 import {observer} from "mobx-react";
+import {CopyableField, Linkish, PageHeader} from "@/components/Components";
+import DataTable from "@/components/DataTable";
+import ImageIcon from "@/components/ImageIcon";
+import {CreateModuleClassMatcher} from "@/utils/Helpers";
 
 import LibraryIcon from "@/assets/icons/content.svg";
-import {Button, CopyableField, CopyButton, IconButton, PageHeader} from "@/components/Components";
 
-class ContentLibraries extends React.Component {
-  constructor(props) {
-    super(props);
+const S = CreateModuleClassMatcher();
 
-    this.ContentLibraries = this.ContentLibraries.bind(this);
-  }
+const LibrariesTable = observer(() => {
+  return (
+    <DataTable
+      records={Object.values(libraryStore.libraries)}
+      totalRecords={libraryStore.count}
+      Load={params => libraryStore.ListContentLibraries({params})}
+      columns={[
+        {
+          accessor: "name",
+          sortable: true,
+          render: record => (
+            <Linkish
+              to={UrlJoin("/content", record.libraryId)}
+              className={S("table-item")}
+            >
+              <ImageIcon icon={LibraryIcon} className={S("table-item__icon")} />
+              <div className={S("table-item__text")}>
+                <div className={S("table-item__text-primary")}>
+                  {record.name}
+                </div>
+                <CopyableField value={record.libraryId} className={S("table-item__text-secondary")}>
+                  {record.libraryId}
+                </CopyableField>
+              </div>
+            </Linkish>
+        )
+      }
+      ]}
+    />
+  );
+});
 
-  ContentLibraries() {
-    if(!libraryStore.libraries) { return []; }
+const ContentLibrariesPage = observer(() => {
+  return (
+    <div className="page-container contents-page-container">
+      <ActionsToolbar
+        actions={[
+          {
+            label: "New Library",
+            type: "link",
+            path: UrlJoin("/content", "create")
+          }
+        ]}
+      />
 
-    const libraries = Object.keys(libraryStore.libraries).sort().map(libraryId => {
-      const library = libraryStore.libraries[libraryId];
+      <PageHeader header="Content Libraries" />
 
-      return {
-        id: libraryId,
-        sortKey: library.name || "zz",
-        title: library.name || "Content Library " + libraryId,
-        subtitle: library.name ? libraryId : undefined,
-        description: library.description,
-        icon: LibraryIcon,
-        link: UrlJoin("/content", libraryId)
-      };
-    });
-
-    return libraries.sort((a, b) => a.sortKey.toLowerCase() > b.sortKey.toLowerCase() ? 1 : -1);
-  }
-
-  render() {
-    // This is the root component, actual path may be "/content" or "/"
-    return (
-      <div className="page-container contents-page-container">
-        <ActionsToolbar
-          actions={[
-            {
-              label: "New Library",
-              type: "link",
-              path: UrlJoin("/content", "create")
-            }
-          ]}
-        />
-        <PageHeader header="Content Libraries" />
-
-        <div className="page-content-container">
-          <div className="page-content">
-            {
-              /*
-
-              <Listing
-                pageId="ContentLibraries"
-                paginate={true}
-                count={libraryStore.count}
-                LoadContent={libraryStore.ListContentLibraries}
-                RenderContent={this.ContentLibraries}
-              />
-
-               */
-            }
-          </div>
+      <div className="page-content-container">
+        <div className="page-content">
+          <LibrariesTable />
         </div>
       </div>
-    );
-  }
-}
+    </div>
+  );
+});
 
-export default observer(ContentLibraries);
+export default ContentLibrariesPage;

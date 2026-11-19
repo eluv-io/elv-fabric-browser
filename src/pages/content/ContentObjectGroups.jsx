@@ -33,7 +33,7 @@ class ContentObjectGroups extends React.Component {
     const page = filterOptions.params.page;
     const perPage = filterOptions.params.perPage;
 
-    const groupsObject = (currentPage === "contentObject" ? (this.props.objectStore.objectGroupPermissions || {}) : this.props.groupStore.accessGroup.groupPermissions || {});
+    const groupsObject = (currentPage === "contentObject" ? (objectStore.objectGroupPermissions || {}) : groupStore.accessGroup.groupPermissions || {});
     let groups = Object
       .values(groupsObject)
       .filter(group => group.permissions.includes(this.state.view))
@@ -77,7 +77,7 @@ class ContentObjectGroups extends React.Component {
   }
 
   AccessGroups() {
-    const editCondition = currentPage === "contentObject" ? this.props.objectStore.object.canEdit : this.props.groupStore.accessGroup.isManager;
+    const editCondition = currentPage === "contentObject" ? objectStore.object.canEdit : groupStore.accessGroup.isManager;
     const groupsInfo = this.FilterGroups(this.state.filterOptions).map(group => {
       return {
         id: group.address,
@@ -107,7 +107,7 @@ class ContentObjectGroups extends React.Component {
   render() {
     const GroupCount = () => {
       return Object
-        .values(currentPage === "contentObject" ? (this.props.objectStore.objectGroupPermissions || {}) : this.props.groupStore.accessGroup.groupPermissions || {})
+        .values(currentPage === "contentObject" ? (objectStore.objectGroupPermissions || {}) : groupStore.accessGroup.groupPermissions || {})
         .filter(group => group.permissions.includes(this.state.view))
         .length;
     };

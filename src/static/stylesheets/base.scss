@@ -41,5 +41,10 @@ body {
   &__content {
     padding: 24px;
     position: relative;
+    height: 100%;
   }
+}
+
+.main-content-container {
+  height: 100%;
 }

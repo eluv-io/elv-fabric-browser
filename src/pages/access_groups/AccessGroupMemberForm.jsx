@@ -96,7 +96,7 @@ class AccessGroupMemberForm extends React.Component {
       <AsyncComponent
         Load={
           async () => {
-            await groupStore.AccessGroup({contractAddress: this.props.groupStore.contractAddress});
+            await groupStore.AccessGroup({contractAddress: groupStore.contractAddress});
           }
         }
         render={this.PageContent}

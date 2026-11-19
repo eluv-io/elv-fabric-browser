@@ -1,11 +1,11 @@
-// Copy of elv-components-js with mobx observable
-import "elv-components-js/src/stylesheets/async-component.scss";
+import ComponentStyles from "@/assets/stylesheets/modules/components.module.scss";
 
 import React from "react";
-import PropTypes from "prop-types";
-import {BallSpin, ErrorHandler} from "elv-components-js";
 import {observer} from "mobx-react";
+import {Loader} from "@mantine/core";
+import {CreateModuleClassMatcher} from "@/utils/Helpers";
 
+const S = CreateModuleClassMatcher(ComponentStyles);
 
 class AsyncComponent extends React.Component {
   constructor(props) {
@@ -54,8 +54,8 @@ class AsyncComponent extends React.Component {
 
     if(this.state.loading) {
       return (
-        <div className="-elv-async-component -elv-async-component-loading">
-          <BallSpin />
+        <div className={S("async-component")}>
+          <Loader />
         </div>
       );
     }
@@ -64,10 +64,4 @@ class AsyncComponent extends React.Component {
   }
 }
 
-AsyncComponent.propTypes = {
-  Load: PropTypes.func.isRequired,
-  render: PropTypes.func,
-  children: PropTypes.node
-};
-
-export default observer(ErrorHandler(AsyncComponent));
+export default observer(AsyncComponent);

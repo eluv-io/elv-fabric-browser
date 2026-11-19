@@ -1,9 +1,11 @@
 import React, {useState} from "react";
-import {Tabs, TraversableJson} from "elv-components-js";
 import Diff from "@/components/Diff";
-import {Copyable} from "./Copyable";
+import {Tabs} from "@mantine/core";
+import TraversableJson from "@/components/TraversableJson";
+import {observer} from "mobx-react";
+import {CopyableField} from "@/components/Components";
 
-const JSONField = ({json, diffJson, DiffComponent}) => {
+const JSONField = observer(({json, diffJson, DiffComponent}) => {
   typeof json === "string" ? json = JSON.parse(json || "{}") : json;
 
   if(!json || Object.keys(json).length === 0) {
@@ -35,7 +37,7 @@ const JSONField = ({json, diffJson, DiffComponent}) => {
           {
             length > 25000000 ?
               "Metadata too large to display" :
-              <Copyable copy={JSON.stringify(json, null, 2)} className="raw-data">{JSON.stringify(json, null, 2)}</Copyable>
+              <CopyableField value={JSON.stringify(json, null, 2)} className="raw-data">{JSON.stringify(json, null, 2)}</CopyableField>
           }
         </pre>
       );
@@ -73,6 +75,6 @@ const JSONField = ({json, diffJson, DiffComponent}) => {
       {content}
     </React.Fragment>
   );
-};
+});
 
-export default observer(JSONField);
+export default JSONField;

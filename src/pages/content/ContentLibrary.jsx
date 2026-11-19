@@ -1,29 +1,31 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import UrlJoin from "url-join";
 import Path from "path";
-import ContentIcon from "@/assets/icons/content.svg";
 import {LabelledField} from "@/components/LabelledField";
 import ClippedText from "@/components/ClippedText";
 import {PageHeader} from "@/components/Page";
-import {Action, Confirm, IconButton, Tabs} from "elv-components-js";
-import AsyncComponent from "@/components/AsyncComponent";
 
-import Listing from "@/components/Listing";
 import {observer} from "mobx-react";
-import RefreshIcon from "@/assets/icons/refresh.svg";
 import ToggleSection from "@/components/ToggleSection";
 import JSONField from "@/components/JSONField";
 import ContentLibraryGroupForm from "./ContentLibraryGroupForm";
-import {ContentBrowserModal} from "@/components/ContentBrowser";
-import {Redirect} from "react-router";
+//import {ContentBrowserModal} from "@/components/ContentBrowser";
 import ActionsToolbar from "@/components/ActionsToolbar";
 import {DateTime} from "luxon";
-import RemoveIcon from "@/assets/icons/close.svg";
 
-import {libraryStore} from "@/stores";
-import {groupStore} from "@/stores";
-import {objectStore} from "@/stores";
+import {libraryStore, groupStore, objectStore, routeStore} from "@/stores";
+import {Button, CopyableField, IconButton, Linkish} from "@/components/Components";
+import {Tabs} from "@mantine/core";
+import {modals} from "@mantine/modals";
+import {Redirect} from "wouter";
+
+import RemoveIcon from "@/assets/icons/close.svg";
+import RefreshIcon from "@/assets/icons/refresh.svg";
+import ContentIcon from "@/assets/icons/content.svg";
+import AsyncComponent from "@/components/AsyncComponent";
+import DataTable from "@/components/DataTable";
+import ImageIcon from "@/components/ImageIcon";
+import AccessGroupIcon from "@/assets/icons/groups.svg";
 
 class ContentLibrary extends React.Component {
   constructor(props) {
@@ -54,13 +56,13 @@ class ContentLibrary extends React.Component {
 
     const contentTypes = Object.values(types).map(type => {
       return (
-        <Link
+        <Linkish
           key={`library-content-type-${type.id}`}
           className="inline-link"
           to={UrlJoin("/content-types", type.id)}
         >
           {type.meta.name || type.id}
-        </Link>
+        </Linkish>
       );
     });
 
@@ -77,8 +79,9 @@ class ContentLibrary extends React.Component {
   }
 
   async RemoveAccessGroupPermission({groupAddress}) {
-    await Confirm({
-      message: "Are you sure you want to remove this group's permissions on this library?",
+    (modals.openConfirmModal({
+      title: "Remove Group Permissions",
+      children: "Are you sure you want to remove this group's permissions on this library?",
       onConfirm: async () => {
         await libraryStore.RemoveContentLibraryGroupPermission({
           libraryId: libraryStore.libraryId,
@@ -86,11 +89,7 @@ class ContentLibrary extends React.Component {
           type: this.state.groupsView
         });
       }
-    });
-
-    if(this.state.listingRef) {
-      this.state.listingRef.Load();
-    }
+    }))();
 
     this.setState({pageVersion: this.state.pageVersion + 1});
   }
@@ -140,9 +139,9 @@ class ContentLibrary extends React.Component {
               this.state.loaded && libraryStore.library.isManager &&
                 <>
                   <div>
-                    <Action onClick={() => this.setState({showGroupForm: true})}>
+                    <Button onClick={() => this.setState({showGroupForm: true})}>
                       Manage Group Permissions
-                    </Action>
+                    </Button>
                   </div>
                   <Tabs
                     options={[
@@ -156,37 +155,49 @@ class ContentLibrary extends React.Component {
                   />
                 </>
             }
-            <Listing
-              ref={ref => {
-                if(!this.state.listingRef) {
-                  this.setState({listingRef: ref});
-                }
-              }}
+            <DataTable
               key={`library-access-group-listing-${this.state.groupsView}`}
-              className="compact"
-              pageId="LibraryAccessGroups"
-              noIcon={true}
-              noLink={true}
-              paginate={true}
-              count={libraryStore.library[`${type}GroupsCount`] || 0}
-              LoadContent={async ({params}) => {
+              totalRecords={libraryStore.library[`${type}GroupsCount`] || 0}
+              Load={async ({params}) => {
                 await libraryStore.ListLibraryGroups({
                   libraryId: libraryStore.libraryId,
                   type: this.state.groupsView,
                   params
                 });
-                await libraryStore.ContentLibraryUserPermissions({libraryId: this.props.libraryStore.libraryId});
-                await libraryStore.ContentLibraryGroupPermissions({libraryId:this.props.libraryStore.libraryId});
+                await libraryStore.ContentLibraryUserPermissions({libraryId: libraryStore.libraryId});
+                await libraryStore.ContentLibraryGroupPermissions({libraryId: libraryStore.libraryId});
 
                 this.setState({listingVersion: this.state.listingVersion + 1, loaded: true});
               }}
-              RenderContent={this.AccessGroups}
+              records={Object.values(libraryStore.library[`${this.state.groupsView}Groups`])}
+              columns={[
+                {
+                  accessor: "name",
+                  sortable: true,
+                  render: record => (
+                    <Linkish
+                      to={UrlJoin("/access-groups", record.address)}
+                      className={S("table-item")}
+                    >
+                      <ImageIcon icon={AccessGroupIcon} className={S("table-item__icon")} />
+                      <div className={S("table-item__text")}>
+                        <div className={S("table-item__text-primary")}>
+                          {record.name}
+                        </div>
+                        <CopyableField value={record.address} className={S("table-item__text-secondary")}>
+                          {record.address}
+                        </CopyableField>
+                      </div>
+                    </Linkish>
+                  )
+                }
+              ]}
             />
             {
               this.state.showGroupForm ?
                 <ContentLibraryGroupForm
                   LoadGroups={async () => {
-                    await libraryStore.ContentLibraryGroupPermissions({libraryId: this.props.libraryStore.libraryId});
+                    await libraryStore.ContentLibraryGroupPermissions({libraryId: libraryStore.libraryId});
                     await libraryStore.ListLibraryGroups({
                       libraryId: libraryStore.libraryId,
                       type: this.state.groupsView,
@@ -221,7 +232,7 @@ class ContentLibrary extends React.Component {
           description: object.description,
           status: confirmedAt && confirmedAt.isValid ? confirmedAt.toFormat("yyyy-MM-dd HH:mm") : "",
           icon: ContentIcon,
-          link: UrlJoin(this.props.match.url, objectId)
+          link: UrlJoin(routeStore.path, objectId)
         };
       });
 
@@ -230,19 +241,10 @@ class ContentLibrary extends React.Component {
 
   ObjectListing() {
     return (
-      <Listing
+      <DataTable
         key={`library-objects-view-${this.state.objectListingVersion}`}
-        pageId="ContentObjects"
-        paginate={true}
-        page={libraryStore.library.listingParams.page}
-        filter={libraryStore.library.listingParams.filter}
-        count={libraryStore.library.objectsCount}
-        LoadContent={async ({action, params}) => {
-          // When reloading or filtering, clear listing cache
-          if(action !== Listing.ACTIONS.reload && action !== Listing.ACTIONS.filter) {
-            params.cacheId = libraryStore.library.listingParams.cacheId;
-          }
-
+        totalRecords={libraryStore.library.objectsCount}
+        Load={async ({params}) => {
           await libraryStore.ListContentObjects({
             libraryId: libraryStore.libraryId,
             params
@@ -250,7 +252,28 @@ class ContentLibrary extends React.Component {
 
           this.setState({listingVersion: this.state.listingVersion + 1});
         }}
-        RenderContent={this.ContentObjects}
+        columns={[
+          {
+            accessor: "name",
+            sortable: true,
+            render: record => (
+              <Linkish
+                to={UrlJoin("/content", record.id)}
+                className={S("table-item")}
+              >
+                <ImageIcon icon={ContentIcon} className={S("table-item__icon")} />
+                <div className={S("table-item__text")}>
+                  <div className={S("table-item__text-primary")}>
+                    {record.name || record.id}
+                  </div>
+                  <CopyableField value={record.id} className={S("table-item__text-secondary")}>
+                    {record.id}
+                  </CopyableField>
+                </div>
+              </Linkish>
+            )
+          }
+        ]}
       />
     );
   }
@@ -259,9 +282,9 @@ class ContentLibrary extends React.Component {
     const library = libraryStore.library;
 
     const description = <ClippedText className="object-description" text={library.description} />;
-    const libraryObjectPath = UrlJoin(this.props.match.url, library.libraryObjectId);
+    const libraryObjectPath = UrlJoin(routeStore.path, library.libraryObjectId);
 
-    //const count = count.objects[this.props.libraryStore.libraryId];
+    //const count = count.objects[libraryStore.libraryId];
     const count = libraryStore.library.objectsCount;
     const objectCount = count || count === 0 ?
       <LabelledField label="Content Objects" value={count} /> : null;
@@ -287,15 +310,15 @@ class ContentLibrary extends React.Component {
         </LabelledField>
 
         <LabelledField label={"Library Object"}>
-          <Link className="inline-link" to={libraryObjectPath}>
+          <Linkish className="inline-link" to={libraryObjectPath}>
             { library.libraryObjectId }
-          </Link>
+          </Linkish>
         </LabelledField>
 
         <LabelledField label={"Contract Address"}>
-          <Link className="inline-link" to={UrlJoin(libraryObjectPath, "contract")}>
+          <Linkish className="inline-link" to={UrlJoin(libraryObjectPath, "contract")}>
             { library.contractAddress }
-          </Link>
+          </Linkish>
         </LabelledField>
 
         <LabelledField label="KMS ID">
@@ -340,7 +363,7 @@ class ContentLibrary extends React.Component {
             icon: RefreshIcon,
             label: "Refresh",
             onClick: () => {
-              libraryStore.ClearLibraryCache({libraryId: this.props.libraryStore.libraryId});
+              libraryStore.ClearLibraryCache({libraryId: libraryStore.libraryId});
               this.setState({pageVersion: this.state.pageVersion + 1});
             }
           }
@@ -349,31 +372,31 @@ class ContentLibrary extends React.Component {
           {
             label: "Back",
             type: "link",
-            path: Path.dirname(this.props.match.url),
+            path: Path.dirname(routeStore.path),
             className: "secondary"
           },
           {
             label: "Manage",
             type: "link",
-            hidden: !(libraryStore.library.isOwner || this.props.libraryStore.library.isManager),
-            path: UrlJoin(this.props.match.url, "edit"),
+            hidden: !(libraryStore.library.isOwner || libraryStore.library.isManager),
+            path: UrlJoin(routeStore.path, "edit"),
           },
           {
             label: "Types",
             type: "link",
             hidden: !libraryStore.library.isOwner,
-            path: UrlJoin(this.props.match.url, "types")
+            path: UrlJoin(routeStore.path, "types")
           },
           {
             label: libraryStore.library.isContentSpaceLibrary ? "New Content Type" : "Create",
             type: "link",
             hidden: !libraryStore.library.canContribute,
-            path: UrlJoin(this.props.match.url, "create")
+            path: UrlJoin(routeStore.path, "create")
           },
           {
             label: "Create From Existing",
             type: "button",
-            hidden: libraryStore.library.isContentSpaceLibrary || !(this.props.libraryStore.library.isManager && this.props.libraryStore.library.canContribute),
+            hidden: libraryStore.library.isContentSpaceLibrary || !(libraryStore.library.isManager && libraryStore.library.canContribute),
             onClick: () => this.setState({showCopyObjectModal: true})
           }
         ]}
@@ -423,9 +446,9 @@ class ContentLibrary extends React.Component {
     );
 
     if(this.state.objectId) {
-      const redirectPath = UrlJoin(this.props.match.url, this.state.objectId);
+      const redirectPath = UrlJoin(routeStore.path, this.state.objectId);
 
-      return <Redirect push to={redirectPath} />;
+      return <Redirect to={redirectPath} />;
     }
 
     return (
@@ -442,6 +465,7 @@ class ContentLibrary extends React.Component {
           </div>
         </div>
         {
+          /*
           this.state.showCopyObjectModal ?
             <ContentBrowserModal
               Close={() =>  this.setState({showCopyObjectModal: false})}
@@ -457,6 +481,8 @@ class ContentLibrary extends React.Component {
               disableObjectTitle="Ownership or a user cap required"
               confirmMessageCallback={({name, libraryName}) => `Are you sure you want to copy ${name} into ${libraryName}?`}
             /> : null
+
+           */
         }
       </div>
     );
@@ -477,4 +503,4 @@ class ContentLibrary extends React.Component {
   }
 }
 
-export default observer(ContentLibrary);
+export default ContentLibrary;

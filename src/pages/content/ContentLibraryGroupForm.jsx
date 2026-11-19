@@ -1,11 +1,10 @@
 import React from "react";
-import {Form} from "elv-components-js";
 import AsyncComponent from "@/components/AsyncComponent";
 import {observer} from "mobx-react";
-import {Modal} from "elv-components-js";
 
 import {libraryStore} from "@/stores";
 import {groupStore} from "@/stores";
+import {Modal} from "@mantine/core";
 
 class ContentLibraryGroupForm extends React.Component {
   constructor(props) {
@@ -77,8 +76,9 @@ class ContentLibraryGroupForm extends React.Component {
   PageContent() {
     return (
       <Modal
+        opened
         closable={true}
-        OnClickOutside={this.props.CloseModal}
+        onClose={this.props.CloseModal}
       >
         <AsyncComponent
           Load={
@@ -91,8 +91,8 @@ class ContentLibraryGroupForm extends React.Component {
             }
           }
           render={() => (
-            <Form
-              legend={`Manage access group permissions for '${libraryStore.library.name || this.props.libraryStore.libraryId}'`}
+            <form
+              legend={`Manage access group permissions for '${libraryStore.library.name || libraryStore.libraryId}'`}
               OnCancel={this.props.CloseModal}
               OnComplete={this.props.CloseModal}
               OnSubmit={this.HandleSubmit}
@@ -149,7 +149,7 @@ class ContentLibraryGroupForm extends React.Component {
                   </div>
                 </div>
               </div>
-            </Form>
+            </form>
           )}
         />
       </Modal>

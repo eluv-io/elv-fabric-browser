@@ -140,7 +140,7 @@ class ContentObjectReviewForm extends React.Component {
 
             this.setState({
               reviewAppUrl: objectStore.object.reviewAppUrl ||
-                (objectStore.object.typeInfo && this.props.objectStore.object.typeInfo.reviewAppUrl)
+                (objectStore.object.typeInfo && objectStore.object.typeInfo.reviewAppUrl)
             });
           }
         }

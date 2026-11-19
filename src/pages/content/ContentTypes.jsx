@@ -1,74 +1,70 @@
-import React from "react";
 import UrlJoin from "url-join";
-import TypeIcon from "@/assets/icons/content.svg";
-import {PageHeader} from "@/components/Page";
-import Listing from "@/components/Listing";
-import {observer} from "mobx-react";
 import ActionsToolbar from "@/components/ActionsToolbar";
-
 import {typeStore} from "@/stores";
+import {observer} from "mobx-react";
+import {CopyableField, Linkish, PageHeader} from "@/components/Components";
+import DataTable from "@/components/DataTable";
+import ImageIcon from "@/components/ImageIcon";
+import {CreateModuleClassMatcher} from "@/utils/Helpers";
 
-class ContentTypes extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      listingVersion: 0
-    };
+import TypeIcon from "@/assets/icons/content.svg";
 
-    this.ContentTypes = this.ContentTypes.bind(this);
-  }
+const S = CreateModuleClassMatcher();
 
-  ContentTypes() {
-    if(!typeStore.types) { return []; }
+const ContentTypesTable = observer(() => {
+  return (
+    <DataTable
+      records={Object.values(typeStore.types)}
+      totalRecords={typeStore.count}
+      Load={params => typeStore.ListContentTypes({params})}
+      columns={[
+        {
+          accessor: "name",
+          sortable: true,
+          render: record => (
+            <Linkish
+              to={UrlJoin("/content-types", record.id)}
+              className={S("table-item")}
+            >
+              <ImageIcon icon={TypeIcon} className={S("table-item__icon")} />
+              <div className={S("table-item__text")}>
+                <div className={S("table-item__text-primary")}>
+                  {record.name || record.id}
+                </div>
+                <CopyableField value={record.id} className={S("table-item__text-secondary")}>
+                  {record.id}
+                </CopyableField>
+              </div>
+            </Linkish>
+        )
+      }
+      ]}
+    />
+  );
+});
 
-    const types = Object.keys(typeStore.types).sort().map(typeId => {
-      const type = typeStore.types[typeId];
+const ContentTypesPage = observer(() => {
+  return (
+    <div className="page-container contents-page-container">
+      <ActionsToolbar
+        actions={[
+          {
+            label: "New Content Type",
+            type: "link",
+            path: "/content-types/create"
+          }
+        ]}
+      />
 
-      return {
-        id: typeId,
-        sortKey: type.name || "zz",
-        title: type.name || "Content Type " + typeId,
-        description: type.description,
-        icon: TypeIcon,
-        link: UrlJoin("/content-types", typeId)
-      };
-    });
+      <PageHeader header="Content Types" />
 
-    return types.sort((a, b) => a.sortKey.toLowerCase() > b.sortKey.toLowerCase() ? 1 : -1);
-  }
-
-  render() {
-    return (
-      <div className="page-container contents-page-container">
-        <ActionsToolbar
-          actions={[
-            {
-              label: "New Content Type",
-              type: "link",
-              path: UrlJoin("/content-types", "create")
-            }
-          ]}
-        />
-        <PageHeader header="Content Types" />
-        <div className="page-content-container">
-          <div className="page-content">
-            <Listing
-              pageId="ContentTypes"
-              paginate={true}
-              count={typeStore.count}
-              LoadContent={
-                async ({params}) => {
-                  await typeStore.ListContentTypes({params});
-                  this.setState({listingVersion: this.state.listingVersion + 1});
-                }
-              }
-              RenderContent={this.ContentTypes}
-            />
-          </div>
+      <div className="page-content-container">
+        <div className="page-content">
+          <ContentTypesTable />
         </div>
       </div>
-    );
-  }
-}
+    </div>
+  );
+});
 
-export default observer(ContentTypes);
+export default ContentTypesPage;

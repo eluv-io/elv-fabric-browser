@@ -136,7 +136,7 @@ class DeployedContract extends React.Component {
     return (
       <div className="page-container contracts-page-container">
         { this.Actions(backPath) }
-        <PageHeader header={contractStore.contract.name} subHeader={this.props.contractStore.contract.description} />
+        <PageHeader header={contractStore.contract.name} subHeader={contractStore.contract.description} />
         <div className="page-content-container">
           <div className="page-content">
             <div className="label-box">

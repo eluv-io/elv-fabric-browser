@@ -1,14 +1,14 @@
-import React, {useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import AsyncComponent from "./AsyncComponent";
 import {observer} from "mobx-react";
 import {objectStore} from "@/stores";
 import {diffJson} from "diff";
-import {IconButton} from "elv-components-js";
 
 import UpArrow from "@/assets/icons/arrow-up-circle.svg";
 import DownArrow from "@/assets/icons/arrow-down-circle.svg";
+import {IconButton} from "@/components/Components";
 
-const GetDiffParts = ({json, diff}) => {
+const GetDiffParts = observer(({json, diff}) => {
   typeof json === "string" ? json = JSON.parse(json || "{}") : json;
   const diffArray = diffJson(diff, json);
   let diffIndex = 0;
@@ -42,7 +42,7 @@ const GetDiffParts = ({json, diff}) => {
   });
 
   return {parts, diffIndex};
-};
+});
 
 const RenderDiff = ({parts}) => {
   if(!parts) { return null; }
@@ -131,4 +131,4 @@ const Diff = observer(({json, diff}) => {
   );
 });
 
-export default observer(Diff);
+export default Diff;

@@ -64,7 +64,7 @@ class ContentObjectPartsForm extends React.Component {
           ]}
         />
         <Form
-          legend={`Upload parts to ${objectStore.object.meta.name || this.props.objectStore.objectId}`}
+          legend={`Upload parts to ${objectStore.object.meta.name || objectStore.objectId}`}
           redirectPath={Path.dirname(this.props.match.url)}
           cancelPath={Path.dirname(this.props.match.url)}
           className="small-form form-page"

@@ -166,7 +166,7 @@ class AccessGroup extends React.Component {
           {
             label: "Add Member",
             type: "link",
-            hidden: !(groupStore.accessGroup.isManager || this.props.groupStore.accessGroup.isOwner),
+            hidden: !(groupStore.accessGroup.isManager || groupStore.accessGroup.isOwner),
             path: UrlJoin(this.props.match.url, "add-member")
           },
           {
@@ -251,7 +251,7 @@ class AccessGroup extends React.Component {
           <LoadingElement loading={this.state.permissionChanging} loadingClassname="visibility-info-loading">
             <select
               value={groupStore.accessGroup.visibility}
-              disabled={!groupStore.accessGroup.isManager && !this.props.groupStore.accessGroup.isOwner}
+              disabled={!groupStore.accessGroup.isManager && !groupStore.accessGroup.isOwner}
               onChange={
                 async event => {
                   this.setState({permissionChanging: true});
@@ -280,9 +280,9 @@ class AccessGroup extends React.Component {
       pageContent = (
         <ContentObjectGroups
           currentPage="accessGroup"
-          showGroupPermissionsButton={groupStore.accessGroup.isManager || this.props.groupStore.accessGroup.isOwner}
+          showGroupPermissionsButton={groupStore.accessGroup.isManager || groupStore.accessGroup.isOwner}
           LoadGroupPermissions={async () => {
-            await groupStore.AccessGroupGroupPermissions({contractAddress: this.props.groupStore.contractAddress});
+            await groupStore.AccessGroupGroupPermissions({contractAddress: groupStore.contractAddress});
             await groupStore.SetInheritedGroupAccess();
           }}
         />
@@ -351,7 +351,7 @@ class AccessGroup extends React.Component {
               contractAddress: groupStore.contractAddress
             });
 
-            await groupStore.AccessGroupGroupPermissions({contractAddress: this.props.groupStore.contractAddress});
+            await groupStore.AccessGroupGroupPermissions({contractAddress: groupStore.contractAddress});
             await groupStore.SetInheritedGroupAccess();
 
             if(

@@ -89,7 +89,7 @@ class ContentObjectForm extends React.Component {
   }
 
   Types() {
-    const currentType = objectStore.object && this.props.objectStore.object.typeInfo && this.props.objectStore.object.typeInfo.hash;
+    const currentType = objectStore.object && objectStore.object.typeInfo && objectStore.object.typeInfo.hash;
 
     if(currentType && !this.state.types[currentType]) {
       const currentTypeId = Fabric.utils.DecodeVersionHash(currentType).objectId;

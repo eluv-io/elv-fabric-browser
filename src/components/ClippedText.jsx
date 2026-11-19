@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import {observer} from "mobx-react";
 
 // A block of text whose overflow is hidden by default
 // Clicking on the block will toggle showing the full text

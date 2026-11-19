@@ -9,46 +9,41 @@ import {Linkish} from "@/components/Components";
 import ContentIcon from "@/assets/icons/content.svg";
 import GroupsIcon from "@/assets/icons/groups.svg";
 import ContentTypeIcon from "@/assets/icons/content_types.svg";
-import ContractsIcon from "@/assets/icons/contracts.svg";
 import EventsIcon from "@/assets/icons/logs.svg";
 
 const S = CreateModuleClassMatcher(NavStyles);
 
 const links = [
   {
-    path: "/content",
+    path: "content",
     text: "Content",
     rootPath: true,
     icon: ContentIcon
   },
   {
-    path: "/access-groups",
+    path: "access-groups",
     text: "Access Groups",
     icon: GroupsIcon
   },
   {
-    path: "/content-types",
+    path: "content-types",
     text: "Content Types",
     icon: ContentTypeIcon
   },
   {
-    path: "/contracts",
-    text: "Contracts",
-    icon: ContractsIcon
-  },
-  {
-    path: "/events",
+    path: "events",
     text: "Events",
     icon: EventsIcon
   }
 ];
 
 const NavLink = observer(({path, text, icon}) => {
+
   return (
     <Linkish
-      to={path}
+      to={`/${path}`}
       title={text}
-      className={S("link", routeStore.path?.startsWith(path) ? "link--active" : "")}
+      className={S("link", routeStore.path?.split("/")[1] === path ? "link--active" : "")}
     >
       <ImageIcon className={S("link__icon")} icon={icon} />
     </Linkish>

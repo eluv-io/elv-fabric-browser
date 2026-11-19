@@ -84,8 +84,8 @@ class ContentObjectGroupForm extends React.Component {
         <AsyncComponent
           Load={
             async () => {
-              await objectStore.ContentObject({objectId: this.props.objectStore.objectId});
-              await objectStore.ContentObjectGroupPermissions({objectId: this.props.objectStore.objectId});
+              await objectStore.ContentObject({objectId: objectStore.objectId});
+              await objectStore.ContentObjectGroupPermissions({objectId: objectStore.objectId});
 
               const initialGroupAddress = this.FilteredGroups()[0] && this.FilteredGroups()[0].address;
 
@@ -96,7 +96,7 @@ class ContentObjectGroupForm extends React.Component {
           }
           render={() => (
             <Form
-              legend={`Manage access group permissions for '${objectStore.object ? this.props.objectStore.object.name : this.props.objectStore.objectId}'`}
+              legend={`Manage access group permissions for '${objectStore.object ? objectStore.object.name : objectStore.objectId}'`}
               OnCancel={this.props.CloseModal}
               OnSubmit={this.HandleSubmit}
               OnComplete={this.props.CloseModal}

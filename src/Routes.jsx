@@ -5,6 +5,14 @@ import {rootStore, routeStore} from "@/stores/index";
 import {Switch, Route, Redirect, useLocation, useParams} from "wouter";
 
 import ContentLibrariesPage from "@/pages/content/ContentLibraries";
+import ContentLibraryPage from "@/pages/content/ContentLibrary";
+
+import AccessGroupsPage from "@/pages/access_groups/AccessGroups";
+
+import ContentTypesPage from "@/pages/content/ContentTypes";
+
+import EventsPage from "@/pages/events/Events";
+
 /*
 import ContentLibraryPage from "@/pages/content/ContentLibrary";
 import ContentLibraryFormPage from "@/pages/content/ContentLibraryForm";
@@ -20,7 +28,7 @@ import ContentObjectGroupFormPage from "@/pages/content/ContentObjectGroupForm";
 import ContentObjectPartsFormPage from "@/pages/content/ContentObjectPartsForm";
 import ContentObjectAppsPage from "@/pages/content/ContentApps";
 
-import AccessGroupsPage from "@/pages/access_groups/AccessGroups";
+
 import AccessGroupPage from "@/pages/access_groups/AccessGroup";
 import AccessGroupFormPage from "@/pages/access_groups/AccessGroupForm";
 import AccessGroupMemberFormPage from "@/pages/access_groups/AccessGroupMemberForm";
@@ -39,9 +47,7 @@ import DeployedContractEventsPage from "@/pages/contracts/deployed/DeployedContr
 import EventsPage from "@/pages/events/Events";
  */
 
-
-
-const WatchedRoute = observer(({...props}) => {
+const TestRoute = observer(({Component}) => {
   const params = useParams();
   const [location] = useLocation();
 
@@ -49,8 +55,14 @@ const WatchedRoute = observer(({...props}) => {
     routeStore.UpdateRoute({path: location, params});
   }, [location, params]);
 
+  return <Component />;
+});
+
+const WatchedRoute = observer(({component, ...props}) => {
   return (
-    <Route {...props} />
+    <Route {...props}>
+      <TestRoute Component={component} />
+    </Route>
   );
 });
 
@@ -69,6 +81,14 @@ const Router = observer(() => {
     <div className="main-content-container">
       <Switch>
         <WatchedRoute exact path="/content" component={ContentLibrariesPage}/>
+        <WatchedRoute exact path="/content/:libraryId" component={ContentLibraryPage}/>
+
+        <WatchedRoute exact path="/access-groups" component={AccessGroupsPage}/>
+
+        <WatchedRoute exact path="/content-types" component={ContentTypesPage} />
+
+        <WatchedRoute exact path="/events" component={EventsPage} />
+
         <Route><Redirect to="/content"/></Route>
       </Switch>
     </div>

@@ -120,7 +120,10 @@ export const CopyButton = ({value, size="md", className="", ...props}) => {
 
   return (
     <IconButton
-      onClick={() => {
+      onClick={event => {
+        event.preventDefault();
+        event.stopPropagation();
+
         if(copied) { return; }
 
         Copy(value);
@@ -138,14 +141,26 @@ export const CopyButton = ({value, size="md", className="", ...props}) => {
 };
 
 export const CopyableField = ({children, value, className="", ...props}) => {
+  const [copied, setCopied] = useState(false);
+
   return (
-    <div {...props} className={JoinClassNames(S("copyable-field"), className)}>
+    <div
+      {...props}
+      onClick={event => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if(copied) { return; }
+
+        Copy(value);
+
+        setCopied(true);
+        setTimeout(() => setCopied(false), 600);
+      }}
+      className={JoinClassNames(S("copyable-field", copied ? "copyable-field--copied" : ""), className)}
+    >
       <span>{children}</span>
-      <CopyButton
-        value={value}
-        size="sm"
-        className={S("copyable-field__button")}
-      />
+      <ImageIcon icon={CopyIcon} className={S("copyable-field__icon")}/>
     </div>
   );
 };

@@ -1,13 +1,14 @@
 import React from "react";
 import EventLogs from "./EventLogs";
-import PropTypes from "prop-types";
-import {Action, LoadingElement, IconButton, onEnterPressed} from "elv-components-js";
+//import {Action, LoadingElement, IconButton, onEnterPressed} from "elv-components-js";
+import {observer} from "mobx-react";
 
 import WatchIcon from "@/assets/icons/eye.svg";
 import StopWatchingIcon from "@/assets/icons/eye-off.svg";
-import {observer} from "mobx-react";
 
 import {eventsStore} from "@/stores";
+import {Button, IconButton} from "@/components/Components";
+import {onEnterPressed} from "@/utils/Helpers";
 
 class Events extends React.Component {
   constructor(props) {
@@ -176,7 +177,7 @@ class Events extends React.Component {
 
   async LoadMoreEvents() {
     const range = this.props.contractAddress ? 500 : 10;
-    this.Request({
+    await this.Request({
       fromBlock: Math.max(1, this.state.fromBlock - range),
       toBlock: this.state.toBlock
     });
@@ -188,11 +189,9 @@ class Events extends React.Component {
     if(this.state.fromBlock <= 1) { return null; }
 
     return (
-      <LoadingElement loading={this.Loading()} noIndicator={true}>
-        <Action onClick={this.LoadMoreEvents}>
-          Load More Events
-        </Action>
-      </LoadingElement>
+      <Button onClick={this.LoadMoreEvents}>
+        Load More Events
+      </Button>
     );
   }
 
@@ -233,14 +232,12 @@ class Events extends React.Component {
         </div>
 
         <div className="control-group action-group">
-          <LoadingElement loading={this.Loading()} loadingIcon="rotate" loadingClassname="filter-loading">
-            <Action onClick={request}>
-              Update
-            </Action>
-            <Action className="secondary" onClick={this.Reset}>
-              Reset
-            </Action>
-          </LoadingElement>
+          <Button onClick={request}>
+            Update
+          </Button>
+          <Button variant="secondary" onClick={this.Reset}>
+            Reset
+          </Button>
         </div>
 
         <IconButton
@@ -266,6 +263,7 @@ class Events extends React.Component {
 
           <EventLogs events={events} filter={this.state.filter} scrollToBottom={this.state.scrollToBottom}/>
 
+
           <div className="load-more">
             { this.LoadMoreEventsButton() }
           </div>
@@ -274,10 +272,5 @@ class Events extends React.Component {
     );
   }
 }
-
-Events.propTypes = {
-  contractAddress: PropTypes.string,
-  abi: PropTypes.array
-};
 
 export default observer(Events);

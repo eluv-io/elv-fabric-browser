@@ -4,6 +4,10 @@ import {EqualAddress, FormatAddress, LROStatus} from "@/utils/Helpers";
 import Utils from "@eluvio/elv-client-js/src/Utils";
 const Fetch = typeof fetch !== "undefined" ? fetch : require("node-fetch").default;
 
+Array.prototype.limitedMap = async function(limit, f) {
+  return await Utils.LimitedMap(limit, this, f);
+};
+
 let client = new FrameClient({
   target: window.parent,
   timeout: 240
@@ -258,6 +262,10 @@ const Fabric = {
       const name2 = b.meta.public.name || "zz";
       return name1.toLowerCase() > name2.toLowerCase() ? 1 : -1;
     });
+
+    if(params.sortDirection === "desc") {
+      filteredLibraries = filteredLibraries.reverse();
+    }
 
     const count = filteredLibraries.length;
 
@@ -1306,6 +1314,10 @@ const Fabric = {
       return name1.toLowerCase() > name2.toLowerCase() ? 1 : -1;
     });
 
+    if(params.sortDirection === "desc") {
+      contentTypes = contentTypes.reverse();
+    }
+
     // Paginate
     const page = params.page - 1 || 0;
     const perPage = params.perPage || 10;
@@ -1959,6 +1971,10 @@ const Fabric = {
       const name2 = b.name || "zz";
       return name1.toLowerCase() > name2.toLowerCase() ? 1 : -1;
     });
+
+    if(params.sortDirection === "desc") {
+      filteredAccessGroups = filteredAccessGroups.reverse();
+    }
 
     const count = filteredAccessGroups.length;
 

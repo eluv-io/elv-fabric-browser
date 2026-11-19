@@ -7,6 +7,9 @@ import {Redirect} from "wouter";
 import {Button} from "@/components/Components";
 import {CreateModuleClassMatcher, onEnterPressed} from "@/utils/Helpers";
 import {TextInput} from "@mantine/core";
+import ImageIcon from "@/components/ImageIcon";
+
+import SearchIcon from "@/assets/icons/search.svg";
 
 const S = CreateModuleClassMatcher(CommonStyles);
 
@@ -33,6 +36,7 @@ const ContentLookup = observer(() => {
         value={contentLookupId}
         onChange={event => setContentLookupId( event.target.value)}
         onKeyPress={onEnterPressed(Lookup)}
+        leftSection={<ImageIcon icon={SearchIcon} className={S("input-icon")}/>}
         placeholder="Find content by ID, version hash or address"
         className={S("content-lookup__input")}
       />

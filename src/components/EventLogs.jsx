@@ -1,15 +1,14 @@
 import React from "react";
-import PropTypes from "prop-types";
 import {FormatAddress, ParseBytes32} from "@/utils/Helpers";
 import Fabric from "@/client/Fabric";
-import {Balance, Copy} from "elv-components-js";
 import ImageIcon from "@/components/ImageIcon";
 import {observer} from "mobx-react";
-import {Tabs} from "elv-components-js";
 
 import ClipboardIcon from "@/assets/icons/clipboard.svg";
 
 import {eventsStore} from "@/stores";
+import {CopyableField, CopyButton} from "@/components/Components";
+import {Tabs} from "@mantine/core";
 
 class EventLogs extends React.PureComponent {
   constructor(props) {
@@ -111,7 +110,7 @@ class EventLogs extends React.PureComponent {
       <div className="labelled-field">
         <label>Value</label>
         <div className="value">
-          <Balance balance={value.toString()} />
+          {value.toString()}
         </div>
       </div>
     );
@@ -303,11 +302,7 @@ class EventLogs extends React.PureComponent {
             this.state.view === "formatted" ?
               filteredEvents.map(event => this.RenderEvent(event)) :
               <div className="events-raw">
-                <Copy copy={this.Text(filteredEvents)} className="events-copy-button">
-                  <ImageIcon
-                    icon={ClipboardIcon}
-                  />
-                </Copy>
+                <CopyButton value={this.Text(filteredEvents)} className="events-copy-button" />
                 <pre className="events-raw-text">
                   { this.Text(filteredEvents) }
                 </pre>
@@ -326,15 +321,5 @@ class EventLogs extends React.PureComponent {
     );
   }
 }
-
-EventLogs.propTypes = {
-  events: PropTypes.arrayOf(
-    PropTypes.arrayOf(
-      PropTypes.object
-    )
-  ).isRequired,
-  filter: PropTypes.string,
-  scrollToBottom: PropTypes.bool
-};
 
 export default observer(EventLogs);
