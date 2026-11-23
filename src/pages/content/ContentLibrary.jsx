@@ -514,7 +514,6 @@ const Actions = observer(({Reload}) => {
     <ActionsToolbar
       iconActions={[
         {
-          className: "refresh-button",
           icon: RefreshIcon,
           label: "Refresh",
           onClick: Reload
@@ -569,7 +568,7 @@ const LibraryInfo = observer(() => {
   const types = Object.values(libraryStore.library.types);
 
   return (
-    <div className="object-info label-box">
+    <div>
       <LabelledField label="Name">
         { library.name }
       </LabelledField>
@@ -729,7 +728,7 @@ const PageContent = observer(({Reload}) => {
       <Actions Reload={Reload} />
       <PageHeader
         header={libraryStore.library.name}
-        subHeader={libraryId}
+        subHeader={<CopyableField value={libraryId}>{libraryId}</CopyableField>}
       />
       <Tabs my="md" value={tab} onChange={setTab}>
         <Tabs.List>

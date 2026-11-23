@@ -12,16 +12,31 @@
     gap: 8px;
   }
 
-  &__item-container {
-    padding: 0;
+  &__dropdown {
+    padding: 5px;
   }
 
   &__item {
     display: flex;
+    font-size: 14px;
     align-items: center;
     justify-content: flex-start;
     padding: 7px 10px;
     width: 100%;
+    transition: background-color 0.25s ease;
+
+    &:hover,
+    &:focus-visible,
+    &:active {
+      background-color: var(--background-hover);
+    }
+  }
+
+  &__divider {
+    height: 1px;
+    margin: 5px 0;
+    width: 100%;
+    background-color: var(--color-border);
   }
 }
 

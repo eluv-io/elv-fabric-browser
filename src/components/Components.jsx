@@ -51,27 +51,30 @@ export const Button = observer(({
   leftIcon,
   rightIcon,
   hidden,
+  disabled,
   ...props
 }) => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [clickLoading, setClickLoading] = useState(false);
 
   if(hidden) { return null; }
+
+  const isLoading = typeof loading === "boolean" ? loading : clickLoading;
 
   return (
     <Linkish
       {...props}
+      disabled={disabled}
       onClick={
-        !onClick ? null :
+        !onClick || disabled ? null :
           async event => {
-            if(isLoading) { return; }
+            if(clickLoading) { return; }
 
-            const loadingTimeout = setTimeout(() => setIsLoading(true), 100);
+            setClickLoading(true);
 
             try {
               await onClick?.(event);
             } finally {
-              clearTimeout(loadingTimeout);
-              setIsLoading(false);
+              setClickLoading(false);
             }
           }
       }
@@ -238,6 +241,28 @@ export const PageHeader = observer(({header, subHeader}) => {
       {
         !subHeader ? null :
           <h3 className={S("page-header__subheader")}>{subHeader}</h3>
+      }
+    </div>
+  );
+});
+
+export const ToggleSection = observer(({label="Toggle", toggleOpen=false, indent=false, children, className=""}) => {
+  const [opened, setOpened] = useState(toggleOpen);
+
+  return (
+    <div className={JoinClassNames(S("toggle-section"), className)}>
+      <Button
+        variant={opened ? "outline" : "outline-subtle"}
+        onClick={() => setOpened(!opened)}
+        className={S("toggle-section__button")}
+      >
+        {opened ? "Hide" : "Show"} {label}
+      </Button>
+      {
+        !opened ? null :
+          <div className={S("toggle-section__content", indent ? "indented" : "")}>
+            {children}
+          </div>
       }
     </div>
   );

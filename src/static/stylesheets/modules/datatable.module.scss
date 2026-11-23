@@ -11,10 +11,13 @@
 .table {
   border-radius: 5px;
   position: relative;
-  padding-top: 50px;
 
   * {
     vertical-align: middle;
+  }
+
+  &--paginated {
+    padding-top: 50px;
   }
 
   &--empty {

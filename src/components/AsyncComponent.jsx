@@ -3,7 +3,7 @@ import ComponentStyles from "@/assets/stylesheets/modules/components.module.scss
 import React from "react";
 import {observer} from "mobx-react";
 import {Loader} from "@mantine/core";
-import {CreateModuleClassMatcher} from "@/utils/Helpers";
+import {CreateModuleClassMatcher, JoinClassNames} from "@/utils/Helpers";
 
 const S = CreateModuleClassMatcher(ComponentStyles);
 
@@ -54,7 +54,7 @@ class AsyncComponent extends React.Component {
 
     if(this.state.loading) {
       return (
-        <div className={S("async-component")}>
+        <div className={JoinClassNames(S("async-component"), this.props.loaderClassName || "")}>
           <Loader />
         </div>
       );

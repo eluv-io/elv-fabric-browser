@@ -20,6 +20,7 @@ const DataTable = observer(({
   Load,
   defaultPerPage=10,
   minHeight,
+  paginate=true,
   ...props
 }) => {
   let defaultSortStatus;
@@ -40,14 +41,17 @@ const DataTable = observer(({
 
   totalRecords = typeof totalRecords !== "undefined" ? totalRecords : (records || []).length;
 
-  const pageParams = {
-    totalRecords,
-    page,
-    recordsPerPage: perPage,
-    onPageChange: setPage,
-    recordsPerPageOptions: [10, 20, 50, 100],
-    onRecordsPerPageChange: setPerPage
-  };
+  let pageParams;
+  if(paginate) {
+    pageParams = {
+      totalRecords,
+      page,
+      recordsPerPage: perPage,
+      onPageChange: setPage,
+      recordsPerPageOptions: [10, 20, 50, 100],
+      onRecordsPerPageChange: setPerPage
+    };
+  }
 
   useEffect(() => {
     clearTimeout(loadTimeout);
@@ -57,9 +61,9 @@ const DataTable = observer(({
     loadTimeout = setTimeout(() => setLoading(true), 250);
 
     Load({
-      page,
-      perPage,
-      paginate: true,
+      page: paginate ? page : 1,
+      perPage: paginate ? perPage : 10000,
+      paginate,
       filter,
       sortBy: sortStatus?.columnAccessor,
       sortDirection: sortStatus?.direction
@@ -82,29 +86,32 @@ const DataTable = observer(({
 
   return (
     <div className={S("table-view")}>
-      <div className={S("filter-container")}>
-        <TextInput
-          w={400}
-          leftSection={<ImageIcon icon={SearchIcon} className={S("input-icon")}/>}
-          value={filterInput}
-          placeholder="Filter"
-          onChange={event => setFilterInput(event.target.value)}
-          onKeyPress={
-            onEnterPressed(() => {
-              clearTimeout(filterTimeout);
-              setFilter(filterInput);
-            })
-          }
-        />
-        <IconButton
-          icon={RefreshIcon}
-          size="sm"
-          onClick={async () => {
-            setRefreshKey(refreshKey + 1);
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          }}
-        />
-      </div>
+      {
+        !Load ? null :
+          <div className={S("filter-container")}>
+            <TextInput
+              w={400}
+              leftSection={<ImageIcon icon={SearchIcon} className={S("input-icon")}/>}
+              value={filterInput}
+              placeholder="Filter"
+              onChange={event => setFilterInput(event.target.value)}
+              onKeyPress={
+                onEnterPressed(() => {
+                  clearTimeout(filterTimeout);
+                  setFilter(filterInput);
+                })
+              }
+            />
+            <IconButton
+              icon={RefreshIcon}
+              size="sm"
+              onClick={async () => {
+                setRefreshKey(refreshKey + 1);
+                await new Promise(resolve => setTimeout(resolve, 1000));
+              }}
+            />
+          </div>
+      }
       <div className={S("table-container")}>
         <MantineDataTable
           withTableBorder
@@ -117,11 +124,11 @@ const DataTable = observer(({
           {...pageParams}
           records={records}
           classNames={{
-            root: S("table", records.length === 0 ? "table--empty" : ""),
+            root: S("table", paginate ? "table--paginated" : "", records.length === 0 ? "table--empty" : ""),
             header: S("header"),
             pagination: S("pagination")
           }}
-          minHeight={minHeight || records.length === 0 ? 150 : undefined}
+          minHeight={minHeight || (loading || records.length === 0 ? 200 : undefined)}
         />
       </div>
     </div>

@@ -1,12 +1,11 @@
 import CommonStyles from "@/assets/stylesheets/modules/common.module.scss";
 
-import {useEffect, useRef, useState} from "react";
 import ContentLookup from "./ContentLookup";
 import {objectStore} from "@/stores";
 import {observer} from "mobx-react";
 import {Button, IconButton, Linkish} from "@/components/Components";
 import {CreateModuleClassMatcher} from "@/utils/Helpers";
-import {Menu} from "@mantine/core";
+import {Popover} from "@mantine/core";
 
 import SelectIcon from "@/assets/icons/select.svg";
 
@@ -52,31 +51,33 @@ const ActionsToolbar = observer(({actions, iconActions, SaveDraft, showContentLo
     }
 
     return (
-      <Menu width={200} classNames={{item: S("actions-toolbar__item-container")}}>
-        <Menu.Target>
+      <Popover width={200} classNames={{dropdown: S("actions-toolbar__dropdown")}}>
+        <Popover.Target>
           <Button rightIcon={SelectIcon} variant="outline-subtle">
             More Options
           </Button>
-        </Menu.Target>
-        <Menu.Dropdown>
+        </Popover.Target>
+        <Popover.Dropdown>
           {
             visibleActions.slice(2).map((action, index) =>
-              <>
+              <div key={`item-${index}`}>
                 {
                   !action.dividerAbove ? null :
-                    <Menu.Divider/>
+                    <div className={S("actions-toolbar__divider")} />
                 }
-                <Menu.Item key={`action-${index}`}>
-                  <Linkish disabled={action.disabled} to={action.path} onClick={action.onClick}
-                           className={S("actions-toolbar__item")}>
-                    {action.label}
-                  </Linkish>
-                </Menu.Item>
-              </>
+                <Linkish
+                  disabled={action.disabled}
+                  to={action.path}
+                  onClick={action.onClick}
+                  className={S("actions-toolbar__item")}
+                >
+                  {action.label}
+                </Linkish>
+              </div>
             )
           }
-        </Menu.Dropdown>
-      </Menu>
+        </Popover.Dropdown>
+      </Popover>
     );
   };
 

@@ -1,3 +1,4 @@
+/*
 import React, {useState} from "react";
 import {Link} from "react-router-dom";
 import UrlJoin from "url-join";
@@ -1153,3 +1154,761 @@ class ContentObject extends React.Component {
 }
 
 export default observer(ContentObject);
+
+
+ */
+
+import ContentObjectStyles from "@/assets/stylesheets/modules/content-object.module.scss";
+
+import {observer} from "mobx-react";
+import {useLocation, useParams} from "wouter";
+import {useEffect, useState} from "react";
+import AsyncComponent from "@/components/AsyncComponent";
+import {libraryStore, objectStore, rootStore} from "@/stores";
+import {
+  Button,
+  Copy,
+  CopyableField,
+  IconButton,
+  LabelledField,
+  Linkish,
+  PageHeader,
+  ToggleSection
+} from "@/components/Components";
+import {Select, Tabs, Title, Tooltip} from "@mantine/core";
+import ActionsToolbar from "@/components/ActionsToolbar";
+import Path from "path";
+import UrlJoin from "url-join";
+import {CreateModuleClassMatcher, FormatDate, FormatDateTime, HashToAddress, Percentage} from "@/utils/Helpers";
+import ImageIcon from "@/components/ImageIcon";
+import Fabric from "@/client/Fabric";
+
+import InfoIcon from "@/assets/icons/help-circle.svg";
+import RefreshIcon from "@/assets/icons/refresh.svg";
+import DeleteIcon from "@/assets/icons/trash.svg";
+import DataTable from "@/components/DataTable";
+import JSONField from "@/components/JSONField";
+import PrettyBytes from "pretty-bytes";
+import {DownloadFromUrl} from "@/utils/Files";
+import Diff from "@/components/Diff";
+
+const S = CreateModuleClassMatcher(ContentObjectStyles);
+
+const Actions = observer(({Reload}) => {
+  const {libraryId, objectId} = useParams();
+  const [location] = useLocation();
+
+  const [showCopyObjectModal, setShowCopyObjectModal] = useState(false);
+
+  return (
+    <ActionsToolbar
+      iconActions={[
+        {
+          icon: RefreshIcon,
+          label: "Refresh",
+          onClick: Reload
+        }
+      ]}
+      SaveDraft={() => this.SaveContentObjectDraft()}
+      actions={[
+        {
+          label: "Back",
+          type: "link",
+          path: objectStore.object.isTenantObject ? "/content" : UrlJoin("/content", libraryId),
+          variant: "secondary"
+        },
+        {
+          label: "Manage",
+          type: "link",
+          hidden: !objectStore.object.canEdit,
+          path: UrlJoin(location, "edit"),
+        },
+        {
+          label: "Custom Contract",
+          type: "link",
+          hidden: !objectStore.object.canEdit || objectStore.object.customContractAddress || !(objectStore.object.isNormalObject || objectStore.object.isContentType),
+          path: UrlJoin(location, "deploy"),
+        },
+        {
+          label: "Upload Parts",
+          type: "link",
+          hidden: !objectStore.object.canEdit,
+          path: UrlJoin(location, "upload")
+        },
+        {
+          label: "Apps",
+          type: "link",
+          hidden: !objectStore.object.canEdit,
+          path: UrlJoin(location, "apps")
+        },
+        {
+          label: "Copy",
+          type: "button",
+          hidden: !objectStore.object.canEdit,
+          disabled: !(objectStore.object.isOwner || hasUserCap),
+          onClick: () => setShowCopyObjectModal(true),
+          title: !(objectStore.object.isOwner || hasUserCap) ? "You don't have the key" : undefined
+        },
+        {
+          label: "Delete",
+          type: "button",
+          hidden: (
+            objectStore.object.isContentLibraryObject ||
+            (objectStore.object.isV3 && !libraryStore.library || !!libraryStore.library && !libraryStore.library.isManager) ||
+            (!objectStore.object.isV3 && !objectStore.object.isOwner)
+          ),
+          onClick: () => this.DeleteContentObject(),
+          dividerAbove: true
+        }
+      ]}
+    />
+  );
+});
+
+/* Content Info */
+
+const LROStatus = observer(() => {
+  const statuses = objectStore.object.lroStatus;
+
+  if(!statuses || statuses.length === 0) { return; }
+
+  const statusLabels = statuses.map(({offeringKey, status}) => {
+    if(!status) { return; }
+
+    const states = Object.values(status).map(info => info.run_state);
+
+    if(states.includes("failed")) {
+      // LRO Failed
+      return (
+        <LabelledField key={`status-${offeringKey}`} label={offeringKey}>
+          Failed
+        </LabelledField>
+      );
+    }
+
+    if(states.every(state => state === "finished")) {
+      // LRO Finished
+      return (
+        <div key={`status-${offeringKey}`}>
+          <LabelledField label={offeringKey}>
+            Finished
+          </LabelledField>
+          <LabelledField hidden={!objectStore.object.canEdit}>
+            <Button
+              onClick={this.FinalizeABRMezzanine}>
+              Finalize
+            </Button>
+          </LabelledField>
+        </div>
+      );
+    }
+
+    const progress = Object.values(status).map(info => info.progress.percentage);
+    const percentage = progress.reduce((total, percent) => total + percent, 0) / progress.length;
+
+    return (
+      <LabelledField key={`status-${offeringKey}`} label={offeringKey}>
+        { `${percentage.toFixed(1)}%` }
+      </LabelledField>
+    );
+  });
+
+  return (
+    <>
+      <LabelledField label="LRO Progress" />
+      { statusLabels }
+    </>
+  );
+});
+
+const Permissions = observer(({Reload}) => {
+  const {objectId} = useParams();
+  const [updating, setUpdating] = useState(false);
+
+  if(!objectStore.object.isNormalObject) { return; }
+
+  return (
+    <LabelledField label="Permissions">
+      <div className={S("inline-text")}>
+        <Select
+          miw={250}
+          loading={updating}
+          disabled={!objectStore.object.canEdit || updating}
+          value={objectStore.object.permission}
+          data={
+            Object.keys(Fabric.permissionLevels).map(permission => ({
+              label: Fabric.permissionLevels[permission].short,
+              value: permission
+            }))
+          }
+          onChange={
+            async newPermission => {
+              setUpdating(true);
+              try {
+                await objectStore.SetPermission({
+                  objectId,
+                  permission: newPermission
+                });
+
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                Reload();
+              } finally {
+                setUpdating(false);
+              }
+            }
+          }
+        />
+        <Tooltip
+          label={
+            <div className={S("permissions-tooltip")}>
+              {
+                Object.values(Fabric.permissionLevels).map(({short, description}) =>
+                  <>
+                    <LabelledField alignTop={true} key={`visibility-info-${short}`} label={short}>
+                      { description }
+                    </LabelledField>
+                    <div className={S("permissions-tooltip__separator")} />
+                  </>
+                )
+              }
+            </div>
+          }
+        >
+          <ImageIcon size="xs" icon={InfoIcon} />
+        </Tooltip>
+      </div>
+    </LabelledField>
+  );
+});
+
+const OwnerCapsSection = observer(() => {
+  const [showManage, setShowManage] = useState(false);
+
+  const capKeys = Object.keys(objectStore.object.meta || {}).filter(key => key.startsWith("eluv.caps.iusr")).map(capKey => {
+    const hash = capKey.split("eluv.caps.")[1];
+    return HashToAddress(hash);
+  });
+
+  const caps = objectStore.object.meta.owner_caps || {};
+
+  console.log(caps);
+
+  return (
+    <LabelledField label="Encryption Keys" alignTop>
+      <ToggleSection label="Encryption Keys">
+        {
+          !objectStore.objectId.isOwner ? null :
+            <Button
+              type="button"
+              className="secondary"
+              onClick={() => setShowManage(true)}
+            >
+              Add Encryption Key
+            </Button>
+        }
+        {
+          capKeys.length === 0 ?
+            <div className="table-note">No encryption keys to display</div> :
+            <DataTable
+              records={capKeys}
+              paginate={false}
+              columns={[
+                { accessor: "label", render: capAddress => <span>{caps[capAddress] || "Owner"}</span> },
+                { accessor: "type",  render: capAddress => caps.hasOwnProperty(capAddress) ? "User" : "Owner" },
+                { accessor: "address", render: capAddress => capAddress },
+                {
+                  accessor: "actions",
+                  title: "",
+                  render: capAddress => (
+                    <IconButton
+                      size="sm"
+                      title="Delete this key"
+                      icon={DeleteIcon}
+                      disabled={!objectStore.object.isOwner || !caps.hasOwnProperty(capAddress)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        this.DeleteCap(capAddress);
+                      }}
+                    />
+                  )
+                }
+              ]}
+            />
+        }
+
+      </ToggleSection>
+      {
+        //this.OwnerCapModal()
+      }
+    </LabelledField>
+  );
+});
+
+const CommitInfo = observer(({versionHash}) => {
+  const version = objectStore.versions[versionHash];
+
+  if(!version.meta || !version.meta.commit || typeof version.meta.commit !== "object") { return null; }
+
+  let {author, author_address, message, timestamp} = version.meta.commit;
+
+  if(message && message.length > 150) {
+    message = message.slice(0, 150) + "...";
+  }
+
+  return (
+    <>
+      <LabelledField label="Commit Info" />
+      <div className={S("indented")}>
+        <LabelledField label="Author" copyValue={author_address}>
+          <span className={S("inline-text")}>
+            <span>{ author || author_address }</span>
+            {
+              author === author_address ? null :
+                <span className={S("help-text")}>({author_address})</span>
+            }
+          </span>
+        </LabelledField>
+        <LabelledField label="Commit Message">
+          { message }
+        </LabelledField>
+        <LabelledField label="Committed At" hidden={!timestamp}>
+          { FormatDateTime(timestamp) }
+        </LabelledField>
+      </div>
+    </>
+  );
+});
+
+const DownloadPart = observer(({libraryId, objectId, versionHash, partHash, partName, DownloadMethod}) => {
+  const [progress, setProgress] = useState(undefined);
+
+  return (
+    <Button
+      variant={progress ? "primary" : "outline-subtle"}
+      loading={false}
+      onClick={async () => {
+        setProgress("0.0%");
+
+        const downloadUrl = await DownloadMethod({
+          libraryId,
+          objectId,
+          versionHash,
+          partHash,
+          callback: async ({bytesFinished, bytesTotal}) => {
+            setProgress({bytesFinished, bytesTotal});
+          }
+        });
+
+        await DownloadFromUrl(downloadUrl, partName || partHash);
+      }}
+    >
+      {
+        !progress ? "Download" :
+          Percentage(progress.bytesFinished, progress.bytesTotal)
+      }
+    </Button>
+  );
+});
+
+const ObjectParts = observer(({version}) => {
+  if(!version || !version.parts || version.parts.length === 0) { return null; }
+
+  return (
+    <div className={S("stack")}>
+      {
+        version.parts.map((part, partNumber) => (
+          <div key={part.hash + "-" + partNumber} className={S("indented")}>
+            <LabelledField label="Hash">
+              { part.hash }
+            </LabelledField>
+
+            <LabelledField label="Size">
+              { PrettyBytes(part.size) }
+            </LabelledField>
+
+            <LabelledField label="Download">
+              <DownloadPart
+                libraryId={objectStore.libraryId}
+                objectId={objectStore.objectId}
+                versionHash={version.hash}
+                partHash={part.hash}
+                DownloadMethod={objectStore.DownloadPart}
+              />
+            </LabelledField>
+          </div>
+        ))
+      }
+    </div>
+  );
+});
+
+const ObjectVersion = observer(({versionHash, latestVersion=false}) => {
+  let version = objectStore.object;
+  let hasPreviousVersion = objectStore.object.versionCount > 0;
+
+  if(!latestVersion) {
+    version = objectStore.versions[versionHash];
+    hasPreviousVersion = ((objectStore.object.versions || []).findIndex(storeVersion => storeVersion === (versionHash)) !== (objectStore.object.versions || []).length - 1);
+  }
+
+  if(!version) { return null; }
+
+  return (
+    <div className={"version-info " + (latestVersion ? "" : "indented version-visible")}>
+      {
+        !latestVersion ? null :
+          <div className={S("section-title")}>Latest Version</div>
+      }
+
+      <div className={S("indented")}>
+        <LabelledField label="Hash" copyValue={versionHash}>
+          { versionHash }
+        </LabelledField>
+
+        {
+          version.isContentType ? null :
+            <LabelledField label="Type">
+              {
+                !version.type ? "None" :
+                  <span className={S("inline-text")}>
+                    <Linkish className={S("inline-link")} to={UrlJoin("/content-types", version.typeInfo.id)}>
+                      { version.typeInfo?.name || version.typeInfo.id }
+                    </Linkish>
+                    <CopyableField value={version.typeInfo.id} className={S("help-text")}>
+                      ({version.typeInfo.id})
+                    </CopyableField>
+                  </span>
+              }
+            </LabelledField>
+        }
+
+        <CommitInfo versionHash={versionHash} />
+
+        <br />
+
+        <ToggleSection label="Metadata">
+          <JSONField
+            json={version.meta}
+            className={S("component")}
+            DiffComponent={
+              !hasPreviousVersion ? null :
+                () => <Diff json={version} />
+            }
+          />
+        </ToggleSection>
+
+        <ToggleSection label="Parts" indent>
+          <AsyncComponent
+            Load={
+              async () => {
+                await objectStore.ContentObjectParts({
+                  versionHash
+                });
+              }
+            }
+            render={() => (
+              <>
+                <LabelledField label="Total Parts">
+                  { version.parts ? version.parts.length.toString() : "" }
+                </LabelledField>
+
+                <LabelledField label="Total size">
+                  { PrettyBytes((version.parts || []).reduce((a, part) => a + part.size, 0)) }
+                </LabelledField>
+
+                <ObjectParts version={version} />
+              </>
+            )}
+          />
+        </ToggleSection>
+
+        <br/>
+
+        <LabelledField hidden={!objectStore.object.isOwner}>
+          {
+            //this.DeleteVersionButton(versionHash)
+          }
+        </LabelledField>
+      </div>
+    </div>
+  );
+});
+
+const PreviousVersions = observer(() => {
+  if(objectStore.object.versions.length < 2) { return null; }
+
+  return (
+    objectStore.object.versions.slice(1).map((versionHash, i) => {
+      const versionNumber = (i+1 - objectStore.object.versions.length) * -1;
+
+      return (
+        <ToggleSection
+          label={`Version ${versionNumber}`}
+          key={`version-${versionNumber}`}
+          //toggleOpen={this.props.location.state && (versionHash === this.props.location.state.versionHash)}
+        >
+          <AsyncComponent
+            Load={
+              async () => {
+                await objectStore.ContentObjectVersion({
+                  versionHash
+                });
+              }
+            }
+            render={() => <ObjectVersion versionHash={versionHash} />}
+          />
+        </ToggleSection>
+      );
+    })
+  );
+});
+
+const ObjectInfo = observer(({tokenInfo, Reload}) => {
+  const [location] = useLocation();
+  const object = objectStore.object;
+
+  return (
+    <div>
+      <LabelledField label="Name">
+        {object.meta.public?.name || object.id}
+      </LabelledField>
+
+      <LabelledField
+        label="Description"
+        type="textarea"
+      >
+        {object.meta.public.description || ""}
+      </LabelledField>
+
+      {
+        !object.accessInfo || !parseInt(object.accessInfo.accessCharge) ? null :
+          <LabelledField label="Access charge">
+            {object.accessInfo.accessCharge}
+          </LabelledField>
+      }
+
+      <LROStatus/>
+
+      <br/>
+
+      <LabelledField label="Library ID" hidden={object.isContentType}>
+        <Linkish className={S("inline-link")} to={UrlJoin("/content", objectStore.libraryId)}>
+          {objectStore.libraryId}
+        </Linkish>
+      </LabelledField>
+
+      <LabelledField label="Object ID">
+        {object.id}
+      </LabelledField>
+
+      <LabelledField label="Type" hidden={object.isContentType}>
+        {
+          !object.type ? "None" :
+            <span className={S("inline-text")}>
+              <Linkish className={S("inline-link")} to={UrlJoin("/content-types", object.typeInfo.id)}>
+                {object.typeInfo?.name || object.typeInfo.id}
+              </Linkish>
+              <CopyableField value={object.typeInfo.id} className={S("help-text")}>
+                ({object.typeInfo.id})
+              </CopyableField>
+            </span>
+        }
+      </LabelledField>
+
+      <LabelledField key="contract-address" label="Contract Address">
+        <Linkish className="inline-link" to={UrlJoin(location, "contract")}>
+          {objectStore.object.contractAddress}
+        </Linkish>
+      </LabelledField>
+
+      {
+        objectStore.object.isContentLibraryObject ||
+        !objectStore.object.customContractAddress ? null :
+          <LabelledField label="Custom Contract">
+            <Linkish className={S("inline-link")} to={UrlJoin(location, "custom-contract")}>
+              {objectStore.object.customContractAddress}
+            </Linkish>
+          </LabelledField>
+      }
+
+      <LabelledField label="Owner" copyValue={object.owner}>
+        {
+          object.ownerName ?
+            <span className={S("inline-text")}>
+              <span>{object.ownerName}</span>
+              <span className={S("help-text")}>
+                ({object.owner})
+              </span>
+            </span> :
+            object.owner
+        }
+      </LabelledField>
+
+      <LabelledField label="Versions">
+        {object.versionCount + 1}
+      </LabelledField>
+
+      <LabelledField label="Auth Token" alignTop>
+        <div className={S("auth-token")}>
+          <CopyableField value={tokenInfo?.token} className={S("auth-token__token-container")}>
+            <div className={S("auth-token__token", "ellipsis")}>
+              {tokenInfo?.token || ""}
+            </div>
+          </CopyableField>
+          <div className={S("auth-token__expiration")}>
+            Expires: {tokenInfo?.expiration || ""}
+          </div>
+        </div>
+      </LabelledField>
+      <Permissions Reload={Reload}/>
+      <br/>
+
+      <OwnerCapsSection Reload={Reload}/>
+
+      <div style={{marginTop: 20}} className={S("separator")}/>
+
+      <ObjectVersion versionHash={object.hash} latestVersion/>
+
+      <br/>
+
+      {
+        object.versionCount === 0 ? null :
+          <>
+            <div className={S("section-title")}>Previous Versions</div>
+            <ToggleSection
+              label="Previous Versions"
+              className="version-info"
+              //toggleOpen={this.state.prevVersionsToggled}
+            >
+              <AsyncComponent
+                Load={
+                  async () => await objectStore.ContentObjectVersions({
+                    libraryId: objectStore.libraryId,
+                    objectId: objectStore.objectId
+                  })
+                }
+                render={() => <PreviousVersions/>}
+              />
+            </ToggleSection>
+          </>
+      }
+    </div>
+  );
+});
+
+const PageContent = observer(({Reload}) => {
+  const displayAppUrl = objectStore?.object?.displayAppUrl || (objectStore?.object?.typeInfo || {}).displayAppUrl;
+
+  const {libraryId, objectId} = useParams();
+  const [tab, setTab] = useState("content");
+  const [tokenInfo, setTokenInfo] = useState(undefined);
+
+  useEffect(() => {
+    objectStore.rootStore.client.CreateSignedToken({
+      libraryId: objectStore.libraryId,
+      objectId: objectStore.objectId,
+      duration: 7 * 24 * 60 * 60 * 1000
+    })
+      .then(token => setTokenInfo({
+        token,
+        expiration: new Date(
+          rootStore.client.utils.DecodeSignedToken(token).payload.exp
+        ).toLocaleString()
+      }));
+  }, [objectId]);
+
+  if(!libraryStore.library) { return; }
+
+  return (
+    <div className="page-container">
+      <Actions Reload={Reload} />
+      <PageHeader
+        header={`${libraryStore.library.name || libraryId} / ${objectStore.object.name || objectId}`}
+        subHeader={<CopyableField value={objectId}>{objectId}</CopyableField>}
+      />
+      <Tabs my="md" value={tab} onChange={setTab}>
+        <Tabs.List>
+          {
+            !(
+              !objectStore.object.isContentType &&
+              displayAppUrl ||
+              (objectStore.object.meta && objectStore.object.meta.hasOwnProperty("offerings"))
+            ) ? null :
+              <Tabs.Tab value="display">Display</Tabs.Tab>
+          }
+          <Tabs.Tab value="content">Content Info</Tabs.Tab>
+          <Tabs.Tab value="groups">Access Groups</Tabs.Tab>
+          <Tabs.Tab value="files">Files</Tabs.Tab>
+        </Tabs.List>
+      </Tabs>
+      {
+        tab === "content" ?
+          <ObjectInfo tokenInfo={tokenInfo} Reload={Reload} /> :
+          null
+      }
+    </div>
+  );
+});
+
+const ContentObjectPage = observer(() => {
+  const {libraryId, objectId} = useParams();
+  const [reloadKey, setReloadKey] = useState(Math.random());
+
+  return (
+    <AsyncComponent
+      key={`page-${reloadKey}-${Math.random()}`}
+      Load={async () => {
+        objectStore.DiscardWriteToken({objectId});
+
+        try {
+          await libraryStore.ContentLibrary({libraryId});
+        } catch(error) {
+          console.error(error);
+        }
+
+        try {
+          await objectStore.ContentObject({
+            libraryId,
+            objectId,
+            refresh: reloadKey > 1
+          });
+        } catch(error) {
+          console.error(error);
+          throw error;
+        }
+
+        try {
+          await objectStore.ContentObjectUserPermissions({libraryId, objectId});
+        } catch(error) {
+          console.error(error);
+        }
+
+        /* TODO: Figure out what links to specific object version
+        const urlVersionHash = this.props.location.state && this.props.location.state.versionHash;
+
+        if(!urlVersionHash) { return; }
+
+        if(urlVersionHash === objectStore.object.hash) {
+          this.setState({currentVersionToggled: true});
+        } else {
+          this.setState({prevVersionsToggled: true});
+        }
+
+        this.CheckUrlVersionHash();
+
+         */
+      }}
+      render={() =>
+        <PageContent
+          Reload={() => {
+            libraryStore.ClearLibraryCache({libraryId});
+            setReloadKey(reloadKey + 1);
+          }}
+        />
+      }
+    />
+  );
+});
+
+export default ContentObjectPage;

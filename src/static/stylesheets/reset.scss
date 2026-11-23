@@ -82,6 +82,10 @@ u {
   text-decoration: underline;
 }
 
+pre {
+  white-space: pre-wrap;
+}
+
 /* revert for bug in Chromium browsers
    - fix for the content editable attribute will work properly. */
 :where([contenteditable]){

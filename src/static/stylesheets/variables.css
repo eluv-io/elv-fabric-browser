@@ -10,18 +10,20 @@
   --color-icon: #6B6B6B;
   --color-icon-light: #9B9B9B;
   --color-border: #f2f2f2;
-  --color-border-dark: #c9c9c9;
+  --color-border-dark: #ced4da;
 
   --background-hover: #f0f0f0;
   --background-active: #EBF3FC;
   --background-disabled: #ddd;
 
+  --background-primary: #FFF;
   --background-secondary: #F5F5F5;
 
   --width-nav: 70px;
   --width-notification: 600px;
 
-  --max-page-width: 1300px;
+  --max-page-width: 2000px;
+  --max-component-width: 1300px;
 
   --box-shadow: 5px 5px 10px rgba(0, 0, 0, 10%);
 

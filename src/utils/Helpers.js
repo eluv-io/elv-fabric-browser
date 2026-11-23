@@ -244,7 +244,29 @@ export const FormatDate = (date) => {
       .toLocaleDateString(navigator.language, {month: "short", day: "numeric", year: "numeric"});
   // eslint-disable-next-line no-unused-vars
   } catch(error) {
-    return undefined;
+    return "";
+  }
+};
+
+export const FormatDateTime = (date) => {
+  if(!date) { return; }
+
+  try {
+    return new Date(date)
+      .toLocaleDateString(
+        navigator.language,
+        {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+          second: "numeric"
+        }
+      );
+  // eslint-disable-next-line no-unused-vars
+  } catch(error) {
+    return "";
   }
 };
 
@@ -276,3 +298,10 @@ export const FormatDuration = (duration) => {
     .join(":");
 };
 
+
+export const ScrollParent = el =>
+  !(el instanceof HTMLElement) || typeof window.getComputedStyle !== "function"
+    ? null
+    : el.scrollHeight >= el.clientHeight && !/^(visible|hidden)/.test(window.getComputedStyle(el).overflowY || 'visible')
+      ? el
+      : ScrollParent(el.parentElement) || document.body;

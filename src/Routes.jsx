@@ -7,6 +7,8 @@ import {Switch, Route, Redirect, useLocation, useParams} from "wouter";
 import ContentLibrariesPage from "@/pages/content/ContentLibraries";
 import ContentLibraryPage from "@/pages/content/ContentLibrary";
 
+import ContentObjectPage from "@/pages/content/ContentObject";
+
 import AccessGroupsPage from "@/pages/access_groups/AccessGroups";
 
 import ContentTypesPage from "@/pages/content/ContentTypes";
@@ -83,6 +85,7 @@ const Router = observer(() => {
       <Switch>
         <WatchedRoute exact path="/content" component={ContentLibrariesPage}/>
         <WatchedRoute exact path="/content/:libraryId" component={ContentLibraryPage}/>
+        <WatchedRoute exact path="/content/:libraryId/:objectId" component={ContentObjectPage}/>
 
         <WatchedRoute exact path="/access-groups" component={AccessGroupsPage}/>
 

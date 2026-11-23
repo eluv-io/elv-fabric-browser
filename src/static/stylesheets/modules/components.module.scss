@@ -20,7 +20,7 @@
   font-weight: 600;
   width: max-content;
   padding-inline: 10px;
-  transition: filter 0.25s ease, border 0.25s ease;
+  transition: filter 0.25s ease, border 0.25s ease, background-color 0.25s ease;
 
   &:hover,
   &:focus-visible,
@@ -86,33 +86,27 @@
 
   &--primary {
     background-color: var(--color-text-highlight);
-    border: 2px solid var(--color-text-highlight);
+    border: 1px solid var(--color-text-highlight);
     color: white;
   }
 
   &--secondary {
     background-color: var(--color-text-tertiary);
-    border: 2px solid var(--color-text-tertiary);
+    border: 1px solid var(--color-text-tertiary);
     color: white;
   }
 
   &--outline {
     background-color: white;
-    border: 2px solid var(--color-text-highlight);
+    border: 1px solid var(--color-text-highlight);
     color: var(--color-text-highlight);
   }
 
   &--outline-subtle {
     background-color: white;
-    border: 2px solid var(--color-border);
+    border: 1px solid var(--color-border-dark);
     color: var(--color-text-secondary);
     font-weight: 400;
-
-    &:hover,
-    &:focus-visible,
-    &:active {
-      border: 2px solid var(--color-border-dark);
-    }
   }
 
   &--icon {
@@ -204,6 +198,7 @@
   align-items: center;
   gap: 0.5em;
   transition: opacity 0.25s ease;
+  cursor: pointer;
 
   &__icon {
     height: 10px;
@@ -221,9 +216,13 @@
   align-items: center;
   gap: 0.5em;
   color: var(--color-text-secondary);
+  white-space: pre-wrap;
+  margin-bottom: 5px;
 
   label {
+    white-space: nowrap;
     font-weight: 600;
+    min-width: 150px;
   }
 
   a {
@@ -232,6 +231,10 @@
 
   &--align-top {
     align-items: start;
+
+    label {
+      margin-top: 2px;
+    }
   }
 }
 
@@ -241,6 +244,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: var(--animation-fade-in) 0.25s ease;
 }
 
 .json {
@@ -250,7 +254,7 @@
 
   &__tab {
     border: 2px solid transparent;
-    transition: border 0.25s ease, background-color 0.25s ease;
+    transition: border 0.25s ease, background-color 0.5s ease;
     width: 120px;
     height: 40px;
     border-radius: 4px;
@@ -267,6 +271,8 @@
     margin-top: 10px;
     border-radius: 4px;
     position: relative;
+    max-height: 80vh;
+    overflow-y: auto;
   }
 
   &__raw {
@@ -300,7 +306,7 @@
 
     &:hover,
     &:focus-visible {
-      .traversable-json__copy {
+      .traversable-json__copy-item {
         opacity: 1;
       }
     }
@@ -316,8 +322,8 @@
 
   &__copy {
     position: absolute;
-    top: 0px;
-    right: 0px;
+    top: 0;
+    right: 0;
   }
 
   &__copy-item {
@@ -325,5 +331,67 @@
     transition: opacity 0.25s ease;
     transition-delay: 0.5s;
     margin-left: 10px;
+  }
+}
+
+.toggle-section {
+  margin-bottom: 10px;
+
+  &__button {
+    min-width: 250px;
+  }
+
+  &__content {
+    margin-top: 10px;
+  }
+}
+
+.diff-container {
+  display: flex;
+
+  .actions-container {
+    display: flex;
+    flex-direction: column;
+    height: max-content;
+    position: sticky;
+    top: 0;
+    margin-left: 5px;
+  }
+
+  .diff-block {
+    max-width: 100%;
+    word-break: break-all;
+  }
+
+  .part {
+    scroll-margin: 100px;
+  }
+
+  .loader {
+    min-height: 200px;
+  }
+
+  .part-addition {
+    background-color: rgba(0, 200, 0, 0.3);
+    color: var(--color-text-primary);
+    position: relative;
+
+    &::before {
+      content: "+";
+      padding: 0 3px;
+      position: absolute;
+    }
+  }
+
+  .part-deletion {
+    background-color: rgba(200, 0, 0, 0.3);
+    color: var(--color-text-primary);
+    position: relative;
+
+    &::before {
+      content: "-";
+      padding: 0 3px;
+      position: absolute;
+    }
   }
 }

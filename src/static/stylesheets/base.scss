@@ -50,3 +50,7 @@ body {
   height: 100%;
   max-width: var(--max-page-width);
 }
+
+.page-container {
+  animation: var(--animation-fade-in) 0.25s ease;
+}

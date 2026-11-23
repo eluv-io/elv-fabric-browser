@@ -1,14 +1,19 @@
+import ComponentStyles from "@/assets/stylesheets/modules/components.module.scss";
+
 import {useEffect, useState} from "react";
-import AsyncComponent from "./AsyncComponent";
 import {observer} from "mobx-react";
 import {objectStore} from "@/stores";
 import {diffJson} from "diff";
+import {IconButton} from "@/components/Components";
+import AsyncComponent from "@/components/AsyncComponent";
 
 import UpArrow from "@/assets/icons/arrow-up-circle.svg";
 import DownArrow from "@/assets/icons/arrow-down-circle.svg";
-import {IconButton} from "@/components/Components";
+import {CreateModuleClassMatcher, ScrollParent} from "@/utils/Helpers";
 
-const GetDiffParts = observer(({json, diff}) => {
+const S = CreateModuleClassMatcher(ComponentStyles);
+
+const GetDiffParts = ({componentKey, json, diff}) => {
   typeof json === "string" ? json = JSON.parse(json || "{}") : json;
   const diffArray = diffJson(diff, json);
   let diffIndex = 0;
@@ -29,8 +34,8 @@ const GetDiffParts = observer(({json, diff}) => {
     const element = (
       <p
         key={i}
-        id={`${isDiff ? `difference-${diffIndex}` : ""}`}
-        className={part.added ? "part-addition" : part.removed ? "part-deletion" : ""}
+        id={`${isDiff ? `difference-${componentKey}-${diffIndex}` : ""}`}
+        className={S("part", part.added ? "part-addition" : part.removed ? "part-deletion" : "")}
       >
         {part.value}
       </p>
@@ -42,41 +47,45 @@ const GetDiffParts = observer(({json, diff}) => {
   });
 
   return {parts, diffIndex};
-});
+};
 
 const RenderDiff = ({parts}) => {
   if(!parts) { return null; }
 
-  return <pre className="diff-block">{parts}</pre>;
+  return <pre className={S("diff-block")}>{parts}</pre>;
 };
 
-const DiffActions = ({totalDiffCount}) => {
+const DiffActions = ({componentKey, totalDiffCount}) => {
   const [currentDiffInView, setCurrentDiffInView] = useState(0);
+  const ScrollToDifference = (newIndex) => {
+    const element = document.getElementById(`difference-${componentKey}-${newIndex}`);
+
+    if(!element) {
+      return;
+    }
+
+    element.scrollIntoView({behavior: "smooth", block: "nearest", inline: "start" });
+
+    setCurrentDiffInView(newIndex);
+  };
 
   useEffect(() => {
     setTimeout(() => {
       ScrollToDifference(0);
-    }, 100);
+    }, 500);
   }, []);
 
-  const ScrollToDifference = (newIndex) => {
-    setCurrentDiffInView(newIndex);
-    const element = document.getElementById(`difference-${newIndex}`);
-
-    if(element) { element.scrollIntoView(); }
-  };
-
   return (
-    <div className="actions-container">
+    <div className={S("actions-container")}>
       <IconButton
         icon={UpArrow}
-        onClick={() => ScrollToDifference(currentDiffInView - 1)}
+        onClick={() => ScrollToDifference(Math.max(0, currentDiffInView - 1))}
         disabled={currentDiffInView === 0}
         title="Previous Difference"
       />
       <IconButton
         icon={DownArrow}
-        onClick={() => ScrollToDifference(currentDiffInView + 1)}
+        onClick={() => ScrollToDifference(Math.min(totalDiffCount - 1, currentDiffInView + 1))}
         disabled={(currentDiffInView + 1) === totalDiffCount}
         title="Next Difference"
       />
@@ -85,13 +94,13 @@ const DiffActions = ({totalDiffCount}) => {
 };
 
 const Diff = observer(({json, diff}) => {
-  const previousVersionIndex = ((objectStore.object.versions || []).findIndex(version => version === json.hash)) + 1;
-  const previousVersionHash = objectStore.object.versions[previousVersionIndex];
+  const [componentKey] = useState(Math.random() * Math.random());
   const [totalDiffCount, setTotalDiffCount] = useState(0);
   const [parts, setParts] = useState([]);
 
   if(diff) {
     const {parts, diffIndex} = GetDiffParts({
+      componentKey,
       json: json.meta,
       diff
     });
@@ -101,15 +110,25 @@ const Diff = observer(({json, diff}) => {
   }
 
   return (
-    <div className="diff-container">
+    <div className={S("diff-container")}>
       {
         diff ?
           <RenderDiff parts={parts} /> :
           <AsyncComponent
+            loaderClassName={S("loader")}
             Load={
               async () => {
+                await objectStore.ContentObjectVersions({
+                  libraryId: objectStore.libraryId,
+                  objectId: objectStore.objectId
+                });
+
+                const previousVersionIndex = ((objectStore.object.versions || []).findIndex(version => version === json.hash)) + 1;
+                const previousVersionHash = objectStore.object.versions?.[previousVersionIndex];
+
                 await objectStore.ContentObjectVersion({versionHash: previousVersionHash});
                 const {parts, diffIndex} = GetDiffParts({
+                  componentKey,
                   json: json.meta,
                   diff: objectStore.versions[previousVersionHash].meta
                 });
@@ -125,7 +144,7 @@ const Diff = observer(({json, diff}) => {
       }
       {
         parts.length > 0 &&
-        <DiffActions totalDiffCount={totalDiffCount} />
+        <DiffActions componentKey={componentKey} totalDiffCount={totalDiffCount} />
       }
     </div>
   );
