@@ -2,6 +2,7 @@ import Utils from "@eluvio/elv-client-js/src/Utils";
 import BigNumber from "bignumber.js";
 
 import SharedStyles from "@/assets/stylesheets/modules/shared.module.scss";
+import {ValidateAddress} from "@eluvio/elv-client-js/src/Validation";
 
 export const JoinClassNames = (...cs) => cs.map(c => c || "").join(" ");
 
@@ -305,3 +306,14 @@ export const ScrollParent = el =>
     : el.scrollHeight >= el.clientHeight && !/^(visible|hidden)/.test(window.getComputedStyle(el).overflowY || 'visible')
       ? el
       : ScrollParent(el.parentElement) || document.body;
+
+export const ValidAddress = address => {
+  try {
+    ValidateAddress(address);
+    return true;
+  // eslint-disable-next-line no-unused-vars
+  } catch(error) {
+    console.log(error);
+    return false;
+  }
+};

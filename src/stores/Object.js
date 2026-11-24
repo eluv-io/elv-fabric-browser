@@ -52,6 +52,7 @@ class ObjectStore {
 
 
   ContentObject = flow(function * ({libraryId, objectId, refresh=false}) {
+    console.log(new Error("CO"))
     const object = yield Fabric.GetContentObject({libraryId, objectId, refresh});
 
     this.objects[objectId] = object;
@@ -628,20 +629,27 @@ MergeMetadata = flow(function * ({
     });
 
     this.rootStore.notificationStore.SetNotificationMessage({
-      message: "Successfully removed object group permissions",
+      message: "Successfully removed group permissions",
       redirect: false
     });
   });
 
 
   UpdateContentObjectGroupPermissions = flow(function * ({
+    type,
+    accessGroupAddress,
     objectId,
     groupAddress,
     see,
     access,
     manage
   }) {
-    const currentPermissions = (this.objects[objectId].groupPermissions[groupAddress] || {}).permissions || [];
+    let currentPermissions;
+    if(type === "accessGroup") {
+      currentPermissions = (this.rootStore.groupStore.accessGroups[accessGroupAddress].groupPermissions[groupAddress] || {}).permissions || [];
+    } else {
+      currentPermissions = (this.objects[objectId].groupPermissions[groupAddress] || {}).permissions || [];
+    }
 
     let toAdd = [];
     if(see && !currentPermissions.includes("see")) { toAdd.push("see"); }
@@ -660,6 +668,11 @@ MergeMetadata = flow(function * ({
     for(let i = 0; i < toRemove.length; i++) {
       yield Fabric.RemoveContentObjectGroupPermission({objectId, groupAddress, permission: toRemove[i]});
     }
+
+    this.rootStore.notificationStore.SetNotificationMessage({
+      message: "Successfully updated group permissions",
+      redirect: false
+    });
   });
 
 
@@ -942,7 +955,7 @@ MergeMetadata = flow(function * ({
     });
 
     this.rootStore.notificationStore.SetNotificationMessage({
-      message: "Successfully created non-owner cap"
+      message: "Encryption key created successfully"
     });
   });
 

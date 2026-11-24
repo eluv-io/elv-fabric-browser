@@ -27,7 +27,7 @@ const ContentLookup = observer(() => {
       state = { versionHash: contentLookupId };
     }
 
-    navigate(redirectPath, state);
+    navigate(redirectPath, {state});
   };
 
   return (

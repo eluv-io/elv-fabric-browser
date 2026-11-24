@@ -2255,10 +2255,12 @@ const Fabric = {
               }
             }
 
-            oauthInfo.oauthEnabled = await client.CallContractMethod({
-              contractAddress,
-              methodName: "oauthEnabled"
-            });
+            if(oauthInfo) {
+              oauthInfo.oauthEnabled = await client.CallContractMethod({
+                contractAddress,
+                methodName: "oauthEnabled"
+              });
+            }
           }
         } catch(error) {
           // eslint-disable-next-line no-console
@@ -2381,6 +2383,10 @@ const Fabric = {
       const name2 = b.name || "zz";
       return name1.toLowerCase() > name2.toLowerCase() ? 1 : -1;
     });
+
+    if(params.sortDirection === "desc") {
+      filteredMembers = filteredMembers.reverse();
+    }
 
     const count = filteredMembers.length;
 

@@ -1,3 +1,4 @@
+/*
 import React from "react";
 import { Link } from "react-router-dom";
 import UrlJoin from "url-join";
@@ -372,3 +373,400 @@ class AccessGroup extends React.Component {
 }
 
 export default observer(AccessGroup);
+
+
+ */
+
+import {observer} from "mobx-react";
+import ActionsToolbar from "@/components/ActionsToolbar";
+import {groupStore, libraryStore, objectStore} from "@/stores";
+import AsyncComponent from "@/components/AsyncComponent";
+import {useState} from "react";
+import {
+  Confirm,
+  CopyableField,
+  IconButton,
+  LabelledField,
+  Linkish,
+  PageHeader,
+  ToggleSection
+} from "@/components/Components";
+import {useLocation, useParams} from "wouter";
+import UrlJoin from "url-join";
+import JSONField from "@/components/JSONField";
+import {CreateModuleClassMatcher, FormatAddress, ValidAddress} from "@/utils/Helpers";
+import {Checkbox, Select, Tabs, Textarea, TextInput, Tooltip} from "@mantine/core";
+import ImageIcon from "@/components/ImageIcon";
+import DataTable from "@/components/DataTable";
+
+import UserIcon from "@/assets/icons/accounts.svg";
+import RemoveIcon from "@/assets/icons/trash.svg";
+import RefreshIcon from "@/assets/icons/refresh.svg";
+import {FormModal} from "@/components/Form";
+import ContentObjectGroups from "@/pages/content/ContentObjectGroups";
+
+const S = CreateModuleClassMatcher();
+
+const AddMemberForm = observer(({Reload, Close}) => {
+  const [formData, setFormData] = useState({address: "", manager: false});
+  const [addressValid, setAddressValid] = useState(true);
+
+  return (
+    <FormModal
+      modalProps={{
+        opened: true,
+        centered: true
+      }}
+      legend={`Add member to ${groupStore.accessGroup?.name}`}
+      onSubmit={async () => {
+        if(!(await groupStore.IsSameTenant({userAddress: formData.address}))) {
+          if(!(
+            await Confirm({
+              title: "Confirm Member",
+              content: "Warning: This user is associated with a different tenancy. Are you sure you want to add them to this group?"
+            })
+          )) {
+            return false;
+          }
+        }
+
+        await groupStore.AddAccessGroupMember({
+          contractAddress: groupStore.contractAddress,
+          memberAddress: formData.address,
+          manager: formData.manager
+        });
+
+        Reload();
+      }}
+      validationError={
+        addressValid ? null :
+          "Invalid Address"
+      }
+      Close={Close}
+    >
+      <TextInput
+        label="Address"
+        placeholder="Address..."
+        required
+        autoComplete="off"
+        onBlur={() => {
+          const address = FormatAddress(formData.address);
+
+          setFormData({...formData, address});
+          setAddressValid(!address || ValidAddress(address));
+        }}
+        value={formData.address}
+        onChange={event => setFormData({...formData, address: event.target.value})}
+      />
+      <Checkbox
+        label="Manager"
+        checked={formData.manager}
+        onChange={event => setFormData({...formData, manager: event.target.checked})}
+      />
+    </FormModal>
+  );
+});
+
+const Actions = observer(({Reload, ReloadMembers}) => {
+  const [location] = useLocation();
+  const [showAddMemberForm, setShowAddMemberForm] = useState(false);
+
+  return (
+    <>
+      <ActionsToolbar
+        iconActions={[
+          {
+            icon: RefreshIcon,
+            label: "Refresh",
+            onClick: Reload
+          }
+        ]}
+        actions={[
+          {
+            label: "Back",
+            type: "link",
+            path: "/access-groups",
+            variant: "secondary"
+          },
+          {
+            label: "Manage",
+            type: "link",
+            hidden: !groupStore.accessGroup.isOwner,
+            path: UrlJoin(location, "edit"),
+          },
+          {
+            label: "Add Member",
+            type: "link",
+            hidden: !(groupStore.accessGroup.isManager || groupStore.accessGroup.isOwner),
+            onClick: () => setShowAddMemberForm(true)
+          },
+          {
+            label: "Leave Group",
+            type: "button",
+            hidden: groupStore.accessGroup.isOwner || !groupStore.accessGroup.isManager,
+            onClick: async () => {
+              await Confirm({
+                title: "Leave Access Group",
+                content: "Are you sure you want to leave this group?",
+                onConfirm: async () => {
+                  await groupStore.LeaveAccessGroup({
+                    contractAddress: groupStore.contractAddress
+                  });
+
+                  Reload();
+                }
+              });
+            },
+          },
+          {
+            label: "Delete",
+            type: "button",
+            dividerAbove: true,
+            hidden: (true || !groupStore.accessGroup.isOwner),
+            onClick: () => this.DeleteAccessGroup(),
+          }
+        ]}
+      />
+      {
+        !showAddMemberForm ? null :
+          <AddMemberForm
+            Reload={ReloadMembers}
+            Close={() => setShowAddMemberForm(false)}
+          />
+      }
+    </>
+  );
+});
+
+const Members = observer(({tab}) => {
+  const [reloadKey, setReloadKey] = useState(1);
+
+  const canRemove = (
+    groupStore.accessGroup.isManager ||
+    groupStore.accessGroup.isOwner
+  );
+
+  return (
+    <DataTable
+      key={`table-${tab}-${reloadKey}`}
+      records={
+        Object.values(
+          (tab === "managers" ?
+            groupStore.accessGroup.managers :
+            groupStore.accessGroup.members) || {}
+        )
+      }
+      totalRecords={
+        tab === "managers" ?
+          groupStore.accessGroup.managersCount :
+          groupStore.accessGroup.membersCount
+      }
+      Load={async params => await groupStore.ListAccessGroupMembers({
+        contractAddress: groupStore.accessGroup.address,
+        showManagers: tab === "managers",
+        params
+      })}
+      columns={[
+        {
+          accessor: "name",
+          sortable: true,
+          render: record => (
+            <div className={S("table-item")}>
+              <div className={S("table-item__icon")}><ImageIcon icon={UserIcon}/></div>
+              <div className={S("table-item__text")}>
+                <div className={S("table-item__text-primary")}>
+                  {record.name}
+                </div>
+                <CopyableField value={record.address} className={S("table-item__text-secondary")}>
+                  {record.address}
+                </CopyableField>
+              </div>
+            </div>
+          )
+        },
+        {
+          accessor: "actions",
+          title: "",
+          hidden: !canRemove,
+          width: 50,
+          render: record =>
+            <div className={S("table-item", "table-item--actions")}>
+              <IconButton
+                icon={RemoveIcon}
+                size="sm"
+                label={`Remove ${tab === "managers" ? "Manager" : "Member"}`}
+                onClick={async () => await Confirm({
+                  title: `Remove Access Group ${tab === "managers" ? "Manager" : "Member"}`,
+                  content: `Are you sure you want to remove this ${tab === "managers" ? "manager" : "member"} from the group?`,
+                  onConfirm: async () => {
+                    await groupStore.RemoveAccessGroupMember({
+                      contractAddress: groupStore.contractAddress,
+                      memberAddress: record.address,
+                      manager: tab === "managers"
+                    });
+
+                    setReloadKey(reloadKey + 1);
+                  }
+                })}
+              />
+            </div>
+        }
+      ]}
+    />
+  );
+});
+
+const Permissions = observer(({Reload}) => {
+  const [updating, setUpdating] = useState(false);
+
+  const group = groupStore.accessGroup;
+
+  if(!(group.isOwner || group.isManager || group.isMember || group.hasAccess)) {
+    return null;
+  }
+
+  return (
+    <LabelledField label="Permissions">
+      <Select
+        miw={250}
+        loading={updating}
+        disabled={!groupStore.accessGroup.isManager && !groupStore.accessGroup.isOwner}
+        value={groupStore.accessGroup.visibility}
+        data={[
+          { label: "Publicly Listable", value: "1" },
+          { label: "Members Only", value: "0" }
+        ]}
+        onChange={
+          async newPermission => {
+            setUpdating(true);
+            try {
+              await groupStore.SetGroupVisibility({visibility: parseInt(newPermission)});
+
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              Reload();
+            } finally {
+              setUpdating(false);
+            }
+          }
+        }
+      />
+    </LabelledField>
+  );
+});
+
+const PageContent = observer(({Reload}) => {
+  const [location] = useLocation();
+  const [tab, setTab] = useState("members");
+  const [membersReloadKey, setMembersReloadKey] = useState(0);
+  const group = groupStore.accessGroup;
+
+  if(!group) { return; }
+
+  return (
+    <div className="page-container">
+      <Actions
+        Reload={Reload}
+        ReloadMembers={() => setMembersReloadKey(membersReloadKey + 1)}
+      />
+      <PageHeader
+        header={`Access Groups / ${group.name || group.address}`}
+        subHeader={<CopyableField value={group.address}>{group.address}</CopyableField>}
+      />
+      <LabelledField label="Owner" copyValue={group.owner}>
+        {
+          group.ownerName ?
+            <span className={S("inline-text")}>
+              <span>{group.ownerName}</span>
+              <span className={S("help-text")}>
+                ({group.owner})
+              </span>
+            </span> :
+            group.owner
+        }
+      </LabelledField>
+      <LabelledField label="Tenant ID" copyValue={group.tenantId}>
+        {group.tenantId || ""}
+      </LabelledField>
+      <LabelledField key="contract-address" label="Contract Address">
+        <Linkish className="inline-link" to={UrlJoin(location, "contract")}>
+          {group.address}
+        </Linkish>
+      </LabelledField>
+
+      {
+        !group.oauthInfo ? null :
+          <>
+            <LabelledField label="OAuth Issuer">
+              {group.oauthInfo.issuer}
+            </LabelledField>
+            {
+              !group.oauthInfo.claims || !group.oauthInfo.claims.groups ? null :
+                <LabelledField label="OAuth Groups">
+                  {Array.isArray(group.oauthInfo.claims.groups) ? group.oauthInfo.claims.groups.join(", ") : group.oauthInfo.claims.groups}
+                </LabelledField>
+            }
+          </>
+      }
+      <Permissions Reload={Reload}/>
+      <LabelledField label="Description" value={group.description || ""}/>
+
+      <br/>
+      <ToggleSection label="Metadata">
+        <JSONField
+          json={group.metadata}
+          className={S("component")}
+        />
+      </ToggleSection>
+
+      <br/>
+      <Tabs my="md" value={tab} onChange={setTab}>
+        <Tabs.List>
+          <Tabs.Tab value="members">Members</Tabs.Tab>
+          <Tabs.Tab value="managers">Managers</Tabs.Tab>
+          <Tabs.Tab value="groups">Groups</Tabs.Tab>
+        </Tabs.List>
+      </Tabs>
+      {
+        tab === "groups" ?
+          <ContentObjectGroups
+            type="accessGroup"
+            addressOrId={group.address}
+          /> :
+          <Members tab={tab} key={membersReloadKey} />
+      }
+    </div>
+  );
+});
+
+const AccessGroupPage = observer(() => {
+  const [reloadKey, setReloadKey] = useState(Math.random());
+
+  return (
+    <AsyncComponent
+      key={`page-${reloadKey}`}
+      Load={
+        async () => {
+          await groupStore.AccessGroup({
+            contractAddress: groupStore.contractAddress
+          });
+
+          await groupStore.AccessGroupGroupPermissions({contractAddress: groupStore.contractAddress});
+          await groupStore.SetInheritedGroupAccess();
+
+          if(
+            groupStore.accessGroup.visibility === 0 &&
+            !groupStore.accessGroup.hasAccess &&
+            !groupStore.accessGroup.isMember &&
+            !groupStore.accessGroup.isOwner &&
+            !groupStore.accessGroup.isManager
+          ) {
+            throw Error("Forbidden");
+          }
+        }
+      }
+      render={() => <PageContent Reload={() => setReloadKey(reloadKey + 1)} />}
+    />
+  );
+});
+
+export default AccessGroupPage;

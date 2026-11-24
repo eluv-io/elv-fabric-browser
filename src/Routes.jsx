@@ -14,6 +14,7 @@ import AccessGroupsPage from "@/pages/access_groups/AccessGroups";
 import ContentTypesPage from "@/pages/content/ContentTypes";
 
 import EventsPage from "@/pages/events/Events";
+import AccessGroupPage from "@/pages/access_groups/AccessGroup";
 
 /*
 import ContentLibraryPage from "@/pages/content/ContentLibrary";
@@ -88,8 +89,10 @@ const Router = observer(() => {
         <WatchedRoute exact path="/content/:libraryId/:objectId" component={ContentObjectPage}/>
 
         <WatchedRoute exact path="/access-groups" component={AccessGroupsPage}/>
+        <WatchedRoute exact path="/access-groups/:contractAddress" component={AccessGroupPage}/>
 
         <WatchedRoute exact path="/content-types" component={ContentTypesPage} />
+        <WatchedRoute exact path="/content-types/:objectId" component={ContentObjectPage}/>
 
         <WatchedRoute exact path="/events" component={EventsPage} />
 

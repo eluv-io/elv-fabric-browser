@@ -1,3 +1,13 @@
+.modal {
+  &__inner {
+    animation: var(--animation-fade-in) 0.5s ease;
+  }
+
+  &__title {
+    font-weight: 600;
+  }
+}
+
 .tooltip {
   --tooltip-bg: var(--background-primary);
   border: 2px solid var(--color-border);
@@ -9,6 +19,7 @@
   &__tab {
     font-weight: 600;
     font-size: 16px;
-    color: var(--color-text-secondary);
+    padding-inline: 30px;
+    transition: color 0.25s ease, background-color 0.25s ease;
   }
 }

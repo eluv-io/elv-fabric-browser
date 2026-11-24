@@ -1,6 +1,6 @@
 import ComponentStyles from "@/assets/stylesheets/modules/components.module.scss";
 
-import {forwardRef, useState} from "react";
+import {forwardRef, useEffect, useState} from "react";
 import {Link} from "wouter";
 import {CreateModuleClassMatcher, JoinClassNames} from "@/utils/Helpers";
 import {observer} from "mobx-react";
@@ -8,6 +8,7 @@ import {Loader} from "@mantine/core";
 import ImageIcon from "@/components/ImageIcon";
 
 import CopyIcon from "@/assets/icons/copy.svg";
+import {modals} from "@mantine/modals";
 
 const S = CreateModuleClassMatcher(ComponentStyles);
 
@@ -167,7 +168,7 @@ export const CopyButton = ({value, size="md", className="", ...props}) => {
   );
 };
 
-export const CopyableField = ({children, value, className="", ...props}) => {
+export const CopyableField = ({children, value, alwaysVisible=true, smallIcon=true, className="", ...props}) => {
   const [copied, setCopied] = useState(false);
 
   return (
@@ -184,10 +185,23 @@ export const CopyableField = ({children, value, className="", ...props}) => {
         setCopied(true);
         setTimeout(() => setCopied(false), 600);
       }}
-      className={JoinClassNames(S("copyable-field", copied ? "copyable-field--copied" : ""), className)}
+      className={
+        JoinClassNames(
+          S(
+            "copyable-field",
+            copied ? "copyable-field--copied" : "",
+            alwaysVisible ? "copyable-field--button-visible" : "",
+          ),
+          className
+        )
+      }
     >
       <span>{children}</span>
-      <ImageIcon icon={CopyIcon} className={S("copyable-field__icon")}/>
+      <ImageIcon
+        icon={CopyIcon}
+        size="xs"
+        className={S("copyable-field__icon", smallIcon ? "copyable-field__icon--small" : "")}
+      />
     </div>
   );
 };
@@ -267,3 +281,42 @@ export const ToggleSection = observer(({label="Toggle", toggleOpen=false, indent
     </div>
   );
 });
+
+export const Confirm = async ({title, content, labels={}, onCancel, onConfirm}) => {
+  let confirming = false;
+
+  return new Promise(resolve => {
+    modals.openConfirmModal({
+      centered: true,
+      title,
+      children: content,
+      labels: {
+        confirm: labels.confirm || "Confirm",
+        cancel: labels.cancel || "Cancel"
+      },
+      onClose: async () => {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        if(confirming) { return; }
+
+        await onCancel?.();
+        resolve(false);
+      },
+      onCancel: async () => {
+        await onCancel?.();
+        resolve(false);
+      },
+      onConfirm: async () => {
+        try {
+          confirming = true;
+          await onConfirm?.();
+          resolve(true);
+        } catch(error) {
+          console.error(error);
+          resolve(false);
+        } finally {
+          confirming = false;
+        }
+      },
+    });
+  });
+};

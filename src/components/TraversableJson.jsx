@@ -1,12 +1,10 @@
 import ComponentStyles from "@/assets/stylesheets/modules/components.module.scss";
-
 import {useEffect, useState} from "react";
 import UrlJoin from "url-join";
-
 import {CreateModuleClassMatcher, onEnterPressed} from "@/utils/Helpers";
+import {CopyableField, CopyButton, IconButton} from "@/components/Components";
 
 import CaretDownIcon from "@/assets/icons/caret-down.svg";
-import {CopyButton, IconButton} from "@/components/Components";
 
 const S = CreateModuleClassMatcher(ComponentStyles);
 
@@ -67,8 +65,17 @@ const TraversableJson = ({
         );
       });
     }
-  } else if(typeof json === "string") {
-    content = <div className={S("traversable-json__leaf")}>{JSON.stringify(json)}</div>;
+  } else if(typeof json === "string" && json) {
+    content = (
+      <CopyableField
+        value={json}
+        alwaysVisible={false}
+        smallIcon={false}
+        className={S("traversable-json__leaf")}
+      >
+        {json}
+      </CopyableField>
+    );
   } else if(typeof json === "boolean") {
     content = <div className={S("traversable-json__leaf")}>{json ? "true" : "false"}</div>;
   } else if(json === null || typeof json === "undefined") {
@@ -83,7 +90,7 @@ const TraversableJson = ({
       <div className={S("traversable-json")}>
         {content}
         <CopyButton
-          value={JSON.stringify(json, null, 2)}
+          value={typeof json === "string" ? json : JSON.stringify(json, null, 2)}
           size="sm"
           title="Copy to clipboard"
           className={S("traversable-json__copy")}
@@ -133,7 +140,7 @@ const TraversableJson = ({
         />
         <div className={S("traversable-json__copy-item")}>
           <CopyButton
-            value={JSON.stringify(json, null, 2)}
+            value={typeof json === "string" ? json : JSON.stringify(json, null, 2)}
             size="sm"
             title={`Copy Metadata from '/${path}'`}
           />

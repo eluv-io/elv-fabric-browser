@@ -18,6 +18,7 @@ const DataTable = observer(({
   records=[],
   totalRecords,
   Load,
+  Reload,
   defaultPerPage=10,
   minHeight,
   paginate=true,
@@ -58,7 +59,7 @@ const DataTable = observer(({
 
     if(!Load) { return; }
 
-    loadTimeout = setTimeout(() => setLoading(true), 250);
+    loadTimeout = setTimeout(() => setLoading(true), 350);
 
     Load({
       page: paginate ? page : 1,
@@ -106,6 +107,8 @@ const DataTable = observer(({
               icon={RefreshIcon}
               size="sm"
               onClick={async () => {
+                Reload && await Reload();
+
                 setRefreshKey(refreshKey + 1);
                 await new Promise(resolve => setTimeout(resolve, 1000));
               }}
@@ -126,9 +129,9 @@ const DataTable = observer(({
           classNames={{
             root: S("table", paginate ? "table--paginated" : "", records.length === 0 ? "table--empty" : ""),
             header: S("header"),
-            pagination: S("pagination")
+            pagination: S("pagination"),
           }}
-          minHeight={minHeight || (loading || records.length === 0 ? 200 : undefined)}
+          minHeight={minHeight || (records.length === 0 ? 200 : 120)}
         />
       </div>
     </div>

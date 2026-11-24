@@ -69,6 +69,7 @@ const JSONField = observer(({json, diffJson, DiffComponent, className=""}) => {
       <Tabs
         variant="pills"
         color="var(--background-secondary)"
+        autoContrast
         value={viewType}
         onChange={setViewType}
         classNames={{

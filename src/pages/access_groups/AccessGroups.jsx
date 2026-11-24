@@ -16,7 +16,7 @@ const AccessGroupsTable = observer(() => {
     <DataTable
       records={Object.values(groupStore.accessGroups)}
       totalRecords={groupStore.accessGroupsCount}
-      Load={params => groupStore.ListAccessGroups({params})}
+      Load={async params => await groupStore.ListAccessGroups({params})}
       columns={[
         {
           accessor: "name",

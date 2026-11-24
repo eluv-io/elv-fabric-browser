@@ -8,6 +8,7 @@ import {CreateModuleClassMatcher} from "@/utils/Helpers";
 import {Popover} from "@mantine/core";
 
 import SelectIcon from "@/assets/icons/select.svg";
+import {useState} from "react";
 
 const S = CreateModuleClassMatcher(CommonStyles);
 
@@ -46,14 +47,21 @@ const ActionsToolbar = observer(({actions, iconActions, SaveDraft, showContentLo
   );
 
   const MoreOptionsDropdown = () => {
+    const [opened, setOpened] = useState(false);
+
     if(visibleActions.length < 3) {
       return null;
     }
 
     return (
-      <Popover width={200} classNames={{dropdown: S("actions-toolbar__dropdown")}}>
+      <Popover
+        width={200}
+        opened={opened}
+        onChange={setOpened}
+        classNames={{dropdown: S("actions-toolbar__dropdown")}}
+      >
         <Popover.Target>
-          <Button rightIcon={SelectIcon} variant="outline-subtle">
+          <Button onClick={() => setOpened(!opened)} rightIcon={SelectIcon} variant="outline-subtle">
             More Options
           </Button>
         </Popover.Target>
@@ -68,7 +76,13 @@ const ActionsToolbar = observer(({actions, iconActions, SaveDraft, showContentLo
                 <Linkish
                   disabled={action.disabled}
                   to={action.path}
-                  onClick={action.onClick}
+                  onClick={
+                    !action.onClick ? null :
+                      event => {
+                        setOpened(false);
+                        action.onClick(event);
+                      }
+                  }
                   className={S("actions-toolbar__item")}
                 >
                   {action.label}

@@ -22,27 +22,30 @@ class GroupStore {
     this.rootStore = rootStore;
   }
 
-
   ListAccessGroups = flow(function * ({params, publicOnly=true}) {
     const {accessGroups, count} = yield Cancelable(
       params.cancelable,
       async () => await Fabric.ListAccessGroups({params, publicOnly})
     );
 
+    if(this.contractAddress) {
+      accessGroups[this.contractAddress] = {
+        ...(accessGroups?.[this.contractAddress] || {}),
+        ...(this.accessGroups?.[this.contractAddress] || {}),
+      };
+    }
+
     this.accessGroups = accessGroups;
     this.accessGroupsCount = count;
   });
-
 
   AccessGroup = flow(function * ({contractAddress}) {
     this.accessGroups[contractAddress] = yield Fabric.GetAccessGroup({contractAddress});
   });
 
-
   AccessGroupGroupPermissions = flow(function * ({contractAddress}) {
     this.accessGroups[contractAddress].groupPermissions = yield Fabric.GetContentObjectGroupPermissions({objectId: Fabric.utils.AddressToObjectId(contractAddress)});
   });
-
 
   SaveAccessGroup = flow(function * ({
     name,
@@ -149,7 +152,6 @@ class GroupStore {
     });
   });
 
-
   ListAccessGroupMembers = flow(function * ({contractAddress, showManagers=false, params}) {
     const {members, count} = yield Fabric.ListAccessGroupMembers({contractAddress, showManagers, params});
 
@@ -161,7 +163,6 @@ class GroupStore {
       this.accessGroups[contractAddress].membersCount = count;
     }
   });
-
 
   async IsSameTenant({userAddress}) {
     try {

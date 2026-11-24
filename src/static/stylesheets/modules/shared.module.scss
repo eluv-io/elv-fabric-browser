@@ -18,6 +18,12 @@
   align-items: center;
 }
 
+.inline-apart {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .inline-text {
   display: flex;
   align-items: center;
@@ -29,6 +35,12 @@
   font-size: 20px;
   font-weight: 600;
   color: var(--color-text-secondary);
+}
+
+.form-title {
+  margin-top: 10px;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .monospace {
@@ -72,6 +84,7 @@
   align-items: center;
   gap: 10px;
   user-select: none;
+  text-align: left;
 
   &--centered {
     justify-content: center;
@@ -88,6 +101,10 @@
     .table-item__icon {
       margin-top: 2px;
     }
+  }
+
+  &--actions {
+    justify-content: flex-end;
   }
 
   &__icon {

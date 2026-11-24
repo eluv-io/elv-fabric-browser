@@ -27,6 +27,12 @@
       display: none;
     }
   }
+
+  :global {
+    .mantine-datatable-loader {
+      z-index: 10;
+    }
+  }
 }
 
 .header {

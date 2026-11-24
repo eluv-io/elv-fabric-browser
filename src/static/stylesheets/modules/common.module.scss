@@ -37,6 +37,10 @@
     margin: 5px 0;
     width: 100%;
     background-color: var(--color-border);
+
+    &:first-child {
+      display: none;
+    }
   }
 }
 
@@ -72,6 +76,13 @@
     top: 3px;
     right: 3px;
     color: var(--color-text-highlight);
+  }
+
+  &__message {
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   &--error {

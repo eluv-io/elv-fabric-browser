@@ -1161,13 +1161,12 @@ export default observer(ContentObject);
 import ContentObjectStyles from "@/assets/stylesheets/modules/content-object.module.scss";
 
 import {observer} from "mobx-react";
-import {useLocation, useParams} from "wouter";
+import {useLocation, useParams, useRouter} from "wouter";
 import {useEffect, useState} from "react";
 import AsyncComponent from "@/components/AsyncComponent";
 import {libraryStore, objectStore, rootStore} from "@/stores";
 import {
-  Button,
-  Copy,
+  Button, Confirm,
   CopyableField,
   IconButton,
   LabelledField,
@@ -1175,11 +1174,10 @@ import {
   PageHeader,
   ToggleSection
 } from "@/components/Components";
-import {Select, Tabs, Title, Tooltip} from "@mantine/core";
+import {Select, Tabs, Textarea, TextInput, Tooltip} from "@mantine/core";
 import ActionsToolbar from "@/components/ActionsToolbar";
-import Path from "path";
 import UrlJoin from "url-join";
-import {CreateModuleClassMatcher, FormatDate, FormatDateTime, HashToAddress, Percentage} from "@/utils/Helpers";
+import {CreateModuleClassMatcher, FormatDateTime, HashToAddress, Percentage} from "@/utils/Helpers";
 import ImageIcon from "@/components/ImageIcon";
 import Fabric from "@/client/Fabric";
 
@@ -1191,11 +1189,12 @@ import JSONField from "@/components/JSONField";
 import PrettyBytes from "pretty-bytes";
 import {DownloadFromUrl} from "@/utils/Files";
 import Diff from "@/components/Diff";
+import {FormModal} from "@/components/Form";
+import ContentObjectGroups from "@/pages/content/ContentObjectGroups";
 
 const S = CreateModuleClassMatcher(ContentObjectStyles);
 
 const Actions = observer(({Reload}) => {
-  const {libraryId, objectId} = useParams();
   const [location] = useLocation();
 
   const [showCopyObjectModal, setShowCopyObjectModal] = useState(false);
@@ -1214,7 +1213,9 @@ const Actions = observer(({Reload}) => {
         {
           label: "Back",
           type: "link",
-          path: objectStore.object.isTenantObject ? "/content" : UrlJoin("/content", libraryId),
+          path: objectStore.object.isContentType ?
+            "/content-types" :
+            UrlJoin("/content", objectStore.libraryId),
           variant: "secondary"
         },
         {
@@ -1382,7 +1383,54 @@ const Permissions = observer(({Reload}) => {
   );
 });
 
-const OwnerCapsSection = observer(() => {
+const OwnerCapForm = observer(({Close}) => {
+  const [formData, setFormData] = useState({label: "", publicKey: ""});
+  return (
+    <FormModal
+      modalProps={{
+        opened: true,
+        centered: true
+      }}
+      legend={`Create encryption key for ${objectStore.object?.name}`}
+      onSubmit={async () => {
+        try {
+          await objectStore.CreateNonOwnerCap({
+            libraryId: objectStore.libraryId,
+            objectId: objectStore.objectId,
+            label: formData.label,
+            publicKey: formData.publicKey
+          });
+        } catch (error) {
+          if(error?.toString().toLowerCase().includes("publickey length")) {
+            throw {formMessage: "Invalid Public Key"};
+          }
+
+          throw error;
+        }
+      }}
+      Close={Close}
+    >
+      <TextInput
+        label="Label"
+        placeholder="Label..."
+        required
+        autoComplete="off"
+        value={formData.label}
+        onChange={event => setFormData({...formData, label: event.target.value})}
+      />
+      <Textarea
+        label="Public Key"
+        placeholder="Public key..."
+        required
+        autoComplete="off"
+        value={formData.publicKey}
+        onChange={event => setFormData({...formData, publicKey: event.target.value})}
+      />
+    </FormModal>
+  );
+});
+
+const OwnerCapsSection = observer(({Reload}) => {
   const [showManage, setShowManage] = useState(false);
 
   const capKeys = Object.keys(objectStore.object.meta || {}).filter(key => key.startsWith("eluv.caps.iusr")).map(capKey => {
@@ -1392,54 +1440,77 @@ const OwnerCapsSection = observer(() => {
 
   const caps = objectStore.object.meta.owner_caps || {};
 
-  console.log(caps);
-
   return (
     <LabelledField label="Encryption Keys" alignTop>
       <ToggleSection label="Encryption Keys">
-        {
-          !objectStore.objectId.isOwner ? null :
-            <Button
-              type="button"
-              className="secondary"
-              onClick={() => setShowManage(true)}
-            >
-              Add Encryption Key
-            </Button>
-        }
-        {
-          capKeys.length === 0 ?
-            <div className="table-note">No encryption keys to display</div> :
-            <DataTable
-              records={capKeys}
-              paginate={false}
-              columns={[
-                { accessor: "label", render: capAddress => <span>{caps[capAddress] || "Owner"}</span> },
-                { accessor: "type",  render: capAddress => caps.hasOwnProperty(capAddress) ? "User" : "Owner" },
-                { accessor: "address", render: capAddress => capAddress },
-                {
-                  accessor: "actions",
-                  title: "",
-                  render: capAddress => (
-                    <IconButton
-                      size="sm"
-                      title="Delete this key"
-                      icon={DeleteIcon}
-                      disabled={!objectStore.object.isOwner || !caps.hasOwnProperty(capAddress)}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        this.DeleteCap(capAddress);
-                      }}
-                    />
-                  )
-                }
-              ]}
-            />
-        }
+        <div className={S("stack")}>
+          {
+            capKeys.length === 0 ?
+              <div className="table-note">No encryption keys to display</div> :
+              <DataTable
+                records={capKeys}
+                paginate={false}
+                columns={[
+                  { accessor: "label", render: capAddress => <span>{caps[capAddress] || "Owner"}</span> },
+                  { accessor: "type",  render: capAddress => caps.hasOwnProperty(capAddress) ? "User" : "Owner" },
+                  { accessor: "address", render: capAddress => capAddress },
+                  {
+                    accessor: "actions",
+                    title: "",
+                    render: capAddress => (
+                      <IconButton
+                        size="sm"
+                        title="Delete this key"
+                        icon={DeleteIcon}
+                        disabled={!objectStore.object.isOwner || !caps.hasOwnProperty(capAddress)}
+                        onClick={async (event) => {
+                          event.stopPropagation();
 
+                          await Confirm({
+                            title: "Delete Encryption Key",
+                            content: "Are you sure you want to delete this encryption key?",
+                            onConfirm: async () => {
+                              await objectStore.DeleteOwnerCap({
+                                libraryId: objectStore.libraryId,
+                                objectId: objectStore.objectId,
+                                address: capAddress
+                              });
+
+                              Reload();
+                            }
+                          });
+                        }}
+                      />
+                    )
+                  }
+                ]}
+              />
+          }
+
+          {
+            !objectStore.object.isOwner ? null :
+              <Button
+                type="button"
+                size="sm"
+                variant="outline-subtle"
+                onClick={() => setShowManage(true)}
+              >
+                Add Encryption Key
+              </Button>
+          }
+        </div>
       </ToggleSection>
       {
-        //this.OwnerCapModal()
+        !showManage ? null :
+          <OwnerCapForm
+            Close={success => {
+              setShowManage(false);
+
+              if(success) {
+                Reload();
+              }
+            }}
+          />
       }
     </LabelledField>
   );
@@ -1543,7 +1614,9 @@ const ObjectParts = observer(({version}) => {
   );
 });
 
-const ObjectVersion = observer(({versionHash, latestVersion=false}) => {
+const ObjectVersion = observer(({versionHash, latestVersion=false, selected}) => {
+  const [ref, setRef] = useState(undefined);
+
   let version = objectStore.object;
   let hasPreviousVersion = objectStore.object.versionCount > 0;
 
@@ -1552,10 +1625,19 @@ const ObjectVersion = observer(({versionHash, latestVersion=false}) => {
     hasPreviousVersion = ((objectStore.object.versions || []).findIndex(storeVersion => storeVersion === (versionHash)) !== (objectStore.object.versions || []).length - 1);
   }
 
+  useEffect(() => {
+    // This specific version was specified, scroll to it
+    if(!selected || !ref) { return; }
+
+    history.replaceState({...(history.state || {}), versionHash: undefined}, "");
+
+    setTimeout(() => ref.scrollIntoView({behavior: "smooth", block: "nearest", inline: "start" }), 500);
+  }, [selected, ref]);
+
   if(!version) { return null; }
 
   return (
-    <div className={"version-info " + (latestVersion ? "" : "indented version-visible")}>
+    <div ref={setRef} className={"version-info " + (latestVersion ? "" : "indented version-visible")}>
       {
         !latestVersion ? null :
           <div className={S("section-title")}>Latest Version</div>
@@ -1635,7 +1717,7 @@ const ObjectVersion = observer(({versionHash, latestVersion=false}) => {
   );
 });
 
-const PreviousVersions = observer(() => {
+const PreviousVersions = observer(({urlVersionHash}) => {
   if(objectStore.object.versions.length < 2) { return null; }
 
   return (
@@ -1646,7 +1728,7 @@ const PreviousVersions = observer(() => {
         <ToggleSection
           label={`Version ${versionNumber}`}
           key={`version-${versionNumber}`}
-          //toggleOpen={this.props.location.state && (versionHash === this.props.location.state.versionHash)}
+          toggleOpen={urlVersionHash && urlVersionHash === versionHash}
         >
           <AsyncComponent
             Load={
@@ -1656,7 +1738,12 @@ const PreviousVersions = observer(() => {
                 });
               }
             }
-            render={() => <ObjectVersion versionHash={versionHash} />}
+            render={() =>
+              <ObjectVersion
+                versionHash={versionHash}
+                selected={urlVersionHash && urlVersionHash === versionHash}
+              />
+            }
           />
         </ToggleSection>
       );
@@ -1667,6 +1754,8 @@ const PreviousVersions = observer(() => {
 const ObjectInfo = observer(({tokenInfo, Reload}) => {
   const [location] = useLocation();
   const object = objectStore.object;
+
+  const urlVersionHash = history.state?.versionHash;
 
   return (
     <div>
@@ -1779,7 +1868,7 @@ const ObjectInfo = observer(({tokenInfo, Reload}) => {
             <ToggleSection
               label="Previous Versions"
               className="version-info"
-              //toggleOpen={this.state.prevVersionsToggled}
+              toggleOpen={urlVersionHash && urlVersionHash !== objectStore.object.hash}
             >
               <AsyncComponent
                 Load={
@@ -1788,7 +1877,7 @@ const ObjectInfo = observer(({tokenInfo, Reload}) => {
                     objectId: objectStore.objectId
                   })
                 }
-                render={() => <PreviousVersions/>}
+                render={() => <PreviousVersions urlVersionHash={urlVersionHash}/>}
               />
             </ToggleSection>
           </>
@@ -1800,7 +1889,7 @@ const ObjectInfo = observer(({tokenInfo, Reload}) => {
 const PageContent = observer(({Reload}) => {
   const displayAppUrl = objectStore?.object?.displayAppUrl || (objectStore?.object?.typeInfo || {}).displayAppUrl;
 
-  const {libraryId, objectId} = useParams();
+  const {objectId} = useParams();
   const [tab, setTab] = useState("content");
   const [tokenInfo, setTokenInfo] = useState(undefined);
 
@@ -1824,7 +1913,7 @@ const PageContent = observer(({Reload}) => {
     <div className="page-container">
       <Actions Reload={Reload} />
       <PageHeader
-        header={`${libraryStore.library.name || libraryId} / ${objectStore.object.name || objectId}`}
+        header={`${libraryStore.library.name || objectStore.libraryId} / ${objectStore.object.name || objectId}`}
         subHeader={<CopyableField value={objectId}>{objectId}</CopyableField>}
       />
       <Tabs my="md" value={tab} onChange={setTab}>
@@ -1845,31 +1934,34 @@ const PageContent = observer(({Reload}) => {
       {
         tab === "content" ?
           <ObjectInfo tokenInfo={tokenInfo} Reload={Reload} /> :
-          null
+          tab === "groups" ?
+            <ContentObjectGroups
+              type="contentObject"
+            /> : null
       }
     </div>
   );
 });
 
 const ContentObjectPage = observer(() => {
-  const {libraryId, objectId} = useParams();
+  const {objectId} = useParams();
   const [reloadKey, setReloadKey] = useState(Math.random());
 
   return (
     <AsyncComponent
-      key={`page-${reloadKey}-${Math.random()}`}
+      key={`page-${reloadKey}`}
       Load={async () => {
         objectStore.DiscardWriteToken({objectId});
 
         try {
-          await libraryStore.ContentLibrary({libraryId});
+          await libraryStore.ContentLibrary({libraryId: objectStore.libraryId});
         } catch(error) {
           console.error(error);
         }
 
         try {
           await objectStore.ContentObject({
-            libraryId,
+            libraryId: objectStore.libraryId,
             objectId,
             refresh: reloadKey > 1
           });
@@ -1879,30 +1971,18 @@ const ContentObjectPage = observer(() => {
         }
 
         try {
-          await objectStore.ContentObjectUserPermissions({libraryId, objectId});
+          await objectStore.ContentObjectUserPermissions({
+            libraryId: objectStore.libraryId,
+            objectId: objectStore.objectId
+          });
         } catch(error) {
           console.error(error);
         }
-
-        /* TODO: Figure out what links to specific object version
-        const urlVersionHash = this.props.location.state && this.props.location.state.versionHash;
-
-        if(!urlVersionHash) { return; }
-
-        if(urlVersionHash === objectStore.object.hash) {
-          this.setState({currentVersionToggled: true});
-        } else {
-          this.setState({prevVersionsToggled: true});
-        }
-
-        this.CheckUrlVersionHash();
-
-         */
       }}
       render={() =>
         <PageContent
           Reload={() => {
-            libraryStore.ClearLibraryCache({libraryId});
+            libraryStore.ClearLibraryCache({libraryId: objectStore.libraryId});
             setReloadKey(reloadKey + 1);
           }}
         />
