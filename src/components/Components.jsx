@@ -1,6 +1,6 @@
 import ComponentStyles from "@/assets/stylesheets/modules/components.module.scss";
 
-import {forwardRef, useEffect, useState} from "react";
+import {forwardRef, useState} from "react";
 import {Link} from "wouter";
 import {CreateModuleClassMatcher, JoinClassNames} from "@/utils/Helpers";
 import {observer} from "mobx-react";

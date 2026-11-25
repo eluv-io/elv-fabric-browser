@@ -5,7 +5,7 @@ import {CreateModuleClassMatcher, JoinClassNames} from "@/utils/Helpers";
 import {Button} from "@/components/Components";
 import {useState} from "react";
 import {useLocation} from "wouter";
-import {Modal} from "@mantine/core";
+import {Loader, Modal} from "@mantine/core";
 
 const S = CreateModuleClassMatcher(ComponentStyles);
 
@@ -17,11 +17,57 @@ const Form = observer(({
   className="",
   children,
   validationError,
+  disabled=false,
+  showTopControls=false,
+  showBottomControls=true,
+  loading,
   Close
 }) => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [, navigate] = useLocation();
+
+  const actions = (
+    <div className={S("form__actions")}>
+      <Button
+        disabled={submitting}
+        onClick={() => Close?.()}
+        to={cancelPath}
+        variant="outline"
+      >
+        Cancel
+      </Button>
+      <Button
+        disabled={validationError || disabled}
+        loading={submitting}
+        onClick={async () => {
+          try {
+            setSubmitting(true);
+            setError("");
+            const response = await onSubmit();
+
+            if(typeof response === "boolean" && !response) {
+              // Explicitly cancelled, probably confirm
+              setSubmitting(false);
+              return;
+            }
+
+            Close?.(true);
+
+            if(successPath) {
+              navigate(successPath);
+            }
+          } catch(error) {
+            console.error(error);
+            setSubmitting(false);
+            setError(error?.formMessage || "Something went wrong");
+          }
+        }}
+      >
+        Submit
+      </Button>
+    </div>
+  );
 
   return (
     <form
@@ -31,51 +77,29 @@ const Form = observer(({
     >
       <fieldset>
         {
-          !legend ? null :
-            <legend>{legend}</legend>
+          !legend && !showTopControls ? null :
+            <legend className={S("page-header", "form__legend")}>
+              <div className={S("page-header__header")}>
+                {legend || ""}
+              </div>
+              {
+                !showTopControls ? null :
+                  actions
+              }
+            </legend>
         }
-        <div className={S("form__content")}>
-          {children}
+        <div key={`form-content-${loading}`} className={S("form__content")}>
+          {
+            loading ?
+              <Loader className={S("form__loader")} /> :
+              children
+          }
         </div>
         <div className={S("form__error")}>{validationError || error || ""}</div>
-        <div className={S("form__actions")}>
-          <Button
-            disabled={submitting}
-            onClick={() => Close?.()}
-            to={cancelPath}
-            variant="outline"
-          >
-            Cancel
-          </Button>
-          <Button
-            disabled={validationError}
-            onClick={async () => {
-              try {
-                setSubmitting(true);
-                setError("");
-                const response = await onSubmit();
-
-                if(typeof response === "boolean" && !response) {
-                  // Explicitly cancelled, probably confirm
-                  setSubmitting(false);
-                  return;
-                }
-
-                Close?.(true);
-
-                if(successPath) {
-                  navigate(successPath);
-                }
-              } catch(error) {
-                console.error(error);
-                setSubmitting(false);
-                setError(error?.formMessage || "Something went wrong");
-              }
-            }}
-          >
-            Submit
-          </Button>
-        </div>
+        {
+          !showBottomControls ? null :
+            actions
+        }
       </fieldset>
     </form>
   );
@@ -90,7 +114,7 @@ export const FormModal = observer(({modalProps, ...formProps}) => {
       {...modalProps}
       title={formProps.legend}
     >
-      <Form {...formProps} legend={undefined} />
+      <Form {...formProps} legend={undefined}/>
     </Modal>
   );
 });

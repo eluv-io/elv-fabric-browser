@@ -1,6 +1,6 @@
 import CommonStyles from "@/assets/stylesheets/modules/common.module.scss";
 
-import ContentLookup from "./ContentLookup";
+import ContentLookup from "@/components/ContentLookup";
 import {objectStore} from "@/stores";
 import {observer} from "mobx-react";
 import {Button, IconButton, Linkish} from "@/components/Components";

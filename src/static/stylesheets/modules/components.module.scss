@@ -199,6 +199,7 @@
   gap: 0.5em;
   transition: opacity 0.25s ease;
   cursor: pointer;
+  width: max-content;
 
   &__icon {
     color: var(--color-icon);
@@ -288,6 +289,12 @@
     position: relative;
     max-height: 80vh;
     overflow-y: auto;
+
+    &--raw {
+      padding: 0;
+      background-color: transparent;
+      border: 0;
+    }
   }
 
   &__raw {
@@ -301,6 +308,15 @@
     top: 10px;
     right: 10px;
   }
+}
+
+.json-edit-field {
+  word-wrap: anywhere;
+  max-width: 100%;
+  font-size: 14px;
+  border: 1px solid var(--color-border-dark);
+  border-radius: 10px;
+  overflow: hidden;
 }
 
 .traversable-json {
@@ -422,8 +438,21 @@
 
 
 .form {
-  legend {
-    font-weight: 600;
+  max-width: var(--max-form-width);
+
+  &__loader {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+  }
+
+  &__legend {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
   }
 
   &__error {
@@ -438,13 +467,13 @@
   &__content {
     display: grid;
     gap: 10px;
+    animation: var(--animation-fade-in) 0.25s ease;
   }
 
   &__actions {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    margin-top: 10px;
     gap: 5px;
   }
 

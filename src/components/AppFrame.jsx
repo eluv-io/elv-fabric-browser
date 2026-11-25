@@ -7,7 +7,6 @@ from the core app, which owns user account information and keys
 
 import React from "react";
 import Fabric from "@/client/Fabric";
-import PropTypes from "prop-types";
 import {observer} from "mobx-react";
 import {notificationStore} from "@/stores";
 
@@ -115,13 +114,6 @@ class IFrameBase extends React.Component {
     );
   }
 }
-
-IFrameBase.propTypes = {
-  appUrl: PropTypes.string.isRequired,
-  appRef: PropTypes.object.isRequired,
-  listener: PropTypes.func.isRequired,
-  className: PropTypes.string
-};
 
 const IFrame = React.forwardRef(
   (props, appRef) => <IFrameBase appRef={appRef} {...props} />
@@ -254,15 +246,5 @@ class AppFrame extends React.Component {
     );
   }
 }
-
-AppFrame.propTypes = {
-  appUrl: PropTypes.string.isRequired,
-  queryParams: PropTypes.object,
-  onComplete: PropTypes.func,
-  onCancel: PropTypes.func,
-  Reload: PropTypes.func,
-  className: PropTypes.string,
-  fixedDimensions: PropTypes.bool
-};
 
 export default observer(AppFrame);

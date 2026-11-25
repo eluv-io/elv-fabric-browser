@@ -131,7 +131,14 @@ const DataTable = observer(({
             header: S("header"),
             pagination: S("pagination"),
           }}
-          minHeight={minHeight || (records.length === 0 ? 200 : 120)}
+          minHeight={
+            minHeight ||
+            (
+              records.length === 0 ?
+                200 :
+                paginate ? 120 : 0
+            )
+          }
         />
       </div>
     </div>

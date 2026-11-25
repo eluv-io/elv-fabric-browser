@@ -7,6 +7,7 @@ import TraversableJson from "@/components/TraversableJson";
 import {observer} from "mobx-react";
 import {CopyButton} from "@/components/Components";
 import {CreateModuleClassMatcher, JoinClassNames} from "@/utils/Helpers";
+import JSONEditField from "@/components/JSONEditField";
 
 const S = CreateModuleClassMatcher(ComponentStyles);
 
@@ -35,6 +36,22 @@ const JSONField = observer(({json, diffJson, DiffComponent, className=""}) => {
               </>
           }
         </pre>
+      );
+
+      content = (
+        <>
+          <JSONEditField
+            componentProps={{
+              readOnly: true,
+            }}
+            value={
+              length > 25000000 ?
+                "Metadata too large to display" :
+              JSON.stringify(json, null, 2)
+            }
+          />
+          <CopyButton size="sm" value={JSON.stringify(json, null, 2)} className={S("json__copy")} />
+        </>
       );
       break;
     case "diff":
@@ -91,7 +108,7 @@ const JSONField = observer(({json, diffJson, DiffComponent, className=""}) => {
           }
         </Tabs.List>
       </Tabs>
-      <div className={S("json__content")}>
+      <div className={S("json__content", `json__content--${viewType}`)}>
         {content}
       </div>
     </div>

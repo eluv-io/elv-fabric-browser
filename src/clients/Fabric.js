@@ -316,24 +316,21 @@ const Fabric = {
         name: "Content Space",
         contractAddress: FormatAddress(client.utils.HashToAddress(libraryId)),
         libraryObjectId: objectId,
-        privateMeta: {},
-        publicMeta: {},
+        metadata: {},
         isContentSpaceLibrary: true
       };
     }
 
     /* Library object and private metadata */
 
-    let privateMeta = {};
-    let publicMeta = {};
+    let metadata = { public: {} };
     try {
-      privateMeta = await Fabric.GetContentObjectMetadata({
+      metadata = (await Fabric.GetContentObjectMetadata({
         libraryId,
         objectId
-      });
+      })) || {};
 
-      publicMeta = {...(privateMeta.public || {})};
-      delete privateMeta.public;
+      metadata.public = metadata.public || {};
     } catch(error) {
       // eslint-disable-next-line no-console
       console.error(error);
@@ -383,12 +380,11 @@ const Fabric = {
       ...libraryInfo,
       libraryId,
       types,
-      name: publicMeta.name || privateMeta.name || libraryId,
-      description: publicMeta.description || privateMeta.description,
+      name: metadata.public.name || metadata.name || libraryId,
+      description: metadata.public.description || metadata.description,
       contractAddress: FormatAddress(client.utils.HashToAddress(libraryId)),
       libraryObjectId: libraryId.replace("ilib", "iq__"),
-      privateMeta,
-      publicMeta,
+      metadata,
       kmsId,
       tenantId,
       ownerName,
@@ -474,14 +470,10 @@ const Fabric = {
     return FormatAddress(await client.ContentLibraryOwner({libraryId}));
   },
 
-  CreateContentLibrary: async ({name, description, publicMetadata={}, privateMetadata={}, kmsId, tenantId}) => {
+  CreateContentLibrary: async ({name, metadata={}, kmsId, tenantId}) => {
     return await client.CreateContentLibrary({
       name,
-      description,
-      metadata: {
-        ...privateMetadata,
-        public: publicMetadata
-      },
+      metadata,
       kmsId,
       tenantId
     });

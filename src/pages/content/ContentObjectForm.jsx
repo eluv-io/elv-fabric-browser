@@ -9,7 +9,7 @@ import {toJS} from "mobx";
 import Fabric from "@/client/Fabric";
 import AppFrame from "@/components/AppFrame";
 import ActionsToolbar from "@/components/ActionsToolbar";
-import SearchConfiguration from "./SearchConfiguration";
+import SearchConfiguration from "@/pages/content/SearchConfiguration";
 
 import {libraryStore} from "@/stores";
 import {objectStore} from "@/stores";

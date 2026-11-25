@@ -1,15 +1,15 @@
 import {configure, flow, makeAutoObservable} from "mobx";
 import {FrameClient} from "@eluvio/elv-client-js/src/FrameClient";
 
-import LibraryStore from "./LibraryStore";
-import RouterStore from "./RouterStore";
-import EventsStore from "./EventsStore";
-import ContractsStore from "./ContractStore";
-import GroupsStore from "./GroupStore";
-import TypeStore from "./TypeStore";
-import ObjectStore from "./ObjectStore";
-import NotificationStore from "./NotificationStore";
-import ContentStore from "./ContentStore";
+import LibraryStore from "@/stores/LibraryStore";
+import RouterStore from "@/stores/RouterStore";
+import EventsStore from "@/stores/EventsStore";
+import ContractsStore from "@/stores/ContractStore";
+import GroupsStore from "@/stores/GroupStore";
+import TypeStore from "@/stores/TypeStore";
+import ObjectStore from "@/stores/ObjectStore";
+import NotificationStore from "@/stores/NotificationStore";
+import ContentStore from "@/stores/ContentStore";
 
 // Force strict mode so mutations are only allowed within actions.
 configure({

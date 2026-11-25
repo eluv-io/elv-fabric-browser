@@ -52,7 +52,6 @@ class ObjectStore {
 
 
   ContentObject = flow(function * ({libraryId, objectId, refresh=false}) {
-    console.log(new Error("CO"))
     const object = yield Fabric.GetContentObject({libraryId, objectId, refresh});
 
     this.objects[objectId] = object;

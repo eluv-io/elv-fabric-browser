@@ -7,7 +7,7 @@ import "@/assets/stylesheets/variables.css";
 import "@/assets/stylesheets/base.scss";
 
 import {createRoot} from "react-dom/client";
-import {Loader, MantineProvider} from "@mantine/core";
+import {MantineProvider} from "@mantine/core";
 import UrlJoin from "url-join";
 
 import "@/utils/StringExtensions";

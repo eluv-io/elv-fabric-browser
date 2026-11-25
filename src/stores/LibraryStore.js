@@ -66,50 +66,26 @@ class LibraryStore {
   });
 
 
-  CreateContentLibrary = flow(function * ({name, description, publicMetadata, privateMetadata, image, kmsId, tenantId}) {
+  CreateContentLibrary = flow(function * ({name, metadata, kmsId, tenantId}) {
     try {
-      privateMetadata = ParseInputJson(privateMetadata);
+      metadata = ParseInputJson(metadata);
+      metadata.public = metadata.public || {};
     } catch(error) {
       throw `Invalid Private Metadata: ${error.message}`;
-    }
-
-    try {
-      publicMetadata = ParseInputJson(publicMetadata);
-    } catch(error) {
-      throw `Invalid Public Metadata: ${error.message}`;
     }
 
     if(tenantId && !Fabric.utils.ValidHash(tenantId)) {
       throw "Invalid Tenant ID";
     }
 
-    publicMetadata.name = name;
-    publicMetadata.description = description;
+    metadata.public.name = name;
 
     const libraryId = yield Fabric.CreateContentLibrary({
       name,
-      description,
-      publicMetadata,
-      privateMetadata,
+      metadata,
       kmsId,
       tenantId
     });
-
-    if(image) {
-      yield Fabric.EditAndFinalizeContentObject({
-        libraryId,
-        objectId: Fabric.utils.AddressToObjectId(Fabric.utils.HashToAddress(libraryId)),
-        commitMessage: "Update library image",
-        todo: async (writeToken) => {
-          await Fabric.SetContentLibraryImage({
-            libraryId,
-            writeToken,
-            image: await new Response(image).blob(),
-            imageName: image.name
-          });
-        }
-      });
-    }
 
     const contentAdminsGroupAddress = yield Fabric.GetContentAdminsGroupAddress();
     yield Fabric.AddContentLibraryManagerGroup({libraryId, address: contentAdminsGroupAddress});
@@ -123,26 +99,15 @@ class LibraryStore {
   });
 
 
-  UpdateContentLibrary = flow(function * ({libraryId, name, description, publicMetadata, privateMetadata, image}) {
+  UpdateContentLibrary = flow(function * ({libraryId, name, metadata}) {
     try {
-      privateMetadata = ParseInputJson(privateMetadata);
+      metadata = ParseInputJson(metadata);
+      metadata.public = metadata.public || {};
     } catch(error) {
       throw `Invalid Private Metadata: ${error.message}`;
     }
 
-    try {
-      publicMetadata = ParseInputJson(publicMetadata);
-    } catch(error) {
-      throw `Invalid Public Metadata: ${error.message}`;
-    }
-
-    privateMetadata.name = name;
-    privateMetadata.description = description;
-
-    publicMetadata.name = name;
-    publicMetadata.description = description;
-
-    delete privateMetadata.public;
+    metadata.public.name = name;
 
     const libraryObjectId = libraryId.replace("ilib", "iq__");
     yield Fabric.EditAndFinalizeContentObject({
@@ -154,20 +119,8 @@ class LibraryStore {
           libraryId,
           objectId: libraryObjectId,
           writeToken,
-          metadata: {
-            ...privateMetadata,
-            public: publicMetadata
-          }
+          metadata
         });
-
-        if(image) {
-          await Fabric.SetContentLibraryImage({
-            libraryId,
-            writeToken,
-            image: await new Response(image).blob(),
-            imageName: image.name
-          });
-        }
       }
     });
 
@@ -352,8 +305,6 @@ class LibraryStore {
     delete params.cancelable;
     delete params.cancelableEvents;
     delete params.cacheId;
-
-    console.log(previousParams, params);
 
     if(
       JSON.stringify(previousParams) === JSON.stringify(params) &&

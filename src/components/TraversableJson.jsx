@@ -31,19 +31,17 @@ const TraversableJson = ({
       expandable = true;
       content = (
         <div className={S("traversable-json__indent")}>
-          <div className={S("traversable-json__indent")}>
-            {
-              json.map((value, i) => (
-                <TraversableJson
-                  key={`json-key-${path}-${i}`}
-                  expand={expandChildren}
-                  path={UrlJoin(path, i.toString())}
-                  label={i.toString()}
-                  json={value}
-                />
-              ))
-            }
-          </div>
+          {
+            json.map((value, i) => (
+              <TraversableJson
+                key={`json-key-${path}-${i}`}
+                expand={expandChildren}
+                path={UrlJoin(path, i.toString())}
+                label={i.toString()}
+                json={value}
+              />
+            ))
+          }
         </div>
       );
     }

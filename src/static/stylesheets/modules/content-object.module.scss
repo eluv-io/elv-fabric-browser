@@ -10,7 +10,6 @@
   }
 }
 
-
 .permissions-tooltip {
   &__separator {
     width: 100%;
@@ -22,4 +21,12 @@
       display: none;
     }
   }
+}
+
+.display-app-frame {
+  display: block;
+  flex: 1 1 auto;
+  width: 100%;
+  height: calc(100vh - 235px);
+  border: 1px solid var(--color-border);
 }

@@ -1191,6 +1191,7 @@ import {DownloadFromUrl} from "@/utils/Files";
 import Diff from "@/components/Diff";
 import {FormModal} from "@/components/Form";
 import ContentObjectGroups from "@/pages/content/ContentObjectGroups";
+import AppFrame from "@/components/AppFrame";
 
 const S = CreateModuleClassMatcher(ContentObjectStyles);
 
@@ -1886,6 +1887,35 @@ const ObjectInfo = observer(({tokenInfo, Reload}) => {
   );
 });
 
+const DisplayAppFrame = observer(({displayAppUrl, Reload}) => {
+  const [, navigate] = useLocation();
+  if(!displayAppUrl) { return null; }
+
+  const queryParams = {
+    contentSpaceId: Fabric.contentSpaceId,
+    libraryId: objectStore.libraryId,
+    objectId: objectStore.objectId,
+    versionHash: objectStore.object.hash,
+    type: objectStore.type ? objectStore.type.hash : "",
+    action: "display"
+  };
+
+  return (
+    <AppFrame
+      className={S("display-app-frame")}
+      appUrl={displayAppUrl}
+      queryParams={queryParams}
+      onComplete={Reload}
+      onCancel={() => navigate(
+        objectStore.object.isContentType ?
+          "/content-types" :
+          UrlJoin("/content", objectStore.libraryId),
+      )}
+      fixedDimensions
+    />
+  );
+});
+
 const PageContent = observer(({Reload}) => {
   const displayAppUrl = objectStore?.object?.displayAppUrl || (objectStore?.object?.typeInfo || {}).displayAppUrl;
 
@@ -1910,7 +1940,7 @@ const PageContent = observer(({Reload}) => {
   if(!libraryStore.library) { return; }
 
   return (
-    <div className="page-container">
+    <div className={`page-container ${tab === "display" ? "page-container--no-padding" : ""}`}>
       <Actions Reload={Reload} />
       <PageHeader
         header={`${libraryStore.library.name || objectStore.libraryId} / ${objectStore.object.name || objectId}`}
@@ -1932,12 +1962,14 @@ const PageContent = observer(({Reload}) => {
         </Tabs.List>
       </Tabs>
       {
-        tab === "content" ?
-          <ObjectInfo tokenInfo={tokenInfo} Reload={Reload} /> :
-          tab === "groups" ?
-            <ContentObjectGroups
-              type="contentObject"
-            /> : null
+        tab === "display" ?
+          <DisplayAppFrame displayAppUrl={displayAppUrl} Reload={Reload} /> :
+          tab === "content" ?
+            <ObjectInfo tokenInfo={tokenInfo} Reload={Reload} /> :
+            tab === "groups" ?
+              <ContentObjectGroups
+                type="contentObject"
+              /> : null
       }
     </div>
   );

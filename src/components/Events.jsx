@@ -1,5 +1,5 @@
 import React from "react";
-import EventLogs from "./EventLogs";
+import EventLogs from "@/components/EventLogs";
 //import {Action, LoadingElement, IconButton, onEnterPressed} from "elv-components-js";
 import {observer} from "mobx-react";
 

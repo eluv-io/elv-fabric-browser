@@ -2,23 +2,20 @@ import {useState} from "react";
 import UrlJoin from "url-join";
 import Path from "path";
 import ClippedText from "@/components/ClippedText";
-
 import {observer} from "mobx-react";
 import JSONField from "@/components/JSONField";
 import ActionsToolbar from "@/components/ActionsToolbar";
-
 import {libraryStore, routeStore} from "@/stores";
 import {CopyableField, Linkish, PageHeader, LabelledField} from "@/components/Components";
 import {Tabs} from "@mantine/core";
 import {useParams} from "wouter";
-
-import RefreshIcon from "@/assets/icons/refresh.svg";
-import ContentIcon from "@/assets/icons/content.svg";
 import AsyncComponent from "@/components/AsyncComponent";
 import DataTable from "@/components/DataTable";
 import ImageIcon from "@/components/ImageIcon";
 import {CreateModuleClassMatcher} from "@/utils/Helpers";
 
+import RefreshIcon from "@/assets/icons/refresh.svg";
+import ContentIcon from "@/assets/icons/content.svg";
 import VideoIcon from "@/assets/icons/video.svg";
 
 const S = CreateModuleClassMatcher();
@@ -74,7 +71,6 @@ const Actions = observer(({Reload}) => {
 const LibraryInfo = observer(() => {
   const library = libraryStore.library;
 
-  const description = <ClippedText className="object-description" text={library.description} />;
   const libraryObjectPath = UrlJoin(routeStore.path, library.libraryObjectId);
 
   const ownerText = library.ownerName ?
@@ -87,10 +83,6 @@ const LibraryInfo = observer(() => {
     <div>
       <LabelledField label="Name">
         { library.name }
-      </LabelledField>
-
-      <LabelledField label="Description" alignTop={true}>
-        { description }
       </LabelledField>
 
       <br />
@@ -157,12 +149,7 @@ const LibraryInfo = observer(() => {
 
       <LabelledField label="Metadata" />
 
-      <JSONField
-        json={{
-          ...(library.privateMeta || {}),
-          public: library.publicMeta || {},
-        }}
-      />
+      <JSONField json={library.metadata} />
     </div>
   );
 });

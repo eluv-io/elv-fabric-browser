@@ -85,6 +85,7 @@
   gap: 10px;
   user-select: none;
   text-align: left;
+  width: 100%;
 
   &--centered {
     justify-content: center;
@@ -135,7 +136,7 @@
   }
 
   &__text-primary {
-    font-weight: 600;
+    font-weight: 500;
   }
 
   &__text-secondary {

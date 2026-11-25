@@ -4,13 +4,12 @@ body,
   display: block;
   width: 100%;
   min-height: 100vh;
-  scrollbar-gutter: stable;
 }
 
 body {
   color: var(--color-text-secondary);
   height: 100vh;
-  scrollbar-gutter: stable;
+  overflow: hidden;
 
   * {
     font-family: var(--font-family);
@@ -43,6 +42,9 @@ body {
     padding: 24px;
     position: relative;
     height: 100%;
+    max-height: 100vh;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
   }
 }
 
@@ -53,5 +55,10 @@ body {
 
 .page-container {
   animation: var(--animation-fade-in) 0.25s ease;
+  min-height: 100%;
   padding-bottom: 100px;
+
+  &--no-padding {
+    padding-bottom: 0;
+  }
 }
