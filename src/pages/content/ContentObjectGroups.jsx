@@ -207,7 +207,7 @@ import {useEffect, useState} from "react";
 import {groupStore, objectStore} from "@/stores";
 import {Checkbox, Select, Tabs, TextInput} from "@mantine/core";
 import {CreateModuleClassMatcher, EqualAddress, FormatAddress, ValidAddress} from "@/utils/Helpers";
-import {Button, Confirm, CopyableField, IconButton, Linkish} from "@/components/Components";
+import {Button, CopyableField, IconButton, Linkish} from "@/components/Components";
 import DataTable from "@/components/DataTable";
 import ImageIcon from "@/components/ImageIcon";
 import {FormModal} from "@/components/Form";
@@ -215,6 +215,7 @@ import {FormModal} from "@/components/Form";
 import GroupIcon from "@/assets/icons/groups.svg";
 import RemoveIcon from "@/assets/icons/trash.svg";
 import {useDebouncedValue} from "@mantine/hooks";
+import {Confirm} from "@/components/Confirm";
 
 const S = CreateModuleClassMatcher();
 
@@ -453,7 +454,7 @@ const ContentObjectGroups = observer(({type}) => {
                   label={`Remove ${tab === "managers" ? "Manager" : "Member"}`}
                   onClick={async () => await Confirm({
                     title: "Remove Access Group Permission",
-                    content: "Are you sure you want to remove this permission?",
+                    message: "Are you sure you want to remove this permission?",
                     onConfirm: async () => {
                       await objectStore.RemoveContentObjectGroupPermission({
                         objectId: objectStore.objectId,

@@ -125,15 +125,11 @@ class ObjectStore {
     objectId,
     type,
     name,
-    description,
-    privateMetadata,
-    publicMetadata,
-    image,
+    metadata,
     commitMessage
   }) {
     try {
-      privateMetadata = ParseInputJson(privateMetadata);
-      publicMetadata = ParseInputJson(publicMetadata);
+      metadata = ParseInputJson(metadata) || {};
     } catch(error) {
       throw `Invalid Metadata: ${error.message}`;
     }
@@ -152,14 +148,9 @@ class ObjectStore {
     const writeToken = editResponse.write_token;
     objectId = editResponse.id;
 
-    const metadata = {
-      ...privateMetadata,
-      public: {
-        ...(privateMetadata.public || {}),
-        ...publicMetadata,
-        name,
-        description
-      }
+    metadata.public = {
+      ...(metadata?.public || {}),
+      name
     };
 
     yield Fabric.ReplaceMetadata({
@@ -168,16 +159,6 @@ class ObjectStore {
       writeToken,
       metadata
     });
-
-    if(image) {
-      yield Fabric.SetContentObjectImage({
-        libraryId,
-        objectId,
-        writeToken,
-        image: yield new Response(image).blob(),
-        imageName: image.name
-      });
-    }
 
     yield Fabric.FinalizeContentObject({
       libraryId,

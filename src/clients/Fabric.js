@@ -1452,8 +1452,6 @@ const Fabric = {
       });
     }
 
-    const count = contentTypes.length;
-
     // Sort
     contentTypes = contentTypes.sort((a, b) => {
       const name1 = GetName(a) || "zz";
@@ -1465,20 +1463,20 @@ const Fabric = {
       contentTypes = contentTypes.reverse();
     }
 
+    const count = contentTypes.length;
+
     // Paginate
     const page = params.page - 1 || 0;
     const perPage = params.perPage || 10;
     contentTypes = contentTypes.slice(page * perPage, (page+1) * perPage);
 
-    let types = {};
-
-    await contentTypes.limitedMap(
+    contentTypes = (await contentTypes.limitedMap(
       Fabric.concurrencyLimit,
       async type => {
         try {
           const appUrls = await Fabric.AppUrls({object: type});
 
-          types[type.id] = {
+          return {
             ...type,
             ...appUrls,
             name: GetName(type),
@@ -1491,10 +1489,11 @@ const Fabric = {
           /* eslint-enable no-console */
         }
       }
-    );
+    ))
+      .filter(type => type);
 
     return {
-      types,
+      types: contentTypes,
       count
     };
   },

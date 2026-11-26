@@ -16,6 +16,7 @@ import ContentTypesPage from "@/pages/content/ContentTypes";
 import EventsPage from "@/pages/events/Events";
 import AccessGroupPage from "@/pages/access_groups/AccessGroup";
 import ContentLibraryForm from "@/pages/content/ContentLibraryForm";
+import ContentObjectForm from "@/pages/content/ContentObjectForm";
 
 /*
 import ContentLibraryPage from "@/pages/content/ContentLibrary";
@@ -83,13 +84,14 @@ const Router = observer(() => {
   }
 
   return (
-    <div className="main-content-container">
       <Switch>
         <WatchedRoute exact path="/content/:libraryId/edit" component={ContentLibraryForm}/>
         <WatchedRoute exact path="/content" component={ContentLibrariesPage}/>
         <WatchedRoute exact path="/content/create" component={ContentLibraryForm}/>
         <WatchedRoute exact path="/content/:libraryId" component={ContentLibraryPage}/>
+        <WatchedRoute exact path="/content/:libraryId/create" component={ContentObjectForm}/>
         <WatchedRoute exact path="/content/:libraryId/:objectId" component={ContentObjectPage}/>
+        <WatchedRoute exact path="/content/:libraryId/:objectId/edit" component={ContentObjectForm}/>
 
         <WatchedRoute exact path="/access-groups" component={AccessGroupsPage}/>
         <WatchedRoute exact path="/access-groups/:contractAddress" component={AccessGroupPage}/>
@@ -101,7 +103,6 @@ const Router = observer(() => {
 
         <Route><Redirect to="/content"/></Route>
       </Switch>
-    </div>
   );
 
 

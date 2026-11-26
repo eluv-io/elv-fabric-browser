@@ -18,6 +18,7 @@ import Routes from "./Routes";
 import {ModalsProvider} from "@mantine/modals";
 import MantineTheme from "../MantineTheme";
 import {useEffect, useState} from "react";
+import {ConfirmModal} from "@/components/Confirm";
 
 const AppContent = () => {
   const [ready, setReady] = useState(false);
@@ -59,7 +60,9 @@ const App = () => {
 
   root.render(
     <MantineProvider theme={MantineTheme}>
-      <ModalsProvider>
+      <ModalsProvider
+        modals={{confirm: ConfirmModal}}
+      >
         <AppContent />
       </ModalsProvider>
     </MantineProvider>

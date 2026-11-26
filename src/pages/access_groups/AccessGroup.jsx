@@ -383,7 +383,6 @@ import {groupStore, libraryStore, objectStore} from "@/stores";
 import AsyncComponent from "@/components/AsyncComponent";
 import {useState} from "react";
 import {
-  Confirm,
   CopyableField,
   IconButton,
   LabelledField,
@@ -404,6 +403,7 @@ import RemoveIcon from "@/assets/icons/trash.svg";
 import RefreshIcon from "@/assets/icons/refresh.svg";
 import {FormModal} from "@/components/Form";
 import ContentObjectGroups from "@/pages/content/ContentObjectGroups";
+import {Confirm} from "@/components/Confirm";
 
 const S = CreateModuleClassMatcher();
 
@@ -423,7 +423,7 @@ const AddMemberForm = observer(({Reload, Close}) => {
           if(!(
             await Confirm({
               title: "Confirm Member",
-              content: "Warning: This user is associated with a different tenancy. Are you sure you want to add them to this group?"
+              message: "Warning: This user is associated with a different tenancy. Are you sure you want to add them to this group?"
             })
           )) {
             return false;
@@ -507,7 +507,7 @@ const Actions = observer(({Reload, ReloadMembers}) => {
             onClick: async () => {
               await Confirm({
                 title: "Leave Access Group",
-                content: "Are you sure you want to leave this group?",
+                message: "Are you sure you want to leave this group?",
                 onConfirm: async () => {
                   await groupStore.LeaveAccessGroup({
                     contractAddress: groupStore.contractAddress
@@ -597,7 +597,7 @@ const Members = observer(({tab}) => {
                 label={`Remove ${tab === "managers" ? "Manager" : "Member"}`}
                 onClick={async () => await Confirm({
                   title: `Remove Access Group ${tab === "managers" ? "Manager" : "Member"}`,
-                  content: `Are you sure you want to remove this ${tab === "managers" ? "manager" : "member"} from the group?`,
+                  message: `Are you sure you want to remove this ${tab === "managers" ? "manager" : "member"} from the group?`,
                   onConfirm: async () => {
                     await groupStore.RemoveAccessGroupMember({
                       contractAddress: groupStore.contractAddress,

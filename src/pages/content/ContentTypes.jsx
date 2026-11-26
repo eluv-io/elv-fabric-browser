@@ -14,7 +14,7 @@ const S = CreateModuleClassMatcher();
 const ContentTypesTable = observer(() => {
   return (
     <DataTable
-      records={Object.values(typeStore.types)}
+      records={typeStore.types}
       totalRecords={typeStore.count}
       Load={params => typeStore.ListContentTypes({params})}
       columns={[
@@ -26,7 +26,7 @@ const ContentTypesTable = observer(() => {
               to={UrlJoin("/content-types", record.id)}
               className={S("table-item")}
             >
-              <ImageIcon icon={TypeIcon} className={S("table-item__icon")} />
+              <div className={S("table-item__icon")}><ImageIcon icon={TypeIcon}/></div>
               <div className={S("table-item__text")}>
                 <div className={S("table-item__text-primary")}>
                   {record.name || record.id}
@@ -36,8 +36,8 @@ const ContentTypesTable = observer(() => {
                 </CopyableField>
               </div>
             </Linkish>
-        )
-      }
+          )
+        }
       ]}
     />
   );

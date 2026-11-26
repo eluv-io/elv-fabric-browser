@@ -6,8 +6,8 @@ import {Cancelable} from "@/utils/Cancelable";
 
 class TypeStore {
   typesLoaded = false;
-  allTypes = {};
-  types = {};
+  allTypes = [];
+  types = [];
   count = 0;
 
   get type() {

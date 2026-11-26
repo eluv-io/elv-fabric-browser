@@ -1,3 +1,4 @@
+/*
 import React from "react";
 import UrlJoin from "url-join";
 import Path from "path";
@@ -350,3 +351,216 @@ class ContentObjectForm extends React.Component {
 }
 
 export default observer(ContentObjectForm);
+
+
+ */
+
+import ContentObjectStyles from "@/assets/stylesheets/modules/content-object.module.scss";
+
+import {observer} from "mobx-react";
+import {useEffect, useState} from "react";
+import {libraryStore, objectStore, typeStore} from "@/stores";
+import Form from "@/components/Form";
+import JSONEditField from "@/components/JSONEditField";
+import {Loader, Select, Tabs, TextInput} from "@mantine/core";
+import UrlJoin from "url-join";
+import {useLocation} from "wouter";
+import Fabric from "@/client/Fabric";
+import AppFrame from "@/components/AppFrame";
+import {CreateModuleClassMatcher} from "@/utils/Helpers";
+
+const S = CreateModuleClassMatcher(ContentObjectStyles);
+
+const App = observer(({manageAppUrl}) => {
+  const [, navigate] = useLocation();
+  const [reloadKey, setReloadKey] = useState(0);
+
+  const queryParams = {
+    contentSpaceId: Fabric.contentSpaceId,
+    libraryId: objectStore.libraryId,
+    objectId: objectStore.objectId,
+    versionHash: objectStore.object.hash,
+    type: objectStore.object.type,
+    action: "manage"
+  };
+
+  return (
+    <AppFrame
+      key={`app-frame-${reloadKey}`}
+      appUrl={manageAppUrl}
+      queryParams={queryParams}
+      onComplete={() => navigate(UrlJoin("/content", libraryStore.libraryId, objectStore.objectId))}
+      onCancel={() => navigate(UrlJoin("/content", libraryStore.libraryId, objectStore.objectId))}
+      Reload={() => setReloadKey(reloadKey + 1)}
+      className={S("app-frame", "app-frame--manage")}
+    />
+  );
+});
+
+const ContentObjectForm = observer(({metadata, setMetadata, formData, setFormData}) => {
+  const [, navigate] = useLocation();
+  const [metadataValid, setMetadataValid] = useState(true);
+
+  useEffect(() => {
+    if(typeof metadata === "undefined") { return; }
+
+    try {
+      JSON.parse(metadata);
+      setMetadataValid(true);
+    } catch(error) {
+      setMetadataValid(false);
+    }
+  }, [metadata]);
+
+  return (
+    <Form
+      legend={objectStore.objectId ? "Update Content Object" : "Create Content Object"}
+      disabled={!metadataValid || !formData.name}
+      showTopControls
+      showBottomControls={false}
+      loading={typeof metadata === "undefined"}
+      cancelPath={
+        objectStore.objectId ?
+          UrlJoin("/content", libraryStore.libraryId, objectStore.objectId) :
+          UrlJoin("/content", libraryStore.libraryId)
+      }
+      onSubmit={async () => {
+        const objectId = await objectStore.UpdateContentObject({
+          libraryId: libraryStore.libraryId,
+          objectId: objectStore.objectId,
+          name: formData.name,
+          commitMessage: formData.commitMessage,
+          type: formData.contentTypeId,
+          metadata,
+        });
+
+        navigate(UrlJoin("/content", libraryStore.libraryId, objectId));
+      }}
+    >
+      <TextInput
+        label="Name"
+        required
+        placeholder="Object Name..."
+        value={formData.name}
+        onChange={event => setFormData({...formData, name: event.target.value})}
+      />
+      {
+        objectStore.objectId && !objectStore.object.isNormalObject ? null :
+          <Select
+            searchable
+            clearable
+            label="Content Type"
+            placeholder="Content Type..."
+            value={formData.contentTypeId}
+            onChange={contentTypeId => setFormData({...formData, contentTypeId})}
+            loading={!typeStore.typesLoaded}
+            data={
+              typeStore.allTypes.map(type => ({
+                label: type.name || type.id,
+                value: type.id
+              }))
+            }
+          />
+      }
+      {
+        !objectStore.objectId ? null :
+          <TextInput
+            label="Commit Message"
+            placeholder="Commit Message..."
+            value={formData.commitMessage}
+            onChange={event => setFormData({...formData, commitMessage: event.target.value})}
+          />
+      }
+      <JSONEditField
+        label="Metadata"
+        value={metadata}
+        h={!objectStore.objectId ? 600 : 450}
+        onChange={setMetadata}
+      />
+    </Form>
+  );
+});
+
+const ContentObjectFormPage = observer(() => {
+  const [tab, setTab] = useState("app");
+  const [metadata, setMetadata] = useState(undefined);
+
+  const [formData, setFormData] = useState({
+    name: "New Object",
+    contentTypeId: "",
+    commitMessage: ""
+  });
+
+  useEffect(() => {
+    if(!libraryStore.libraryId) { return; }
+
+    (async () => {
+      typeStore.ContentTypes();
+
+      if(objectStore.objectId) {
+        await libraryStore.ContentLibrary({libraryId: libraryStore.libraryId});
+        await objectStore.ContentObject({
+          libraryId: libraryStore.libraryId,
+          objectId: objectStore.objectId
+        });
+
+        const object = objectStore.objects[objectStore.objectId] || {};
+
+        setMetadata(JSON.stringify(object.meta, null, 2));
+        setFormData({
+          ...formData,
+          name: object.name,
+          contentTypeId: object.typeInfo?.id || ""
+        });
+      } else {
+        await libraryStore.ContentLibrary({libraryId: libraryStore.libraryId});
+        setMetadata("{}");
+      }
+    })();
+  }, [libraryStore.libraryId, objectStore.objectId]);
+
+  if(!libraryStore.libraryId || (objectStore.objectId && !objectStore.objects[objectStore.objectId])) {
+    return (
+      <div className={S("page-loader")}>
+        <Loader />
+      </div>
+    );
+  }
+
+  const manageAppUrl = !objectStore.objectId ? undefined :
+    (objectStore.object.manageAppUrl || (objectStore.object?.typeInfo || {}).manageAppUrl);
+
+  let content;
+  if(!manageAppUrl || tab === "form") {
+    content = (
+      <ContentObjectForm
+        metadata={metadata}
+        setMetadata={setMetadata}
+        formData={formData}
+        setFormData={setFormData}
+      />
+    );
+  } else {
+    content = (
+      <App manageAppUrl={manageAppUrl} />
+    );
+  }
+
+  if(!manageAppUrl) {
+    return content;
+  }
+
+  return (
+    <>
+      <Tabs my="md" value={tab} onChange={setTab}>
+        <Tabs.List>
+          <Tabs.Tab value="app">App</Tabs.Tab>
+          <Tabs.Tab value="form">Form</Tabs.Tab>
+        </Tabs.List>
+      </Tabs>
+      {content}
+    </>
+  );
+});
+
+export default ContentObjectFormPage;

@@ -1161,12 +1161,12 @@ export default observer(ContentObject);
 import ContentObjectStyles from "@/assets/stylesheets/modules/content-object.module.scss";
 
 import {observer} from "mobx-react";
-import {useLocation, useParams, useRouter} from "wouter";
+import {useLocation, useParams} from "wouter";
 import {useEffect, useState} from "react";
 import AsyncComponent from "@/components/AsyncComponent";
 import {libraryStore, objectStore, rootStore} from "@/stores";
 import {
-  Button, Confirm,
+  Button,
   CopyableField,
   IconButton,
   LabelledField,
@@ -1177,13 +1177,9 @@ import {
 import {Select, Tabs, Textarea, TextInput, Tooltip} from "@mantine/core";
 import ActionsToolbar from "@/components/ActionsToolbar";
 import UrlJoin from "url-join";
-import {CreateModuleClassMatcher, FormatDateTime, HashToAddress, Percentage} from "@/utils/Helpers";
+import {AddressToHash, CreateModuleClassMatcher, FormatDateTime, HashToAddress, Percentage} from "@/utils/Helpers";
 import ImageIcon from "@/components/ImageIcon";
 import Fabric from "@/client/Fabric";
-
-import InfoIcon from "@/assets/icons/help-circle.svg";
-import RefreshIcon from "@/assets/icons/refresh.svg";
-import DeleteIcon from "@/assets/icons/trash.svg";
 import DataTable from "@/components/DataTable";
 import JSONField from "@/components/JSONField";
 import PrettyBytes from "pretty-bytes";
@@ -1193,12 +1189,19 @@ import {FormModal} from "@/components/Form";
 import ContentObjectGroups from "@/pages/content/ContentObjectGroups";
 import AppFrame from "@/components/AppFrame";
 
+import InfoIcon from "@/assets/icons/help-circle.svg";
+import RefreshIcon from "@/assets/icons/refresh.svg";
+import DeleteIcon from "@/assets/icons/trash.svg";
+import {Confirm} from "@/components/Confirm";
+
 const S = CreateModuleClassMatcher(ContentObjectStyles);
 
 const Actions = observer(({Reload}) => {
-  const [location] = useLocation();
-
+  const [location, navigate] = useLocation();
   const [showCopyObjectModal, setShowCopyObjectModal] = useState(false);
+
+  const userCapKey = `eluv.caps.iusr${AddressToHash(objectStore.currentAccountAddress)}`;
+  const hasUserCap = !!(objectStore.object?.meta && objectStore.object?.meta?.[userCapKey]);
 
   return (
     <ActionsToolbar
@@ -1254,13 +1257,24 @@ const Actions = observer(({Reload}) => {
         {
           label: "Delete",
           type: "button",
+          dividerAbove: true,
           hidden: (
             objectStore.object.isContentLibraryObject ||
             (objectStore.object.isV3 && !libraryStore.library || !!libraryStore.library && !libraryStore.library.isManager) ||
             (!objectStore.object.isV3 && !objectStore.object.isOwner)
           ),
-          onClick: () => this.DeleteContentObject(),
-          dividerAbove: true
+          onClick: async () => await Confirm({
+            title: "Delete Content Object",
+            message: "Are you sure you want to delete this content?",
+            onConfirm: async () => {
+              await objectStore.DeleteContentObject({
+                libraryId: libraryStore.libraryId,
+                objectId: objectStore.objectId,
+              });
+
+              navigate(UrlJoin("/content", libraryStore.libraryId));
+            }
+          })
         }
       ]}
     />
@@ -1469,7 +1483,7 @@ const OwnerCapsSection = observer(({Reload}) => {
 
                           await Confirm({
                             title: "Delete Encryption Key",
-                            content: "Are you sure you want to delete this encryption key?",
+                            message: "Are you sure you want to delete this encryption key?",
                             onConfirm: async () => {
                               await objectStore.DeleteOwnerCap({
                                 libraryId: objectStore.libraryId,
@@ -1902,7 +1916,7 @@ const DisplayAppFrame = observer(({displayAppUrl, Reload}) => {
 
   return (
     <AppFrame
-      className={S("display-app-frame")}
+      className={S("app-frame", "app-frame--display")}
       appUrl={displayAppUrl}
       queryParams={queryParams}
       onComplete={Reload}

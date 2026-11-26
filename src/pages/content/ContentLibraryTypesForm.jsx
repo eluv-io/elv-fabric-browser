@@ -62,7 +62,7 @@ class ContentLibraryTypesForm extends React.Component {
   }
 
   AvailableTypes() {
-    return Object.values(typeStore.allTypes)
+    return typeStore.allTypes
       .filter(type => !this.state.selectedTypeIds.includes(type.id))
       .sort((a, b) => (a.name || `zzz${a.hash}`).toLowerCase() < (b.name || `zzz${b.hash}`).toLowerCase() ? -1 : 1);
   }
@@ -101,7 +101,7 @@ class ContentLibraryTypesForm extends React.Component {
     if(this.state.selectedTypeIds.length === 0) { return null; }
 
     return this.state.selectedTypeIds.map(typeId => {
-      const type = Object.values(typeStore.allTypes).find(type => type.id === typeId);
+      const type = typeStore.allTypes.find(type => type.id === typeId);
 
       return (
         <div className="list-item" key={"added-type-" + type.id}>

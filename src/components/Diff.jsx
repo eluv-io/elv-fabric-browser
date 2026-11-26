@@ -9,7 +9,7 @@ import AsyncComponent from "@/components/AsyncComponent";
 
 import UpArrow from "@/assets/icons/arrow-up-circle.svg";
 import DownArrow from "@/assets/icons/arrow-down-circle.svg";
-import {CreateModuleClassMatcher, ScrollParent} from "@/utils/Helpers";
+import {CreateModuleClassMatcher} from "@/utils/Helpers";
 
 const S = CreateModuleClassMatcher(ComponentStyles);
 

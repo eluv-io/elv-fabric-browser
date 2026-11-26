@@ -68,12 +68,13 @@ const ActionsToolbar = observer(({actions, iconActions, SaveDraft, showContentLo
         <Popover.Dropdown>
           {
             visibleActions.slice(2).map((action, index) =>
-              <div key={`item-${index}`}>
+              <>
                 {
                   !action.dividerAbove ? null :
-                    <div className={S("actions-toolbar__divider")} />
+                    <div key={`divider-${index}`} className={S("actions-toolbar__divider")} />
                 }
                 <Linkish
+                  key={`item-${index}`}
                   disabled={action.disabled}
                   to={action.path}
                   onClick={
@@ -87,7 +88,7 @@ const ActionsToolbar = observer(({actions, iconActions, SaveDraft, showContentLo
                 >
                   {action.label}
                 </Linkish>
-              </div>
+              </>
             )
           }
         </Popover.Dropdown>
